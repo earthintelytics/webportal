@@ -18,7 +18,7 @@ const OverviewSection = () => {
          </SimpleCard>
          <SimpleCard title="Temporal Sequestration Trend" icon={<BarChart4 size={20} />}>
             <div className="p-10 text-center border-2 border-dashed border-gray-50 rounded-[2.5rem] h-full flex flex-col items-center justify-center">
-               <p className="text-gray-400 font-bold uppercase text-[10px] tracking-[0.3em]">Carbon Sequestration Charting</p>
+               <p className="text-gray-400 font-bold uppercase text-[11px] tracking-[0.3em]">Carbon Sequestration Charting</p>
             </div>
          </SimpleCard>
       </div>

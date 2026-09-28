@@ -35,7 +35,7 @@ const OverviewSection = ({ stats, barData, doughnutData }) => {
                <ShieldCheck className="absolute -right-10 -bottom-10 text-white opacity-10" size={200} />
                <div className="flex justify-between items-start mb-12">
                   <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur shadow-inner"><Wallet size={32} /></div>
-                  <div className="text-[10px] font-bold uppercase tracking-widest italic bg-white/20 px-5 py-2 rounded-full">Reserve Node</div>
+                  <div className="text-[11px] font-bold uppercase tracking-widest italic bg-white/20 px-5 py-2 rounded-full">Reserve Node</div>
                </div>
                <div className="text-[11px] font-bold uppercase tracking-widest opacity-60 mb-2">Available Reserve Balance</div>
                <div className="text-5xl font-black italic tracking-tighter mb-12 leading-none">₦142M</div>
@@ -54,7 +54,7 @@ const OverviewSection = ({ stats, barData, doughnutData }) => {
                   />
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
                      <div className="text-4xl font-black text-gray-900 tracking-tighter">100%</div>
-                     <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400">Audited</div>
+                     <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-400">Audited</div>
                   </div>
                </div>
             </SimpleCard>

@@ -18,12 +18,12 @@ const OverviewSection = () => {
                <div className="flex justify-center items-center gap-6">
                   <div className="flex flex-col items-center">
                      <div className="text-4xl font-black text-yellow-600">82%</div>
-                     <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Silo A</div>
+                     <div className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Silo A</div>
                   </div>
                   <div className="w-px h-10 bg-gray-100"></div>
                   <div className="flex flex-col items-center">
                      <div className="text-4xl font-black text-yellow-600">45%</div>
-                     <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Silo B</div>
+                     <div className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Silo B</div>
                   </div>
                </div>
             </div>
@@ -32,7 +32,7 @@ const OverviewSection = () => {
             <div className="p-12 text-center border-2 border-dashed border-gray-100 rounded-[2.5rem] bg-white">
                <p className="text-gray-400 font-bold uppercase text-[11px] tracking-[0.2em] mb-4">Regional Price Analysis</p>
                <div className="text-3xl font-black text-green-600 tracking-tighter">+$12.40 <span className="text-sm font-bold text-gray-300">/ MT</span></div>
-               <div className="text-[10px] font-bold text-green-700 uppercase tracking-widest mt-2">Upward Trend Forecasted</div>
+               <div className="text-[11px] font-bold text-green-700 uppercase tracking-widest mt-2">Upward Trend Forecasted</div>
             </div>
          </SimpleCard>
       </div>

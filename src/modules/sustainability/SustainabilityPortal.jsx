@@ -84,7 +84,7 @@ const SustainabilityPortal = ({ title, type, onSignOut, onBack, children, sideba
                   <ArrowLeft size={18} />
                </div>
                <div className="flex flex-col text-left">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-500 leading-none">Exit to Hub</span>
+                  <span className="text-[11px] font-black uppercase tracking-widest text-gray-500 leading-none">Exit to Hub</span>
                   <span className="text-[14px] font-black tracking-tight mt-1 text-white">FarmIntelytics</span>
                </div>
             </button>
@@ -97,7 +97,7 @@ const SustainabilityPortal = ({ title, type, onSignOut, onBack, children, sideba
                </div>
                <div>
                   <h1 className="text-lg font-black tracking-tighter leading-none text-white">{title} <span className="text-emerald-500 italic font-medium ml-1">{type} Intelligence</span></h1>
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500 mt-1">Satellite Intelligence: Active</p>
+                  <p className="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-500 mt-1">Satellite Intelligence: Active</p>
                </div>
             </div>
          </div>
@@ -106,7 +106,7 @@ const SustainabilityPortal = ({ title, type, onSignOut, onBack, children, sideba
             <div className="flex items-center gap-4">
                <div className="text-right">
                   <div className="text-[11px] font-black text-white leading-none">{userName}</div>
-                  <div className="text-[9px] font-black text-emerald-500 uppercase tracking-widest mt-1">Lead Carbon Auditor</div>
+                  <div className="text-[11px] font-black text-emerald-500 uppercase tracking-widest mt-1">Lead Carbon Auditor</div>
                </div>
                <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden backdrop-blur-md">
                   <User size={20} className="text-gray-400" />
@@ -121,7 +121,7 @@ const SustainabilityPortal = ({ title, type, onSignOut, onBack, children, sideba
       {/* Sidebar Navigation HUD */}
       <div className="absolute left-8 top-32 z-[1050] pointer-events-auto flex flex-col gap-4">
          <HUDPanel className="p-2 space-y-1 w-64">
-            <div className="text-[9px] font-black text-gray-500 uppercase tracking-[0.3em] px-4 py-2">Navigation Node</div>
+            <div className="text-[11px] font-black text-gray-500 uppercase tracking-[0.3em] px-4 py-2">Navigation Node</div>
             {itemsToRender.map(tab => (
               <button 
                 key={tab.id}

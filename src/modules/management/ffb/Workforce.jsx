@@ -14,7 +14,7 @@ import {
 const KPICard = ({ icon, label, value, delta, deltaType, valueColor }) => (
   <div className="bg-white dark:bg-white/5 p-4 rounded-xl border border-black/5 dark:border-white/5 relative">
     <div className="absolute top-3 right-3 text-gray-300 dark:text-white/10">{icon}</div>
-    <div className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{label}</div>
+    <div className="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{label}</div>
     <div className={`text-2xl font-bold ${valueColor || 'text-gray-900 dark:text-white'}`}>{value}</div>
     <div className={`text-[10.5px] mt-1 font-medium flex items-center gap-1 ${
       deltaType === 'up' ? 'text-green-600' : deltaType === 'down' ? 'text-red-600' : 'text-gray-500'
@@ -82,14 +82,14 @@ const Workforce = () => {
                     style={block.pos}
                   >
                     <span className="text-white font-bold text-[14px]">{block.id}</span>
-                    <span className="text-white/70 text-[9px] uppercase font-bold tracking-tighter">
+                    <span className="text-white/70 text-[11px] uppercase font-bold tracking-tighter">
                       {block.alert ? '⚠ Alert' : `${block.workers} workers`}
                     </span>
                   </div>
                 ))}
                 
                 {/* Simulated worker dots */}
-                <div className="absolute w-2.5 h-2.5 bg-green-400 rounded-full border-2 border-white shadow-sm top-[20%] left-[15%] animate-pulse"></div>
+                <div className="absolute w-2.5 h-2.5 bg-green-400 rounded-full border-2 border-white shadow-sm top-[20%] left-[15%]"></div>
                 <div className="absolute w-2.5 h-2.5 bg-green-400 rounded-full border-2 border-white shadow-sm top-[30%] left-[25%]"></div>
                 <div className="absolute w-2.5 h-2.5 bg-red-400 rounded-full border-2 border-white shadow-sm top-[60%] left-[50%] animate-bounce"></div>
                 
@@ -106,15 +106,15 @@ const Workforce = () => {
                     <div className="grid grid-cols-3 gap-2">
                        <div className="bg-green-50 dark:bg-green-900/10 p-3 rounded-lg text-center border border-green-100">
                           <div className="text-xl font-black text-green-600">42</div>
-                          <div className="text-[9px] font-bold text-green-700">IN</div>
+                          <div className="text-[11px] font-bold text-green-700">IN</div>
                        </div>
                        <div className="bg-red-50 dark:bg-red-900/10 p-3 rounded-lg text-center border border-red-100">
                           <div className="text-xl font-black text-red-600">8</div>
-                          <div className="text-[9px] font-bold text-red-700">ABSENT</div>
+                          <div className="text-[11px] font-bold text-red-700">ABSENT</div>
                        </div>
                        <div className="bg-amber-50 dark:bg-amber-900/10 p-3 rounded-lg text-center border border-amber-100">
                           <div className="text-xl font-black text-amber-600">3</div>
-                          <div className="text-[9px] font-bold text-amber-700">FLAGGED</div>
+                          <div className="text-[11px] font-bold text-amber-700">FLAGGED</div>
                        </div>
                     </div>
                  </div>
@@ -145,7 +145,7 @@ const Workforce = () => {
                 <div key={col.title} className="min-w-[280px] flex-1 bg-gray-50 dark:bg-black/10 rounded-xl p-3 border border-black/5">
                   <div className="flex justify-between items-center mb-4 px-1">
                     <h4 className="text-[11px] font-black uppercase text-gray-500">{col.title}</h4>
-                    <span className="bg-gray-200 dark:bg-white/10 px-2 py-0.5 rounded-full text-[10px] font-bold">{col.count}</span>
+                    <span className="bg-gray-200 dark:bg-white/10 px-2 py-0.5 rounded-full text-[11px] font-bold">{col.count}</span>
                   </div>
                   <div className="space-y-3">
                     {col.tasks.map((task, i) => (
@@ -153,7 +153,7 @@ const Workforce = () => {
                         <div className="text-[12px] font-bold mb-1 group-hover:text-[#1A7A4A]">{typeof task === 'string' ? task : task.t}</div>
                         {task.p && (
                           <div className="mt-2">
-                             <div className="flex justify-between text-[10px] mb-1">
+                             <div className="flex justify-between text-[11px] mb-1">
                                 <span className="text-gray-500">{task.w}</span>
                                 <span className="font-bold">{task.p}%</span>
                              </div>
@@ -162,7 +162,7 @@ const Workforce = () => {
                              </div>
                           </div>
                         )}
-                        {!task.p && <div className="text-[10px] text-gray-500">Medium priority · 2.4 ha</div>}
+                        {!task.p && <div className="text-[11px] text-gray-500">Medium priority · 2.4 ha</div>}
                       </div>
                     ))}
                     <button className="w-full flex items-center justify-center gap-2 py-2 border border-dashed border-gray-300 dark:border-white/10 rounded-lg text-[11px] text-gray-500 hover:bg-white dark:hover:bg-white/5 transition-colors">

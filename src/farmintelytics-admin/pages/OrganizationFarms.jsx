@@ -344,7 +344,7 @@ const FarmRow = ({ farm, onDelete, onReupload }) => {
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <span style={{
-          fontSize: '10px', fontWeight: 700, padding: '2px 8px', borderRadius: '6px',
+          fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: '6px',
           background: farm.boundary_uploaded ? 'rgba(22,163,74,0.1)' : 'rgba(239,68,68,0.08)',
           color: farm.boundary_uploaded ? '#16a34a' : '#ef4444',
           border: `1px solid ${farm.boundary_uploaded ? 'rgba(22,163,74,0.2)' : 'rgba(239,68,68,0.15)'}`,

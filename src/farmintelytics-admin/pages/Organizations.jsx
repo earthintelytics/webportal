@@ -217,7 +217,7 @@ const OrgModal = ({ org, onSave, onClose }) => {
     borderRadius: '10px', color: '#0f172a', fontSize: '13px', fontWeight: 500,
     outline: 'none', boxSizing: 'border-box', fontFamily: "'Roboto', sans-serif",
   };
-  const labelStyle = { display: 'block', fontSize: '10px', fontWeight: 800, color: '#475569', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '6px' };
+  const labelStyle = { display: 'block', fontSize: '11px', fontWeight: 800, color: '#475569', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '6px' };
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
@@ -277,7 +277,7 @@ const OrgModal = ({ org, onSave, onClose }) => {
                     transition: 'all 0.15s',
                   }}>
                     <span style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: active ? '#15803d' : '#334155' }}>{m.label}</span>
-                    <span style={{ display: 'block', fontSize: '10px', color: '#64748b', marginTop: '2px', lineHeight: 1.35 }}>{m.desc}</span>
+                    <span style={{ display: 'block', fontSize: '11px', color: '#64748b', marginTop: '2px', lineHeight: 1.35 }}>{m.desc}</span>
                   </button>
                 );
               })}
@@ -373,25 +373,25 @@ const OrgModal = ({ org, onSave, onClose }) => {
               <label style={labelStyle}>Alert Thresholds</label>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                 <div>
-                  <p style={{ color: '#64748b', fontSize: '10px', margin: '0 0 4px' }}>NDVI/SAVI/EVI Drop %</p>
+                  <p style={{ color: '#64748b', fontSize: '11px', margin: '0 0 4px' }}>NDVI/SAVI/EVI Drop %</p>
                   <input type="number" step="0.01" min="0" max="1" style={inputStyle}
                     value={form.alert_ndvi_drop_pct}
                     onChange={e => setForm(f => ({ ...f, alert_ndvi_drop_pct: parseFloat(e.target.value || '0') }))} />
                 </div>
                 <div>
-                  <p style={{ color: '#64748b', fontSize: '10px', margin: '0 0 4px' }}>SMI Critical</p>
+                  <p style={{ color: '#64748b', fontSize: '11px', margin: '0 0 4px' }}>SMI Critical</p>
                   <input type="number" step="0.01" style={inputStyle}
                     value={form.alert_smi_critical}
                     onChange={e => setForm(f => ({ ...f, alert_smi_critical: parseFloat(e.target.value || '0') }))} />
                 </div>
                 <div>
-                  <p style={{ color: '#64748b', fontSize: '10px', margin: '0 0 4px' }}>NDMI Water Stress Critical</p>
+                  <p style={{ color: '#64748b', fontSize: '11px', margin: '0 0 4px' }}>NDMI Water Stress Critical</p>
                   <input type="number" step="0.01" style={inputStyle}
                     value={form.alert_ndmi_water_stress_critical}
                     onChange={e => setForm(f => ({ ...f, alert_ndmi_water_stress_critical: parseFloat(e.target.value || '0') }))} />
                 </div>
                 <div>
-                  <p style={{ color: '#64748b', fontSize: '10px', margin: '0 0 4px' }}>NDVI Health Critical</p>
+                  <p style={{ color: '#64748b', fontSize: '11px', margin: '0 0 4px' }}>NDVI Health Critical</p>
                   <input type="number" step="0.01" style={inputStyle}
                     value={form.alert_ndvi_health_critical}
                     onChange={e => setForm(f => ({ ...f, alert_ndvi_health_critical: parseFloat(e.target.value || '0') }))} />
@@ -558,7 +558,7 @@ const Organizations = () => {
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                 {(org.allowed_crops || []).map(c => (
                   <span key={c} style={{
-                    fontSize: '10px', fontWeight: 700, padding: '2px 8px', borderRadius: '6px',
+                    fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: '6px',
                     background: 'rgba(22,163,74,0.08)', color: '#16a34a',
                     border: '1px solid rgba(22,163,74,0.15)',
                   }}>{CROP_LABELS[c] || c}</span>

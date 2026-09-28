@@ -23,7 +23,7 @@ const SustainabilitySection = () => {
            <SimpleCard title="Shade Intensity" icon={<Trees size={20} />}>
               <div className="p-10 text-center bg-white rounded-3xl border border-gray-100 shadow-sm">
                  <div className="text-5xl font-black text-amber-900 mb-2">42.4<span className="text-xl">%</span></div>
-                 <div className="text-[10px] font-bold text-amber-950 uppercase tracking-widest">Average Canopy Cover</div>
+                 <div className="text-[11px] font-bold text-amber-950 uppercase tracking-widest">Average Canopy Cover</div>
               </div>
            </SimpleCard>
         </div>

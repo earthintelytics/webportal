@@ -57,19 +57,19 @@ const Activity = () => {
     <div className="p-6 space-y-6 overflow-y-auto h-full">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-white/5 p-4 rounded-xl border border-black/5 dark:border-white/5">
-          <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Activities Today</div>
+          <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Activities Today</div>
           <div className="text-2xl font-bold">38</div>
         </div>
         <div className="bg-white dark:bg-white/5 p-4 rounded-xl border border-black/5 dark:border-white/5">
-          <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Pending Approval</div>
+          <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Pending Approval</div>
           <div className="text-2xl font-bold text-amber-600">12</div>
         </div>
         <div className="bg-white dark:bg-white/5 p-4 rounded-xl border border-black/5 dark:border-white/5">
-          <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Approved</div>
+          <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Approved</div>
           <div className="text-2xl font-bold text-green-600">21</div>
         </div>
         <div className="bg-white dark:bg-white/5 p-4 rounded-xl border border-black/5 dark:border-white/5">
-          <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Rejected</div>
+          <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1">Rejected</div>
           <div className="text-2xl font-bold text-red-600">5</div>
         </div>
       </div>
@@ -94,12 +94,12 @@ const Activity = () => {
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-start">
                       <div className="text-[13px] font-bold text-gray-900 dark:text-gray-100 truncate group-hover:text-[#1A7A4A] transition-colors">{item.type} · Block {item.block}</div>
-                      <span className="text-[10px] text-gray-500 font-medium flex items-center gap-1"><Clock size={10} /> {item.time}</span>
+                      <span className="text-[11px] text-gray-500 font-medium flex items-center gap-1"><Clock size={10} /> {item.time}</span>
                     </div>
                     <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-1">{item.worker} · {item.details}</div>
                     <div className="flex flex-wrap gap-2 mt-3">
                       {item.badges.map((b, i) => (
-                        <span key={i} className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full border ${
+                        <span key={i} className={`text-[11px] font-bold px-1.5 py-0.5 rounded-full border ${
                           b.includes('accurate') || b.includes('OK') || b.includes('match') 
                             ? 'bg-green-50 text-green-700 border-green-100' 
                             : 'bg-amber-50 text-amber-700 border-amber-100'

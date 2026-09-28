@@ -81,7 +81,7 @@ const EstimatorSustainability = ({ onBack }) => {
                </div>
                <div>
                   <h1 className="text-lg font-black tracking-tighter leading-none uppercase text-gray-900">Sustainability Estimator <span className="text-gray-400 font-medium ml-1">Center</span></h1>
-                  <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-sky-600 mt-1">Simulation Node: Active</p>
+                  <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-sky-600 mt-1">Simulation Node: Active</p>
                </div>
             </div>
 
@@ -89,7 +89,7 @@ const EstimatorSustainability = ({ onBack }) => {
                <div className="flex items-center gap-4">
                   <div className="text-right">
                      <div className="text-[11px] font-bold text-gray-900 leading-none">{userName}</div>
-                     <div className="text-[9px] font-bold text-sky-600 uppercase tracking-widest mt-1">Sustainability Planner</div>
+                     <div className="text-[11px] font-bold text-sky-600 uppercase tracking-widest mt-1">Sustainability Planner</div>
                   </div>
                   <div className="w-10 h-10 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center overflow-hidden ring-2 ring-sky-50 shadow-sm">
                      <User size={20} className="text-gray-400" />
@@ -101,7 +101,7 @@ const EstimatorSustainability = ({ onBack }) => {
          <div className="flex-1 flex overflow-hidden">
             <aside className="w-72 bg-white border-r border-gray-100 flex flex-col z-[1050]">
                <div className="flex-1 overflow-y-auto p-6 space-y-1.5">
-                  <div className="text-[10px] font-bold text-gray-300 uppercase tracking-[0.3em] px-4 mb-4 italic">Sustainability Menu</div>
+                  <div className="text-[11px] font-bold text-gray-300 uppercase tracking-[0.3em] px-4 mb-4 italic">Sustainability Menu</div>
                   {[
                      { id: 'overview', label: 'Dashboard Hub', icon: <LayoutDashboard /> },
                      { id: 'geospatial', label: 'Geospatial Intel', icon: <MapIcon /> },

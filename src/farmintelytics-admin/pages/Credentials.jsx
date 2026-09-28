@@ -64,7 +64,7 @@ const Credentials = () => {
   };
 
   const inputStyle = { width: '100%', padding: '10px 12px', background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '10px', color: '#1e293b', fontSize: '13px', fontWeight: 500, outline: 'none', boxSizing: 'border-box', fontFamily: "'Roboto', sans-serif" };
-  const labelStyle = { display: 'block', fontSize: '10px', fontWeight: 800, color: '#64748b', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '6px' };
+  const labelStyle = { display: 'block', fontSize: '11px', fontWeight: 800, color: '#64748b', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '6px' };
 
   // Group by company_id
   const grouped = creds.reduce((acc, c) => {
@@ -156,19 +156,19 @@ const Credentials = () => {
                     <div style={{ flex: 1 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                         <span style={{ color: '#1e293b', fontSize: '13px', fontWeight: 600 }}>{cred.full_name ? `${cred.full_name} — ` : ''}{cred.email}</span>
-                        <span style={{ fontSize: '9px', fontWeight: 700, padding: '1px 7px', borderRadius: '5px', background: 'rgba(59,130,246,0.1)', color: '#60a5fa', border: '1px solid rgba(59,130,246,0.15)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>{cred.label}</span>
-                        <span style={{ fontSize: '9px', fontWeight: 700, padding: '1px 7px', borderRadius: '5px', background: 'rgba(22,163,74,0.08)', color: '#16a34a', border: '1px solid rgba(22,163,74,0.15)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>{cred.role || 'admin'}</span>
+                        <span style={{ fontSize: '11px', fontWeight: 700, padding: '1px 7px', borderRadius: '5px', background: 'rgba(59,130,246,0.1)', color: '#60a5fa', border: '1px solid rgba(59,130,246,0.15)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>{cred.label}</span>
+                        <span style={{ fontSize: '11px', fontWeight: 700, padding: '1px 7px', borderRadius: '5px', background: 'rgba(22,163,74,0.08)', color: '#16a34a', border: '1px solid rgba(22,163,74,0.15)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>{cred.role || 'admin'}</span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         {revealed[cred.id] ? (
                           <>
                             <code style={{ fontSize: '12px', color: '#15803d', fontFamily: 'monospace', background: 'rgba(22,163,74,0.08)', padding: '2px 8px', borderRadius: '6px', fontWeight: 700 }}>{revealed[cred.id]}</code>
-                            <span style={{ fontSize: '10px', color: '#ef4444', fontWeight: 600 }}>Copy now — won't be shown again</span>
+                            <span style={{ fontSize: '11px', color: '#ef4444', fontWeight: 600 }}>Copy now — won't be shown again</span>
                           </>
                         ) : (
                           <code style={{ fontSize: '12px', color: '#94a3b8', fontFamily: 'monospace', background: '#ffffff', padding: '2px 8px', borderRadius: '6px', letterSpacing: '2px' }}>••••••••••</code>
                         )}
-                        <span style={{ fontSize: '10px', color: '#475569' }}>Created {new Date(cred.created_at).toLocaleDateString()}</span>
+                        <span style={{ fontSize: '11px', color: '#475569' }}>Created {new Date(cred.created_at).toLocaleDateString()}</span>
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>

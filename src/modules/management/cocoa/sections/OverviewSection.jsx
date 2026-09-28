@@ -17,7 +17,7 @@ const OverviewSection = () => {
                <p className="text-gray-400 font-bold uppercase text-[11px] tracking-[0.2em] mb-4">Fermentation Lab Queue</p>
                <div className="flex justify-center items-center gap-4">
                   <div className="text-3xl font-black text-amber-800">12</div>
-                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Batches Pending</div>
+                  <div className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Batches Pending</div>
                </div>
             </div>
          </SimpleCard>
@@ -26,7 +26,7 @@ const OverviewSection = () => {
                <p className="text-gray-400 font-bold uppercase text-[11px] tracking-[0.2em] mb-4">Harvest Cycle Timeline</p>
                <div className="flex justify-center items-center gap-4">
                   <div className="text-3xl font-black text-amber-600 italic">Phase 2</div>
-                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Mid-Crop Peak</div>
+                  <div className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Mid-Crop Peak</div>
                </div>
             </div>
          </SimpleCard>

@@ -125,9 +125,9 @@ const GroupsMonitoring = ({ onBack, onSignOut }) => {
       { key: 'id', label: 'Cluster ID' },
       { key: 'area', label: 'Area' },
       { key: 'health', label: 'Health Score', render: (val) => <span className={`font-bold ${parseInt(val) < 40 ? 'text-red-500' : 'text-emerald-500'}`}>{val}</span> },
-      { key: 'status', label: 'Status', render: (val) => <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-lg ${val === 'Stressed' ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'}`}>{val}</span> },
+      { key: 'status', label: 'Status', render: (val) => <span className={`text-[11px] font-bold uppercase px-2 py-0.5 rounded-lg ${val === 'Stressed' ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'}`}>{val}</span> },
       { key: 'layman', label: 'Field Summary' },
-      { key: 'action', label: 'Analysis', render: (_, row) => <button onClick={() => { setSelectedPlot(row); setActiveTab('geospatial'); }} className="text-sky-600 font-bold uppercase text-[10px] hover:underline">Drill Down</button> }
+      { key: 'action', label: 'Analysis', render: (_, row) => <button onClick={() => { setSelectedPlot(row); setActiveTab('geospatial'); }} className="text-sky-600 font-bold uppercase text-[11px] hover:underline">Drill Down</button> }
    ];
 
    const renderContent = () => {
@@ -160,14 +160,14 @@ const GroupsMonitoring = ({ onBack, onSignOut }) => {
                <div className="w-11 h-11 bg-gray-900 rounded-xl flex items-center justify-center p-2 shadow-lg ring-4 ring-gray-50"><Satellite className="text-white" size={24} /></div>
                <div>
                   <h1 className="text-lg font-black tracking-tighter leading-none uppercase italic">Smallholder <span className="text-gray-400 font-medium ml-1">Geospatial Intelligence</span></h1>
-                  <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-emerald-600 mt-1 leading-none italic uppercase">Theme: {CONFIG.theme}</p>
+                  <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-600 mt-1 leading-none italic uppercase">Theme: {CONFIG.theme}</p>
                </div>
             </div>
             <div className="flex items-center gap-10">
                <div className="flex items-center gap-4">
                   <div className="text-right">
                      <div className="text-[11px] font-bold text-gray-900 leading-none italic uppercase">{userName}</div>
-                     <div className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest mt-1 italic">Enterprise Auditor</div>
+                     <div className="text-[11px] font-bold text-emerald-600 uppercase tracking-widest mt-1 italic">Enterprise Auditor</div>
                   </div>
                   <div className="w-10 h-10 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center overflow-hidden ring-2 ring-emerald-50 shadow-sm">
                      <User size={20} className="text-gray-400" />
@@ -178,7 +178,7 @@ const GroupsMonitoring = ({ onBack, onSignOut }) => {
          <div className="flex-1 flex overflow-hidden">
             <aside className="sticky top-0 h-screen w-72 bg-white border-r border-gray-100 flex flex-col z-[1050]">
                <div className="flex-1 overflow-y-auto p-6 space-y-1.5">
-                  <div className="text-[10px] font-bold text-gray-300 uppercase tracking-[0.3em] px-4 mb-4 leading-none italic">Analytical Center</div>
+                  <div className="text-[11px] font-bold text-gray-300 uppercase tracking-[0.3em] px-4 mb-4 leading-none italic">Analytical Center</div>
                   {[
                      { id: 'overview', label: 'Operational Center', icon: <LayoutDashboard /> },
                      { id: 'geospatial', label: 'Geospatial Intel', icon: <MapIcon /> },

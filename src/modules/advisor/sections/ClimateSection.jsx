@@ -15,7 +15,7 @@ const ClimateSection = () => {
        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <SimpleCard title="Seasonal Rainfall Model" icon={<Calendar size={20} />}>
              <div className="p-8 text-center bg-blue-50/50 rounded-3xl border border-blue-100">
-                <div className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-4">Current Cycle Status</div>
+                <div className="text-[11px] font-black text-blue-400 uppercase tracking-widest mb-4">Current Cycle Status</div>
                 <div className="text-4xl font-black text-blue-900 italic tracking-tighter">Wet Growing Season</div>
                 <p className="text-[11px] text-blue-600 font-bold mt-2 uppercase tracking-widest leading-none">Optimal for pod development</p>
              </div>
@@ -25,7 +25,7 @@ const ClimateSection = () => {
                 <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
                    <div className="text-[11px] font-black text-emerald-600 uppercase mb-1">Recommended</div>
                    <div className="text-lg font-black text-gray-900">Hybrid Series-4 Cocoa</div>
-                   <p className="text-[10px] text-gray-400 font-bold uppercase mt-1">High drought tolerance · 12-month cycle</p>
+                   <p className="text-[11px] text-gray-400 font-bold uppercase mt-1">High drought tolerance · 12-month cycle</p>
                 </div>
                 <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
                    <div className="text-[11px] font-black text-gray-400 uppercase mb-1">Alternative</div>

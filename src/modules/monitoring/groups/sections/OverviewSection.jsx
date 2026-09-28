@@ -10,7 +10,7 @@ const OverviewSection = ({ dateRange, setDateRange, config }) => {
          <div className="flex items-center gap-4">
             <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400"><Calendar size={20} /></div>
             <div>
-               <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none italic">Theme: {config.theme}</div>
+               <div className="text-[11px] font-bold text-gray-400 uppercase tracking-widest leading-none italic">Theme: {config.theme}</div>
                <select value={dateRange} onChange={(e) => setDateRange(e.target.value)} className="text-lg font-black italic uppercase outline-none bg-transparent cursor-pointer mt-1">
                   <option>Current Season Analytics</option>
                   <option>Historical Time-Series</option>
@@ -29,7 +29,7 @@ const OverviewSection = ({ dateRange, setDateRange, config }) => {
                   {React.cloneElement(kpi.icon, { size: 24 })}
                </div>
                <div>
-                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 italic">{kpi.label}</div>
+                  <div className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1 italic">{kpi.label}</div>
                   <div className="flex items-baseline gap-1">
                      <span className="text-3xl font-black italic tracking-tighter uppercase">{kpi.value}</span>
                      <span className="text-[12px] font-bold text-gray-300">{kpi.unit}</span>

@@ -26,7 +26,7 @@ const SustainabilitySection = ({ carbonData, carbonColumns }) => {
              <SimpleCard title="Energy Recovery" icon={<Wind size={20} />}>
                 <div className="p-10 text-center bg-green-50/30 rounded-3xl border border-green-100 shadow-sm">
                    <div className="text-6xl font-black text-green-600 mb-2 tracking-tighter">88.4<span className="text-xl">%</span></div>
-                   <div className="text-[10px] font-black text-green-700 uppercase tracking-widest leading-loose">Bagasse Co-generation Efficiency</div>
+                   <div className="text-[11px] font-black text-green-700 uppercase tracking-widest leading-loose">Bagasse Co-generation Efficiency</div>
                 </div>
              </SimpleCard>
           </div>

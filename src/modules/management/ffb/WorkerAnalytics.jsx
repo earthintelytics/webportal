@@ -66,9 +66,9 @@ const WorkerAnalytics = () => {
            <div className="flex justify-between items-center mb-8">
               <h3 className="text-lg font-black tracking-tight">Attendance Trend</h3>
               <div className="flex gap-2">
-                 <button className="px-3 py-1 bg-gray-100 dark:bg-white/10 rounded-lg text-[10px] font-bold">Week</button>
-                 <button className="px-3 py-1 text-[10px] font-bold text-gray-400">Month</button>
-                 <button className="px-3 py-1 text-[10px] font-bold text-gray-400">Year</button>
+                 <button className="px-3 py-1 bg-gray-100 dark:bg-white/10 rounded-lg text-[11px] font-bold">Week</button>
+                 <button className="px-3 py-1 text-[11px] font-bold text-gray-400">Month</button>
+                 <button className="px-3 py-1 text-[11px] font-bold text-gray-400">Year</button>
               </div>
            </div>
            
@@ -78,7 +78,7 @@ const WorkerAnalytics = () => {
                    <div key={i} className="flex flex-col items-center gap-4 group">
                       <div className="w-10 bg-[#1A7A4A]/20 rounded-xl relative overflow-hidden transition-all duration-500 hover:bg-[#1A7A4A]/30" style={{ height: '250px' }}>
                          <div className="absolute bottom-0 left-0 right-0 bg-[#1A7A4A] transition-all duration-1000 group-hover:bg-[#145C37] rounded-t-lg" style={{ height: `${v}%` }}></div>
-                         <div className="absolute top-2 left-0 right-0 text-center text-[10px] font-black text-[#1A7A4A] opacity-0 group-hover:opacity-100 transition-opacity">{v}%</div>
+                         <div className="absolute top-2 left-0 right-0 text-center text-[11px] font-black text-[#1A7A4A] opacity-0 group-hover:opacity-100 transition-opacity">{v}%</div>
                       </div>
                       <span className="text-[11px] font-bold text-gray-400">Mon, Tue, Wed, Thu, Fri, Sat, Sun'.split(', ')[i]</span>
                    </div>
@@ -106,7 +106,7 @@ const WorkerAnalytics = () => {
                     </div>
                     <div className="text-right">
                        <div className="text-[14px] font-black text-[#1A7A4A]">{worker.efficiency}%</div>
-                       <div className="text-[10px] text-gray-400 font-bold uppercase">Efficiency</div>
+                       <div className="text-[11px] text-gray-400 font-bold uppercase">Efficiency</div>
                     </div>
                  </div>
               ))}
@@ -118,7 +118,7 @@ const WorkerAnalytics = () => {
                     <div className="p-2 bg-red-100 text-red-600 rounded-lg"><UserX size={16}/></div>
                     <div>
                        <div className="text-[12px] font-black text-red-700">8 Workers Absent</div>
-                       <div className="text-[10px] text-red-600 font-bold">Unexcused today</div>
+                       <div className="text-[11px] text-red-600 font-bold">Unexcused today</div>
                     </div>
                  </div>
                  <button className="p-2 hover:bg-red-200 rounded-lg transition-colors"><ArrowUpRight size={16} className="text-red-700"/></button>

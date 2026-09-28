@@ -85,7 +85,7 @@ const ClimateIntelligence = ({ onSignOut, onBack }) => {
     { key: 'ndre', label: 'NDRE Score', render: (val) => <span className={`font-black ${Number(val) < 0.15 ? 'text-red-500' : 'text-emerald-600'}`}>{val}</span> },
     { key: 'lswi', label: 'LSWI Score', render: (val) => <span className={`font-black ${Number(val) < 0.20 ? 'text-blue-500' : 'text-blue-800'}`}>{val}</span> },
     { key: 'predicted', label: 'Yield Forecast', render: (val) => <span className="text-[13px] font-black text-gray-900 italic">{val}</span> },
-    { key: 'class', label: 'Class', render: (val) => <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-lg ${val === 'Critical Stress' ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'}`}>{val}</span> },
+    { key: 'class', label: 'Class', render: (val) => <span className={`text-[11px] font-black uppercase px-2 py-0.5 rounded-lg ${val === 'Critical Stress' ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'}`}>{val}</span> },
   ];
 
   const renderContent = () => {
@@ -115,7 +115,7 @@ const ClimateIntelligence = ({ onSignOut, onBack }) => {
                   <ArrowLeft size={18} />
                </div>
                <div className="flex flex-col">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 leading-none">Exit to Hub</span>
+                  <span className="text-[11px] font-black uppercase tracking-widest text-gray-400 leading-none">Exit to Hub</span>
                   <span className="text-[14px] font-black tracking-tight mt-1">FarmIntelytics</span>
                </div>
             </button>
@@ -128,7 +128,7 @@ const ClimateIntelligence = ({ onSignOut, onBack }) => {
                </div>
                <div>
                   <h1 className="text-lg font-black tracking-tighter leading-none">Farm Advisor <span className="text-gray-400 italic font-medium ml-1">Decision Support</span></h1>
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-600 mt-1">Agronomic Core: Active</p>
+                  <p className="text-[11px] font-black uppercase tracking-[0.2em] text-orange-600 mt-1">Agronomic Core: Active</p>
                </div>
             </div>
          </div>
@@ -137,7 +137,7 @@ const ClimateIntelligence = ({ onSignOut, onBack }) => {
             <div className="flex items-center gap-4">
                <div className="text-right">
                   <div className="text-[11px] font-black text-gray-900 leading-none">{userName}</div>
-                  <div className="text-[9px] font-black text-orange-600 uppercase tracking-widest mt-1">Agronomist</div>
+                  <div className="text-[11px] font-black text-orange-600 uppercase tracking-widest mt-1">Agronomist</div>
                </div>
                <div className="w-10 h-10 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center overflow-hidden ring-2 ring-orange-50">
                   <User size={20} className="text-gray-400" />
@@ -150,7 +150,7 @@ const ClimateIntelligence = ({ onSignOut, onBack }) => {
          {/* Sidebar Navigation */}
          <aside className="w-80 bg-white border-r border-gray-100 flex flex-col z-[1050] shadow-2xl">
             <div className="flex-1 overflow-y-auto p-6 space-y-2">
-               <div className="text-[10px] font-black text-gray-300 uppercase tracking-[0.3em] px-4 mb-4 italic">Advisory Menu</div>
+               <div className="text-[11px] font-black text-gray-300 uppercase tracking-[0.3em] px-4 mb-4 italic">Advisory Menu</div>
                {[
                  { id: 'weather', label: 'Adaptive Weather', icon: <CloudRain size={18}/> },
                  { id: 'climate', label: 'Long-term Climate', icon: <Globe size={18}/> },

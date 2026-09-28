@@ -16,12 +16,12 @@ const Sidebar = ({ activeSection, setActiveSection, currentCrop, onSignOut }) =>
         </div>
         <div className="text-center mt-3">
           <div className="font-black text-[15px] uppercase tracking-tighter text-gray-900">FarmIntelytics</div>
-          <div className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-1">Management Node</div>
+          <div className="text-[11px] text-gray-400 font-bold uppercase tracking-widest mt-1">Management Node</div>
         </div>
       </div>
 
       <div className="flex-1 px-4 space-y-1 mt-4">
-        <label className="text-[9px] font-black text-gray-300 uppercase tracking-[0.2em] px-4 mb-3 block">Navigation</label>
+        <label className="text-[11px] font-black text-gray-300 uppercase tracking-[0.2em] px-4 mb-3 block">Navigation</label>
         {menuItems.map(item => (
           <button
             key={item.id}
@@ -51,7 +51,7 @@ const Sidebar = ({ activeSection, setActiveSection, currentCrop, onSignOut }) =>
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-[12px] font-black text-gray-900 truncate uppercase tracking-tighter">{currentCrop.name}</div>
-            <div className="text-[9px] text-gray-400 font-bold uppercase">Active Division</div>
+            <div className="text-[11px] text-gray-400 font-bold uppercase">Active Division</div>
           </div>
         </div>
 

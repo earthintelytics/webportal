@@ -20,7 +20,7 @@ export const SimpleCard = ({ children, title, subtitle, icon, className = "", he
         {icon && <div className="p-2 bg-gray-50 rounded-lg text-green-600">{icon}</div>}
         <div>
           {title && <h3 className="font-black text-gray-900 text-[15px] tracking-tight leading-none mb-1">{title}</h3>}
-          {subtitle && <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest">{subtitle}</p>}
+          {subtitle && <p className="text-gray-400 text-[11px] font-bold uppercase tracking-widest">{subtitle}</p>}
         </div>
       </div>
       {headerAction ? headerAction : (
@@ -75,7 +75,7 @@ export const EvidenceThumbnail = ({ src, alt = "evidence" }) => (
 );
 
 export const LocationBadge = ({ lat, lng }) => (
-  <div className="flex items-center gap-1.5 text-[10px] font-bold text-gray-400 bg-gray-50 px-2 py-1 rounded-md border border-gray-100">
+  <div className="flex items-center gap-1.5 text-[11px] font-bold text-gray-400 bg-gray-50 px-2 py-1 rounded-md border border-gray-100">
     <Navigation size={10} className="text-blue-500 rotate-45" />
     {lat.toFixed(4)}, {lng.toFixed(4)}
   </div>
@@ -87,7 +87,7 @@ export const WorkerActivityTable = ({ data, columns }) => (
       <thead>
         <tr className="border-b border-gray-100 bg-gray-50/50">
           {columns.map(col => (
-            <th key={col.key} className="text-[10px] font-black uppercase tracking-widest text-gray-400 py-4 px-6 border-r border-gray-100 last:border-r-0">{col.label}</th>
+            <th key={col.key} className="text-[11px] font-black uppercase tracking-widest text-gray-400 py-4 px-6 border-r border-gray-100 last:border-r-0">{col.label}</th>
           ))}
         </tr>
       </thead>
@@ -128,7 +128,7 @@ export const GeospatialPreview = ({ title, status, points, full = false }) => (
           <span className="text-[11px] font-black uppercase tracking-widest text-gray-900">{title}</span>
        </div>
        <div className="flex flex-col gap-1 p-3 bg-white/90 rounded-xl border border-gray-100 shadow-sm w-48">
-          <div className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Map Layers</div>
+          <div className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2">Map Layers</div>
           {[
             { label: 'Active Plots', color: 'bg-green-500' },
             { label: 'Maintenance Zones', color: 'bg-orange-500' },
@@ -136,7 +136,7 @@ export const GeospatialPreview = ({ title, status, points, full = false }) => (
           ].map(item => (
             <div key={item.label} className="flex items-center gap-2 mb-1">
                <div className={`w-2 h-2 rounded-full ${item.color}`}></div>
-               <span className="text-[10px] font-bold text-gray-600">{item.label}</span>
+               <span className="text-[11px] font-bold text-gray-600">{item.label}</span>
             </div>
           ))}
        </div>
@@ -150,7 +150,7 @@ export const GeospatialPreview = ({ title, status, points, full = false }) => (
               className="absolute w-4 h-4 rounded-full border-2 border-white shadow-sm cursor-pointer hover:scale-125 transition-transform"
               style={{ top: p.y, left: p.x, backgroundColor: p.color || '#16A34A' }}
             >
-               <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg whitespace-nowrap opacity-0 hover:opacity-100 transition-opacity">
+               <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[11px] font-bold px-2 py-1 rounded shadow-lg whitespace-nowrap opacity-0 hover:opacity-100 transition-opacity">
                  {p.label}
                </div>
             </div>
@@ -158,8 +158,8 @@ export const GeospatialPreview = ({ title, status, points, full = false }) => (
        </div>
     </div>
     
-    <div className="absolute bottom-6 right-6 flex items-center gap-2 px-3 py-1.5 bg-gray-900/80 text-white rounded-lg text-[9px] font-black uppercase tracking-[0.2em]">
-      <div className="w-1 h-1 rounded-full bg-green-400 animate-pulse"></div>
+    <div className="absolute bottom-6 right-6 flex items-center gap-2 px-3 py-1.5 bg-gray-900/80 text-white rounded-lg text-[11px] font-black uppercase tracking-[0.2em]">
+      <div className="w-1 h-1 rounded-full bg-status-live animate-pulse"></div>
       Live Ops Stream
     </div>
   </div>
@@ -167,7 +167,7 @@ export const GeospatialPreview = ({ title, status, points, full = false }) => (
 
 export const MetricTile = ({ label, value, unit, trend, color = "bg-green-600" }) => (
   <div className="bg-white p-6 rounded-2xl border border-gray-100">
-    <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">{label}</div>
+    <div className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3">{label}</div>
     <div className="flex items-baseline gap-2 mb-2">
       <div className="text-3xl font-black text-gray-900 tracking-tighter italic">{value}</div>
       {unit && <div className="text-sm font-bold text-gray-400">{unit}</div>}

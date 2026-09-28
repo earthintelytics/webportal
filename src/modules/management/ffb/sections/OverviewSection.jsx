@@ -14,11 +14,11 @@ const OverviewSection = () => {
          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <SimpleCard title="Conservation Status" icon={<Leaf size={20} />}>
                <div className="text-4xl font-black text-green-600 mb-4 tracking-tighter">555,200 <span className="text-sm font-bold text-gray-300">tCO2e</span></div>
-               <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Carbon Sequestered</div>
+               <div className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Total Carbon Sequestered</div>
             </SimpleCard>
             <SimpleCard title="Detection Trends" icon={<Activity size={20} />}>
                <div className="p-10 text-center border-2 border-dashed border-gray-50 rounded-3xl">
-                  <p className="text-gray-400 font-bold uppercase text-[10px] tracking-[0.2em]">Computer Vision Insights</p>
+                  <p className="text-gray-400 font-bold uppercase text-[11px] tracking-[0.2em]">Computer Vision Insights</p>
                </div>
             </SimpleCard>
          </div>

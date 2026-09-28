@@ -26,7 +26,7 @@ const SustainabilitySection = ({ carbonData, carbonColumns }) => {
            <SimpleCard title="Forestry Health" icon={<Trees size={20} />}>
               <div className="p-10 text-center bg-white rounded-3xl border border-gray-100 shadow-sm">
                  <div className="text-5xl font-black text-emerald-600 mb-2">98.4<span className="text-xl">%</span></div>
-                 <div className="text-[10px] font-bold text-emerald-700 uppercase tracking-widest">Canopy Integrity Index</div>
+                 <div className="text-[11px] font-bold text-emerald-700 uppercase tracking-widest">Canopy Integrity Index</div>
               </div>
            </SimpleCard>
         </div>

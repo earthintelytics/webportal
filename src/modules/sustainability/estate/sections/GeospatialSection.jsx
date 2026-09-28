@@ -17,7 +17,7 @@ const GeospatialSection = ({ activeLayer, setActiveLayer }) => {
                 <div className="bg-white/90 backdrop-blur-md px-6 py-3 rounded-2xl border border-white shadow-xl flex items-center gap-6">
                    <Satellite size={18} className="text-emerald-600" />
                    <div>
-                      <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400">Active Layer</div>
+                      <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-400">Active Layer</div>
                       <div className="text-[12px] font-bold text-gray-900 leading-none">{activeLayer}</div>
                    </div>
                 </div>

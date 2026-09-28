@@ -44,7 +44,7 @@ const GroupsDashboard = ({ onSignOut, onBack }) => {
                </div>
                <div>
                   <h1 className="text-lg font-black tracking-tighter leading-none uppercase text-gray-900">Groups <span className="text-emerald-600 ml-1">Management</span></h1>
-                  <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400 mt-1">Smallholder Hub · Active</p>
+                  <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-400 mt-1">Smallholder Hub · Active</p>
                </div>
             </div>
 
@@ -52,7 +52,7 @@ const GroupsDashboard = ({ onSignOut, onBack }) => {
                <div className="flex items-center gap-4">
                   <div className="text-right">
                      <div className="text-[11px] font-bold text-gray-900">{userName}</div>
-                     <div className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest mt-1">Lead Coordinator</div>
+                     <div className="text-[11px] font-bold text-emerald-600 uppercase tracking-widest mt-1">Lead Coordinator</div>
                   </div>
                   <div className="w-10 h-10 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center overflow-hidden">
                      <User size={20} className="text-gray-400" />
@@ -70,7 +70,7 @@ const GroupsDashboard = ({ onSignOut, onBack }) => {
          <div className="flex-1 flex overflow-hidden">
             <aside className="w-72 bg-white border-r border-gray-100 flex flex-col z-[1050]">
                <div className="flex-1 overflow-y-auto p-6 space-y-1.5">
-                  <div className="text-[10px] font-bold text-gray-300 uppercase tracking-[0.3em] px-4 mb-4 italic">Management Menu</div>
+                  <div className="text-[11px] font-bold text-gray-300 uppercase tracking-[0.3em] px-4 mb-4 italic">Management Menu</div>
                   {[
                      { id: 'overview', label: 'Cluster Hub', icon: <LayoutDashboard /> },
                      { id: 'geospatial', label: 'Spatial Intel', icon: <Globe /> },

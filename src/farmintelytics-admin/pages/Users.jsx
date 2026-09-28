@@ -30,7 +30,7 @@ const TypeBadge = ({ type }) => {
   const cfg = TYPE_CFG[type] || TYPE_CFG.personal;
   return (
     <span style={{
-      fontSize: '10px', fontWeight: 800, padding: '2px 10px',
+      fontSize: '11px', fontWeight: 800, padding: '2px 10px',
       borderRadius: '20px', textTransform: 'uppercase', letterSpacing: '0.06em',
       color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.color}33`,
     }}>{cfg.label}</span>
@@ -154,7 +154,7 @@ const UsersPage = () => {
     color: '#1e293b', fontSize: '13px', outline: 'none', boxSizing: 'border-box',
   };
   const lbl = {
-    display: 'block', fontSize: '10px', fontWeight: 800, color: '#64748b',
+    display: 'block', fontSize: '11px', fontWeight: 800, color: '#64748b',
     letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '5px',
   };
 
@@ -289,7 +289,7 @@ const UsersPage = () => {
       <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '14px', overflow: 'hidden' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 140px 130px 80px 140px 120px', padding: '10px 16px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
           {['User', 'Account Type', 'Auth', 'Status', 'Joined', 'Actions'].map(h => (
-            <span key={h} style={{ fontSize: '10px', fontWeight: 800, color: '#64748b', letterSpacing: '0.1em', textTransform: 'uppercase' }}>{h}</span>
+            <span key={h} style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', letterSpacing: '0.1em', textTransform: 'uppercase' }}>{h}</span>
           ))}
         </div>
         {loading ? (
@@ -307,7 +307,7 @@ const UsersPage = () => {
                 <div>
                   <div style={{ fontSize: '13px', fontWeight: 700, color: '#0f172a' }}>{user.first_name || user.last_name ? `${user.first_name} ${user.last_name}`.trim() : '—'}</div>
                   <div style={{ fontSize: '11px', color: '#64748b', marginTop: '1px' }}>{user.email}</div>
-                  {user.is_staff && <span style={{ fontSize: '9px', fontWeight: 800, color: '#7c3aed', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Django Staff</span>}
+                  {user.is_staff && <span style={{ fontSize: '11px', fontWeight: 800, color: '#7c3aed', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Django Staff</span>}
                 </div>
                 <TypeBadge type={user.account_type} />
                 <span style={{ fontSize: '11px', color: '#64748b', fontFamily: 'monospace', textTransform: 'capitalize' }}>{user.auth_provider || 'email'}</span>

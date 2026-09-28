@@ -18,7 +18,7 @@ const OverviewSection = () => {
          </SimpleCard>
          <SimpleCard title="Temporal Sequestration Trend" icon={<BarChart4 size={20} />}>
             <div className="p-10 text-center bg-white rounded-3xl border border-gray-100 shadow-sm h-full flex flex-col items-center justify-center">
-               <p className="text-gray-400 font-bold uppercase text-[10px] tracking-[0.3em]">Group Sequestration Charting</p>
+               <p className="text-gray-400 font-bold uppercase text-[11px] tracking-[0.3em]">Group Sequestration Charting</p>
                <div className="text-2xl font-black text-emerald-600 mt-4">+14.4% vs L.Y.</div>
             </div>
          </SimpleCard>

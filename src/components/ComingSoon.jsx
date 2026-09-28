@@ -16,7 +16,7 @@ const ComingSoon = ({ title, description, onSignOut }) => {
           </div>
           <div>
             <h1 className="text-lg font-black uppercase tracking-tight text-black leading-none">{title}</h1>
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 mt-1 italic">Intelligence Module in Development</p>
+            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-400 mt-1 italic">Intelligence Module in Development</p>
           </div>
         </div>
         <button 
@@ -43,7 +43,7 @@ const ComingSoon = ({ title, description, onSignOut }) => {
       </main>
 
       <footer className="py-8 border-t border-gray-100 bg-white flex flex-col items-center">
-        <div className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-200">Powered by Farmintelytics · Node v4.28 Alpha</div>
+        <div className="text-[11px] font-black uppercase tracking-[0.3em] text-gray-200">Powered by Farmintelytics · Node v4.28 Alpha</div>
       </footer>
     </div>
   );

@@ -14,7 +14,7 @@ import {
 const KPICard = ({ icon, label, value, delta, deltaType, valueColor }) => (
   <div className="bg-white dark:bg-white/5 p-4 rounded-xl border border-black/5 dark:border-white/5 relative">
     <div className="absolute top-3 right-3 text-gray-300 dark:text-white/10">{icon}</div>
-    <div className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{label}</div>
+    <div className="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{label}</div>
     <div className={`text-2xl font-bold ${valueColor || 'text-gray-900 dark:text-white'}`}>{value}</div>
     <div className={`text-[10.5px] mt-1 font-medium flex items-center gap-1 ${
       deltaType === 'up' ? 'text-green-600' : deltaType === 'down' ? 'text-red-600' : 'text-gray-500'
@@ -71,7 +71,7 @@ const Identity = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-[12px]">
               <thead>
-                <tr className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-black/5 dark:border-white/5">
+                <tr className="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-black/5 dark:border-white/5">
                   <th className="py-3 px-2">Worker</th>
                   <th className="py-3 px-2">Block</th>
                   <th className="py-3 px-2">Biometric</th>
@@ -85,20 +85,20 @@ const Identity = () => {
                   <tr key={i} className="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group">
                     <td className="py-3 px-2">
                       <div className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-[10px] ${
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-[11px] ${
                           worker.flagged ? 'bg-red-100 text-red-600' : 'bg-green-100 text-[#1A7A4A]'
                         }`}>
                           {worker.initials}
                         </div>
                         <div>
                           <div className="font-bold text-gray-900 dark:text-gray-100">{worker.name}</div>
-                          <div className="text-[10px] text-gray-500">{worker.id}</div>
+                          <div className="text-[11px] text-gray-500">{worker.id}</div>
                         </div>
                       </div>
                     </td>
                     <td className="py-3 px-2 font-medium">{worker.block}</td>
                     <td className="py-3 px-2">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                      <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${
                         worker.biometric === 'Verified' ? 'bg-green-100 text-green-700 dark:bg-green-900/30' :
                         worker.biometric === 'Flagged' ? 'bg-red-100 text-red-700 dark:bg-red-900/30' :
                         'bg-amber-100 text-amber-700 dark:bg-amber-900/30'
@@ -107,7 +107,7 @@ const Identity = () => {
                       </span>
                     </td>
                     <td className="py-3 px-2">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                      <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${
                         worker.kyc === 'Complete' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30' : 'bg-gray-100 text-gray-700 dark:bg-gray-900/30'
                       }`}>
                         {worker.kyc}
@@ -117,7 +117,7 @@ const Identity = () => {
                     <td className="py-3 px-2">
                       <div className="flex items-center gap-1.5">
                         <span className={`w-1.5 h-1.5 rounded-full ${
-                          worker.status === 'Active' ? 'bg-green-500 animate-pulse' :
+                          worker.status === 'Active' ? 'bg-status-good' :
                           worker.status === 'Review' ? 'bg-red-500' : 'bg-gray-400'
                         }`}></span>
                         <span className="font-medium">{worker.status}</span>
@@ -146,14 +146,14 @@ const Identity = () => {
               <div className="text-[12px] font-bold text-red-600 mb-3">Ghost Worker Attempt — Block C3</div>
               <div className="grid grid-cols-2 gap-3 mb-4">
                 <div className="bg-white dark:bg-black/20 p-2.5 rounded-lg border border-black/5">
-                  <div className="text-[9px] font-bold text-gray-500 uppercase mb-1">Existing</div>
+                  <div className="text-[11px] font-bold text-gray-500 uppercase mb-1">Existing</div>
                   <div className="text-[11px] font-bold truncate">Worker #C3-0024</div>
-                  <div className="text-[10px] text-gray-500">Block F3 · Verified</div>
+                  <div className="text-[11px] text-gray-500">Block F3 · Verified</div>
                 </div>
                 <div className="bg-white dark:bg-black/20 p-2.5 rounded-lg border border-black/5">
-                  <div className="text-[9px] font-bold text-red-500 uppercase mb-1">New Attempt</div>
+                  <div className="text-[11px] font-bold text-red-500 uppercase mb-1">New Attempt</div>
                   <div className="text-[11px] font-bold truncate">Worker #C3-0089</div>
-                  <div className="text-[10px] text-red-500">AFIS Score: 0.94</div>
+                  <div className="text-[11px] text-red-500">AFIS Score: 0.94</div>
                 </div>
               </div>
               <div className="flex gap-2">

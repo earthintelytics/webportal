@@ -18,7 +18,7 @@ const OverviewSection = () => {
          </SimpleCard>
          <SimpleCard title="Projected Payback Period" icon={<BarChart4 size={20} />}>
             <div className="p-10 text-center bg-white rounded-3xl border border-gray-100 shadow-sm h-full flex flex-col items-center justify-center">
-               <p className="text-gray-400 font-bold uppercase text-[10px] tracking-[0.3em]">Economic Viability</p>
+               <p className="text-gray-400 font-bold uppercase text-[11px] tracking-[0.3em]">Economic Viability</p>
                <div className="text-2xl font-black text-sky-600 mt-4">4.2 YEARS</div>
             </div>
          </SimpleCard>

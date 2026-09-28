@@ -76,7 +76,7 @@ const EstimatorPortal = (props) => {
             <GISSidebar title="Simulator Controls" icon={<Settings size={18} />}>
                <div className="space-y-6">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Target Area (HA)</label>
+                    <label className="text-[11px] font-black text-gray-500 uppercase tracking-widest">Target Area (HA)</label>
                     <input 
                       type="number" 
                       name="area"
@@ -87,7 +87,7 @@ const EstimatorPortal = (props) => {
                   </div>
                   
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Ecosystem Class</label>
+                    <label className="text-[11px] font-black text-gray-500 uppercase tracking-widest">Ecosystem Class</label>
                     <select 
                       name="category"
                       value={inputs.category}
@@ -101,7 +101,7 @@ const EstimatorPortal = (props) => {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Management Protocol</label>
+                    <label className="text-[11px] font-black text-gray-500 uppercase tracking-widest">Management Protocol</label>
                     <select 
                       name="practice"
                       value={inputs.practice}
@@ -128,21 +128,21 @@ const EstimatorPortal = (props) => {
                 <FloatingMetric label="Baseline Stock" value={Math.round(results.currentStock).toLocaleString()} unit="tCO2e" icon={<Database size={16}/>} />
                 <div className="gis-glass p-8 rounded-[2rem] w-80">
                    <div className="flex items-center justify-between mb-6">
-                      <span className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.2em]">Projection Outcome</span>
+                      <span className="text-[11px] font-black text-emerald-500 uppercase tracking-[0.2em]">Projection Outcome</span>
                       <Download size={14} className="text-gray-500" />
                    </div>
                    <h3 className="text-4xl font-black text-white tracking-tighter">
                       {Math.round(results.totalAtEnd).toLocaleString()} <span className="text-lg text-gray-500">t</span>
                    </h3>
-                   <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mt-2">Total Carbon in {inputs.years} Years</p>
+                   <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest mt-2">Total Carbon in {inputs.years} Years</p>
                    
                    <div className="mt-8 pt-8 border-t border-white/5 space-y-4">
                       <div className="flex justify-between">
-                         <span className="text-[10px] font-bold text-gray-400 uppercase">Annual Gain</span>
+                         <span className="text-[11px] font-bold text-gray-400 uppercase">Annual Gain</span>
                          <span className="text-[12px] font-black text-emerald-500">+{Math.round(results.projectedSequestration / inputs.years).toLocaleString()} t/yr</span>
                       </div>
                       <div className="flex justify-between">
-                         <span className="text-[10px] font-bold text-gray-400 uppercase">Carbon Fraction</span>
+                         <span className="text-[11px] font-bold text-gray-400 uppercase">Carbon Fraction</span>
                          <span className="text-[12px] font-black text-white">{CARBON_FRACTION}</span>
                       </div>
                    </div>

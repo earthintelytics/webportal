@@ -20,7 +20,7 @@ const inputStyle = {
   borderRadius: '8px', color: '#0f172a', fontSize: '12px', fontWeight: 600,
   outline: 'none', boxSizing: 'border-box', fontFamily: "'Roboto', sans-serif",
 };
-const labelStyle = { display: 'block', fontSize: '10px', fontWeight: 800, color: '#475569', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '6px' };
+const labelStyle = { display: 'block', fontSize: '11px', fontWeight: 800, color: '#475569', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '6px' };
 
 const IndexCard = ({ item, cropType, companyId, onSaved, onError }) => {
   const confirm = useConfirm();
@@ -95,14 +95,14 @@ const IndexCard = ({ item, cropType, companyId, onSaved, onError }) => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a' }}>{item.label}</span>
             {item.calibrated
-              ? <span style={{ fontSize: '9px', fontWeight: 800, padding: '2px 7px', borderRadius: '6px', background: 'rgba(22,163,74,0.1)', color: '#16a34a', border: '1px solid rgba(22,163,74,0.2)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Calibrated</span>
-              : <span style={{ fontSize: '9px', fontWeight: 800, padding: '2px 7px', borderRadius: '6px', background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Platform default</span>}
+              ? <span style={{ fontSize: '11px', fontWeight: 800, padding: '2px 7px', borderRadius: '6px', background: 'rgba(22,163,74,0.1)', color: '#16a34a', border: '1px solid rgba(22,163,74,0.2)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Calibrated</span>
+              : <span style={{ fontSize: '11px', fontWeight: 800, padding: '2px 7px', borderRadius: '6px', background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Platform default</span>}
           </div>
           <div style={{ fontSize: '11px', color: '#64748b', marginTop: '3px' }}>
             {item.crop_label ? `${item.crop_label} — ` : ''}{item.full}
           </div>
           {item.formula && (
-            <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: '3px', fontFamily: 'monospace' }}>{item.formula}</div>
+            <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '3px', fontFamily: 'monospace' }}>{item.formula}</div>
           )}
         </div>
         <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>

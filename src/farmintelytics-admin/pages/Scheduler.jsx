@@ -57,7 +57,7 @@ const JobModal = ({ job, configs, onSave, onClose }) => {
     borderRadius: '10px', color: '#1e293b', fontSize: '13px', fontWeight: 500,
     outline: 'none', boxSizing: 'border-box', fontFamily: "'Roboto', sans-serif"
   };
-  const labelStyle = { display: 'block', fontSize: '10px', fontWeight: 800, color: '#64748b', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '6px' };
+  const labelStyle = { display: 'block', fontSize: '11px', fontWeight: 800, color: '#64748b', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '6px' };
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
@@ -94,7 +94,7 @@ const JobModal = ({ job, configs, onSave, onClose }) => {
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '6px' }}>
               {COMMON_Schedules.map(sch => (
                 <button key={sch.cron} onClick={() => setForm(f => ({ ...f, cron: sch.cron }))} style={{
-                  fontSize: '10px', fontWeight: 700, padding: '2px 8px', background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '6px', color: '#475569', cursor: 'pointer'
+                  fontSize: '11px', fontWeight: 700, padding: '2px 8px', background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '6px', color: '#475569', cursor: 'pointer'
                 }}>{sch.label}</button>
               ))}
             </div>
@@ -220,7 +220,7 @@ const Scheduler = () => {
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ color: '#1e293b', fontSize: '14px', fontWeight: 700 }}>{job.name}</span>
-                    <span style={{ fontSize: '9px', fontWeight: 800, padding: '1px 6px', borderRadius: '5px', background: '#ffffff', color: '#334155', border: '1px solid #e2e8f0' }}>{job.config_path.replace('configs/', '')}</span>
+                    <span style={{ fontSize: '11px', fontWeight: 800, padding: '1px 6px', borderRadius: '5px', background: '#ffffff', color: '#334155', border: '1px solid #e2e8f0' }}>{job.config_path.replace('configs/', '')}</span>
                   </div>
                   <p style={{ color: '#475569', fontSize: '12px', margin: '4px 0 0' }}>{job.description || 'No description provided.'}</p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px' }}>

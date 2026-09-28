@@ -72,7 +72,7 @@ const AdminPortal = () => {
           {sidebarOpen && (
             <div>
               <div style={{ color: '#0f172a', fontSize: '13px', fontWeight: 900, letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>FarmIntelytics</div>
-              <div style={{ color: '#16a34a', fontSize: '9px', fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase' }}>Admin Console</div>
+              <div style={{ color: '#16a34a', fontSize: '11px', fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase' }}>Admin Console</div>
             </div>
           )}
         </div>
@@ -119,7 +119,7 @@ const AdminPortal = () => {
               padding: '10px 12px', marginBottom: '4px',
               borderRadius: '10px', background: '#f8fafc',
             }}>
-              <div style={{ fontSize: '10px', color: '#64748b', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Logged in as</div>
+              <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Logged in as</div>
               <div style={{ fontSize: '12px', color: '#334155', fontWeight: 600, marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{adminEmail}</div>
             </div>
           )}

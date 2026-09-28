@@ -23,7 +23,7 @@ const StatusBadge = ({ status }) => {
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center', gap: '4px',
-      fontSize: '10px', fontWeight: 800, padding: '3px 10px',
+      fontSize: '11px', fontWeight: 800, padding: '3px 10px',
       borderRadius: '20px', textTransform: 'uppercase', letterSpacing: '0.06em',
       color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.border}`,
     }}>
@@ -80,7 +80,7 @@ const PipelineLogRow = ({ log, idx, onOpen, highlighted }) => {
           </span>
           <StatusBadge status={status} />
           {log.job_name && (
-            <span style={{ fontSize: '10px', fontWeight: 700, color: '#7c3aed',
+            <span style={{ fontSize: '11px', fontWeight: 700, color: '#7c3aed',
               background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.2)',
               padding: '2px 8px', borderRadius: '8px', flexShrink: 0 }}>
               {log.job_name}
@@ -292,7 +292,7 @@ const Logs = () => {
           <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '14px', overflow: 'hidden' }}>
             <div style={{ display: 'grid', gridTemplateColumns: '56px 1fr 120px 130px 100px 160px 1fr', padding: '10px 16px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
               {['ID', 'Plot', 'Sensor', 'Status', 'Date', 'Completed At', 'Error Detail'].map(h => (
-                <span key={h} style={{ fontSize: '10px', fontWeight: 800, color: '#64748b', letterSpacing: '0.1em', textTransform: 'uppercase' }}>{h}</span>
+                <span key={h} style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', letterSpacing: '0.1em', textTransform: 'uppercase' }}>{h}</span>
               ))}
             </div>
             {loading ? (

@@ -15,7 +15,7 @@ const OverviewSection = () => {
          <SimpleCard title="Sustainability Index" icon={<Leaf size={20} />}>
             <div className="p-10 bg-white rounded-3xl border border-gray-100 shadow-sm">
                <div className="text-5xl font-black text-cyan-600 mb-2 tracking-tighter">227,400 <span className="text-xl font-bold text-gray-300">tCO2e</span></div>
-               <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Carbon Reserved</div>
+               <div className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Total Carbon Reserved</div>
             </div>
          </SimpleCard>
          <SimpleCard title="Efficiency Trends" icon={<Activity size={20} />}>

@@ -79,7 +79,7 @@ const Geospatial = () => {
 
              <div className="absolute bottom-8 right-8">
                 <div className="bg-white/90 dark:bg-black/80 backdrop-blur-md p-5 rounded-3xl border border-white/20 shadow-2xl w-64">
-                   <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4">Legend: NDVI Index</div>
+                   <div className="text-[11px] font-black text-gray-500 uppercase tracking-widest mb-4">Legend: NDVI Index</div>
                    <div className="space-y-3">
                       <div className="flex items-center justify-between text-[11px] font-bold">
                          <span className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm bg-green-700"></div> Very Healthy</span>
@@ -124,7 +124,7 @@ const Geospatial = () => {
                     <div key={block.id} className="p-4 bg-gray-50 dark:bg-black/20 rounded-2xl border border-black/5 hover:border-[#1A7A4A]/30 transition-all cursor-pointer group">
                        <div className="flex justify-between items-start mb-2">
                           <div className="font-black text-lg group-hover:text-[#1A7A4A] transition-colors">{block.id}</div>
-                          <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${block.critical ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-700'}`}>{block.status}</span>
+                          <span className={`text-[11px] font-black uppercase px-2 py-0.5 rounded-full ${block.critical ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-700'}`}>{block.status}</span>
                        </div>
                        <div className="flex justify-between text-[11px] font-bold text-gray-500 mb-2">
                           <span>{block.hectares} Hectares</span>

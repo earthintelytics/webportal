@@ -9,7 +9,7 @@ const PortfolioSection = () => {
              <Landmark size={32} className="text-gray-300" />
           </div>
           <h3 className="text-2xl font-black italic uppercase tracking-tighter text-gray-900 mb-2">Portfolio Node Management</h3>
-          <p className="text-gray-400 font-bold uppercase text-[10px] tracking-[0.3em] max-w-md">Comprehensive asset classification and reserve fund allocation layer</p>
+          <p className="text-gray-400 font-bold uppercase text-[11px] tracking-[0.3em] max-w-md">Comprehensive asset classification and reserve fund allocation layer</p>
        </div>
     </div>
   );

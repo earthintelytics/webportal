@@ -64,7 +64,7 @@ const ForestryPortal = (props) => {
                   <div className="p-5 rounded-2xl bg-white/5 border border-white/10">
                      <div className="flex items-center gap-2 mb-4">
                         <AlertCircle size={14} className="text-red-500" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-white">Disturbance Events</span>
+                        <span className="text-[11px] font-black uppercase tracking-widest text-white">Disturbance Events</span>
                      </div>
                      <div className="space-y-3">
                         {[
@@ -74,9 +74,9 @@ const ForestryPortal = (props) => {
                           <div key={i} className="flex items-center justify-between p-3 bg-red-500/10 rounded-xl border border-red-500/20">
                              <div>
                                 <p className="text-[11px] font-bold text-red-400">{item.event}</p>
-                                <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest">{item.area}</p>
+                                <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest">{item.area}</p>
                              </div>
-                             <span className="text-[9px] font-black text-white uppercase tracking-widest">{item.severity}</span>
+                             <span className="text-[11px] font-black text-white uppercase tracking-widest">{item.severity}</span>
                           </div>
                         ))}
                      </div>
@@ -84,12 +84,12 @@ const ForestryPortal = (props) => {
 
                   <div className="p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Sink Rate</span>
+                        <span className="text-[11px] font-black text-emerald-500 uppercase tracking-widest">Sink Rate</span>
                         <TrendingUp size={14} className="text-emerald-500" />
                      </div>
                      <div className="flex items-baseline gap-2">
                         <span className="text-2xl font-black text-white leading-none">12.8</span>
-                        <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">t/ha/yr</span>
+                        <span className="text-[11px] font-black text-emerald-400 uppercase tracking-widest">t/ha/yr</span>
                      </div>
                   </div>
                </div>
@@ -98,12 +98,12 @@ const ForestryPortal = (props) => {
 
           <div className="absolute left-8 bottom-40 z-[1050] pointer-events-auto">
              <div className="gis-glass p-6 rounded-2xl w-64">
-                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4">Satellite Stream</p>
+                <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest mb-4">Satellite Stream</p>
                 <div className="flex items-center gap-4">
-                   <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                   <div className="w-2 h-2 rounded-full bg-status-live animate-pulse"></div>
                    <div>
                       <p className="text-[12px] font-black text-white uppercase tracking-tighter">Sentinel-2 L2A</p>
-                      <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mt-0.5">Last Sync: 14m ago</p>
+                      <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest mt-0.5">Last Sync: 14m ago</p>
                    </div>
                 </div>
              </div>

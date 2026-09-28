@@ -15,16 +15,16 @@ const OverviewSection = () => {
          <SimpleCard title="Sustainability Index" icon={<Leaf size={20} />}>
             <div className="p-10 bg-white rounded-3xl border border-gray-100 shadow-sm">
                <div className="text-5xl font-black text-teal-600 mb-2 tracking-tighter">105,400 <span className="text-xl font-bold text-gray-300">tCO2e</span></div>
-               <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Carbon Sequestered</div>
+               <div className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Total Carbon Sequestered</div>
             </div>
          </SimpleCard>
          <SimpleCard title="Drying Station" icon={<ThermometerSun size={20} />}>
             <div className="p-12 text-center border-2 border-dashed border-gray-100 rounded-[2.5rem] bg-gray-50/30">
                <p className="text-gray-400 font-bold uppercase text-[11px] tracking-[0.2em]">Live Moisture Sensor Data Stream</p>
                <div className="mt-4 flex justify-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-teal-500 animate-pulse"></div>
-                  <div className="w-2 h-2 rounded-full bg-teal-500 animate-pulse delay-75"></div>
-                  <div className="w-2 h-2 rounded-full bg-teal-500 animate-pulse delay-150"></div>
+                  <div className="w-2 h-2 rounded-full bg-status-live animate-pulse"></div>
+                  <div className="w-2 h-2 rounded-full bg-status-live animate-pulse delay-75"></div>
+                  <div className="w-2 h-2 rounded-full bg-status-live animate-pulse delay-150"></div>
                </div>
             </div>
          </SimpleCard>

@@ -14,7 +14,7 @@ const WeatherSection = ({ weatherAdvice, rsMetrics, columns }) => {
             <div className="flex items-center gap-3">
                <Sun className="text-orange-500" size={24} />
                <div>
-                  <div className="text-[10px] font-black text-gray-400 uppercase leading-none">Local Temp</div>
+                  <div className="text-[11px] font-black text-gray-400 uppercase leading-none">Local Temp</div>
                   <div className="text-xl font-black text-gray-900 leading-none mt-1">31°C</div>
                </div>
             </div>
@@ -22,7 +22,7 @@ const WeatherSection = ({ weatherAdvice, rsMetrics, columns }) => {
             <div className="flex items-center gap-3">
                <CloudRain className="text-blue-500" size={24} />
                <div>
-                  <div className="text-[10px] font-black text-gray-400 uppercase leading-none">Precip. Prob</div>
+                  <div className="text-[11px] font-black text-gray-400 uppercase leading-none">Precip. Prob</div>
                   <div className="text-xl font-black text-gray-900 leading-none mt-1">12%</div>
                </div>
             </div>
@@ -39,7 +39,7 @@ const WeatherSection = ({ weatherAdvice, rsMetrics, columns }) => {
                  <div className="p-2.5 bg-gray-50 rounded-xl">
                     {React.cloneElement(advice.icon, { size: 18 })}
                  </div>
-                 <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{advice.status}</div>
+                 <div className="text-[11px] font-black text-gray-400 uppercase tracking-widest">{advice.status}</div>
               </div>
               <h3 className="text-xl font-black text-gray-900 mb-3 tracking-tight leading-none">{advice.title}</h3>
               <p className="text-[13px] text-gray-500 font-medium leading-relaxed italic">{advice.detail}</p>

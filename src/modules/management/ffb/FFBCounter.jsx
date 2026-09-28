@@ -14,12 +14,12 @@ import {
 const KPICard = ({ label, value, icon, delta, deltaType }) => (
   <div className="bg-white dark:bg-white/5 p-4 rounded-xl border border-black/5 dark:border-white/5">
     <div className="flex justify-between items-start mb-2">
-      <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">{label}</div>
+      <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">{label}</div>
       <div className="text-gray-300 dark:text-white/10">{icon}</div>
     </div>
     <div className="text-2xl font-bold">{value}</div>
     {delta && (
-      <div className={`text-[10px] font-medium mt-1 ${deltaType === 'up' ? 'text-green-600' : 'text-red-600'}`}>
+      <div className={`text-[11px] font-medium mt-1 ${deltaType === 'up' ? 'text-green-600' : 'text-red-600'}`}>
         {delta}
       </div>
     )}
@@ -82,15 +82,15 @@ const FFBCounter = () => {
 
            <div className="grid grid-cols-3 gap-4 w-full max-w-sm mt-8">
               <div className="bg-gray-50 dark:bg-black/20 p-3 rounded-xl border border-black/5">
-                 <div className="text-[9px] font-bold text-gray-500 uppercase mb-1">Avg Bunch</div>
+                 <div className="text-[11px] font-bold text-gray-500 uppercase mb-1">Avg Bunch</div>
                  <div className="text-sm font-black">14.0 kg</div>
               </div>
               <div className="bg-gray-50 dark:bg-black/20 p-3 rounded-xl border border-black/5">
-                 <div className="text-[9px] font-bold text-gray-500 uppercase mb-1">kg / hour</div>
+                 <div className="text-[11px] font-bold text-gray-500 uppercase mb-1">kg / hour</div>
                  <div className="text-sm font-black">585</div>
               </div>
               <div className="bg-gray-50 dark:bg-black/20 p-3 rounded-xl border border-black/5">
-                 <div className="text-[9px] font-bold text-gray-500 uppercase mb-1">Session</div>
+                 <div className="text-[11px] font-bold text-gray-500 uppercase mb-1">Session</div>
                  <div className="text-sm font-black">3.4h</div>
               </div>
            </div>
@@ -105,7 +105,7 @@ const FFBCounter = () => {
               <div className="overflow-x-auto">
                  <table className="w-full text-left text-[11px]">
                     <thead>
-                       <tr className="text-[10px] font-bold text-gray-500 uppercase border-b border-black/5">
+                       <tr className="text-[11px] font-bold text-gray-500 uppercase border-b border-black/5">
                           <th className="py-2 px-1">Harvester</th>
                           <th className="py-2 px-1">Block</th>
                           <th className="py-2 px-1">Bunches</th>

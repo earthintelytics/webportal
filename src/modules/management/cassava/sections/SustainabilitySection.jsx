@@ -23,7 +23,7 @@ const SustainabilitySection = () => {
            <SimpleCard title="Regenerative Index" icon={<BarChart4 size={20} />}>
               <div className="p-10 text-center bg-white rounded-3xl border border-gray-100 shadow-sm">
                  <div className="text-5xl font-black text-lime-600 mb-2">94.2<span className="text-xl">%</span></div>
-                 <div className="text-[10px] font-bold text-lime-950 uppercase tracking-widest">Adoption Rate</div>
+                 <div className="text-[11px] font-bold text-lime-950 uppercase tracking-widest">Adoption Rate</div>
               </div>
            </SimpleCard>
         </div>

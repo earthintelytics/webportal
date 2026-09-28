@@ -62,7 +62,7 @@ const GroupsPortal = (props) => {
                   <div className="p-5 rounded-2xl bg-white/5 border border-white/10">
                      <div className="flex items-center gap-2 mb-4">
                         <Award size={14} className="text-amber-500" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-white">Top Contributors</span>
+                        <span className="text-[11px] font-black uppercase tracking-widest text-white">Top Contributors</span>
                      </div>
                      <div className="space-y-3">
                         {[
@@ -72,7 +72,7 @@ const GroupsPortal = (props) => {
                         ].map((item, i) => (
                           <div key={i} className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
                              <div className="flex items-center gap-3">
-                                <span className="text-[10px] font-black text-emerald-500">{item.rank}</span>
+                                <span className="text-[11px] font-black text-emerald-500">{item.rank}</span>
                                 <span className="text-[11px] font-bold text-gray-300">{item.name}</span>
                              </div>
                              <span className="text-[11px] font-black text-white">{item.value}</span>
@@ -82,10 +82,10 @@ const GroupsPortal = (props) => {
                   </div>
 
                   <div className="p-5 rounded-2xl bg-blue-500/10 border border-blue-500/20">
-                     <span className="text-[9px] font-black text-blue-500 uppercase tracking-widest block mb-2">Credit Readiness</span>
+                     <span className="text-[11px] font-black text-blue-500 uppercase tracking-widest block mb-2">Credit Readiness</span>
                      <div className="flex items-center justify-between">
                         <span className="text-2xl font-black text-white leading-none">82%</span>
-                        <div className="px-3 py-1 bg-blue-500 text-white rounded-lg text-[8px] font-black uppercase tracking-widest">Market Ready</div>
+                        <div className="px-3 py-1 bg-blue-500 text-white rounded-lg text-[11px] font-black uppercase tracking-widest">Market Ready</div>
                      </div>
                   </div>
                </div>
@@ -94,14 +94,14 @@ const GroupsPortal = (props) => {
 
           <div className="absolute left-8 bottom-40 z-[1050] pointer-events-auto">
              <div className="gis-glass p-6 rounded-2xl w-64">
-                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4">Group MRV Status</p>
+                <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest mb-4">Group MRV Status</p>
                 <div className="flex items-center gap-3">
                    <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white">
                       <CheckCircle2 size={16} />
                    </div>
                    <div>
                       <p className="text-[12px] font-black text-white">Verification Active</p>
-                      <p className="text-[9px] font-black text-blue-400 uppercase tracking-widest mt-0.5">85% Plots Audited</p>
+                      <p className="text-[11px] font-black text-blue-400 uppercase tracking-widest mt-0.5">85% Plots Audited</p>
                    </div>
                 </div>
              </div>

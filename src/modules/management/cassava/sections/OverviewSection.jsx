@@ -18,12 +18,12 @@ const OverviewSection = () => {
                <div className="flex justify-center items-center gap-6">
                   <div className="flex flex-col items-center">
                      <div className="text-4xl font-black text-lime-600">1.2k</div>
-                     <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">MT Pending</div>
+                     <div className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">MT Pending</div>
                   </div>
                   <div className="w-px h-10 bg-gray-100"></div>
                   <div className="flex flex-col items-center">
                      <div className="text-4xl font-black text-lime-600">84%</div>
-                     <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Efficiency</div>
+                     <div className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Efficiency</div>
                   </div>
                </div>
             </div>
@@ -32,7 +32,7 @@ const OverviewSection = () => {
             <div className="p-12 text-center border-2 border-dashed border-gray-100 rounded-[2.5rem] bg-white">
                <p className="text-gray-400 font-bold uppercase text-[11px] tracking-[0.2em] mb-4">Starch Recovery Analysis</p>
                <div className="text-3xl font-black text-lime-700 tracking-tighter">32.4 <span className="text-sm font-bold text-gray-300">%</span></div>
-               <div className="text-[10px] font-bold text-lime-800 uppercase tracking-widest mt-2">Optimal Recovery Range</div>
+               <div className="text-[11px] font-bold text-lime-800 uppercase tracking-widest mt-2">Optimal Recovery Range</div>
             </div>
          </SimpleCard>
       </div>

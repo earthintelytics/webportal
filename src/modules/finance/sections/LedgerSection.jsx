@@ -24,12 +24,12 @@ const LedgerSection = ({ transactions }) => {
                       </div>
                       <div>
                          <div className="text-[16px] font-bold uppercase text-gray-900 leading-none">{tx.p}</div>
-                         <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2 italic">{tx.id} • {tx.date}</div>
+                         <div className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mt-2 italic">{tx.id} • {tx.date}</div>
                       </div>
                    </div>
                    <div className="text-right">
                       <div className="text-[20px] font-black italic text-gray-900 leading-none">{tx.a}</div>
-                      <div className={`text-[10px] font-bold uppercase tracking-widest mt-2 ${tx.s === 'Settled' ? 'text-emerald-600' : 'text-amber-600'}`}>{tx.s}</div>
+                      <div className={`text-[11px] font-bold uppercase tracking-widest mt-2 ${tx.s === 'Settled' ? 'text-emerald-600' : 'text-amber-600'}`}>{tx.s}</div>
                    </div>
                 </div>
              ))}

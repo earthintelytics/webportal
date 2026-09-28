@@ -23,7 +23,7 @@ const SustainabilitySection = () => {
            <SimpleCard title="Carbon Project" icon={<BarChart4 size={20} />}>
               <div className="p-10 text-center bg-white rounded-3xl border border-gray-100 shadow-sm">
                  <div className="text-5xl font-black text-yellow-600 mb-2">12.4<span className="text-xl">k</span></div>
-                 <div className="text-[10px] font-bold text-yellow-950 uppercase tracking-widest">Total CO2e Sequestered</div>
+                 <div className="text-[11px] font-bold text-yellow-950 uppercase tracking-widest">Total CO2e Sequestered</div>
               </div>
            </SimpleCard>
         </div>

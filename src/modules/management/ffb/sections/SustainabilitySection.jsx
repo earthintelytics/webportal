@@ -26,7 +26,7 @@ const SustainabilitySection = ({ carbonData, carbonColumns }) => {
                <SimpleCard title="Effluent Management" icon={<Wind size={20} />}>
                   <div className="p-8 text-center bg-emerald-50/50 rounded-3xl border border-emerald-100">
                      <div className="text-5xl font-black text-emerald-600 mb-2">98.2<span className="text-xl">%</span></div>
-                     <div className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">Biogas Capture Efficiency</div>
+                     <div className="text-[11px] font-black text-emerald-700 uppercase tracking-widest">Biogas Capture Efficiency</div>
                   </div>
                </SimpleCard>
             </div>

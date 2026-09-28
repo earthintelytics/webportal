@@ -57,6 +57,13 @@ export default {
           DEFAULT: "var(--danger)",
           foreground: "var(--danger-foreground)",
         },
+        status: {
+          live: "var(--status-live)",
+          good: "var(--status-good)",
+          warning: "var(--status-warning)",
+          critical: "var(--status-critical)",
+          info: "var(--status-info)",
+        },
         sidebar: {
           DEFAULT: "var(--sidebar)",
           foreground: "var(--sidebar-foreground)",

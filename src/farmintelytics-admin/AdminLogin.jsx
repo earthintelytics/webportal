@@ -49,20 +49,6 @@ const AdminLogin = () => {
         backgroundSize: '48px 48px',
       }} />
 
-      {/* Glow blobs */}
-      <div style={{
-        position: 'absolute', top: '-10%', left: '-10%',
-        width: '500px', height: '500px', borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(22,163,74,0.06) 0%, transparent 70%)',
-        filter: 'blur(40px)',
-      }} />
-      <div style={{
-        position: 'absolute', bottom: '-10%', right: '-10%',
-        width: '400px', height: '400px', borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(139,92,246,0.04) 0%, transparent 70%)',
-        filter: 'blur(40px)',
-      }} />
-
       <div style={{
         position: 'relative', zIndex: 10,
         width: '100%', maxWidth: '460px',
@@ -77,7 +63,7 @@ const AdminLogin = () => {
             <img src="/farmintelytics-logo.png" alt="Logo" style={{ height: '56px', width: 'auto' }} />
             <div style={{ textAlign: 'left' }}>
               <h2 style={{ fontSize: '20px', fontWeight: 900, color: '#0f172a', margin: 0, textTransform: 'uppercase', letterSpacing: '-0.03em' }}>FarmIntelytics</h2>
-              <p style={{ fontSize: '9px', fontWeight: 900, color: '#16a34a', margin: 0, textTransform: 'uppercase', letterSpacing: '0.22em' }}>Admin Control</p>
+              <p style={{ fontSize: '11px', fontWeight: 900, color: '#16a34a', margin: 0, textTransform: 'uppercase', letterSpacing: '0.22em' }}>Admin Control</p>
             </div>
           </div>
         </div>
@@ -117,7 +103,7 @@ const AdminLogin = () => {
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             {/* Email */}
             <div>
-              <label style={{ display: 'block', fontSize: '10px', fontWeight: 800, color: '#475569', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '8px' }}>
+              <label style={{ display: 'block', fontSize: '11px', fontWeight: 800, color: '#475569', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '8px' }}>
                 Admin Email
               </label>
               <div style={{ position: 'relative' }}>
@@ -142,7 +128,7 @@ const AdminLogin = () => {
 
             {/* Access Code */}
             <div>
-              <label style={{ display: 'block', fontSize: '10px', fontWeight: 800, color: '#475569', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '8px' }}>
+              <label style={{ display: 'block', fontSize: '11px', fontWeight: 800, color: '#475569', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '8px' }}>
                 Admin Access Code
               </label>
               <div style={{ position: 'relative' }}>

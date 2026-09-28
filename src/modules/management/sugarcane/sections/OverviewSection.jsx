@@ -15,7 +15,7 @@ const OverviewSection = () => {
          <SimpleCard title="Carbon Footprint" icon={<Leaf size={20} />}>
             <div className="p-10 bg-white rounded-3xl border border-gray-100 shadow-sm">
                <div className="text-5xl font-black text-green-600 mb-2 tracking-tighter">155,200 <span className="text-xl font-bold text-gray-300">tCO2e</span></div>
-               <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Biomass Reservoir</div>
+               <div className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Total Biomass Reservoir</div>
             </div>
          </SimpleCard>
          <SimpleCard title="Mill Gate Scale" icon={<Scale size={20} />}>

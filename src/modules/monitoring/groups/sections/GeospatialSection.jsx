@@ -13,7 +13,7 @@ const GeospatialSection = ({ layers, setLayers, plots, selectedPlot, setSelected
                 <input type="text" placeholder="Locate Cluster..." className="w-full bg-gray-50 border border-gray-100 rounded-xl py-2.5 pl-12 pr-4 text-[12px] font-bold outline-none focus:border-emerald-500 transition-all" />
              </div>
           </div>
-          <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400 italic">Sentinel-2 Multispectral Standard</div>
+          <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-400 italic">Sentinel-2 Multispectral Standard</div>
        </div>
 
        <div className="flex-1 bg-gray-200 relative overflow-hidden">
@@ -32,7 +32,7 @@ const GeospatialSection = ({ layers, setLayers, plots, selectedPlot, setSelected
                 <div className="p-3 flex items-center justify-between border-b border-gray-800 bg-black/50">
                    <div className={`flex items-center gap-2 ${!showLayerList && 'hidden'}`}>
                       <Layers size={14} className="text-emerald-500" />
-                      <span className="text-[9px] font-bold uppercase tracking-widest leading-none text-white">GIS Intelligence</span>
+                      <span className="text-[11px] font-bold uppercase tracking-widest leading-none text-white">GIS Intelligence</span>
                    </div>
                    <button onClick={() => setShowLayerList(!showLayerList)} className={`p-1.5 hover:bg-gray-800 rounded-none transition-all ${!showLayerList && 'w-full flex justify-center'}`}>
                       {showLayerList ? <ChevronRight size={14} /> : <Layers size={20} className="text-emerald-500" />}
@@ -44,12 +44,12 @@ const GeospatialSection = ({ layers, setLayers, plots, selectedPlot, setSelected
                          <div key={layer.id} className="space-y-2">
                             <button onClick={() => setLayers(layers.map(l => l.id === layer.id ? { ...l, active: !l.active } : l))} className="flex items-center gap-2 group text-left w-full">
                                <div className={`w-3 h-3 rounded-none border transition-all shrink-0 flex items-center justify-center ${layer.active ? 'bg-emerald-500 border-emerald-500' : 'border-gray-600'}`}>{layer.active && <CheckCircle2 size={8} className="text-black" />}</div>
-                               <span className={`text-[8px] font-bold uppercase tracking-widest leading-tight ${layer.active ? 'text-emerald-400' : 'text-gray-500'}`}>{layer.label}</span>
+                               <span className={`text-[11px] font-bold uppercase tracking-widest leading-tight ${layer.active ? 'text-emerald-400' : 'text-gray-500'}`}>{layer.label}</span>
                             </button>
                             {layer.active && (
                                <div className="pl-5 space-y-2">
                                   <div className="space-y-1">
-                                     <div className="flex justify-between items-center text-[7px] font-bold text-gray-500 uppercase tracking-widest"><span>{layer.legend}</span><span>{layer.opacity}%</span></div>
+                                     <div className="flex justify-between items-center text-[11px] font-bold text-gray-500 uppercase tracking-widest"><span>{layer.legend}</span><span>{layer.opacity}%</span></div>
                                      <div className={`h-1 w-full rounded-none bg-gradient-to-r ${layer.color}`}></div>
                                   </div>
                                </div>
@@ -64,18 +64,18 @@ const GeospatialSection = ({ layers, setLayers, plots, selectedPlot, setSelected
                 <div className="mt-4 bg-gray-900 border border-gray-800 rounded-none p-5 shadow-2xl animate-in slide-in-from-right-10 duration-500 pointer-events-auto flex flex-col gap-4">
                    <div className="flex justify-between items-start">
                       <div>
-                         <div className="text-[8px] font-bold text-emerald-500 uppercase tracking-[0.2em] mb-1 leading-none italic">{config.drillDownType}</div>
+                         <div className="text-[11px] font-bold text-emerald-500 uppercase tracking-[0.2em] mb-1 leading-none italic">{config.drillDownType}</div>
                          <h3 className="text-xl font-black uppercase italic tracking-tighter leading-none text-white">{selectedPlot.id}</h3>
                       </div>
                       <button onClick={() => setSelectedPlot(null)} className="p-1.5 hover:bg-gray-800 rounded-none transition-all text-gray-500"><X size={16} /></button>
                    </div>
                    <div className="bg-black/50 p-4 rounded-none border border-gray-800">
-                      <div className="text-[8px] font-bold text-gray-500 uppercase mb-2 italic">Summary</div>
+                      <div className="text-[11px] font-bold text-gray-500 uppercase mb-2 italic">Summary</div>
                       <p className="text-[11px] font-bold italic leading-tight text-emerald-100">"{selectedPlot.layman}"</p>
                    </div>
                    <div className="space-y-2">
                       <div className="flex items-center justify-between px-1">
-                         <span className="text-[8px] font-bold text-gray-500 uppercase tracking-widest leading-none italic">Trend</span>
+                         <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest leading-none italic">Trend</span>
                          <TrendingUp size={10} className="text-emerald-500" />
                       </div>
                       <div className="h-24 bg-black rounded-none p-2 border border-gray-800">
@@ -90,7 +90,7 @@ const GeospatialSection = ({ layers, setLayers, plots, selectedPlot, setSelected
                    </div>
                    <div className="flex items-center gap-2 pt-3 border-t border-gray-800 space-y-2">
                       <Zap size={12} className="text-emerald-500" />
-                      <span className="text-[9px] font-bold uppercase tracking-widest text-emerald-300 italic leading-tight">{selectedPlot.advice}</span>
+                      <span className="text-[11px] font-bold uppercase tracking-widest text-emerald-300 italic leading-tight">{selectedPlot.advice}</span>
                    </div>
                 </div>
              )}

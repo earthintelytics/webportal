@@ -15,7 +15,7 @@ const OverviewSection = ({ workerData }) => {
          <SimpleCard title="Sustainability Impact" icon={<Leaf size={20} />}>
             <div className="flex items-center justify-between mb-6">
                <div>
-                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Carbon Sequestered</div>
+                  <div className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Carbon Sequestered</div>
                   <div className="text-3xl font-black text-emerald-600">352,400 <span className="text-sm font-bold text-gray-300">tCO2e</span></div>
                </div>
                <div className="w-14 h-14 bg-emerald-50 rounded-2xl flex items-center justify-center">
@@ -25,7 +25,7 @@ const OverviewSection = ({ workerData }) => {
             <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                <div className="h-full bg-emerald-500 w-[72%]"></div>
             </div>
-            <div className="mt-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest italic">Target: 500k tCO2e by 2027</div>
+            <div className="mt-3 text-[11px] font-bold text-gray-400 uppercase tracking-widest italic">Target: 500k tCO2e by 2027</div>
          </SimpleCard>
          <SimpleCard title="Recent Field Logs" icon={<ClipboardList size={20} />}>
             <div className="space-y-4">
@@ -35,7 +35,7 @@ const OverviewSection = ({ workerData }) => {
                         <div className="w-1.5 h-1.5 rounded-full bg-orange-600"></div>
                         <span className="text-[12px] font-bold text-gray-800">{w.name} · {w.plot}</span>
                      </div>
-                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{w.task}</span>
+                     <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">{w.task}</span>
                   </div>
                ))}
             </div>

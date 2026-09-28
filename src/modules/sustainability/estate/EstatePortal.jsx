@@ -61,7 +61,7 @@ const EstatePortal = (props) => {
                   <div className="p-5 rounded-2xl bg-white/5 border border-white/10">
                      <div className="flex items-center gap-2 mb-4">
                         <AlertTriangle size={14} className="text-amber-500" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-white">Carbon Loss Alerts</span>
+                        <span className="text-[11px] font-black uppercase tracking-widest text-white">Carbon Loss Alerts</span>
                      </div>
                      <div className="space-y-3">
                         {[
@@ -77,10 +77,10 @@ const EstatePortal = (props) => {
                   </div>
 
                   <div className="p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
-                     <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest block mb-2">ESG Score</span>
+                     <span className="text-[11px] font-black text-emerald-500 uppercase tracking-widest block mb-2">ESG Score</span>
                      <div className="flex items-end gap-2">
                         <span className="text-3xl font-black text-white leading-none">94.2</span>
-                        <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Grade A+</span>
+                        <span className="text-[11px] font-black text-emerald-400 uppercase tracking-widest">Grade A+</span>
                      </div>
                   </div>
                </div>
@@ -89,14 +89,14 @@ const EstatePortal = (props) => {
 
           <div className="absolute left-8 bottom-40 z-[1050] pointer-events-auto">
              <div className="gis-glass p-6 rounded-2xl w-64">
-                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4">Verification Status</p>
+                <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest mb-4">Verification Status</p>
                 <div className="flex items-center gap-3">
                    <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center text-black">
                       <ShieldCheck size={16} />
                    </div>
                    <div>
                       <p className="text-[12px] font-black text-white">IPCC Tier 2 Verified</p>
-                      <p className="text-[9px] font-black text-emerald-500 uppercase tracking-widest mt-0.5">Expires May 2027</p>
+                      <p className="text-[11px] font-black text-emerald-500 uppercase tracking-widest mt-0.5">Expires May 2027</p>
                    </div>
                 </div>
              </div>

@@ -27,7 +27,7 @@ export const TabPlaceholder = ({ icon, label }) => (
       </div>
       <div className="text-center">
         <p className="text-[13px] font-black text-white uppercase tracking-widest">{label}</p>
-        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mt-2">Not yet available</p>
+        <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest mt-2">Not yet available</p>
       </div>
     </HUDPanel>
   </div>
@@ -37,7 +37,7 @@ export const LayerSwitcher = ({ layers, activeLayer, onToggle }) => (
   <HUDPanel className="gis-layer-switcher">
     <div className="flex items-center gap-2 mb-4 px-2">
       <Layers size={16} className="text-emerald-500" />
-      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Layer Explorer</span>
+      <span className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-400">Layer Explorer</span>
     </div>
     <div className="space-y-1">
       {layers.map(layer => (
@@ -63,13 +63,13 @@ export const LegendPanel = ({ title, items }) => (
   <HUDPanel className="gis-legend">
     <div className="flex items-center gap-2 mb-4">
       <Info size={14} className="text-emerald-500" />
-      <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">{title}</span>
+      <span className="text-[11px] font-black uppercase tracking-widest text-gray-400">{title}</span>
     </div>
     <div className="space-y-3">
       {items.map((item, i) => (
         <div key={i} className="flex items-center gap-3">
           <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: item.color }}></div>
-          <span className="text-[10px] font-black uppercase text-gray-300">{item.label}</span>
+          <span className="text-[11px] font-black uppercase text-gray-300">{item.label}</span>
         </div>
       ))}
     </div>
@@ -81,7 +81,7 @@ export const TimelineSlider = ({ currentYear, onChange }) => (
     <div className="flex items-center gap-3">
       <Calendar size={18} className="text-emerald-500" />
       <div className="flex flex-col">
-        <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest leading-none">Historical</span>
+        <span className="text-[11px] font-black text-emerald-500 uppercase tracking-widest leading-none">Historical</span>
         <span className="text-[14px] font-black text-white leading-tight mt-1">{currentYear}</span>
       </div>
     </div>
@@ -96,7 +96,7 @@ export const TimelineSlider = ({ currentYear, onChange }) => (
       />
       <div className="flex justify-between mt-2 px-1">
         {[2018, 2020, 2022, 2024, 2026].map(y => (
-          <span key={y} className="text-[8px] font-black text-gray-500 uppercase tracking-tighter">{y}</span>
+          <span key={y} className="text-[11px] font-black text-gray-500 uppercase tracking-tighter">{y}</span>
         ))}
       </div>
     </div>
@@ -107,11 +107,11 @@ export const FloatingMetric = ({ label, value, unit, icon, color = "emerald" }) 
   <div className="flex flex-col p-6 bg-black/40 backdrop-blur-md border border-white/5 rounded-[1.5rem]">
     <div className="flex items-center gap-2 mb-3">
       <div className={`text-${color}-500`}>{icon}</div>
-      <span className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">{label}</span>
+      <span className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">{label}</span>
     </div>
     <div className="flex items-baseline gap-2">
       <span className="text-2xl font-black gis-metric-value text-white">{value}</span>
-      <span className={`text-[10px] font-black text-${color}-500 uppercase tracking-widest`}>{unit}</span>
+      <span className={`text-[11px] font-black text-${color}-500 uppercase tracking-widest`}>{unit}</span>
     </div>
   </div>
 );
@@ -125,7 +125,7 @@ export const GISSidebar = ({ children, title, icon }) => (
         </div>
         <div>
           <h3 className="text-[12px] font-black uppercase tracking-widest text-white">{title}</h3>
-          <p className="text-[9px] font-black text-emerald-500 uppercase tracking-[0.2em] mt-0.5">Live Intelligence</p>
+          <p className="text-[11px] font-black text-emerald-500 uppercase tracking-[0.2em] mt-0.5">Live Intelligence</p>
         </div>
       </div>
     </div>

@@ -14,12 +14,12 @@ const OverviewSection = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <SimpleCard title="Cluster Distribution" subtitle="Farmer concentration across geographic regions">
           <div className="h-64 flex items-center justify-center border-2 border-dashed border-gray-100 rounded-3xl">
-             <p className="text-gray-400 font-bold uppercase text-[10px] tracking-widest">Cluster Analytics Visualization</p>
+             <p className="text-gray-400 font-bold uppercase text-[11px] tracking-widest">Cluster Analytics Visualization</p>
           </div>
         </SimpleCard>
         <SimpleCard title="Onboarding Velocity" subtitle="New member registration trends">
           <div className="h-64 flex items-center justify-center border-2 border-dashed border-gray-100 rounded-3xl">
-             <p className="text-gray-400 font-bold uppercase text-[10px] tracking-widest">Growth Trend Analysis</p>
+             <p className="text-gray-400 font-bold uppercase text-[11px] tracking-widest">Growth Trend Analysis</p>
           </div>
         </SimpleCard>
       </div>
