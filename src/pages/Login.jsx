@@ -334,7 +334,7 @@ const Login = ({ onLogin, moduleName, onBack, defaultEmail = '', defaultCode = '
           <img src="/farmintelytics-logo.png" alt="FarmIntelytics" className="h-11 w-auto object-contain" />
           <div>
             <h2 className="text-base font-black uppercase tracking-tight text-slate-900 leading-none">FarmIntelytics</h2>
-            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-800 mt-1">
+            <p className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-800 mt-1">
               {currentDesign.branding}
             </p>
           </div>
@@ -373,7 +373,7 @@ const Login = ({ onLogin, moduleName, onBack, defaultEmail = '', defaultCode = '
             {/* Crop Badge */}
             <div className="flex items-center gap-3 mb-4">
               <span 
-                className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-slate-200"
+                className="px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-widest border border-slate-200"
                 style={{ 
                   backgroundColor: currentDesign.lightBg,
                   color: currentDesign.accentColor
@@ -381,7 +381,7 @@ const Login = ({ onLogin, moduleName, onBack, defaultEmail = '', defaultCode = '
               >
                 {currentDesign.badge}
               </span>
-              <span className="text-[10px] font-black text-slate-800 uppercase tracking-wider">
+              <span className="text-[11px] font-black text-slate-800 uppercase tracking-wider">
                 Precision Agriculture Console
               </span>
             </div>
@@ -404,7 +404,7 @@ const Login = ({ onLogin, moduleName, onBack, defaultEmail = '', defaultCode = '
           <div className="w-full max-w-md">
 
             <div className="mb-8">
-              <span className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-700">Authorized Portal</span>
+              <span className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-700">Authorized Portal</span>
               <h2 className="text-3xl font-black uppercase tracking-tight text-slate-900 mt-1">Sign In</h2>
               <p className="text-xs text-slate-800 font-bold mt-2">
                 Enter your identity credentials to access <span className="font-black text-slate-900">{currentDesign.name}</span> operations.
@@ -421,7 +421,7 @@ const Login = ({ onLogin, moduleName, onBack, defaultEmail = '', defaultCode = '
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Email Input */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-wider text-slate-900 px-1">
+                <label className="text-[11px] font-black uppercase tracking-wider text-slate-900 px-1">
                   Email Identity
                 </label>
                 <div className="relative group">
@@ -439,7 +439,7 @@ const Login = ({ onLogin, moduleName, onBack, defaultEmail = '', defaultCode = '
 
               {/* Password Input */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black uppercase tracking-wider text-slate-900 px-1">
+                <label className="text-[11px] font-black uppercase tracking-wider text-slate-900 px-1">
                   Access Code
                 </label>
                 <div className="relative group">
@@ -494,7 +494,7 @@ const Login = ({ onLogin, moduleName, onBack, defaultEmail = '', defaultCode = '
             </form>
 
             <div className="mt-12 pt-6 border-t border-slate-100 text-center">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
                 Powered by FarmIntelytics Systems
               </p>
             </div>

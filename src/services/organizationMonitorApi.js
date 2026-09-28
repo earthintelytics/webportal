@@ -9,7 +9,19 @@
 
 import proj4 from 'proj4';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000/farmintelytics-engine/agromonitoring';
+const API_BASE = import.meta.env.VITE_API_BASE_URL ??
+  // Same-origin in production builds (nginx proxies /farmintelytics-engine/),
+  // instead of silently calling the viewer's own machine when the env var is missing.
+  (import.meta.env.DEV ? 'http://127.0.0.1:8000/farmintelytics-engine/agromonitoring' : '/farmintelytics-engine/agromonitoring');
+
+function handleTenantAuthFailure() {
+  localStorage.removeItem('fi_token');
+  localStorage.removeItem('fi_user');
+  localStorage.removeItem('fi_tenant');
+  if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+    window.location.href = '/login';
+  }
+}
 
 /** Generic fetch helper with JSON parsing and error handling */
 async function apiFetch(path, options = {}) {
@@ -27,6 +39,9 @@ async function apiFetch(path, options = {}) {
     ...options,
     headers,
   });
+  if (res.status === 401 && !path.includes('/auth/login')) {
+    handleTenantAuthFailure();
+  }
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`API ${res.status} – ${path}: ${text}`);

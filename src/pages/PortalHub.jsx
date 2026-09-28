@@ -176,7 +176,7 @@ const PortalHub = ({ onSelectModule }) => {
              </div>
              <div>
                 <h1 className="text-xl font-black uppercase tracking-tighter text-gray-900 leading-none">FarmIntelytics</h1>
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-green-600 mt-1.5">Verified · Monitored · Connected</p>
+                <p className="text-[11px] font-black uppercase tracking-[0.3em] text-green-600 mt-1.5">Verified · Monitored · Connected</p>
              </div>
           </div>
           <div className="flex items-center gap-6">
@@ -246,7 +246,7 @@ const PortalHub = ({ onSelectModule }) => {
                   ))}
                </div>
             </div>
-            <div className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-600">Intelligence Layer v1.0</div>
+            <div className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-600">Intelligence Layer v1.0</div>
         </footer>
       </div>
     </div>
