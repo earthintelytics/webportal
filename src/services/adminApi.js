@@ -34,7 +34,32 @@ async function adminFetch(path, options = {}) {
   if (res.status === 401) handleAdminAuthFailure();
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`Admin API ${res.status} – ${path}: ${text}`);
+    let msg = '';
+    try {
+      const parsed = JSON.parse(text);
+      if (typeof parsed === 'string') {
+        msg = parsed;
+      } else if (parsed.message) {
+        msg = parsed.message;
+      } else if (parsed.error) {
+        msg = typeof parsed.error === 'string' ? parsed.error : JSON.stringify(parsed.error);
+      } else if (parsed.detail) {
+        if (Array.isArray(parsed.detail)) {
+          msg = parsed.detail.map(d => d.msg || (typeof d === 'string' ? d : JSON.stringify(d))).join('; ');
+        } else {
+          msg = typeof parsed.detail === 'string' ? parsed.detail : JSON.stringify(parsed.detail);
+        }
+      } else {
+        msg = text;
+      }
+    } catch {
+      msg = text || `Request failed with status ${res.status}`;
+    }
+    const err = new Error(msg);
+    err.status = res.status;
+    err.path = path;
+    err.raw = text;
+    throw err;
   }
   return res.json();
 }
@@ -218,10 +243,11 @@ export async function resetCropThreshold(cropType, indexKey, companyId = '') {
 
 // ─── Logs ─────────────────────────────────────────────────────────────────────
 
-export async function fetchLogs({ status, sensor, page = 1, pageSize = 50 } = {}) {
+export async function fetchLogs({ status, sensor, search, page = 1, pageSize = 50 } = {}) {
   const p = new URLSearchParams({ page, page_size: pageSize });
   if (status) p.set('status', status);
   if (sensor) p.set('sensor', sensor);
+  if (search) p.set('search', search);
   return adminFetch(`/logs?${p}`);
 }
 

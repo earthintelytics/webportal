@@ -1,30 +1,86 @@
-import React from 'react';
-import { AlertCircle, RefreshCw, X } from 'lucide-react';
+import React, { useState } from 'react';
+import { AlertCircle, RefreshCw, X, Copy, Check } from 'lucide-react';
 
-// Shared error display used across every admin page — one place to change
-// how a failed request reads, instead of a copy of the same div per page.
-// Pass onRetry (usually the page's load()/loadAll()) to show a Retry button.
 const ErrorBanner = ({ message, onDismiss, onRetry }) => {
+  const [copied, setCopied] = useState(false);
   if (!message) return null;
+
+  // Extract clean text if raw JSON was passed
+  let text = typeof message === 'string' ? message : (message?.message || String(message));
+  if (text.startsWith('{') && text.endsWith('}')) {
+    try {
+      const parsed = JSON.parse(text);
+      text = parsed.message || parsed.error || parsed.detail || text;
+    } catch {
+      // keep text
+    }
+  }
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <div style={{
-      padding: '12px 16px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)',
-      borderRadius: '10px', color: '#dc2626', fontSize: '13px', display: 'flex', gap: '10px', alignItems: 'center',
+      padding: '12px 16px',
+      background: '#fef2f2',
+      border: '1px solid #fecaca',
+      borderRadius: '12px',
+      color: '#991b1b',
+      fontSize: '13px',
+      display: 'flex',
+      gap: '12px',
+      alignItems: 'center',
+      boxShadow: '0 2px 4px rgba(239, 68, 68, 0.04)',
     }}>
-      <AlertCircle size={15} style={{ flexShrink: 0 }} />
-      <span style={{ flex: 1 }}>{message}</span>
+      <div style={{
+        width: '28px', height: '28px', borderRadius: '8px',
+        background: '#fee2e2', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        flexShrink: 0,
+      }}>
+        <AlertCircle size={16} style={{ color: '#dc2626' }} />
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ margin: 0, fontWeight: 600, color: '#991b1b', lineHeight: 1.4, wordBreak: 'break-word' }}>
+          {text}
+        </p>
+      </div>
+      <button
+        onClick={handleCopy}
+        title="Copy error message"
+        style={{
+          display: 'flex', alignItems: 'center', gap: '4px', background: '#ffffff',
+          border: '1px solid #fca5a5', borderRadius: '8px', padding: '5px 9px',
+          cursor: 'pointer', color: '#b91c1c', fontSize: '11px', fontWeight: 700, flexShrink: 0,
+        }}
+      >
+        {copied ? <Check size={12} color="#16a34a" /> : <Copy size={12} />}
+        {copied ? 'Copied' : 'Copy'}
+      </button>
       {onRetry && (
-        <button onClick={onRetry} style={{
-          display: 'flex', alignItems: 'center', gap: '5px', background: 'rgba(220,38,38,0.08)',
-          border: '1px solid rgba(220,38,38,0.2)', borderRadius: '8px', padding: '5px 10px',
-          cursor: 'pointer', color: '#dc2626', fontSize: '11px', fontWeight: 700, flexShrink: 0,
-        }}>
+        <button
+          onClick={onRetry}
+          style={{
+            display: 'flex', alignItems: 'center', gap: '5px', background: '#dc2626',
+            border: 'none', borderRadius: '8px', padding: '6px 12px',
+            cursor: 'pointer', color: '#ffffff', fontSize: '11px', fontWeight: 700, flexShrink: 0,
+          }}
+        >
           <RefreshCw size={11} /> Retry
         </button>
       )}
       {onDismiss && (
-        <button onClick={onDismiss} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626', flexShrink: 0, display: 'flex' }}>
-          <X size={14} />
+        <button
+          onClick={onDismiss}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            color: '#991b1b', padding: '4px', borderRadius: '6px',
+            flexShrink: 0, display: 'flex', alignItems: 'center',
+          }}
+        >
+          <X size={15} />
         </button>
       )}
     </div>
