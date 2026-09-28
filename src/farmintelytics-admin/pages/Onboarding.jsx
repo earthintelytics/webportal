@@ -89,6 +89,47 @@ const Onboarding = () => {
   const [boundaryFile, setBoundaryFile] = useState(null);
   const [previewGeoJSON, setPreviewGeoJSON] = useState(null);
 
+  const computeGeoJSONCenter = (geojson) => {
+    if (!geojson) return null;
+    const coords = [];
+    const extract = (obj) => {
+      if (!obj) return;
+      const t = obj.type;
+      if (t === 'FeatureCollection' && Array.isArray(obj.features)) {
+        obj.features.forEach(extract);
+      } else if (t === 'Feature') {
+        extract(obj.geometry);
+      } else if (['Polygon', 'MultiPolygon', 'LineString', 'MultiLineString'].includes(t)) {
+        const geomCoords = obj.coordinates || [];
+        const flatten = (lst, depth) => {
+          if (depth === 1) {
+            lst.forEach(pt => {
+              if (Array.isArray(pt) && pt.length >= 2 && !isNaN(pt[0]) && !isNaN(pt[1])) {
+                coords.push(pt);
+              }
+            });
+          } else {
+            lst.forEach(sub => {
+              if (Array.isArray(sub)) flatten(sub, depth - 1);
+            });
+          }
+        };
+        if (t === 'Polygon') flatten(geomCoords, 2);
+        else if (t === 'MultiPolygon') flatten(geomCoords, 3);
+        else if (t === 'LineString') flatten(geomCoords, 1);
+        else if (t === 'MultiLineString') flatten(geomCoords, 2);
+      }
+    };
+    extract(geojson);
+    if (coords.length === 0) return null;
+    const lngs = coords.map(c => c[0]);
+    const lats = coords.map(c => c[1]);
+    return {
+      lat: (Math.min(...lats) + Math.max(...lats)) / 2,
+      lon: (Math.min(...lngs) + Math.max(...lngs)) / 2,
+    };
+  };
+
   useEffect(() => {
     if (!boundaryFile) {
       setPreviewGeoJSON(null);
@@ -99,6 +140,14 @@ const Onboarding = () => {
       try {
         const parsed = JSON.parse(e.target.result);
         setPreviewGeoJSON(parsed);
+        const center = computeGeoJSONCenter(parsed);
+        if (center) {
+          setCompany(c => ({
+            ...c,
+            map_center_lat: parseFloat(center.lat.toFixed(6)),
+            map_center_lon: parseFloat(center.lon.toFixed(6)),
+          }));
+        }
       } catch {
         setPreviewGeoJSON(null);
       }
@@ -385,16 +434,6 @@ const Onboarding = () => {
                 <input style={inputStyle} placeholder={companySlug || 'auto-generated from name'} value={company.schema_name} onChange={e => setCompany(c => ({ ...c, schema_name: e.target.value }))} />
                 <p style={helpTextStyle}>Leave blank and we'll generate one from the name: <code style={{ color: '#16a34a' }}>{companySlug || '—'}</code></p>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                <div>
-                  <label style={labelStyle}>Map Center Lat</label>
-                  <input type="number" step="any" style={inputStyle} value={company.map_center_lat} onChange={e => setCompany(c => ({ ...c, map_center_lat: parseFloat(e.target.value) }))} />
-                </div>
-                <div>
-                  <label style={labelStyle}>Map Center Lon</label>
-                  <input type="number" step="any" style={inputStyle} value={company.map_center_lon} onChange={e => setCompany(c => ({ ...c, map_center_lon: parseFloat(e.target.value) }))} />
-                </div>
-              </div>
               <button onClick={() => setOrgSubStep(1)} disabled={!canLeaveCompanyStep} style={primaryBtn(!canLeaveCompanyStep)}>
                 Next: Access Model <ChevronRight size={15} />
               </button>
@@ -600,8 +639,8 @@ const Onboarding = () => {
                       <GeoJSON data={previewGeoJSON} style={{ color: '#16a34a', weight: 2.5, fillColor: '#22c55e', fillOpacity: 0.25 }} />
                       <FitToBounds data={previewGeoJSON} />
                     </MapContainer>
-                    <div style={{ position: 'absolute', bottom: '10px', right: '10px', zIndex: 1000, background: 'rgba(15,23,42,0.85)', color: '#ffffff', fontSize: '11px', fontWeight: 700, padding: '4px 10px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ color: '#22c55e' }}>✓</span> GeoJSON Boundary Preview
+                    <div style={{ position: 'absolute', bottom: '10px', right: '10px', zIndex: 1000, background: 'rgba(15,23,42,0.85)', color: '#ffffff', fontSize: '11px', fontWeight: 700, padding: '5px 12px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ color: '#22c55e' }}>✓</span> GeoJSON Boundary Preview • Center: {company.map_center_lat}, {company.map_center_lon}
                     </div>
                   </div>
                 )}
