@@ -31,6 +31,8 @@ const QuickAddFarmForm = ({ org, farms = [], onSave, onCancel }) => {
   const [boundaryFile, setBoundaryFile] = useState(null);
   const [parentFarmId, setParentFarmId] = useState('');
   const [saving, setSaving] = useState(false);
+  const [uploadPercent, setUploadPercent] = useState(0);
+  const [statusText, setStatusText] = useState('');
   const [error, setError] = useState('');
 
   const INDICES = ['NDVI', 'EVI', 'NDMI', 'RECI', 'NDWI', 'LSWI'];
@@ -46,7 +48,11 @@ const QuickAddFarmForm = ({ org, farms = [], onSave, onCancel }) => {
   const handleSave = async () => {
     if (!farmName.trim() || !boundaryFile) return;
     setSaving(true);
+    setUploadPercent(5);
+    setStatusText('Creating farm entity…');
     setError('');
+    const startTime = Date.now();
+
     try {
       const parent = farms.find(f => f.parent_farm_id === parentFarmId || f.farm_id === parentFarmId);
       const created = await createFarm({
@@ -61,50 +67,159 @@ const QuickAddFarmForm = ({ org, farms = [], onSave, onCancel }) => {
         cloud_cover_threshold: 10,
         start_date: null, end_date: null,
       });
-      await uploadBoundary(created.farm_id, boundaryFile);
-      onSave();
-    } catch (e) { setError(e.message); }
-    finally { setSaving(false); }
+
+      setUploadPercent(20);
+      setStatusText('Uploading boundary GeoJSON…');
+
+      await uploadBoundary(created.farm_id, boundaryFile, (prog) => {
+        const pct = Math.max(20, Math.min(95, 20 + Math.round(prog.percent * 0.75)));
+        setUploadPercent(pct);
+        const elapsed = (Date.now() - startTime) / 1000;
+        if (pct > 25 && elapsed > 1) {
+          const totalEst = elapsed / ((pct - 20) / 75);
+          const rem = Math.max(1, Math.round(totalEst - elapsed));
+          const timeStr = rem >= 60 ? `~${Math.ceil(rem / 60)} min left` : `~${rem}s left`;
+          setStatusText(`Uploading & Ingesting (${prog.percent}%) • ${timeStr}`);
+        } else {
+          setStatusText(`Uploading & Ingesting GeoJSON (${prog.percent}%)…`);
+        }
+      });
+
+      setUploadPercent(100);
+      setStatusText('Farm & boundary registered successfully!');
+      setTimeout(() => {
+        onSave();
+      }, 500);
+    } catch (e) {
+      setError(e.message);
+      setSaving(false);
+      setUploadPercent(0);
+      setStatusText('');
+    }
   };
 
-  const chipSm = (active) => chipStyle(active, '#16a34a', 'sm');
+  const chipSm = (active) => chipStyle(active, '#15803d', 'sm');
 
   return (
-    <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '14px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+    <div style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '14px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.04)' }}>
       <ErrorBanner message={error} onDismiss={() => setError('')} />
-      <input
-        placeholder="Farm / estate name"
-        value={farmName}
-        onChange={e => setFarmName(e.target.value)}
-        style={{ padding: '8px 10px', background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '12px', fontWeight: 600, outline: 'none' }}
-      />
-      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-        {SENSOR_OPTIONS.map(s => <button key={s} onClick={() => toggle(sensors, setSensors, s)} style={chipSm(sensors.includes(s))}>{s}</button>)}
+      
+      <div>
+        <label style={{ display: 'block', fontSize: '11px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' }}>
+          Farm / Estate Name *
+        </label>
+        <input
+          placeholder="e.g. Okomu Main Estate"
+          value={farmName}
+          onChange={e => setFarmName(e.target.value)}
+          disabled={saving}
+          style={{ width: '100%', boxSizing: 'border-box', padding: '10px 12px', background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '13px', fontWeight: 600, color: '#0f172a', outline: 'none' }}
+        />
       </div>
-      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-        {INDICES.map(i => <button key={i} onClick={() => toggle(indices, setIndices, i)} style={chipSm(indices.includes(i))}>{i}</button>)}
+
+      <div>
+        <label style={{ display: 'block', fontSize: '11px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>
+          Sensors
+        </label>
+        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+          {SENSOR_OPTIONS.map(s => <button key={s} type="button" disabled={saving} onClick={() => toggle(sensors, setSensors, s)} style={chipSm(sensors.includes(s))}>{s}</button>)}
+        </div>
       </div>
+
+      <div>
+        <label style={{ display: 'block', fontSize: '11px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>
+          Vegetation & Moisture Indices
+        </label>
+        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+          {INDICES.map(i => <button key={i} type="button" disabled={saving} onClick={() => toggle(indices, setIndices, i)} style={chipSm(indices.includes(i))}>{i}</button>)}
+        </div>
+      </div>
+
       {existingParents.length > 0 && (
-        <select
-          value={parentFarmId}
-          onChange={e => setParentFarmId(e.target.value)}
-          style={{ padding: '8px 10px', background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '12px', fontWeight: 600, outline: 'none' }}
-        >
-          <option value="">Standalone farm (no parent)</option>
-          {existingParents.map(pid => <option key={pid} value={pid}>Merge into: {pid}</option>)}
-        </select>
+        <div>
+          <label style={{ display: 'block', fontSize: '11px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' }}>
+            Hierarchy / Parent Farm
+          </label>
+          <select
+            value={parentFarmId}
+            disabled={saving}
+            onChange={e => setParentFarmId(e.target.value)}
+            style={{ width: '100%', boxSizing: 'border-box', padding: '10px 12px', background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '12px', fontWeight: 600, color: '#0f172a', outline: 'none' }}
+          >
+            <option value="">Standalone farm (no parent)</option>
+            {existingParents.map(pid => <option key={pid} value={pid}>Merge into: {pid}</option>)}
+          </select>
+        </div>
       )}
-      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px', border: '1.5px dashed #cbd5e1', borderRadius: '8px', cursor: 'pointer', background: '#ffffff' }}>
-        <UploadCloud size={14} color={boundaryFile ? '#16a34a' : '#94a3b8'} />
-        <span style={{ fontSize: '11px', fontWeight: 700, color: boundaryFile ? '#16a34a' : '#64748b' }}>
-          {boundaryFile ? boundaryFile.name : 'Choose boundary .geojson *'}
-        </span>
-        <input type="file" accept=".geojson,.json,application/geo+json" style={{ display: 'none' }} onChange={e => setBoundaryFile(e.target.files?.[0] || null)} />
-      </label>
-      <div style={{ display: 'flex', gap: '8px' }}>
-        <button onClick={onCancel} style={{ flex: 1, padding: '9px', background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '8px', color: '#334155', cursor: 'pointer', fontWeight: 700, fontSize: '12px' }}>Cancel</button>
-        <button onClick={handleSave} disabled={saving || !farmName.trim() || !boundaryFile} style={{ flex: 2, padding: '9px', background: '#15803d', border: 'none', borderRadius: '8px', color: 'white', cursor: 'pointer', fontWeight: 800, fontSize: '12px', opacity: (saving || !farmName.trim() || !boundaryFile) ? 0.5 : 1 }}>
-          {saving ? 'Adding…' : 'Add Farm'}
+
+      <div>
+        <label style={{ display: 'block', fontSize: '11px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' }}>
+          Farm Boundary (GeoJSON) *
+        </label>
+        <label style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px',
+          border: boundaryFile ? '1.5px solid #15803d' : '1.5px dashed #cbd5e1',
+          borderRadius: '10px', cursor: saving ? 'default' : 'pointer', background: '#ffffff',
+          transition: 'all 0.15s ease',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+            <UploadCloud size={16} color={boundaryFile ? '#15803d' : '#64748b'} />
+            <span style={{ fontSize: '12px', fontWeight: 700, color: boundaryFile ? '#15803d' : '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {boundaryFile ? boundaryFile.name : 'Select boundary .geojson file'}
+            </span>
+          </div>
+          {boundaryFile && (
+            <span style={{ fontSize: '10px', fontWeight: 800, background: '#15803d', color: '#ffffff', padding: '2px 8px', borderRadius: '6px' }}>
+              READY
+            </span>
+          )}
+          <input type="file" disabled={saving} accept=".geojson,.json,application/geo+json" style={{ display: 'none' }} onChange={e => setBoundaryFile(e.target.files?.[0] || null)} />
+        </label>
+      </div>
+
+      {saving && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', padding: '10px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', fontWeight: 800 }}>
+            <span style={{ color: '#15803d' }}>{statusText || 'Processing…'}</span>
+            <span style={{ color: '#0f172a' }}>{uploadPercent}%</span>
+          </div>
+          <div style={{ width: '100%', height: '8px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
+            <div style={{
+              width: `${uploadPercent}%`, height: '100%', background: 'linear-gradient(90deg, #15803d, #22c55e)',
+              borderRadius: '4px', transition: 'width 0.25s ease',
+            }} />
+          </div>
+        </div>
+      )}
+
+      <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+        <button
+          type="button"
+          onClick={onCancel}
+          disabled={saving}
+          style={{ flex: 1, padding: '10px', background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '10px', color: '#334155', cursor: 'pointer', fontWeight: 700, fontSize: '12px' }}
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={saving || !farmName.trim() || !boundaryFile}
+          style={{
+            flex: 2, padding: '10px', background: '#15803d', border: 'none', borderRadius: '10px',
+            color: '#ffffff', cursor: (saving || !farmName.trim() || !boundaryFile) ? 'not-allowed' : 'pointer',
+            fontWeight: 800, fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+            boxShadow: '0 2px 6px rgba(21,128,61,0.25)', opacity: (saving || !farmName.trim() || !boundaryFile) ? 0.6 : 1,
+          }}
+        >
+          {saving ? (
+            <>
+              <div style={{ width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#ffffff', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+              <span>Adding ({uploadPercent}%)…</span>
+            </>
+          ) : (
+            'Add Farm'
+          )}
         </button>
       </div>
     </div>

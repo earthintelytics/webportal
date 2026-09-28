@@ -4,10 +4,7 @@
  * Supports localStorage queuing, background synchronization, and alert workflow transitions.
  */
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ??
-  // Same-origin in production builds (nginx proxies /farmintelytics-engine/),
-  // instead of silently calling the viewer's own machine when the env var is missing.
-  (import.meta.env.DEV ? 'http://127.0.0.1:8000/farmintelytics-engine/agromonitoring' : '/farmintelytics-engine/agromonitoring');
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '/farmintelytics-engine/agromonitoring';
 const OFFLINE_QUEUE_KEY = 'fi_scouting_offline_queue';
 const OFFLINE_OBSERVATIONS_KEY = 'fi_scouting_local_cache';
 

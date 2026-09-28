@@ -8,8 +8,7 @@
  */
 
 const ADMIN_API_BASE =
-  import.meta.env.VITE_ADMIN_API_BASE_URL ??
-  (import.meta.env.DEV ? 'http://127.0.0.1:8000/farmintelytics-engine/admin' : '/farmintelytics-engine/admin');
+  import.meta.env.VITE_ADMIN_API_BASE_URL || '/farmintelytics-engine/admin';
 
 // A 401 here always means the stored superadmin token is missing/expired/
 // invalid (see _require_admin on the backend) — every admin page used to
@@ -40,19 +39,45 @@ async function adminFetch(path, options = {}) {
   return res.json();
 }
 
-/** Multipart upload helper (for GeoJSON files) */
-async function adminUpload(path, formData) {
+/** Multipart upload helper with XMLHttpRequest progress tracking */
+function adminUpload(path, formData, onProgress = null) {
   const url = `${ADMIN_API_BASE}${path}`;
   const token = localStorage.getItem('fi_admin_token');
-  const headers = {};
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-  const res = await fetch(url, { method: 'POST', headers, body: formData });
-  if (res.status === 401) handleAdminAuthFailure();
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Admin Upload ${res.status} – ${path}: ${text}`);
-  }
-  return res.json();
+
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', url);
+    if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+
+    if (xhr.upload && onProgress) {
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) {
+          const pct = Math.min(99, Math.round((e.loaded / e.total) * 100));
+          onProgress({ loaded: e.loaded, total: e.total, percent: pct });
+        }
+      };
+    }
+
+    xhr.onload = () => {
+      if (xhr.status === 401) {
+        handleAdminAuthFailure();
+        return reject(new Error('Unauthorized'));
+      }
+      if (xhr.status >= 200 && xhr.status < 300) {
+        if (onProgress) onProgress({ loaded: 100, total: 100, percent: 100 });
+        try {
+          resolve(JSON.parse(xhr.responseText));
+        } catch {
+          resolve(xhr.responseText);
+        }
+      } else {
+        reject(new Error(`Admin Upload ${xhr.status} – ${path}: ${xhr.responseText}`));
+      }
+    };
+
+    xhr.onerror = () => reject(new Error('Network error during upload'));
+    xhr.send(formData);
+  });
 }
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
@@ -130,10 +155,10 @@ export async function generateParentConfig(parentFarmId) {
 
 // ─── Boundaries ───────────────────────────────────────────────────────────────
 
-export async function uploadBoundary(farmId, file) {
+export async function uploadBoundary(farmId, file, onProgress = null) {
   const form = new FormData();
   form.append('file', file);
-  return adminUpload(`/boundaries/${farmId}`, form);
+  return adminUpload(`/boundaries/${farmId}`, form, onProgress);
 }
 
 /**

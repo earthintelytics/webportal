@@ -181,11 +181,11 @@ const CROP_DESIGNS = {
     key: 'organization',
     name: 'Organization Monitoring',
     branding: 'Organization Monitoring',
-    accentColor: '#4F46E5', // Indigo
-    lightBg: '#EEF2FF',
+    accentColor: '#16A34A', // Emerald Green
+    lightBg: '#F0FDF4',
     badge: 'Organization Command Console',
-    heroImage: '/crops/organization.png',
-    title: <>Enterprise <span className="text-indigo-600 font-black">Organization</span> Monitoring</>,
+    heroImage: '/crops/oil_palm.png',
+    title: <>Precision <span className="text-emerald-600 font-black">Agricultural Organization</span> Console</>,
     desc: 'Central command console for corporate agricultural organizations, managing multi-tenant farm portfolios, aggregated satellite coverage, and user roles.',
     features: [
       { icon: <Globe size={20} />, title: 'Multi-Tenant Farm Portfolio', desc: 'Unified monitoring across regional subsidiaries & estates' },
@@ -320,9 +320,9 @@ const Login = ({ onLogin, moduleName, onBack, defaultEmail = '', defaultCode = '
     }
   };
 
-  const handleFillDemo = () => {
-    setEmail('admin@farmintelytics.com');
-    setAccessCode('admin123');
+  const handleFillDemo = (emailToSet = 'demo@farmintelytics.com', codeToSet = '***REMOVED***') => {
+    setEmail(emailToSet);
+    setAccessCode(codeToSet);
   };
 
   return (
@@ -462,14 +462,21 @@ const Login = ({ onLogin, moduleName, onBack, defaultEmail = '', defaultCode = '
                 </div>
               </div>
 
-              {/* Quick Fill Demo Helper */}
-              <div className="flex items-center justify-between text-xs pt-1">
+              {/* Quick Fill Demo Helpers */}
+              <div className="flex flex-wrap items-center justify-between gap-2 text-xs pt-1">
                 <button
                   type="button"
-                  onClick={handleFillDemo}
-                  className="text-[11px] font-black text-slate-800 hover:text-slate-900 underline underline-offset-4 transition-colors"
+                  onClick={() => handleFillDemo('demo@farmintelytics.com', '***REMOVED***')}
+                  className="text-[11px] font-black text-emerald-700 hover:text-emerald-900 underline underline-offset-4 transition-colors"
                 >
-                  Use Demo Admin Credentials
+                  Use Demo Tenant (Okomu)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleFillDemo('olam@farmintelytics.com', '***REMOVED***')}
+                  className="text-[11px] font-black text-slate-700 hover:text-slate-900 underline underline-offset-4 transition-colors"
+                >
+                  Use Demo Tenant (Olam)
                 </button>
               </div>
 

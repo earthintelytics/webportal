@@ -302,7 +302,7 @@ const Onboarding = () => {
 
   // ── Render helpers ──
   const StepHeader = () => (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
       {STEPS.map((s, i) => {
         const Icon = s.icon;
         const state = i < step ? 'done' : i === step ? 'active' : 'pending';
@@ -310,22 +310,24 @@ const Onboarding = () => {
           <React.Fragment key={s.id}>
             <div style={{
               display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 14px', borderRadius: '10px',
-              background: state === 'active' ? 'rgba(22,163,74,0.1)' : state === 'done' ? 'rgba(22,163,74,0.05)' : '#ffffff',
-              border: state === 'active' ? '1px solid rgba(22,163,74,0.4)' : '1px solid #e2e8f0',
+              background: state === 'active' ? '#15803d' : '#ffffff',
+              border: state === 'active' ? '1px solid #15803d' : state === 'done' ? '1px solid #15803d' : '1px solid #cbd5e1',
+              boxShadow: state === 'active' ? '0 2px 6px rgba(21,128,61,0.25)' : 'none',
+              transition: 'all 0.15s ease',
             }}>
               {state === 'done'
-                ? <Check size={14} color="#16a34a" />
-                : <Icon size={14} color={state === 'active' ? '#16a34a' : '#94a3b8'} />}
-              <span style={{ fontSize: '12px', fontWeight: 700, color: state === 'active' ? '#15803d' : state === 'done' ? '#16a34a' : '#94a3b8' }}>{s.label}</span>
+                ? <Check size={14} color="#15803d" strokeWidth={3} />
+                : <Icon size={14} color={state === 'active' ? '#ffffff' : '#64748b'} />}
+              <span style={{ fontSize: '12px', fontWeight: 800, color: state === 'active' ? '#ffffff' : state === 'done' ? '#15803d' : '#64748b' }}>{s.label}</span>
             </div>
-            {i < STEPS.length - 1 && <ChevronRight size={14} color="#cbd5e1" />}
+            {i < STEPS.length - 1 && <ChevronRight size={14} color="#94a3b8" />}
           </React.Fragment>
         );
       })}
     </div>
   );
 
-  const card = { background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '28px', display: 'flex', flexDirection: 'column', gap: '16px', width: '100%', boxSizing: 'border-box', fontFamily: "'Roboto', sans-serif" };
+  const card = { background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '28px', display: 'flex', flexDirection: 'column', gap: '16px', width: '100%', boxSizing: 'border-box', fontFamily: "'Inter', sans-serif" };
 
   // Small "Step 1 of 3" indicator for the Company → Farm → Boundary mini flow.
   const OrgSubStepHeader = () => (
@@ -334,16 +336,17 @@ const Onboarding = () => {
         <React.Fragment key={s.id}>
           <div style={{
             display: 'flex', alignItems: 'center', gap: '6px',
-            color: i === orgSubStep ? '#15803d' : i < orgSubStep ? '#16a34a' : '#94a3b8',
+            color: i === orgSubStep ? '#15803d' : i < orgSubStep ? '#15803d' : '#64748b',
             fontSize: '13px', fontWeight: i === orgSubStep ? 800 : 600,
           }}>
             <span style={{
-              width: '20px', height: '20px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: i <= orgSubStep ? 'rgba(22,163,74,0.12)' : '#f1f5f9', fontSize: '11px', fontWeight: 800,
-            }}>{i < orgSubStep ? <Check size={12} /> : i + 1}</span>
+              width: '22px', height: '22px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: i === orgSubStep ? '#15803d' : i < orgSubStep ? '#15803d' : '#f1f5f9',
+              color: i <= orgSubStep ? '#ffffff' : '#64748b', fontSize: '11px', fontWeight: 800,
+            }}>{i < orgSubStep ? <Check size={12} strokeWidth={3} /> : i + 1}</span>
             {s.label}
           </div>
-          {i < ORG_SUBSTEPS.length - 1 && <div style={{ width: '20px', height: '1px', background: '#e2e8f0' }} />}
+          {i < ORG_SUBSTEPS.length - 1 && <div style={{ width: '20px', height: '1px', background: '#cbd5e1' }} />}
         </React.Fragment>
       ))}
     </div>

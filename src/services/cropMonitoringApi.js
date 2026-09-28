@@ -8,10 +8,7 @@
  * E.g. sugarcane uses NDMI/LSWI/WDI for moisture; rice uses NDWI for flood detection.
  */
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ??
-  // Same-origin in production builds (nginx proxies /farmintelytics-engine/),
-  // instead of silently calling the viewer's own machine when the env var is missing.
-  (import.meta.env.DEV ? 'http://127.0.0.1:8000/farmintelytics-engine/agromonitoring' : '/farmintelytics-engine/agromonitoring');
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '/farmintelytics-engine/agromonitoring';
 
 function handleTenantAuthFailure() {
   localStorage.removeItem('fi_token');
