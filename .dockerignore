@@ -1,0 +1,9 @@
+# Keep images small and reproducible: dependencies are installed inside the image.
+.git
+node_modules/
+dist/
+.env
+.env.*
+*.log
+.vscode/
+.idea/

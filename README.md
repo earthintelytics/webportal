@@ -1,31 +1,25 @@
-# FarmIntelytics Web Portal
+# FarmIntelytics web portal
 
-A unified, modular agricultural intelligence platform for multi-crop management, remote sensing, and AI-driven disease detection.
+React 19 + Vite portal with two entry points: the **tenant portal** (crop monitoring dashboard, alerts and scouting, reports, AI assistant) and the **super-admin portal** (`/admin`: organisations, farms, onboarding, credentials, users, scheduler, logs).
 
-## 🚀 Experience Layer
-The portal follows a "Hub-First" user journey:
-1. **Unified Hub**: Discover and select specific operational modules (FFB, Cashew, etc.).
-2. **Identity Authentication**: Securely connect to the module ledger.
-3. **Intelligence Operations**: Access high-fidelity dashboards and GIS mapping.
+Conventions (component layout, tokens, API client) are in the root repo's [`docs/DEVELOPMENT.md`](../docs/DEVELOPMENT.md).
 
-## 🔐 Credentials
-Use the following credentials to access the demo portals:
+## Layout
 
-**Email Identity:** `admin@farmintelytics.com`  
-**Access Code:** `admin123`
+| Path | Contents |
+| --- | --- |
+| `src/pages/` | Login and portal hub |
+| `src/modules/monitoring/` | Crop monitoring dashboard (the part wired to live data) |
+| `src/modules/*` | Management, finance, cooperative, advisor, sustainability portals (sample data — see `docs/FINDINGS.md`, W1) |
+| `src/farmintelytics-admin/` | Super-admin portal |
+| `src/services/` | API clients (base URL, auth, 401 redirect) |
+| `src/index.css`, `tailwind.config.js` | Design tokens, including `--status-*` for live and severity colours |
 
----
+## Run
 
-## 🏗️ Architecture
-- **`/src/apps/`**: Categorized operational modules (Management, Remote Sensing, Disease Detection).
-- **`/src/shared/`**: Shared components (Sidebar, TopBar) and utilities (Auth, Formatters).
-- **`/src/views/`**: Global entry points (Portal Hub, Login).
-
-## 🛠️ Tech Stack
-- **Frontend**: React + Vite
-- **Styling**: Tailwind CSS + Custom CSS Design Tokens
-- **Icons**: Lucide React
-- **Analytics**: Chart.js
-
----
-© 2026 FarmIntelytics. All rights reserved.
+```bash
+npm install
+npm run dev          # http://localhost:5173, API from VITE_API_BASE_URL (defaults to same origin in builds)
+npm run build        # production bundle; Dockerfile.prod + nginx.prod.conf serve it
+npm run lint
+```
