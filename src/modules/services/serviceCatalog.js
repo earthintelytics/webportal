@@ -10,11 +10,20 @@
  *              crop-yield, moisture-content, climate, land-restoration, alerts)
  *   analytics  sub-tabs of the Overview page (overview, vigor-health,
  *              moisture-et, et-log, water-management, soil-nutrients)
- *   topTabs    header tabs (monitor, reports, verification, ai-assistant)
+ *   topTabs    always HEADER_TABS: Monitor, Reports, Verification, Assistant
  *
  * What each sub-page should contain per service is the next research step
  * (docs/FINDINGS.md, S-series); until then each sub-page shows the shared page.
  */
+// The same four header tabs on every remote-sensing portal (crops,
+// organisations, services); only their contents change per service.
+const HEADER_TABS = [
+  { id: 'monitor', label: 'Monitor' },
+  { id: 'reports', label: 'Reports' },
+  { id: 'verification', label: 'Verification' },
+  { id: 'ai-assistant', label: 'Assistant' },
+];
+
 export const SERVICE_CATALOG = {
   'carbon-ffb': {
     title: 'Estate Carbon',
@@ -34,11 +43,7 @@ export const SERVICE_CATALOG = {
       { id: 'vigor-health', label: 'Biomass & growth' },
       { id: 'soil-nutrients', label: 'Soil carbon signals' },
     ],
-    topTabs: [
-      { id: 'monitor', label: 'Monitor' },
-      { id: 'reports', label: 'Carbon reports' },
-      { id: 'verification', label: 'Verification' },
-    ],
+    topTabs: HEADER_TABS,
   },
   'carbon-groups': {
     title: 'Group Carbon',
@@ -56,11 +61,7 @@ export const SERVICE_CATALOG = {
       { id: 'overview', label: 'Overview' },
       { id: 'vigor-health', label: 'Biomass & growth' },
     ],
-    topTabs: [
-      { id: 'monitor', label: 'Monitor' },
-      { id: 'reports', label: 'Group reports' },
-      { id: 'verification', label: 'Verification' },
-    ],
+    topTabs: HEADER_TABS,
   },
   'forestry-intel': {
     title: 'Forestry Intelligence',
@@ -81,11 +82,7 @@ export const SERVICE_CATALOG = {
       { id: 'vigor-health', label: 'Canopy vigour' },
       { id: 'moisture-et', label: 'Moisture' },
     ],
-    topTabs: [
-      { id: 'monitor', label: 'Monitor' },
-      { id: 'reports', label: 'Forest reports' },
-      { id: 'verification', label: 'Verification' },
-    ],
+    topTabs: HEADER_TABS,
   },
   'carbon-estimator': {
     title: 'Carbon Estimator',
@@ -102,11 +99,7 @@ export const SERVICE_CATALOG = {
       { id: 'overview', label: 'Overview' },
       { id: 'vigor-health', label: 'Biomass & growth' },
     ],
-    topTabs: [
-      { id: 'monitor', label: 'Monitor' },
-      { id: 'ai-assistant', label: 'Scenario modeller' },
-      { id: 'reports', label: 'Estimate reports' },
-    ],
+    topTabs: HEADER_TABS,
   },
   'land-restoration': {
     title: 'Land Restoration',
@@ -127,11 +120,7 @@ export const SERVICE_CATALOG = {
       { id: 'vigor-health', label: 'Vegetation recovery' },
       { id: 'moisture-et', label: 'Moisture' },
     ],
-    topTabs: [
-      { id: 'monitor', label: 'Monitor' },
-      { id: 'reports', label: 'Restoration reports' },
-      { id: 'ai-assistant', label: 'Scenario modeller' },
-    ],
+    topTabs: HEADER_TABS,
   },
   'eudr-check': {
     title: 'EUDR Check',
@@ -147,11 +136,7 @@ export const SERVICE_CATALOG = {
     analytics: [
       { id: 'overview', label: 'Overview' },
     ],
-    topTabs: [
-      { id: 'monitor', label: 'Monitor' },
-      { id: 'verification', label: 'Due diligence' },
-      { id: 'reports', label: 'EUDR reports' },
-    ],
+    topTabs: HEADER_TABS,
   },
   'activity-ffb': {
     title: 'Field Logs',
@@ -169,10 +154,7 @@ export const SERVICE_CATALOG = {
       { id: 'overview', label: 'Overview' },
       { id: 'vigor-health', label: 'Growth' },
     ],
-    topTabs: [
-      { id: 'monitor', label: 'Monitor' },
-      { id: 'reports', label: 'Field reports' },
-    ],
+    topTabs: HEADER_TABS,
   },
   'advisor': {
     title: 'Farm Advisor',
@@ -193,11 +175,7 @@ export const SERVICE_CATALOG = {
       { id: 'moisture-et', label: 'Water use' },
       { id: 'water-management', label: 'Irrigation' },
     ],
-    topTabs: [
-      { id: 'monitor', label: 'Monitor' },
-      { id: 'ai-assistant', label: 'Ask the advisor' },
-      { id: 'reports', label: 'Advisory reports' },
-    ],
+    topTabs: HEADER_TABS,
   },
   'finance-hub': {
     title: 'Central Ledger',
@@ -213,10 +191,7 @@ export const SERVICE_CATALOG = {
     analytics: [
       { id: 'overview', label: 'Overview' },
     ],
-    topTabs: [
-      { id: 'monitor', label: 'Monitor' },
-      { id: 'reports', label: 'Statements' },
-    ],
+    topTabs: HEADER_TABS,
   },
 };
 

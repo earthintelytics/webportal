@@ -3435,7 +3435,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
             { id: 'monitor',      label: 'Monitor',      icon: <Activity size={15} /> },
             { id: 'reports',      label: 'Reports',      icon: <FileText size={15} /> },
             { id: 'verification', label: 'Verification', icon: <Shield size={15} /> },
-            { id: 'ai-assistant', label: 'AI Scenario Modeler', icon: <Sparkles size={15} /> }
+            { id: 'ai-assistant', label: 'Assistant', icon: <Sparkles size={15} /> }
           ], service?.topTabs).map(tab => (
             <button
               key={tab.id}
@@ -6273,13 +6273,13 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
                       </div>
                       <div className="col-span-2 border-t border-gray-150 pt-3 flex justify-between items-center">
                         <div>
-                          <span className="text-[9px] text-gray-455 font-black uppercase tracking-wider block">MRV Compliance Status</span>
+                          <span className="text-[9px] text-gray-455 font-black uppercase tracking-wider block">Audit Status</span>
                           <span className="text-xs font-bold text-green-700 flex items-center gap-1 mt-0.5">
-                            <CheckCircle2 size={11} className="text-green-600" /> Approved & Signed
+                            <CheckCircle2 size={11} className="text-green-600" /> Compiled Summary
                           </span>
                         </div>
                         <span className="text-[8px] font-bold bg-slate-900 text-white px-2 py-0.5 rounded border uppercase">
-                          VCS Standard
+                          Biomass Density Proxy
                         </span>
                       </div>
                     </div>
@@ -6287,7 +6287,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
 
                   <div className="flex justify-between items-center pt-4 border-t border-gray-100 text-[8px] font-bold text-gray-600 uppercase tracking-wider">
                     <span>FARMINTELYTICS WEBPORTAL v3.2</span>
-                    <span className="text-green-600">Certified Deforestation-Free</span>
+                    <span className="text-green-600">EUDR Baseline Screened</span>
                     <span>Page {pageCounter} of {totalPages}</span>
                   </div>
                 </div>
@@ -6959,7 +6959,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
                               {/* Page 2 Footer */}
                               <div className="flex justify-between items-center pt-3 border-t border-gray-100 text-[8px] font-bold text-gray-600 uppercase tracking-wider">
                                 <span>FARMINTELYTICS WEBPORTAL v3.2</span>
-                                <span className="text-green-650 font-bold">Certified Deforestation-Free</span>
+                                <span className="text-green-650 font-bold">EUDR Baseline Screened</span>
                                 <span>Page 2 of 2</span>
                               </div>
                             </div>
