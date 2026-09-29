@@ -1,3 +1,4 @@
+// UNUSED (2026-09-29): replaced by modules/services/ServicePortal.jsx (same layout as organisation monitoring). Kept on purpose, not deleted — see docs/UNUSED_CODE.md in the root repo before reusing or removing.
 import React from 'react';
 import { Sun, CloudRain, AlertTriangle, Satellite, Map as MapIcon } from 'lucide-react';
 import { SimpleCard, WorkerActivityTable, GeospatialPreview } from '../../../components/SharedComponents';

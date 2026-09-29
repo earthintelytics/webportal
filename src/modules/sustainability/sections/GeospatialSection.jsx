@@ -1,3 +1,4 @@
+// UNUSED (2026-09-29): replaced by modules/services/ServicePortal.jsx (same layout as organisation monitoring). Kept on purpose, not deleted — see docs/UNUSED_CODE.md in the root repo before reusing or removing.
 import React from 'react';
 import { Layers, Satellite, Globe, Leaf, Trees, Zap, CheckCircle2 } from 'lucide-react';
 import { MapContainer, TileLayer, ZoomControl } from 'react-leaflet';
