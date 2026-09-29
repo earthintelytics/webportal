@@ -5,7 +5,7 @@ import {
 } from '../../services/adminApi';
 import { useConfirm } from '../components/ConfirmProvider';
 import ErrorBanner from '../components/ErrorBanner';
-import { WEEKDAYS, DEFAULT_SCHEDULE, cronFor, parseCron, scheduleText, nextRun } from '../components/schedule';
+import { WEEKDAYS, DEFAULT_SCHEDULE, cronFor, parseCron, scheduleText, nextRun, nextRuns, cronError } from '../components/schedule';
 
 /**
  * Monitoring schedule: when each organisation's estates get new satellite
@@ -28,8 +28,11 @@ function SchedulePicker({ value, onChange }) {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-2">
-        {[['days', 'Every few days'], ['weekly', 'Weekly'], ['monthly', 'Monthly']].map(([id, label]) => <Chip key={id} on={s.mode === id} onClick={() => set({ mode: id })}>{label}</Chip>)}
+        {[['days', 'Every few days'], ['weekly', 'Weekly'], ['monthly', 'Monthly'], ['custom', 'Custom rule']].map(([id, label]) => (
+          <Chip key={id} on={s.mode === id} onClick={() => set(id === 'custom' && !s.custom ? { mode: id, custom: cronFor(s) } : { mode: id })}>{label}</Chip>
+        ))}
       </div>
+      {s.mode === 'custom' ? <CustomRule value={s.custom || ''} onChange={custom => set({ custom })} /> : (
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {s.mode === 'days' && <label className="space-y-1.5 block"><span className="text-sm font-semibold text-gray-800">How often</span><select className={inputCls} value={s.every} onChange={e => set({ every: +e.target.value })}>{[1, 2, 3, 5, 7, 10, 14].map(n => <option key={n} value={n}>{n === 1 ? 'Every day' : `Every ${n} days`}</option>)}</select></label>}
         {s.mode === 'days' && Number(s.every) > 1 && <label className="space-y-1.5 block"><span className="text-sm font-semibold text-gray-800">Starting on day</span><select className={inputCls} value={s.startDay || 1} onChange={e => set({ startDay: +e.target.value })}>{Array.from({ length: Number(s.every) }, (_, i) => i + 1).map(d => <option key={d} value={d}>{d === 1 ? '1 (default)' : d}</option>)}</select><span className="block text-xs text-gray-500">Give each organisation a different start day to spread the load.</span></label>}
@@ -37,31 +40,50 @@ function SchedulePicker({ value, onChange }) {
         {s.mode === 'monthly' && <label className="space-y-1.5 block"><span className="text-sm font-semibold text-gray-800">Day of the month</span><select className={inputCls} value={s.monthday} onChange={e => set({ monthday: +e.target.value })}>{Array.from({ length: 28 }, (_, i) => i + 1).map(d => <option key={d}>{d}</option>)}</select></label>}
         <label className="space-y-1.5 block"><span className="text-sm font-semibold text-gray-800">Time (server time)</span><select className={inputCls} value={s.hour} onChange={e => set({ hour: +e.target.value, minute: 0 })}>{Array.from({ length: 24 }, (_, h) => <option key={h} value={h}>{String(h).padStart(2, '0')}:00</option>)}</select></label>
       </div>
-      <p className="text-sm text-gray-700">Runs <span className="font-semibold">{scheduleText(s).toLowerCase()}</span>.</p>
+      )}
+      {s.mode !== 'custom' && <p className="text-sm text-gray-700">Runs <span className="font-semibold">{scheduleText(s).charAt(0).toLowerCase() + scheduleText(s).slice(1)}</span>.</p>}
+    </div>
+  );
+}
+
+// Any cron rule: typed freely, checked as you type, next runs shown.
+export function CustomRule({ value, onChange }) {
+  const err = value.trim() ? cronError(value) : 'Type a rule, e.g. "0 3 1,15 * *" (03:00 on the 1st and 15th).';
+  const runs = err ? [] : nextRuns(value, 3);
+  const simple = err ? null : parseCron(value);
+  return (
+    <div className="space-y-2">
+      <label className="space-y-1.5 block">
+        <span className="text-sm font-semibold text-gray-800">Cron rule</span>
+        <input className={`${inputCls} font-mono`} value={value} onChange={e => onChange(e.target.value)} placeholder="minute hour day-of-month month day-of-week" spellCheck={false} />
+      </label>
+      <div className="text-xs text-gray-500">5 parts: minute (0–59) · hour (0–23) · day of month (1–31) · month (1–12) · day of week (0–6, Sunday = 0). Use * for any, lists 1,15, ranges 1-5, steps */6.</div>
+      {err ? <div className="text-xs text-amber-800">{err}</div> : (
+        <div className="text-sm text-gray-700">{simple && <><span className="font-semibold">{scheduleText(simple)}</span>. </>}Next runs: {runs.map(d => d.toLocaleString(undefined, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })).join(' · ') || 'none within a year'}</div>
+      )}
     </div>
   );
 }
 
 function JobModal({ job, orgs, configs, onSave, onClose }) {
   const parsed = job ? parseCron(job.cron) : DEFAULT_SCHEDULE;
-  const [schedule, setSchedule] = useState(parsed || DEFAULT_SCHEDULE);
-  const [custom, setCustom] = useState(job && !parsed ? job.cron : '');
+  const [schedule, setSchedule] = useState(parsed || { ...DEFAULT_SCHEDULE, mode: 'custom', custom: job?.cron || '' });
   const [org, setOrg] = useState(() => (job ? orgs.find(o => job.name.startsWith(o.schema_name))?.schema_name || '' : ''));
   const [configPath, setConfigPath] = useState(job?.config_path || '');
   const [name, setName] = useState(job?.name || '');
   const [description, setDescription] = useState(job?.description || '');
   const [isBatch, setIsBatch] = useState(job ? job.is_batch : true);
-  const [advanced, setAdvanced] = useState(Boolean(job && !parsed));
+  const [advanced, setAdvanced] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
   const orgConfigs = org ? configs.filter(c => c.filename.startsWith(org) || (c.batch_name || '').startsWith(org)) : configs;
-  const cron = custom.trim() || cronFor(schedule);
+  const cron = cronFor(schedule);
   const autoName = configPath ? `${configPath.replace('configs/', '').replace(/\.ya?ml$/, '')}_scheduled_monitoring` : '';
 
   const save = async () => {
     if (!configPath) return setError('Choose which site to monitor.');
-    if (custom.trim() && custom.trim().split(/\s+/).length !== 5) return setError('A custom rule needs 5 parts, e.g. "0 3 */5 * *".');
+    if (cronError(cron)) return setError(cronError(cron));
     setSaving(true); setError('');
     try {
       const site = configs.find(c => `configs/${c.filename}` === configPath);
@@ -97,14 +119,14 @@ function JobModal({ job, orgs, configs, onSave, onClose }) {
             </label>
           </div>
         )}
-        {parsed || !job ? <SchedulePicker value={schedule} onChange={(s) => { setSchedule(s); setCustom(''); }} /> : <p className="text-sm text-gray-700">This schedule uses a custom rule (see technical details).</p>}
+        <SchedulePicker value={schedule} onChange={setSchedule} />
         <div className="rounded-xl border border-gray-200">
           <button type="button" onClick={() => setAdvanced(a => !a)} className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-gray-700">Technical details<ChevronDown size={16} className={advanced ? 'rotate-180' : ''} /></button>
           {advanced && (
             <div className="px-4 pb-4 pt-3 border-t border-gray-100 space-y-4">
               {!job && <label className="space-y-1.5 block"><span className="text-sm font-semibold text-gray-800">Job name</span><input className={inputCls} placeholder={autoName || 'generated from the site'} value={name} onChange={e => setName(e.target.value)} /></label>}
               <label className="space-y-1.5 block"><span className="text-sm font-semibold text-gray-800">Description</span><input className={inputCls} value={description} onChange={e => setDescription(e.target.value)} placeholder="Generated from the site" /></label>
-              <label className="space-y-1.5 block"><span className="text-sm font-semibold text-gray-800">Custom rule (cron)</span><input className={`${inputCls} font-mono`} placeholder={cronFor(schedule)} value={custom} onChange={e => setCustom(e.target.value)} /><span className="block text-xs text-gray-500">Leave empty to use the schedule above ({cronFor(schedule)}).</span></label>
+              <div className="text-xs text-gray-600">Cron rule saved: <span className="font-mono">{cron || '—'}</span></div>
               <label className="flex items-center gap-3 text-sm text-gray-800"><input type="checkbox" checked={isBatch} onChange={e => setIsBatch(e.target.checked)} className="w-4 h-4 accent-green-700" />Run all estates in this configuration together</label>
             </div>
           )}

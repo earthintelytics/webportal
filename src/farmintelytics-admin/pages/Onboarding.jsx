@@ -10,7 +10,8 @@ import {
 import { slugify, modulesForAccessModel, ACCESS_MODELS, ALL_RS_INDICES } from './Organizations';
 import ErrorBanner from '../components/ErrorBanner';
 import { SENSOR_OPTIONS, ALL_CROPS, toggleInList } from '../components/formHelpers';
-import { WEEKDAYS, cronFor, scheduleText as scheduleWords } from '../components/schedule';
+import { WEEKDAYS, cronFor, cronError, scheduleText as scheduleWords } from '../components/schedule';
+import { CustomRule } from './Scheduler';
 const scheduleText = (s) => { const w = scheduleWords(s); return w.charAt(0).toLowerCase() + w.slice(1); };
 import { CROP_PHOTOS, SERVICE_PHOTOS, SERVICE_GROUPS, SERVICE_PACKAGES } from '../../constants/servicePhotos';
 import { HERO_PLACEHOLDERS } from '../../constants/heroPlaceholders';
@@ -554,18 +555,20 @@ const Onboarding = () => {
             {autoSchedule && (
               <div className="space-y-4">
                 <div className="flex flex-wrap gap-2">
-                  {[['days', 'Every few days'], ['weekly', 'Weekly'], ['monthly', 'Monthly']].map(([id, label]) => <Chip key={id} on={sched.mode === id} onClick={() => setSched(s => ({ ...s, mode: id }))}>{label}</Chip>)}
+                  {[['days', 'Every few days'], ['weekly', 'Weekly'], ['monthly', 'Monthly'], ['custom', 'Custom rule']].map(([id, label]) => <Chip key={id} on={sched.mode === id} onClick={() => setSched(s => (id === 'custom' && !s.custom ? { ...s, mode: id, custom: cronFor(s) } : { ...s, mode: id }))}>{label}</Chip>)}
                 </div>
+                {sched.mode === 'custom' ? <CustomRule value={sched.custom || ''} onChange={custom => setSched(s => ({ ...s, custom }))} /> : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {sched.mode === 'days' && <Field label="Every how many days"><select className={inputCls} value={sched.every} onChange={e => setSched(s => ({ ...s, every: +e.target.value }))}>{[1, 2, 3, 5, 7, 10, 14].map(n => <option key={n} value={n}>{n === 1 ? 'Every day' : `Every ${n} days`}</option>)}</select></Field>}
                   {sched.mode === 'weekly' && <Field label="Day"><select className={inputCls} value={sched.weekday} onChange={e => setSched(s => ({ ...s, weekday: +e.target.value }))}>{WEEKDAYS.map((d, i) => <option key={d} value={i}>{d}</option>)}</select></Field>}
                   {sched.mode === 'monthly' && <Field label="Day of the month"><select className={inputCls} value={sched.monthday} onChange={e => setSched(s => ({ ...s, monthday: +e.target.value }))}>{Array.from({ length: 28 }, (_, i) => i + 1).map(d => <option key={d}>{d}</option>)}</select></Field>}
                   <Field label="Time (server time)"><select className={inputCls} value={sched.hour} onChange={e => setSched(s => ({ ...s, hour: +e.target.value }))}>{Array.from({ length: 24 }, (_, h) => <option key={h} value={h}>{String(h).padStart(2, '0')}:00</option>)}</select></Field>
                 </div>
-                <p className="text-sm text-gray-700">Runs <span className="font-semibold">{scheduleText(sched)}</span>{!grouped && done.farms.length > 1 ? ', each estate 15 minutes after the previous one' : ''}.</p>
+                )}
+                {sched.mode !== 'custom' && <p className="text-sm text-gray-700">Runs <span className="font-semibold">{scheduleText(sched)}</span>{!grouped && done.farms.length > 1 ? ', each estate 15 minutes after the previous one' : ''}.</p>}
               </div>
             )}
-            <div className="flex justify-end"><Primary disabled={busy} onClick={submitSchedule}>{busy ? 'Setting up…' : 'Finish setup'} <ChevronRight size={15} /></Primary></div>
+            <div className="flex justify-end"><Primary disabled={busy || (autoSchedule && sched.mode === 'custom' && Boolean(cronError(sched.custom)))} onClick={submitSchedule}>{busy ? 'Setting up…' : 'Finish setup'} <ChevronRight size={15} /></Primary></div>
           </Card>
         )}
 
