@@ -1,3 +1,4 @@
+// UNUSED (2026-09-29): not imported anywhere in the running app. Kept on purpose, not deleted — see docs/UNUSED_CODE.md in the root repo before reusing or removing.
 import React, { useState, useEffect } from 'react';
 import { 
   Sprout, 

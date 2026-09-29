@@ -1,3 +1,4 @@
+// UNUSED (2026-09-29): not imported anywhere in the running app. Kept on purpose, not deleted — see docs/UNUSED_CODE.md in the root repo before reusing or removing.
 import React from 'react';
 import { Search, Layers, ChevronRight, CheckCircle2, X, TrendingUp, Zap } from 'lucide-react';
 import { MapContainer, TileLayer, ZoomControl, Polygon } from 'react-leaflet';
