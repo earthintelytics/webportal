@@ -273,7 +273,7 @@ const Inventory = () => {
             <Database size={20} color="#16a34a" />
           </div>
           <div>
-            <p style={{ color: '#64748b', fontSize: '11px', fontWeight: 600, letterSpacing: '0', margin: 0 }}>Total Storage Objects</p>
+            <p style={{ color: '#64748b', fontSize: '11px', fontWeight: 600, letterSpacing: '0', margin: 0 }}>Total storage objects</p>
             <p style={{ color: '#0f172a', fontSize: '20px', fontWeight: 600, margin: '2px 0 0' }}>{minioFiles.length}</p>
           </div>
         </div>
@@ -283,7 +283,7 @@ const Inventory = () => {
             <HardDrive size={20} color="#3b82f6" />
           </div>
           <div>
-            <p style={{ color: '#64748b', fontSize: '11px', fontWeight: 600, letterSpacing: '0', margin: 0 }}>Total Storage Footprint</p>
+            <p style={{ color: '#64748b', fontSize: '11px', fontWeight: 600, letterSpacing: '0', margin: 0 }}>Total storage footprint</p>
             <p style={{ color: '#0f172a', fontSize: '20px', fontWeight: 600, margin: '2px 0 0' }}>{formatSize(totalSize)}</p>
           </div>
         </div>
@@ -293,7 +293,7 @@ const Inventory = () => {
             <Server size={20} color="#f59e0b" />
           </div>
           <div>
-            <p style={{ color: '#64748b', fontSize: '11px', fontWeight: 600, letterSpacing: '0', margin: 0 }}>Postgres Farms</p>
+            <p style={{ color: '#64748b', fontSize: '11px', fontWeight: 600, letterSpacing: '0', margin: 0 }}>Postgres farms</p>
             <p style={{ color: '#0f172a', fontSize: '20px', fontWeight: 600, margin: '2px 0 0' }}>{farms.length}</p>
           </div>
         </div>
@@ -371,15 +371,15 @@ const Inventory = () => {
           <div>
             <label style={labelStyle}>Organization</label>
             <select style={{ ...inputStyle, minWidth: '160px' }} value={selectedOrg} onChange={e => setSelectedOrg(e.target.value)}>
-              <option value="">All Orgs</option>
+              <option value="">All orgs</option>
               {orgs.map(o => <option key={o.schema_name} value={o.schema_name}>{o.display_name}</option>)}
             </select>
           </div>
 
           <div>
-            <label style={labelStyle}>Farm Registry</label>
+            <label style={labelStyle}>Farm registry</label>
             <select style={{ ...inputStyle, minWidth: '160px' }} value={selectedFarm} onChange={e => setSelectedFarm(e.target.value)}>
-              <option value="">All Farms</option>
+              <option value="">All farms</option>
               {farms.filter(f => !selectedOrg || f.company_id === selectedOrg).map(f => (
                 <option key={f.farm_id} value={f.farm_id}>{f.farm_name}</option>
               ))}
@@ -425,10 +425,10 @@ const Inventory = () => {
                 <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
                   <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: 600, color: '#64748b', letterSpacing: '0' }}>Farm</th>
                   <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: 600, color: '#64748b', letterSpacing: '0' }}>Org</th>
-                  <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: 600, color: '#64748b', letterSpacing: '0' }}>Postgres Flag</th>
-                  <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: 600, color: '#64748b', letterSpacing: '0' }}>Sync Indicator</th>
+                  <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: 600, color: '#64748b', letterSpacing: '0' }}>Postgres flag</th>
+                  <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: 600, color: '#64748b', letterSpacing: '0' }}>Sync indicator</th>
                   <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: 600, color: '#64748b', letterSpacing: '0' }}>MinIO Size</th>
-                  <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: 600, color: '#64748b', letterSpacing: '0' }}>Sync Time</th>
+                  <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: 600, color: '#64748b', letterSpacing: '0' }}>Sync time</th>
                 </tr>
               </thead>
               <tbody>
@@ -471,9 +471,9 @@ const Inventory = () => {
               <thead>
                 <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
                   <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: 600, color: '#64748b', letterSpacing: '0' }}>MinIO Key (Storage Path)</th>
-                  <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: 600, color: '#64748b', letterSpacing: '0' }}>File Type</th>
+                  <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: 600, color: '#64748b', letterSpacing: '0' }}>File type</th>
                   <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: 600, color: '#64748b', letterSpacing: '0' }}>Size</th>
-                  <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: 600, color: '#64748b', letterSpacing: '0' }}>Last Modified</th>
+                  <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: 600, color: '#64748b', letterSpacing: '0' }}>Last modified</th>
                   <th style={{ padding: '12px 8px', textAlign: 'right', fontSize: '11px', fontWeight: 600, color: '#64748b', letterSpacing: '0' }}>Actions</th>
                 </tr>
               </thead>

@@ -160,7 +160,7 @@ const ErrorInspector = ({ error, compact = false }) => {
         </button>
       </div>
 
-      <div style={{ padding: '12px 14px', background: '#0f172a', overflowX: 'auto', maxHeight: '240px' }}>
+      <div style={{ padding: '12px 14px', background: '#f8fafc', borderTop: '1px solid #e2e8f0', overflowX: 'auto', maxHeight: '240px' }}>
         <pre style={{
           margin: 0, fontSize: '11.5px', fontFamily: 'var(--font-mono)',
           color: '#fca5a5', lineHeight: 1.5, whiteSpace: 'pre-wrap', wordBreak: 'break-word',
@@ -357,7 +357,7 @@ const PipelineLogModal = ({ log, idx, onClose }) => {
                 gap: '12px', background: '#f8fafc', padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0',
               }}>
                 <div>
-                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b' }}>Job Name</div>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b' }}>Job name</div>
                   <div style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a', marginTop: '2px' }}>{log.job_name || '—'}</div>
                 </div>
                 <div>
@@ -373,14 +373,14 @@ const PipelineLogModal = ({ log, idx, onClose }) => {
                   </div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b' }}>Plots Processed</div>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b' }}>Plots processed</div>
                   <div style={{ fontSize: '13px', fontWeight: 700, color: '#0f172a', marginTop: '2px' }}>{log.plots_processed ?? '—'}</div>
                 </div>
               </div>
 
               {/* Extra details list */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div style={{ fontSize: '12px', fontWeight: 600, color: '#0f172a' }}>Execution Metadata</div>
+                <div style={{ fontSize: '12px', fontWeight: 600, color: '#0f172a' }}>Execution metadata</div>
                 <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '10px', overflow: 'hidden' }}>
                   {Object.entries(payloadData)
                     .filter(([k]) => !['job_name', 'timestamp', 'duration', 'plots_processed', 'error', 'status'].includes(k))
@@ -403,7 +403,7 @@ const PipelineLogModal = ({ log, idx, onClose }) => {
             </>
           ) : (
             <pre style={{
-              margin: 0, padding: '16px', background: '#0f172a', color: '#e2e8f0',
+              margin: 0, padding: '16px', background: '#f8fafc', color: '#334155', border: '1px solid #e2e8f0',
               borderRadius: '12px', fontSize: '12px', fontFamily: 'var(--font-mono)',
               whiteSpace: 'pre-wrap', wordBreak: 'break-word', overflowX: 'auto',
             }}>
@@ -533,7 +533,7 @@ const Logs = () => {
             onClick={loadAll}
             style={{
               display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 18px',
-              background: '#0f172a', border: 'none', borderRadius: '10px',
+              background: '#15803d', border: 'none', borderRadius: '10px',
               color: '#ffffff', fontSize: '12px', fontWeight: 700, cursor: 'pointer',
               boxShadow: '0 2px 4px rgba(15,23,42,0.15)',
             }}
@@ -638,7 +638,7 @@ const Logs = () => {
               <span>Plot</span>
               <span>Sensor</span>
               <span>Status</span>
-              <span>Target Date</span>
+              <span>Target date</span>
               <span>Completed</span>
               <span>Execution Summary / Error</span>
               <span></span>
@@ -706,23 +706,23 @@ const Logs = () => {
                         <div style={{ padding: '16px 20px', background: '#f8fafc', borderTop: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', background: '#ffffff', padding: '12px 16px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
                             <div>
-                              <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b' }}>Created Timestamp</div>
+                              <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b' }}>Created timestamp</div>
                               <div style={{ fontSize: '12px', fontWeight: 700, color: '#0f172a', marginTop: '2px' }}>
                                 {job.created_at ? new Date(job.created_at).toLocaleString() : '—'}
                               </div>
                             </div>
                             <div>
-                              <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b' }}>Completed Timestamp</div>
+                              <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b' }}>Completed timestamp</div>
                               <div style={{ fontSize: '12px', fontWeight: 700, color: '#0f172a', marginTop: '2px' }}>
                                 {job.completed_at ? new Date(job.completed_at).toLocaleString() : '—'}
                               </div>
                             </div>
                             <div>
-                              <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b' }}>Sensor Band Target</div>
+                              <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b' }}>Sensor band target</div>
                               <div style={{ fontSize: '12px', fontWeight: 700, color: '#0f172a', marginTop: '2px' }}>{job.sensor || '—'}</div>
                             </div>
                             <div>
-                              <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b' }}>Date Span</div>
+                              <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b' }}>Date span</div>
                               <div style={{ fontSize: '12px', fontWeight: 700, color: '#0f172a', marginTop: '2px' }}>
                                 {job.start_date || '—'} to {job.end_date || '—'}
                               </div>

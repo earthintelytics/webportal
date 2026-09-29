@@ -237,7 +237,7 @@ const OrgModal = ({ org, onSave, onClose }) => {
             <input style={inputStyle} placeholder="Company display name" value={form.company_name} onChange={e => setForm(f => ({ ...f, company_name: e.target.value }))} />
           </div>
           <div>
-            <label style={labelStyle}>Branding Logo</label>
+            <label style={labelStyle}>Branding logo</label>
             {org ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ width: '48px', height: '48px', borderRadius: '10px', border: '1px solid #cbd5e1', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
@@ -260,16 +260,16 @@ const OrgModal = ({ org, onSave, onClose }) => {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             <div>
-              <label style={labelStyle}>Map Center Lat</label>
+              <label style={labelStyle}>Map center lat</label>
               <input type="number" step="any" style={inputStyle} value={form.map_center_lat} onChange={e => setForm(f => ({ ...f, map_center_lat: parseFloat(e.target.value) }))} />
             </div>
             <div>
-              <label style={labelStyle}>Map Center Lon</label>
+              <label style={labelStyle}>Map center lon</label>
               <input type="number" step="any" style={inputStyle} value={form.map_center_lon} onChange={e => setForm(f => ({ ...f, map_center_lon: parseFloat(e.target.value) }))} />
             </div>
           </div>
           <div>
-            <label style={labelStyle}>Access Model</label>
+            <label style={labelStyle}>Access model</label>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
               {ACCESS_MODELS.map(m => {
                 const active = accessModel === m.id;
@@ -292,7 +292,7 @@ const OrgModal = ({ org, onSave, onClose }) => {
           </div>
           {accessModel === 'crop' && (
             <div>
-              <label style={labelStyle}>Allowed Crops</label>
+              <label style={labelStyle}>Allowed crops</label>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                 {ALL_CROPS.map(c => {
                   const active = form.allowed_crops.includes(c);
@@ -312,7 +312,7 @@ const OrgModal = ({ org, onSave, onClose }) => {
             </div>
           )}
           <div>
-            <label style={labelStyle}>Allowed Satellite Indices</label>
+            <label style={labelStyle}>Allowed satellite indices</label>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', maxHeight: '150px', overflowY: 'auto', padding: '8px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
               {ALL_RS_INDICES.map(ix => {
                 const active = form.allowed_indices.includes(ix.id);
@@ -335,7 +335,7 @@ const OrgModal = ({ org, onSave, onClose }) => {
           </div>
           {org && (
             <div>
-              <label style={labelStyle}>Dashboard Filters</label>
+              <label style={labelStyle}>Dashboard filters</label>
               {loadingFilters && <p style={{ color: '#94a3b8', fontSize: '11px', margin: 0 }}>Reading boundary properties…</p>}
               {!loadingFilters && filterOptions.length === 0 && (
                 <p style={{ color: '#94a3b8', fontSize: '11px', margin: 0 }}>No named boundary columns found for this org's farm(s) yet.</p>
@@ -374,7 +374,7 @@ const OrgModal = ({ org, onSave, onClose }) => {
           )}
           {org && (
             <div>
-              <label style={labelStyle}>Alert Thresholds</label>
+              <label style={labelStyle}>Alert thresholds</label>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                 <div>
                   <p style={{ color: '#64748b', fontSize: '11px', margin: '0 0 4px' }}>NDVI/SAVI/EVI Drop %</p>
@@ -412,7 +412,7 @@ const OrgModal = ({ org, onSave, onClose }) => {
             </div>
           )}
           <div>
-            <label style={labelStyle}>Allowed Modules</label>
+            <label style={labelStyle}>Allowed modules</label>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', maxHeight: '180px', overflowY: 'auto', padding: '8px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
               {[...new Set([...ALL_MODULES, ...form.allowed_modules])].map(m => {
                 const active = form.allowed_modules.includes(m);

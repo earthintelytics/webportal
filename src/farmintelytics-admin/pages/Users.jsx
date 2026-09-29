@@ -164,7 +164,7 @@ const UsersPage = () => {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <h2 style={{ color: '#0f172a', fontSize: '20px', fontWeight: 600, margin: 0 }}>User Accounts</h2>
+          <h2 style={{ color: '#0f172a', fontSize: '20px', fontWeight: 600, margin: 0 }}>User accounts</h2>
           <p style={{ color: '#64748b', fontSize: '12px', fontWeight: 600, margin: '4px 0 0' }}>
             Create, manage and control all platform user accounts from here
           </p>
@@ -173,7 +173,7 @@ const UsersPage = () => {
           <button onClick={load} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '9px 14px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', color: '#475569', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>
             <RefreshCw size={13} /> Refresh
           </button>
-          <button onClick={() => { setShowForm(true); setEditUser(null); }} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '9px 18px', background: '#0f172a', border: 'none', borderRadius: '10px', color: 'white', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>
+          <button onClick={() => { setShowForm(true); setEditUser(null); }} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '9px 18px', background: '#15803d', border: 'none', borderRadius: '10px', color: 'white', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>
             <Plus size={15} /> New User
           </button>
         </div>
@@ -211,16 +211,16 @@ const UsersPage = () => {
       {showForm && (
         <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-            <p style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: '#0f172a' }}>Create New User Account</p>
+            <p style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: '#0f172a' }}>Create new user account</p>
             <button onClick={() => setShowForm(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}><X size={16} /></button>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
-            <div><label style={lbl}>First Name</label><input style={inp} value={form.first_name} onChange={e => setForm(f => ({ ...f, first_name: e.target.value }))} placeholder="First name" /></div>
-            <div><label style={lbl}>Last Name</label><input style={inp} value={form.last_name} onChange={e => setForm(f => ({ ...f, last_name: e.target.value }))} placeholder="Last name" /></div>
+            <div><label style={lbl}>First name</label><input style={inp} value={form.first_name} onChange={e => setForm(f => ({ ...f, first_name: e.target.value }))} placeholder="First name" /></div>
+            <div><label style={lbl}>Last name</label><input style={inp} value={form.last_name} onChange={e => setForm(f => ({ ...f, last_name: e.target.value }))} placeholder="Last name" /></div>
             <div><label style={lbl}>Email *</label><input type="email" style={inp} value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="Account email" /></div>
-            <div><label style={lbl}>Phone Number</label><input style={inp} value={form.phone_number} onChange={e => setForm(f => ({ ...f, phone_number: e.target.value }))} placeholder="+234..." /></div>
+            <div><label style={lbl}>Phone number</label><input style={inp} value={form.phone_number} onChange={e => setForm(f => ({ ...f, phone_number: e.target.value }))} placeholder="+234..." /></div>
             <div>
-              <label style={lbl}>Account Type</label>
+              <label style={lbl}>Account type</label>
               <select style={{ ...inp, cursor: 'pointer' }} value={form.account_type} onChange={e => setForm(f => ({ ...f, account_type: e.target.value }))}>
                 {ACCOUNT_TYPES.slice(1).map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
               </select>
@@ -239,8 +239,8 @@ const UsersPage = () => {
             <input type="checkbox" id="is_staff" checked={form.is_staff} onChange={e => setForm(f => ({ ...f, is_staff: e.target.checked }))} style={{ accentColor: '#0f172a' }} />
             <label htmlFor="is_staff" style={{ fontSize: '12px', fontWeight: 600, color: '#475569', cursor: 'pointer' }}>Django Staff access (Django Admin panel)</label>
           </div>
-          <button onClick={handleCreate} disabled={saving || !form.email} style={{ padding: '11px 24px', background: '#0f172a', border: 'none', borderRadius: '10px', color: 'white', fontSize: '13px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', opacity: saving ? 0.6 : 1 }}>
-            {saving ? <div style={{ width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} /> : <><Shield size={14} />Create Account</>}
+          <button onClick={handleCreate} disabled={saving || !form.email} style={{ padding: '11px 24px', background: '#15803d', border: 'none', borderRadius: '10px', color: 'white', fontSize: '13px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', opacity: saving ? 0.6 : 1 }}>
+            {saving ? <div style={{ width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} /> : <><Shield size={14} />Create account</>}
           </button>
         </div>
       )}
@@ -253,11 +253,11 @@ const UsersPage = () => {
             <button onClick={() => setEditUser(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}><X size={16} /></button>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
-            <div><label style={lbl}>First Name</label><input style={inp} value={editUser.first_name} onChange={e => setEditUser(u => ({ ...u, first_name: e.target.value }))} /></div>
-            <div><label style={lbl}>Last Name</label><input style={inp} value={editUser.last_name} onChange={e => setEditUser(u => ({ ...u, last_name: e.target.value }))} /></div>
+            <div><label style={lbl}>First name</label><input style={inp} value={editUser.first_name} onChange={e => setEditUser(u => ({ ...u, first_name: e.target.value }))} /></div>
+            <div><label style={lbl}>Last name</label><input style={inp} value={editUser.last_name} onChange={e => setEditUser(u => ({ ...u, last_name: e.target.value }))} /></div>
             <div><label style={lbl}>Phone</label><input style={inp} value={editUser.phone_number || ''} onChange={e => setEditUser(u => ({ ...u, phone_number: e.target.value }))} /></div>
             <div>
-              <label style={lbl}>Account Type</label>
+              <label style={lbl}>Account type</label>
               <select style={{ ...inp, cursor: 'pointer' }} value={editUser.account_type} onChange={e => setEditUser(u => ({ ...u, account_type: e.target.value }))}>
                 {ACCOUNT_TYPES.slice(1).map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
               </select>
@@ -267,8 +267,8 @@ const UsersPage = () => {
             <input type="checkbox" id="edit_staff" checked={!!editUser.is_staff} onChange={e => setEditUser(u => ({ ...u, is_staff: e.target.checked }))} style={{ accentColor: '#0f172a' }} />
             <label htmlFor="edit_staff" style={{ fontSize: '12px', fontWeight: 600, color: '#475569', cursor: 'pointer' }}>Django Staff access</label>
           </div>
-          <button onClick={handleUpdate} disabled={saving} style={{ padding: '11px 24px', background: '#0f172a', border: 'none', borderRadius: '10px', color: 'white', fontSize: '13px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', opacity: saving ? 0.6 : 1 }}>
-            {saving ? <div style={{ width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} /> : <><Check size={14} />Save Changes</>}
+          <button onClick={handleUpdate} disabled={saving} style={{ padding: '11px 24px', background: '#15803d', border: 'none', borderRadius: '10px', color: 'white', fontSize: '13px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', opacity: saving ? 0.6 : 1 }}>
+            {saving ? <div style={{ width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} /> : <><Check size={14} />Save changes</>}
           </button>
         </div>
       )}
@@ -307,7 +307,7 @@ const UsersPage = () => {
                 <div>
                   <div style={{ fontSize: '13px', fontWeight: 700, color: '#0f172a' }}>{user.first_name || user.last_name ? `${user.first_name} ${user.last_name}`.trim() : '—'}</div>
                   <div style={{ fontSize: '11px', color: '#64748b', marginTop: '1px' }}>{user.email}</div>
-                  {user.is_staff && <span style={{ fontSize: '11px', fontWeight: 600, color: '#7c3aed', letterSpacing: '0' }}>Django Staff</span>}
+                  {user.is_staff && <span style={{ fontSize: '11px', fontWeight: 600, color: '#7c3aed', letterSpacing: '0' }}>Django staff</span>}
                 </div>
                 <TypeBadge type={user.account_type} />
                 <span style={{ fontSize: '11px', color: '#64748b', fontFamily: 'var(--font-mono)', textTransform: 'capitalize' }}>{user.auth_provider || 'email'}</span>

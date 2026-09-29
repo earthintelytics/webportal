@@ -90,7 +90,7 @@ const Credentials = () => {
       {/* Create form */}
       {showForm && (
         <div style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '16px', padding: '20px' }}>
-          <p style={{ color: '#1e293b', fontSize: '14px', fontWeight: 700, margin: '0 0 16px' }}>New Credential</p>
+          <p style={{ color: '#1e293b', fontSize: '14px', fontWeight: 700, margin: '0 0 16px' }}>New credential</p>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
             <div>
               <label style={labelStyle}>Organization *</label>
@@ -106,11 +106,11 @@ const Credentials = () => {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
             <div>
-              <label style={labelStyle}>Account Holder Name</label>
+              <label style={labelStyle}>Account holder name</label>
               <input style={inputStyle} placeholder="Full name" value={form.full_name} onChange={e => setForm(f => ({ ...f, full_name: e.target.value }))} />
             </div>
             <div>
-              <label style={labelStyle}>Account Role</label>
+              <label style={labelStyle}>Account role</label>
               <select style={{ ...inputStyle, cursor: 'pointer' }} value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))}>
                 <option value="admin">Admin — full organization access</option>
                 <option value="analyst">Analyst — monitoring & reports</option>
@@ -129,7 +129,7 @@ const Credentials = () => {
             </div>
           </div>
           <button onClick={handleCreate} disabled={saving || !form.company_id || !form.email} style={{ padding: '12px 24px', background: '#15803d', border: 'none', borderRadius: '10px', color: 'white', fontSize: '13px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', opacity: saving ? 0.6 : 1 }}>
-            {saving ? <div style={{ width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} /> : <><Check size={15} />Generate Credential</>}
+            {saving ? <div style={{ width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} /> : <><Check size={15} />Generate credential</>}
           </button>
         </div>
       )}
