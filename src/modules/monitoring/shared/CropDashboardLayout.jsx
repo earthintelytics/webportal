@@ -92,7 +92,8 @@ import {
 } from 'chart.js';
 
 import { InfoTooltipPortal } from './dashboard/components/InfoTooltipPortal';
-import { Upload as UploadIcon } from 'lucide-react';
+import { Upload as UploadIcon, MapPin as EstateIcon } from 'lucide-react';
+import { fetchEstates } from '../../../services/estatesApi';
 import YourDataPage from '../../data/YourDataPage';
 import DataNeededDialog from '../../data/DataNeededDialog';
 import { ResizeMap, MapPaneClipSetter, SwipeSliderOverlay, FitBoundsToPlots, FitToZarrBounds } from './dashboard/map/MapHelpers';
@@ -154,6 +155,20 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
 
 
   const [activeSidebarItem, setActiveSidebarItem] = useState(service?.sidebar?.[0]?.id || 'analytics');
+  // Estate selector (organisations with several estates): 'All' or an estate
+  // name. Lives in the URL (?estate=) so a link or refresh keeps the choice.
+  const [filterEstate, setFilterEstate] = useState(() => new URLSearchParams(window.location.search).get('estate') || 'All');
+  const [estates, setEstates] = useState([]); // from GET /estates when the backend has it
+  useEffect(() => {
+    let active = true;
+    fetchEstates().then(list => { if (active && Array.isArray(list)) setEstates(list); }).catch(() => {});
+    return () => { active = false; };
+  }, []);
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (filterEstate && filterEstate !== 'All') url.searchParams.set('estate', filterEstate); else url.searchParams.delete('estate');
+    window.history.replaceState(window.history.state, '', url);
+  }, [filterEstate]);
   // Settings → Your data: which dataset to open (set by the sign-in "Data needed" dialog)
   const [dataFocus, setDataFocus] = useState(null);
   const [activeTab, setActiveTab] = useState('monitor');
@@ -682,7 +697,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
         const ndmiVal = p.indices?.ndmi ?? 0;
         const healthVal = ndviVal > 0.7 ? 'Optimal' : ndviVal > 0.55 ? 'Good' : 'Stressed';
         const colorVal = healthVal === 'Optimal' ? '#15803d' : healthVal === 'Good' ? '#84cc16' : '#dc2626';
-        return { id: p.plot_id, name: p.name || p.plot_id, area: `${p.area_ha || 10.0} HA`, health: healthVal, ndvi: ndviVal, ndmi: ndmiVal, color: colorVal, coords, indices: p.indices, subfarm: p.subfarm || p.division || null, division: p.division || null, blocId: p.bloc_id || null, filters: p.filters || {} };
+        return { id: p.plot_id, name: p.name || p.plot_id, area: `${p.area_ha || 10.0} HA`, health: healthVal, ndvi: ndviVal, ndmi: ndmiVal, color: colorVal, coords, indices: p.indices, subfarm: p.subfarm || p.division || null, division: p.division || null, blocId: p.bloc_id || null, filters: p.filters || {}, farmId: p.farm_id || null };
       });
     }
     return [];
@@ -701,13 +716,25 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
         const ndmiVal = p.indices?.ndmi ?? 0;
         const healthVal = ndviVal > 0.7 ? 'Optimal' : ndviVal > 0.55 ? 'Good' : 'Stressed';
         const colorVal = healthVal === 'Optimal' ? '#15803d' : healthVal === 'Good' ? '#84cc16' : '#dc2626';
-        return { id: p.plot_id, name: p.name || p.plot_id, area: `${p.area_ha || 10.0} HA`, health: healthVal, ndvi: ndviVal, ndmi: ndmiVal, color: colorVal, coords, indices: p.indices, subfarm: p.subfarm || p.division || null, division: p.division || null, blocId: p.bloc_id || null, filters: p.filters || {} };
+        return { id: p.plot_id, name: p.name || p.plot_id, area: `${p.area_ha || 10.0} HA`, health: healthVal, ndvi: ndviVal, ndmi: ndmiVal, color: colorVal, coords, indices: p.indices, subfarm: p.subfarm || p.division || null, division: p.division || null, blocId: p.bloc_id || null, filters: p.filters || {}, farmId: p.farm_id || null };
       });
     }
     return [];
   }, [plots, currentTimelineB]);
 
-  const plotsData = plotsDataA;
+  // Estates: registered estates from the backend, else the estate names the
+  // plots carry (boundary property). The selector only shows with 2 or more.
+  const estateOptions = useMemo(() => {
+    if (estates.length) return estates.map(e => e.name).filter(Boolean);
+    return [...new Set(plotsDataA.map(p => p.subfarm).filter(Boolean))].sort();
+  }, [estates, plotsDataA]);
+  // Every page reads plotsData, so scoping it to the chosen estate scopes the
+  // maps, charts and tables together.
+  const plotsData = useMemo(() => {
+    if (!filterEstate || filterEstate === 'All') return plotsDataA;
+    const est = estates.find(e => e.name === filterEstate);
+    return plotsDataA.filter(p => p.subfarm === filterEstate || (est && p.farmId === est.farm_id));
+  }, [plotsDataA, filterEstate, estates]);
 
   // Admin-configured dashboard filters (Super Admin onboarding) narrowed to
   // just the intelligence-layers map view — other tabs/charts keep reading
@@ -1037,7 +1064,6 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
   const userMenuRef = useRef(null);
 
   // Dashboard filter states
-  const [filterEstate, setFilterEstate] = useState('All');
   const [filterPlot, setFilterPlot] = useState('All');
   const [filterDate, setFilterDate] = useState('All');
 
@@ -3439,6 +3465,21 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
               </p>
             </div>
           </div>
+          {estateOptions.length >= 2 && (
+            <label className="flex items-center gap-2 pl-4 ml-1 border-l border-gray-200">
+              <EstateIcon size={16} className="text-green-600" />
+              <span className="sr-only">Estate</span>
+              <select
+                value={estateOptions.includes(filterEstate) ? filterEstate : 'All'}
+                onChange={e => handleEstateChange(e.target.value)}
+                className="px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm font-semibold text-gray-800 hover:border-gray-300 outline-none cursor-pointer"
+                aria-label="Estate"
+              >
+                <option value="All">All estates ({estateOptions.length})</option>
+                {estateOptions.map(name => <option key={name} value={name}>{name}</option>)}
+              </select>
+            </label>
+          )}
         </div>
 
         {/* ── TOP TABS ── */}
@@ -3774,8 +3815,8 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
                         onChange={e => handleEstateChange(e.target.value)}
                         className="bg-transparent text-xs font-bold text-gray-700 outline-none cursor-pointer pr-1"
                       >
-                        <option value="All">All Farms</option>
-                        {[...new Set(plotsData.map(p => p.subfarm).filter(Boolean))].map(sf => (
+                        <option value="All">All estates</option>
+                        {estateOptions.map(sf => (
                           <option key={sf} value={sf}>{sf}</option>
                         ))}
                       </select>
@@ -4336,7 +4377,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
                       renderIntelPolygons(filteredPlotsData)
                     )}
                     {null}
-                    <FitBoundsToPlots plotsData={filteredPlotsData} farmBoundary={farmBoundary} />
+                    <FitBoundsToPlots plotsData={filteredPlotsData} farmBoundary={farmBoundary} refitKey={filterEstate} />
                     <FitToZarrBounds zarrBounds={zarrBounds} />
                     <ZoomControl position="bottomright" />
                     <ResizeMap trigger={intelShowLayers} />
@@ -4558,7 +4599,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
                       renderHealthPolygons(healthPlotsData)
                     )}
                     {null}
-                    <FitBoundsToPlots plotsData={plotsData} farmBoundary={farmBoundary} />
+                    <FitBoundsToPlots plotsData={plotsData} farmBoundary={farmBoundary} refitKey={filterEstate} />
                     <FitToZarrBounds zarrBounds={zarrBounds} />
                     <ZoomControl position="bottomright" />
                     <ResizeMap trigger={healthShowLayers} />
@@ -4767,7 +4808,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
                       renderYieldPolygons(yieldPlotsData)
                     )}
                     {null}
-                    <FitBoundsToPlots plotsData={plotsData} farmBoundary={farmBoundary} />
+                    <FitBoundsToPlots plotsData={plotsData} farmBoundary={farmBoundary} refitKey={filterEstate} />
                     <FitToZarrBounds zarrBounds={zarrBounds} />
                     <ZoomControl position="bottomright" />
                     <ResizeMap trigger={yieldShowLayers} />
@@ -5038,7 +5079,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
                     ) : (
                       renderMoisturePolygons(moisturePlotsData)
                     )}
-                    <FitBoundsToPlots plotsData={plotsData} farmBoundary={farmBoundary} />
+                    <FitBoundsToPlots plotsData={plotsData} farmBoundary={farmBoundary} refitKey={filterEstate} />
                     <FitToZarrBounds zarrBounds={zarrBounds} />
                     <ZoomControl position="bottomright" />
                     <ResizeMap trigger={moistureShowLayers} />
@@ -5213,7 +5254,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
                       renderRestorePolygons(restorationPlotsData)
                     )}
                     {null}
-                    <FitBoundsToPlots plotsData={plotsData} farmBoundary={farmBoundary} />
+                    <FitBoundsToPlots plotsData={plotsData} farmBoundary={farmBoundary} refitKey={filterEstate} />
                     <FitToZarrBounds zarrBounds={zarrBounds} />
                     <ZoomControl position="bottomright" />
                     <ResizeMap trigger={restoreShowLayers} />
@@ -5962,7 +6003,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
                       renderClimatePolygons(climatePlotsData)
                     )}
                     {null}
-                    <FitBoundsToPlots plotsData={plotsData} farmBoundary={farmBoundary} />
+                    <FitBoundsToPlots plotsData={plotsData} farmBoundary={farmBoundary} refitKey={filterEstate} />
                     <FitToZarrBounds zarrBounds={zarrBounds} />
                     <ZoomControl position="bottomright" />
                     <ResizeMap trigger={climateShowLayers} />

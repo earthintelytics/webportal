@@ -93,10 +93,13 @@ export const SwipeSliderOverlay = ({ isCompareMode, splitPosition, currentTimeli
 // ── Default Farm Plots Coordinates ────────────────────────────────────────
 
 // ── Auto-fit map to loaded plots ─────────────────────────────────────────
-export function FitBoundsToPlots({ plotsData, farmBoundary }) {
+export function FitBoundsToPlots({ plotsData, farmBoundary, refitKey = null }) {
   const map = useMap();
   const fitted = useRef(false);
+  const lastKey = useRef(refitKey);
   useEffect(() => {
+    // Fit once, and again whenever refitKey changes (e.g. a different estate is picked)
+    if (lastKey.current !== refitKey) { lastKey.current = refitKey; fitted.current = false; }
     if (fitted.current) return;
     // Priority 1: fit to real plot polygons
     if (plotsData && plotsData.length > 0) {
@@ -120,7 +123,7 @@ export function FitBoundsToPlots({ plotsData, farmBoundary }) {
       map.fitBounds([[min_lat, min_lng], [max_lat, max_lng]], { padding: [40, 40], maxZoom: 13 });
       fitted.current = true;
     }
-  }, [plotsData, farmBoundary, map]);
+  }, [plotsData, farmBoundary, map, refitKey]);
   return null;
 }
 
