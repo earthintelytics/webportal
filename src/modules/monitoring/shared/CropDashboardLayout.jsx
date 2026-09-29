@@ -11,7 +11,6 @@ import {
   Zap, 
   Droplets, 
   Sun, 
-  Trees, 
   ArrowLeft,
   LogOut,
   CheckCircle2,
@@ -96,6 +95,8 @@ import { Upload as UploadIcon, MapPin as EstateIcon } from 'lucide-react';
 import { fetchEstates } from '../../../services/estatesApi';
 import YourDataPage from '../../data/YourDataPage';
 import DataNeededDialog from '../../data/DataNeededDialog';
+import ScenarioBuilder from '../../assistant/ScenarioBuilder';
+import { ANSWER_FORMAT } from '../../assistant/scenarioTemplates';
 import { ResizeMap, MapPaneClipSetter, SwipeSliderOverlay, FitBoundsToPlots, FitToZarrBounds } from './dashboard/map/MapHelpers';
 import { TOOLTIP_DESCRIPTIONS } from './dashboard/constants/tooltipDescriptions';
 import { getIndexFiveClasses } from './dashboard/constants/indexClasses';
@@ -3291,14 +3292,30 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
 
   const [chatLoading, setChatLoading] = useState(false);
 
-  const handleChatSubmit = async (textToSend) => {
+  // One AI agent endpoint for questions and what-if scenarios. The chat shows
+  // the readable question; the agent also gets the portal context and, for
+  // scenarios, the advisor answer layout.
+  const handleChatSubmit = async (textToSend, scenarioMeta = null) => {
     const query = textToSend || chatInput;
     if (!query.trim() || chatLoading) return;
-    setChatMessages(prev => [...prev, { sender: 'user', text: query }]);
+    setChatMessages(prev => [...prev, { sender: 'user', text: query, scenario: scenarioMeta?.scenario || null }]);
     if (!textToSend) setChatInput('');
     setChatLoading(true);
+    const context = [
+      `Organisation: ${tenantDisplayName}`,
+      service ? `Service: ${service.title}` : (!isOrg && cropLabel ? `Crop: ${cropLabel}` : null),
+      filterEstate && filterEstate !== 'All' ? `Estate: ${filterEstate}` : null,
+    ].filter(Boolean).join('. ');
+    const agentQuery = scenarioMeta
+      ? `[Scenario ${scenarioMeta.scenario}] ${query}
+
+Context: ${context}.
+${ANSWER_FORMAT}`
+      : `${query}
+
+Context: ${context}.`;
     try {
-      const result = await api.queryAiAgent(query);
+      const result = await api.queryAiAgent(agentQuery);
       const reply = result?.response || "No response from AI agent.";
       setChatMessages(prev => [...prev, { sender: 'assistant', text: reply, sources: result?.sources }]);
     } catch (err) {
@@ -7039,7 +7056,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
                 <div className="px-8 py-4 border-b border-gray-100 flex items-center justify-between shrink-0">
                   <div className="flex items-center gap-2.5">
                     <Sparkles className="text-green-600" size={16} />
-                    <span className="text-sm font-bold text-gray-800 uppercase tracking-wide">Scenario Modeling Assistant</span>
+                    <span className="text-sm font-bold text-gray-800">Your advisor</span>
                     <span className="w-1.5 h-1.5 rounded-full bg-status-live animate-pulse" />
                   </div>
                 </div>
@@ -7049,65 +7066,13 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
               <div className="flex-1 overflow-y-auto flex flex-col min-h-0 bg-gray-50/20">
                 {chatMessages.length === 1 ? (
                   /* Landing Empty State (Plot layout) */
-                  <div className="flex-1 flex flex-col justify-center items-center max-w-4xl mx-auto px-6 py-8 text-center space-y-8">
-                    <div className="space-y-3">
-                      <h3 className="text-3xl font-extrabold text-gray-900 tracking-tight">Scenario Modeling Assistant</h3>
-                      <p className="text-sm text-gray-500 max-w-xl mx-auto leading-relaxed">
-                        Ask what-if questions about your vegetation plots. The assistant reasons over live remote-sensing indices to forecast health impact and recommend agronomic actions.
-                      </p>
-                    </div>
-
-                    {/* Grid of 2x2 cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl text-left">
-                      {[
-                        {
-                          id: 'carbon',
-                          title: 'Carbon & Climate-Smart Ag',
-                          desc: 'Simulate carbon credit yield if we transition this farm to zero-tillage & cover cropping practices.',
-                          icon: <Leaf size={15} />,
-                          prompt: 'Simulate carbon credit yield if we transition this farm to zero-tillage & multi-species cover cropping.'
-                        },
-                        {
-                          id: 'agroforestry',
-                          title: 'Agroforestry & Restoration',
-                          desc: 'Model the canopy density growth trajectory and species diversity impact across active restoration zones.',
-                          icon: <Trees size={15} />,
-                          prompt: 'Model the canopy density growth trajectory and species diversity index across the active restoration zones on this farm.'
-                        },
-                        {
-                          id: 'accounting',
-                          title: 'Carbon Accounting & Registry',
-                          desc: 'Run a geospatial mismatch audit on farm plot coordinates against regional baseline forest datasets.',
-                          icon: <Globe size={15} />,
-                          prompt: 'Run a geospatial mismatch audit on the farm plot coordinates against regional baseline forest datasets.'
-                        },
-                        {
-                          id: 'traceability',
-                          title: 'Traceability & Env. Impact',
-                          desc: 'Draft an EUDR-compliant traceability report showing deforestation-free proof for this farm.',
-                          icon: <Shield size={15} />,
-                          prompt: 'Draft an EUDR-compliant traceability report showing deforestation-free proof and soil health history for this farm.'
-                        }
-                      ].map(card => (
-                        <button
-                          key={card.id}
-                          onClick={() => handleChatSubmit(card.prompt)}
-                          className="p-5 bg-white border border-gray-150 rounded-2xl shadow-[0_1px_2px_rgba(0,0,0,0.02)] hover:border-[#16A34A]/40 hover:shadow-sm transition-all text-left flex flex-col group"
-                        >
-                          <div className="flex items-center gap-2 mb-2">
-                            <div className="p-1.5 bg-[#DCFCE7] text-[#16A34A] rounded-lg flex items-center justify-center shrink-0">
-                              {card.icon}
-                            </div>
-                            <span className="text-sm font-bold text-gray-800 group-hover:text-[#16A34A] transition-colors">
-                              {card.title}
-                            </span>
-                          </div>
-                          <p className="text-xs text-gray-600 leading-relaxed font-medium">
-                            {card.desc}
-                          </p>
-                        </button>
-                      ))}
-                    </div>
+                  <div className="flex-1 flex flex-col justify-center items-center px-6 py-10">
+                    <ScenarioBuilder
+                      cropType={isOrg ? null : cropType}
+                      serviceId={service?.id}
+                      estates={estateOptions}
+                      onRun={(text, meta) => handleChatSubmit(text, meta)}
+                    />
                   </div>
                 ) : (
                   /* Active Message History */
