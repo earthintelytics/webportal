@@ -1,4 +1,4 @@
-import React, { useState, Component } from 'react';
+import React, { useState, useEffect, Component } from 'react';
 
 class ErrorBoundary extends Component {
   constructor(props) { super(props); this.state = { error: null }; }
@@ -6,7 +6,7 @@ class ErrorBoundary extends Component {
   render() {
     if (this.state.error) {
       return (
-        <div style={{ padding: 40, fontFamily: 'monospace', background: '#0f172a', color: '#f87171', minHeight: '100vh' }}>
+        <div style={{ padding: 40, fontFamily: 'var(--font-mono)', background: '#0f172a', color: '#f87171', minHeight: '100vh' }}>
           <h2 style={{ color: '#fca5a5', marginBottom: 16 }}>Render Error</h2>
           <pre style={{ whiteSpace: 'pre-wrap', fontSize: 12 }}>{this.state.error?.message}</pre>
           <pre style={{ whiteSpace: 'pre-wrap', fontSize: 11, color: '#94a3b8', marginTop: 12 }}>{this.state.error?.stack}</pre>
@@ -83,11 +83,11 @@ const RouteLoading = () => (
 // Placeholder for modules in development
 const ComingSoon = ({ title, description }) => (
   <div className="flex flex-col items-center justify-center h-full p-20 text-center bg-white">
-    <div className="w-20 h-20 rounded-[2.5rem] bg-black text-white flex items-center justify-center mx-auto mb-8 shadow-2xl">
+    <div className="w-20 h-20 rounded-[2.5rem] bg-white border border-[var(--border-light)] flex items-center justify-center mx-auto mb-8 shadow-premium">
       <Zap size={32} className="text-[var(--brand-primary)]" />
     </div>
-    <h2 className="text-4xl font-black text-black mb-4 tracking-tighter uppercase">{title}</h2>
-    <p className="text-black/60 font-bold max-w-md uppercase text-[11px] tracking-[0.2em]">{description}</p>
+    <h2 className="font-display text-4xl font-bold text-[var(--text-main)] mb-4 tracking-tight uppercase">{title}</h2>
+    <p className="text-[var(--text-muted)] font-semibold max-w-md uppercase text-[11px] tracking-[0.2em]">{description}</p>
   </div>
 );
 
@@ -147,10 +147,21 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // In restricted mode the module is fixed; otherwise read from sessionStorage
-  const moduleId = RESTRICTED_MODULE || sessionStorage.getItem('fi_module');
-  // Dynamically onboarded organizations get a friendly title derived from
-  // their slug ("custom-agromonitor-acme_farms" → "Acme Farms Agro Monitoring")
+  // Extract direct tenant parameter from ?tenant= or ?org=
+  const searchParams = new URLSearchParams(location.search);
+  const directTenant = searchParams.get('tenant') || searchParams.get('org') || null;
+
+  useEffect(() => {
+    if (directTenant) {
+      sessionStorage.setItem('fi_module', `custom-agromonitor-${directTenant}`);
+      sessionStorage.setItem('fi_target_tenant', directTenant);
+    }
+  }, [directTenant]);
+
+  // In restricted mode the module is fixed; otherwise read from directTenant or sessionStorage
+  const moduleId = RESTRICTED_MODULE || (directTenant ? `custom-agromonitor-${directTenant}` : sessionStorage.getItem('fi_module'));
+  
+  // Dynamically onboarded organizations get a friendly title derived from their slug
   const prettyDynamicName = (id) => {
     if (!id?.startsWith('custom-agromonitor-')) return id;
     const words = id.replace('custom-agromonitor-', '').split(/[_-]+/).filter(Boolean);
@@ -160,12 +171,13 @@ const LoginPage = () => {
   const moduleName = MODULE_NAMES[moduleId] || prettyDynamicName(moduleId);
 
   // Where does the portal land after login?
-  const portalPath = (moduleId && moduleId.startsWith('custom-agromonitor'))
+  const portalPath = (moduleId && (moduleId.startsWith('custom-agromonitor') || directTenant))
     ? AGROMONITOR_PATH
     : '/portal';
 
   const handleLogin = () => navigate(portalPath);
-  const handleBack  = RESTRICTED_MODULE ? null : () => navigate('/');
+  // If direct tenant link was used, do not allow going back to the public hub
+  const handleBack  = (RESTRICTED_MODULE || directTenant) ? null : () => navigate('/');
 
   return (
     <Login
@@ -211,14 +223,14 @@ const PortalPage = () => {
   if (Array.isArray(allowedModules) && allowedModules.length > 0 && !allowedModules.includes(moduleId)) {
     return (
       <div className="flex flex-col items-center justify-center h-screen p-20 text-center bg-white">
-        <div className="w-20 h-20 rounded-[2.5rem] bg-black text-white flex items-center justify-center mx-auto mb-8 shadow-2xl">
+        <div className="w-20 h-20 rounded-[2.5rem] bg-white border border-[var(--border-light)] flex items-center justify-center mx-auto mb-8 shadow-premium">
           <Zap size={32} className="text-[var(--brand-primary)]" />
         </div>
-        <h2 className="text-4xl font-black text-black mb-4 tracking-tighter uppercase">Not Enabled</h2>
-        <p className="text-black/60 font-bold max-w-md uppercase text-[11px] tracking-[0.2em]">
+        <h2 className="font-display text-4xl font-bold text-[var(--text-main)] mb-4 tracking-tight uppercase">Not Enabled</h2>
+        <p className="text-[var(--text-muted)] font-semibold max-w-md uppercase text-[11px] tracking-[0.2em]">
           This module is not enabled for your organization. Contact your administrator to request access.
         </p>
-        <button onClick={handleBackToHub} className="mt-8 px-6 py-3 bg-black text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-gray-800 transition-all">
+        <button onClick={handleBackToHub} className="mt-8 px-6 py-3 bg-white text-[var(--text-main)] border border-[var(--border-light)] rounded-xl font-bold text-xs uppercase tracking-widest shadow-sm hover:bg-[var(--bg-main)] transition-all">
           Back to Hub
         </button>
       </div>

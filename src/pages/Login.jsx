@@ -6,6 +6,7 @@ import {
   TrendingUp, BarChart3
 } from 'lucide-react';
 import { login, fetchCropMonitoringConfig } from '../services/organizationMonitorApi';
+import { HERO_PLACEHOLDERS } from '../constants/heroPlaceholders';
 
 // ─── Crop & Subapp Design System Registry (Clean Light Theme) ────────────────
 const CROP_DESIGNS = {
@@ -16,7 +17,7 @@ const CROP_DESIGNS = {
     accentColor: '#16A34A', // Emerald Green
     lightBg: '#F0FDF4',
     badge: 'Oil Palm Estate Console',
-    heroImage: '/crops/oil_palm.png',
+    heroImage: '/crops/oil_palm.webp',
     title: <>Precision <span className="text-emerald-600 font-black">Oil Palm</span> Analytics</>,
     desc: 'Real-time satellite vegetation index, estate fresh fruit bunch yield modeling, and canopy health diagnostics.',
     features: [
@@ -37,7 +38,7 @@ const CROP_DESIGNS = {
     accentColor: '#D35400', // Terracotta / Amber
     lightBg: '#FFF7ED',
     badge: 'Cashew Orchard Console',
-    heroImage: '/crops/cashew.png',
+    heroImage: '/crops/cashew.webp',
     title: <>High-Precision <span className="text-amber-600 font-black">Cashew Orchard</span> Intel</>,
     desc: 'Tree count tracking, flowering stage canopy analysis, nut quality grading, and harvest scheduling.',
     features: [
@@ -58,7 +59,7 @@ const CROP_DESIGNS = {
     accentColor: '#059669', // Emerald
     lightBg: '#ECFDF5',
     badge: 'Sugarcane Field Console',
-    heroImage: '/crops/sugarcane.png',
+    heroImage: '/crops/sugarcane.webp',
     title: <>Smart <span className="text-emerald-600 font-black">Sugarcane Field</span> Operations</>,
     desc: 'Biomass accumulation tracking, sucrose content estimation, and field productivity management.',
     features: [
@@ -79,7 +80,7 @@ const CROP_DESIGNS = {
     accentColor: '#0D9488', // Teal
     lightBg: '#F0FDFA',
     badge: 'Rice Paddy Console',
-    heroImage: '/crops/rice.png',
+    heroImage: '/crops/rice.webp',
     title: <>Multispectral <span className="text-teal-600 font-black">Rice Paddy</span> Monitoring</>,
     desc: 'Water level sensing, paddy growth phase mapping, nutrient zoning, and yield estimation.',
     features: [
@@ -100,7 +101,7 @@ const CROP_DESIGNS = {
     accentColor: '#B45309', // Warm Bronze
     lightBg: '#FEF3C7',
     badge: 'Cocoa Harvest Console',
-    heroImage: '/crops/cocoa.png',
+    heroImage: '/crops/cocoa.webp',
     title: <>Sustainable <span className="text-amber-700 font-black">Cocoa Harvest</span> Origin</>,
     desc: 'Shade-canopy density mapping, EUDR deforestation compliance verification, and bean traceability.',
     features: [
@@ -121,7 +122,7 @@ const CROP_DESIGNS = {
     accentColor: '#0E7490', // Cyan Teal
     lightBg: '#ECFEFF',
     badge: 'Rubber Plantation Console',
-    heroImage: '/crops/rubber.png',
+    heroImage: '/crops/rubber.webp',
     title: <>High-Yield <span className="text-cyan-700 font-black">Rubber & Latex</span> Monitoring</>,
     desc: 'Latex dry rubber content analytics, tapping cycle optimization, and estate productivity logs.',
     features: [
@@ -142,7 +143,7 @@ const CROP_DESIGNS = {
     accentColor: '#D97706', // Amber Gold
     lightBg: '#FFFBEB',
     badge: 'Cassava Tuber Console',
-    heroImage: '/crops/cassava.png',
+    heroImage: '/crops/cassava.webp',
     title: <>Advanced <span className="text-amber-600 font-black">Cassava Tuber</span> Analytics</>,
     desc: 'Underground tuber growth modeling, canopy stress detection, starch yield prediction, and harvest scheduling.',
     features: [
@@ -163,7 +164,7 @@ const CROP_DESIGNS = {
     accentColor: '#CA8A04', // Sunburst Yellow
     lightBg: '#FEF9C3',
     badge: 'Maize Field Console',
-    heroImage: '/crops/maize.png',
+    heroImage: '/crops/maize.webp',
     title: <>Precision <span className="text-yellow-600 font-black">Maize Crop</span> Intelligence</>,
     desc: 'Hybrid seed variety performance tracking, pest infestation mapping, moisture stress alerts, and yield forecasts.',
     features: [
@@ -184,7 +185,7 @@ const CROP_DESIGNS = {
     accentColor: '#16A34A', // Emerald Green
     lightBg: '#F0FDF4',
     badge: 'Organization Command Console',
-    heroImage: '/crops/oil_palm.png',
+    heroImage: '/crops/oil_palm.webp',
     title: <>Precision <span className="text-emerald-600 font-black">Agricultural Organization</span> Console</>,
     desc: 'Central command console for corporate agricultural organizations, managing multi-tenant farm portfolios, aggregated satellite coverage, and user roles.',
     features: [
@@ -205,7 +206,7 @@ const CROP_DESIGNS = {
     accentColor: '#059669', // Emerald Finance
     lightBg: '#ECFDF5',
     badge: 'Financial Ledger Console',
-    heroImage: '/crops/organization.png',
+    heroImage: '/crops/organization.webp',
     title: <>Automating <span className="text-emerald-600 font-black">Enterprise Liquidity</span></>,
     desc: 'Direct disbursement, immutable financial reconciliation, worker payroll, and supplier ledger integration.',
     features: [
@@ -226,7 +227,7 @@ const CROP_DESIGNS = {
     accentColor: '#0284C7', // Sky Blue
     lightBg: '#F0F9FF',
     badge: 'Drone Aerial Console',
-    heroImage: '/crops/drone.png',
+    heroImage: '/crops/drone.webp',
     title: <>High-Resolution <span className="text-sky-600 font-black">Drone Aerial</span> Intel</>,
     desc: 'High-resolution drone flight surveys, canopy gap mapping, tree counts, and field inspection telemetry.',
     features: [],
@@ -239,7 +240,7 @@ const CROP_DESIGNS = {
     accentColor: '#16A34A', // Emerald
     lightBg: '#F0FDF4',
     badge: 'Farmer Cooperative Console',
-    heroImage: '/crops/smallholder.png',
+    heroImage: '/crops/smallholder.webp',
     title: <>Empowering <span className="text-emerald-600 font-black">Smallholder Farmer</span> Communities</>,
     desc: 'Unified farmer profiling, multi-crop parcel tracking, cooperative registry, and group compliance auditing.',
     features: [],
@@ -275,6 +276,7 @@ const Login = ({ onLogin, moduleName, onBack, defaultEmail = '', defaultCode = '
   const [email, setEmail] = useState(defaultEmail);
   const [accessCode, setAccessCode] = useState(defaultCode);
   const [error, setError] = useState('');
+  const [heroLoaded, setHeroLoaded] = useState(false);
 
   const currentDesign = resolveCropDesign(moduleName);
 
@@ -326,189 +328,133 @@ const Login = ({ onLogin, moduleName, onBack, defaultEmail = '', defaultCode = '
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans relative overflow-hidden select-none">
-      
-      {/* ── Top Header Bar ────────────────────────────────────────────────── */}
-      <header className="relative z-20 flex items-center justify-between px-6 lg:px-12 py-6 border-b border-slate-300 bg-white">
-        <div className="flex items-center gap-4">
-          <img src="/farmintelytics-logo.png" alt="FarmIntelytics" className="h-11 w-auto object-contain" />
-          <div>
-            <h2 className="text-base font-black uppercase tracking-tight text-slate-900 leading-none">FarmIntelytics</h2>
-            <p className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-800 mt-1">
-              {currentDesign.branding}
-            </p>
-          </div>
+    <div className="min-h-screen flex flex-col lg:flex-row bg-white text-[var(--text-main)] font-sans">
+
+      {/* ── Left: crop photograph, full height, caption on a soft gradient ── */}
+      <aside
+        className="relative lg:w-1/2 min-h-[260px] lg:min-h-screen overflow-hidden bg-slate-100 bg-cover bg-center"
+        // Blurred ~0.5 KB preview shows instantly; the full photo fades in over it.
+        style={{ backgroundImage: HERO_PLACEHOLDERS[currentDesign.heroImage] ? `url(${HERO_PLACEHOLDERS[currentDesign.heroImage]})` : undefined }}
+      >
+        <img
+          src={currentDesign.heroImage}
+          alt={currentDesign.name}
+          className={`absolute inset-0 w-full h-full object-cover object-center saturate-[0.85] transition-opacity duration-500 ${heroLoaded ? 'opacity-100' : 'opacity-0'}`}
+          fetchpriority="high"
+          onLoad={() => setHeroLoaded(true)}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-950/20 to-transparent" />
+        <div className="relative h-full flex flex-col justify-end p-8 lg:p-14 text-white">
+          <span className="self-start mb-4 px-3 py-1 rounded-full bg-white/15 border border-white/25 text-xs font-medium">
+            {currentDesign.badge}
+          </span>
+          <h1 className="font-display text-3xl lg:text-4xl font-semibold leading-tight max-w-lg">
+            {currentDesign.title}
+          </h1>
+          <p className="mt-3 text-sm lg:text-base text-white/85 leading-relaxed max-w-lg">
+            {currentDesign.desc}
+          </p>
         </div>
+      </aside>
 
-        {onBack && (
-          <button 
-            onClick={onBack}
-            className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-900 px-4 py-2.5 rounded-xl text-xs font-black transition-all border border-slate-300"
-          >
-            <Grid size={15} /> <span className="hidden sm:inline">Back to</span> Hub
-          </button>
-        )}
-      </header>
-
-      {/* ── Main Split View ────────────────────────────────────────────────── */}
-      <main className="flex-1 flex flex-col lg:flex-row relative z-10 p-6 lg:p-12 gap-8 items-stretch">
-        
-        {/* Left Side: Crop-Specific Pure Natural Photography & Card ─────────── */}
-        <div className="lg:w-7/12 relative min-h-[440px] lg:min-h-full flex flex-col justify-end p-8 sm:p-12 rounded-[2rem] overflow-hidden border border-slate-300 bg-slate-100">
-          
-          {/* Background Natural Image */}
-          <div className="absolute inset-0 z-0">
-            <img 
-              src={currentDesign.heroImage} 
-              alt={currentDesign.name}
-              className="w-full h-full object-cover object-center transition-transform duration-700 hover:scale-105"
-            />
-            {/* Soft Dark Gradient for Text Legibility */}
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/40 to-transparent" />
-          </div>
-
-          {/* Floating Solid Content Overlay */}
-          <div className="relative z-10 max-w-xl bg-white p-6 sm:p-8 rounded-2xl border border-slate-300 shadow-lg">
-            
-            {/* Crop Badge */}
-            <div className="flex items-center gap-3 mb-4">
-              <span 
-                className="px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-widest border border-slate-200"
-                style={{ 
-                  backgroundColor: currentDesign.lightBg,
-                  color: currentDesign.accentColor
-                }}
-              >
-                {currentDesign.badge}
-              </span>
-              <span className="text-[11px] font-black text-slate-800 uppercase tracking-wider">
-                Precision Agriculture Console
-              </span>
+      {/* ── Right: sign-in ─────────────────────────────────────────────────── */}
+      <main className="lg:w-1/2 flex flex-col px-6 sm:px-12 lg:px-16 py-8">
+        <header className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img src="/farmintelytics-logo.png" alt="FarmIntelytics" className="h-9 w-9 object-contain" width="36" height="36" />
+            <div className="leading-tight">
+              <p className="font-display text-sm font-semibold">FarmIntelytics</p>
+              <p className="text-xs text-[var(--text-muted)]">{currentDesign.branding}</p>
             </div>
+          </div>
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="flex items-center gap-2 px-3.5 py-2 rounded-[10px] border border-[var(--border-light)] text-sm font-medium hover:bg-[var(--bg-main)] transition-colors"
+            >
+              <Grid size={15} /> <span className="hidden sm:inline">Back to</span> hub
+            </button>
+          )}
+        </header>
 
-            {/* Main Headline */}
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 leading-tight mb-3">
-              {currentDesign.title}
-            </h1>
-
-            {/* Description */}
-            <p className="text-xs sm:text-sm text-slate-900 font-bold leading-relaxed">
-              {currentDesign.desc}
+        <div className="flex-1 flex items-center justify-center py-12">
+          <div className="w-full max-w-md bg-white rounded-2xl border border-[var(--border-light)] p-8 sm:p-10">
+            <p className="text-sm font-medium text-[var(--brand-primary)]">Authorised portal</p>
+            <h2 className="font-display text-3xl font-semibold mt-1">Sign in</h2>
+            <p className="text-sm text-[var(--text-muted)] mt-2 leading-relaxed">
+              Use your organisation credentials to open the <span className="font-medium text-[var(--text-main)]">{currentDesign.name}</span> console.
             </p>
-
-          </div>
-        </div>
-
-        {/* Right Side: Clean White Sign-In Form ────────────────────────────── */}
-        <div className="lg:w-5/12 flex items-center justify-center p-6 sm:p-12 bg-white rounded-[2rem] border border-slate-300 shadow-md">
-          <div className="w-full max-w-md">
-
-            <div className="mb-8">
-              <span className="text-[11px] font-black uppercase tracking-[0.25em] text-slate-700">Authorized Portal</span>
-              <h2 className="text-3xl font-black uppercase tracking-tight text-slate-900 mt-1">Sign In</h2>
-              <p className="text-xs text-slate-800 font-bold mt-2">
-                Enter your identity credentials to access <span className="font-black text-slate-900">{currentDesign.name}</span> operations.
-              </p>
-            </div>
 
             {error && (
-              <div className="mb-6 p-4 bg-red-50 border border-red-300 text-red-900 rounded-2xl text-xs font-black flex items-center gap-3">
-                <div className="w-2.5 h-2.5 rounded-full bg-red-600 shrink-0" />
-                <span>{error}</span>
+              <div className="mt-6 p-3.5 rounded-[10px] border border-red-200 bg-red-50 text-sm text-red-800">
+                {error}
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Email Input */}
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-black uppercase tracking-wider text-slate-900 px-1">
-                  Email Identity
-                </label>
-                <div className="relative group">
-                  <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-slate-900 transition-colors" />
+            <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Email</label>
+                <div className="relative">
+                  <Mail size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                   <input
                     type="email"
                     required
-                    placeholder="admin@farmintelytics.com"
+                    placeholder="you@organisation.com"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 focus:bg-white focus:border-slate-900 focus:ring-2 focus:ring-slate-900 rounded-2xl py-3.5 pl-12 pr-4 text-sm font-black text-slate-900 outline-none transition-all placeholder:text-slate-500"
+                    className="w-full rounded-[10px] border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm outline-none transition-colors placeholder:text-slate-400 focus:border-[var(--brand-primary)] focus:ring-1 focus:ring-[var(--brand-primary)]"
                   />
                 </div>
               </div>
 
-              {/* Password Input */}
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-black uppercase tracking-wider text-slate-900 px-1">
-                  Access Code
-                </label>
-                <div className="relative group">
-                  <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-slate-900 transition-colors" />
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Access code</label>
+                <div className="relative">
+                  <Lock size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     required
                     placeholder="••••••••"
                     value={accessCode}
                     onChange={e => setAccessCode(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 focus:bg-white focus:border-slate-900 focus:ring-2 focus:ring-slate-900 rounded-2xl py-3.5 pl-12 pr-12 text-sm font-black text-slate-900 outline-none transition-all placeholder:text-slate-500"
+                    className="w-full rounded-[10px] border border-slate-200 bg-white py-3 pl-11 pr-11 text-sm outline-none transition-colors placeholder:text-slate-400 focus:border-[var(--brand-primary)] focus:ring-1 focus:ring-[var(--brand-primary)]"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-900 transition-colors"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition-colors"
+                    aria-label={showPassword ? 'Hide access code' : 'Show access code'}
                   >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                   </button>
                 </div>
               </div>
 
-              {/* Quick Fill Demo Helpers */}
-              <div className="flex flex-wrap items-center justify-between gap-2 text-xs pt-1">
-                <button
-                  type="button"
-                  onClick={() => handleFillDemo('demo@farmintelytics.com', '***REMOVED***')}
-                  className="text-[11px] font-black text-emerald-700 hover:text-emerald-900 underline underline-offset-4 transition-colors"
-                >
-                  Use Demo Tenant (Okomu)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleFillDemo('olam@farmintelytics.com', '***REMOVED***')}
-                  className="text-[11px] font-black text-slate-700 hover:text-slate-900 underline underline-offset-4 transition-colors"
-                >
-                  Use Demo Tenant (Olam)
-                </button>
-              </div>
-
-              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full text-white font-black uppercase tracking-widest text-xs py-4 rounded-2xl shadow-sm hover:opacity-90 active:scale-[0.99] transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed group"
-                style={{ 
-                  backgroundColor: currentDesign.accentColor
-                }}
+                className="w-full flex items-center justify-center gap-2 rounded-[10px] bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)] py-3 text-sm font-semibold text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
-                  <>
-                    <span>Enter {currentDesign.name} Console</span>
-                    <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-                  </>
+                  <>Sign in <ArrowRight size={16} /></>
                 )}
               </button>
             </form>
 
-            <div className="mt-12 pt-6 border-t border-slate-100 text-center">
-              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">
-                Powered by FarmIntelytics Systems
-              </p>
+            {/* Demo quick-fill (demo server only) */}
+            <div className="mt-6 flex items-center gap-2 text-xs text-[var(--text-muted)]">
+              <span>Demo:</span>
+              <button type="button" onClick={() => handleFillDemo('demo@farmintelytics.com', '***REMOVED***')}
+                className="px-2.5 py-1 rounded-md border border-[var(--border-light)] hover:bg-[var(--bg-main)] text-[var(--text-main)]">Okomu</button>
+              <button type="button" onClick={() => handleFillDemo('olam@farmintelytics.com', '***REMOVED***')}
+                className="px-2.5 py-1 rounded-md border border-[var(--border-light)] hover:bg-[var(--bg-main)] text-[var(--text-main)]">Olam</button>
             </div>
-
           </div>
         </div>
 
+        <footer className="text-xs text-slate-400">© {new Date().getFullYear()} FarmIntelytics</footer>
       </main>
     </div>
   );

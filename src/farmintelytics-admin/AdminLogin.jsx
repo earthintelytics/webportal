@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, Mail, Eye, EyeOff, Shield, ChevronRight, Activity } from 'lucide-react';
+import { Lock, Mail, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { adminLogin } from '../services/adminApi';
 
 const AdminLogin = () => {
@@ -32,160 +32,67 @@ const AdminLogin = () => {
   };
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: '#f8fafc',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      fontFamily: "'Roboto', sans-serif",
-      position: 'relative',
-      overflow: 'hidden',
-    }}>
-      {/* Background grid */}
-      <div style={{
-        position: 'absolute', inset: 0, opacity: 0.2,
-        backgroundImage: 'linear-gradient(#e2e8f0 1px, transparent 1px), linear-gradient(90deg, #e2e8f0 1px, transparent 1px)',
-        backgroundSize: '48px 48px',
-      }} />
-
-      <div style={{
-        position: 'relative', zIndex: 10,
-        width: '100%', maxWidth: '460px',
-        margin: '0 24px',
-      }}>
-        {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: '14px',
-            marginBottom: '16px'
-          }}>
-            <img src="/farmintelytics-logo.png" alt="Logo" style={{ height: '56px', width: 'auto' }} />
-            <div style={{ textAlign: 'left' }}>
-              <h2 style={{ fontSize: '20px', fontWeight: 900, color: '#0f172a', margin: 0, textTransform: 'uppercase', letterSpacing: '-0.03em' }}>FarmIntelytics</h2>
-              <p style={{ fontSize: '11px', fontWeight: 900, color: '#16a34a', margin: 0, textTransform: 'uppercase', letterSpacing: '0.22em' }}>Admin Control</p>
-            </div>
+    <div className="min-h-screen flex items-center justify-center bg-[var(--bg-main)] text-[var(--text-main)] font-sans px-6 py-12">
+      <div className="w-full max-w-md">
+        <div className="flex items-center justify-center gap-3 mb-8">
+          <img src="/farmintelytics-logo.png" alt="FarmIntelytics" className="h-10 w-10 object-contain" width="40" height="40" />
+          <div className="leading-tight">
+            <p className="font-display text-base font-semibold">FarmIntelytics</p>
+            <p className="text-xs text-[var(--text-muted)]">Admin console</p>
           </div>
         </div>
 
-        {/* Card */}
-        <div style={{
-          background: '#ffffff',
-          border: '1px solid #e2e8f0',
-          borderRadius: '24px',
-          padding: '40px',
-          boxShadow: '0 20px 40px rgba(15,23,42,0.05)',
-        }}>
-          {/* Status indicator */}
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: '8px',
-            marginBottom: '32px', padding: '10px 16px',
-            background: 'rgba(22,163,74,0.06)',
-            border: '1px solid rgba(22,163,74,0.15)',
-            borderRadius: '12px',
-          }}>
-            <Activity size={14} color="#16a34a" />
-            <span style={{ fontSize: '11px', color: '#16a34a', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-              Authorized Administrative Access Only
-            </span>
-          </div>
+        <div className="bg-white rounded-2xl border border-[var(--border-light)] p-8 sm:p-10">
+          <p className="text-sm font-medium text-[var(--brand-primary)]">Super-admin access</p>
+          <h2 className="font-display text-3xl font-semibold mt-1">Sign in</h2>
+          <p className="text-sm text-[var(--text-muted)] mt-2">Manage organisations, farms, logins and schedules.</p>
 
           {error && (
-            <div style={{
-              marginBottom: '20px', padding: '12px 16px',
-              background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)',
-              borderRadius: '12px', color: '#dc2626', fontSize: '13px', fontWeight: 600,
-            }}>
-              {error}
-            </div>
+            <div className="mt-6 p-3.5 rounded-[10px] border border-red-200 bg-red-50 text-sm text-red-800">{error}</div>
           )}
 
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            {/* Email */}
+          <form onSubmit={handleSubmit} className="mt-8 space-y-5">
             <div>
-              <label style={{ display: 'block', fontSize: '11px', fontWeight: 800, color: '#475569', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '8px' }}>
-                Admin Email
-              </label>
-              <div style={{ position: 'relative' }}>
-                <Mail size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
+              <label className="block text-sm font-medium mb-1.5">Email</label>
+              <div className="relative">
+                <Mail size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="email" required value={email}
                   onChange={e => setEmail(e.target.value)}
-                  style={{
-                    width: '100%', padding: '14px 14px 14px 44px',
-                    background: '#ffffff',
-                    border: '1px solid #cbd5e1',
-                    borderRadius: '12px', color: '#0f172a',
-                    fontSize: '14px', fontWeight: 600,
-                    outline: 'none', boxSizing: 'border-box',
-                    transition: 'all 0.2s',
-                  }}
-                  onFocus={e => { e.target.style.borderColor = '#16a34a'; e.target.style.boxShadow = '0 0 0 3px rgba(22,163,74,0.15)'; }}
-                  onBlur={e => { e.target.style.borderColor = '#cbd5e1'; e.target.style.boxShadow = 'none'; }}
+                  className="w-full rounded-[10px] border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm outline-none transition-colors focus:border-[var(--brand-primary)] focus:ring-1 focus:ring-[var(--brand-primary)]"
                 />
               </div>
             </div>
 
-            {/* Access Code */}
             <div>
-              <label style={{ display: 'block', fontSize: '11px', fontWeight: 800, color: '#475569', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '8px' }}>
-                Admin Access Code
-              </label>
-              <div style={{ position: 'relative' }}>
-                <Lock size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
+              <label className="block text-sm font-medium mb-1.5">Access code</label>
+              <div className="relative">
+                <Lock size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type={showCode ? 'text' : 'password'} required
                   placeholder="••••••••••••"
                   value={code} onChange={e => setCode(e.target.value)}
-                  style={{
-                    width: '100%', padding: '14px 48px 14px 44px',
-                    background: '#ffffff',
-                    border: '1px solid #cbd5e1',
-                    borderRadius: '12px', color: '#0f172a',
-                    fontSize: '14px', fontWeight: 600,
-                    outline: 'none', boxSizing: 'border-box',
-                    transition: 'all 0.2s',
-                  }}
-                  onFocus={e => { e.target.style.borderColor = '#16a34a'; e.target.style.boxShadow = '0 0 0 3px rgba(22,163,74,0.15)'; }}
-                  onBlur={e => { e.target.style.borderColor = '#cbd5e1'; e.target.style.boxShadow = 'none'; }}
+                  className="w-full rounded-[10px] border border-slate-200 bg-white py-3 pl-11 pr-11 text-sm outline-none transition-colors placeholder:text-slate-400 focus:border-[var(--brand-primary)] focus:ring-1 focus:ring-[var(--brand-primary)]"
                 />
-                <button type="button" onClick={() => setShowCode(!showCode)} style={{
-                  position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)',
-                  background: 'none', border: 'none', cursor: 'pointer', color: '#64748b',
-                  display: 'flex', alignItems: 'center',
-                }}>
-                  {showCode ? <EyeOff size={16} /> : <Eye size={16} />}
+                <button type="button" onClick={() => setShowCode(!showCode)}
+                  aria-label={showCode ? 'Hide access code' : 'Show access code'}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition-colors">
+                  {showCode ? <EyeOff size={17} /> : <Eye size={17} />}
                 </button>
               </div>
             </div>
 
-            {/* Submit */}
-            <button type="submit" disabled={loading} style={{
-              width: '100%', padding: '16px',
-              background: loading ? 'rgba(22,163,74,0.5)' : '#15803d',
-              border: 'none', borderRadius: '14px',
-              color: 'white', fontSize: '13px', fontWeight: 800,
-              letterSpacing: '0.12em', textTransform: 'uppercase',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
-              boxShadow: loading ? 'none' : '0 8px 24px rgba(22,163,74,0.25)',
-              transition: 'all 0.2s',
-            }}>
-              {loading ? (
-                <div style={{ width: '18px', height: '18px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-              ) : (
-                <><span>Authenticate</span><ChevronRight size={16} /></>
-              )}
+            <button type="submit" disabled={loading}
+              className="w-full flex items-center justify-center gap-2 rounded-[10px] bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)] py-3 text-sm font-semibold text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              {loading
+                ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                : <>Sign in <ArrowRight size={16} /></>}
             </button>
           </form>
         </div>
 
-        <div style={{ textAlign: 'center', marginTop: '24px', fontSize: '11px', color: '#64748b', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-          © 2026 FarmIntelytics Systems
-        </div>
+        <p className="text-center text-xs text-slate-400 mt-6">© {new Date().getFullYear()} FarmIntelytics</p>
       </div>
-
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 };
