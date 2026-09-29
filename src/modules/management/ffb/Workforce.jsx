@@ -75,8 +75,8 @@ const Workforce = () => {
                   <div 
                     key={block.id}
                     className={`absolute border-2 rounded-lg flex flex-col items-center justify-center p-2 cursor-pointer transition-all hover:scale-105 ${block.color} ${
-                      block.alert ? 'border-amber-500/60 shadow-[0_0_15px_rgba(245,158,11,0.2)]' : 
-                      block.flagged ? 'border-red-500/60 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : 
+                      block.alert ? 'border-amber-500/60' : 
+                      block.flagged ? 'border-red-500/60' : 
                       'border-white/20'
                     }`}
                     style={block.pos}

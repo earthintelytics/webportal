@@ -48,7 +48,7 @@ const WorkerAnalytics = () => {
           <button className="flex items-center gap-2 bg-white dark:bg-white/5 border border-black/5 px-5 py-2.5 rounded-xl text-[12px] font-bold shadow-sm hover:bg-gray-50 transition-all">
              <Filter size={16} /> Filters
           </button>
-          <button className="flex items-center gap-2 bg-[#1A7A4A] text-white px-5 py-2.5 rounded-xl text-[12px] font-black uppercase tracking-widest shadow-lg shadow-green-500/20 hover:bg-[#145C37] transition-all active:scale-95">
+          <button className="flex items-center gap-2 bg-[#1A7A4A] text-white px-5 py-2.5 rounded-xl text-[12px] font-black uppercase tracking-widest shadow-lg hover:bg-[#145C37] transition-all active:scale-95">
              <Award size={16} /> Top Performers
           </button>
         </div>

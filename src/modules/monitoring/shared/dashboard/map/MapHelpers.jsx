@@ -53,7 +53,7 @@ export const SwipeSliderOverlay = ({ isCompareMode, splitPosition, currentTimeli
     <>
       {/* Split Divider Line */}
       <div
-        className="absolute top-0 bottom-0 w-1 bg-white shadow-[0_0_10px_rgba(0,0,0,0.5)] pointer-events-none"
+        className="absolute top-0 bottom-0 w-1 bg-white pointer-events-none"
         style={{ left: `${splitPosition}%`, zIndex: 30000 }}
       />
       

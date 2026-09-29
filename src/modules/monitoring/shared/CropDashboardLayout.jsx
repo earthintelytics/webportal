@@ -1,5 +1,4 @@
 import { CROP_META } from '../../../services/cropMonitoringApi';
-import { getCropEmoji } from '../../../constants/crops';
 import PlotDetailPanel from './PlotDetailPanel';
 import PlotSearchSelector from './PlotSearchSelector';
 import React, { useState, useMemo, useEffect, useRef } from 'react';
@@ -147,6 +146,10 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
   const [activeSidebarItem, setActiveSidebarItem] = useState('analytics');
   const [activeTab, setActiveTab] = useState('monitor');
   const [activeAnalyticsSubpage, setActiveAnalyticsSubpage] = useState('overview');
+
+  const handleTopNavTabClick = (tabId) => {
+    setActiveTab(tabId);
+  };
 
   const [waterDemandData, setWaterDemandData] = useState(null);
   const [waterDemandLoading, setWaterDemandLoading] = useState(false);
@@ -3410,7 +3413,7 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
               <h1 className="text-base font-bold tracking-tight text-gray-900 leading-none flex items-center gap-1.5">
                 {tenantDisplayName} {isOrg
                   ? (brandingMode === 'AM' ? 'Agro Monitoring' : 'Farm Tools')
-                  : <><span className="text-lg leading-none">{getCropEmoji(cropType)}</span> {cropLabel} {brandingMode === 'AM' ? 'Monitoring' : 'Farm Tools'}</>}
+                  : <>{cropLabel} {brandingMode === 'AM' ? 'Monitoring' : 'Farm Tools'}</>}
               </h1>
               <p className={`text-[11px] font-semibold uppercase tracking-widest mt-1 leading-none ${brandingMode === 'AM' ? 'text-green-600' : 'text-green-600'}`}>
                 {brandingMode === 'AM' ? 'Enterprise Satellite Node' : 'Agricultural Operations Hub'}
@@ -3429,7 +3432,7 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
           ].map(tab => (
             <button
               key={tab.id}
-              onClick={() => handleTabClick(tab.id)}
+              onClick={() => handleTopNavTabClick(tab.id)}
               className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all ${
                 activeTab === tab.id
                   ? 'bg-white text-green-600 shadow-sm'
@@ -3495,7 +3498,7 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
                 <div className="text-sm font-bold text-gray-900 leading-none">{profileName}</div>
                 <div className={`text-[11px] font-semibold tracking-wider mt-1 uppercase ${brandingMode === 'AM' ? 'text-green-600' : 'text-green-600'}`}>{profileRole}</div>
               </div>
-              <div className={`w-11 h-11 rounded-xl flex items-center justify-center font-bold text-sm shadow-sm border hover:ring-2 transition-all ${brandingMode === 'AM' ? 'text-green-700 border-green-200 hover:ring-green-200 bg-green-50' : 'text-green-700 border-green-200 hover:ring-green-200 bg-green-50'}`}>
+              <div className={`w-11 h-11 rounded-xl flex items-center justify-center font-bold text-sm shadow-sm border transition-all ${brandingMode === 'AM' ? 'text-green-700 border-green-200 bg-green-50' : 'text-green-700 border-green-200 bg-green-50'}`}>
                 {brandingMode === 'AM' ? 'AM' : 'FT'}
               </div>
             </button>
@@ -4274,7 +4277,7 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
                       Loading {(selectedIndex || 'NDVI').toUpperCase()} · {effectiveSensor === 'sentinel-1' ? 'S1 SAR' : effectiveSensor === 'landsat' ? 'L9' : 'S2'}…
                     </div>
                   )}
-                  <MapContainer center={defaultMapCenter} zoom={13} maxZoom={22}
+                  <MapContainer preferCanvas={true} center={defaultMapCenter} zoom={13} maxZoom={22}
                     style={{ height: '100%', width: '100%', zIndex: 1, position: 'relative', background: 'transparent' }} zoomControl={false}>
                     <TileLayer key={basemapUrl} url={basemapUrl} attribution="&copy; ESRI & Google Satellite Imagery" maxZoom={22} maxNativeZoom={basemapMaxNativeZoom} />
           {!isCompareMode && showRasterLayer && currentTileUrl && (
@@ -4496,7 +4499,7 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
                       Loading {(selectedIndex || 'NDVI').toUpperCase()} · {effectiveSensor === 'sentinel-1' ? 'S1 SAR' : effectiveSensor === 'landsat' ? 'L9' : 'S2'}…
                     </div>
                   )}
-                  <MapContainer center={defaultMapCenter} zoom={13} maxZoom={22}
+                  <MapContainer preferCanvas={true} center={defaultMapCenter} zoom={13} maxZoom={22}
                     style={{ height: '100%', width: '100%', zIndex: 1, position: 'relative', background: 'transparent' }} zoomControl={false}>
                     <TileLayer key={basemapUrl} url={basemapUrl} attribution="&copy; ESRI & Google Satellite Imagery" maxZoom={22} maxNativeZoom={basemapMaxNativeZoom} />
           {!isCompareMode && showRasterLayer && currentTileUrl && (
@@ -4705,7 +4708,7 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
                       Loading {(selectedIndex || 'NDVI').toUpperCase()} · {effectiveSensor === 'sentinel-1' ? 'S1 SAR' : effectiveSensor === 'landsat' ? 'L9' : 'S2'}…
                     </div>
                   )}
-                  <MapContainer center={defaultMapCenter} zoom={13} maxZoom={22}
+                  <MapContainer preferCanvas={true} center={defaultMapCenter} zoom={13} maxZoom={22}
                     style={{ height: '100%', width: '100%', zIndex: 1, position: 'relative', background: 'transparent' }} zoomControl={false}>
                     <TileLayer key={basemapUrl} url={basemapUrl} attribution="&copy; ESRI & Google Satellite Imagery" maxZoom={22} maxNativeZoom={basemapMaxNativeZoom} />
           {!isCompareMode && showRasterLayer && currentTileUrl && (
@@ -4977,7 +4980,7 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
                       Loading {(selectedIndex || 'SMI').toUpperCase()} · S1 SAR…
                     </div>
                   )}
-                  <MapContainer center={defaultMapCenter} zoom={13} maxZoom={22}
+                  <MapContainer preferCanvas={true} center={defaultMapCenter} zoom={13} maxZoom={22}
                     style={{ height: '100%', width: '100%', zIndex: 1, position: 'relative', background: 'transparent' }} zoomControl={false}>
                     <TileLayer key={basemapUrl} url={basemapUrl} attribution="&copy; ESRI & Google Satellite Imagery" maxZoom={22} maxNativeZoom={basemapMaxNativeZoom} />
                     {!isCompareMode && showRasterLayer && currentTileUrl && (
@@ -5151,7 +5154,7 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
                       Loading {(selectedIndex || 'NDVI').toUpperCase()} · {effectiveSensor === 'sentinel-1' ? 'S1 SAR' : effectiveSensor === 'landsat' ? 'L9' : 'S2'}…
                     </div>
                   )}
-                  <MapContainer center={defaultMapCenter} zoom={13} maxZoom={22}
+                  <MapContainer preferCanvas={true} center={defaultMapCenter} zoom={13} maxZoom={22}
                     style={{ height: '100%', width: '100%', zIndex: 1, position: 'relative', background: 'transparent' }} zoomControl={false}>
                     <TileLayer key={basemapUrl} url={basemapUrl} attribution="&copy; ESRI & Google Satellite Imagery" maxZoom={22} maxNativeZoom={basemapMaxNativeZoom} />
           {!isCompareMode && showRasterLayer && currentTileUrl && (
@@ -5803,7 +5806,7 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
                             {activePlotAlerts.length > 0 && (
                               <button
                                 onClick={() => handleAcknowledgeAllPlotAlerts(selectedAlertPlot)}
-                                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-xs font-bold text-white transition-all shadow-md shadow-green-600/10 active:scale-95"
+                                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-xs font-bold text-white transition-all shadow-md active:scale-95"
                               >
                                 <CheckCircle2 size={13} /> Acknowledge All Issues
                               </button>
@@ -5900,7 +5903,7 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
                       Loading {(selectedIndex || 'NDVI').toUpperCase()} · {effectiveSensor === 'sentinel-1' ? 'S1 SAR' : effectiveSensor === 'landsat' ? 'L9' : 'S2'}…
                     </div>
                   )}
-                  <MapContainer center={defaultMapCenter} zoom={13} maxZoom={22}
+                  <MapContainer preferCanvas={true} center={defaultMapCenter} zoom={13} maxZoom={22}
                     style={{ height: '100%', width: '100%', zIndex: 1, position: 'relative', background: 'transparent' }} zoomControl={false}>
                     <TileLayer key={basemapUrl} url={basemapUrl} attribution="&copy; ESRI & Google Satellite Imagery" maxZoom={22} maxNativeZoom={basemapMaxNativeZoom} />
           {!isCompareMode && showRasterLayer && currentTileUrl && (
@@ -6217,7 +6220,7 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
 
               return (
                 <div className="w-full max-w-[700px] aspect-[1/1.414] bg-white border border-gray-200 shadow-md p-12 flex flex-col justify-between relative report-page-break mx-auto select-none">
-                  <div className="flex justify-between items-center pb-4 border-b border-gray-100 text-[11px] font-bold text-gray-450 uppercase tracking-widest">
+                  <div className="flex justify-between items-center pb-4 border-b border-gray-100 text-[9px] font-bold text-gray-450 uppercase tracking-widest">
                     <div className="flex items-center gap-1.5">
                       <Satellite size={12} className="text-green-600" />
                       <span>Farmintelytics Spatial MRV Audit</span>
@@ -6231,7 +6234,7 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
                     </div>
                     
                     <div className="space-y-3">
-                      <span className="text-[11px] font-extrabold uppercase tracking-widest text-green-700 bg-green-50 border border-green-150 px-3 py-1 rounded-full">
+                      <span className="text-[10px] font-extrabold uppercase tracking-widest text-green-700 bg-green-50 border border-green-150 px-3 py-1 rounded-full">
                         Verified Compliance Certificate
                       </span>
                       <h3 className="text-3xl font-black text-gray-900 tracking-tight leading-tight pt-2">
@@ -6244,38 +6247,38 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
 
                     <div className="grid grid-cols-2 gap-4 max-w-md mx-auto bg-gray-50/50 p-5 rounded-2xl border border-gray-150 text-left">
                       <div>
-                        <span className="text-[11px] text-gray-455 font-black uppercase tracking-wider block">Scope Target</span>
+                        <span className="text-[9px] text-gray-455 font-black uppercase tracking-wider block">Scope Target</span>
                         <span className="text-xs font-bold text-gray-800">{plotName}</span>
                       </div>
                       <div>
-                        <span className="text-[11px] text-gray-455 font-black uppercase tracking-wider block">Report Category</span>
+                        <span className="text-[9px] text-gray-455 font-black uppercase tracking-wider block">Report Category</span>
                         <span className="text-xs font-bold text-gray-800">
                           {reportType === 'ALL' ? 'Complete Farm Ledger' : `${reportType} Index Audit`}
                         </span>
                       </div>
                       <div>
-                        <span className="text-[11px] text-gray-455 font-black uppercase tracking-wider block">Document ID</span>
+                        <span className="text-[9px] text-gray-455 font-black uppercase tracking-wider block">Document ID</span>
                         <span className="text-xs font-mono font-bold text-gray-800">{reportId}</span>
                       </div>
                       <div>
-                        <span className="text-[11px] text-gray-455 font-black uppercase tracking-wider block">Compiled At</span>
+                        <span className="text-[9px] text-gray-455 font-black uppercase tracking-wider block">Compiled At</span>
                         <span className="text-xs font-bold text-gray-800">{reportDate}</span>
                       </div>
                       <div className="col-span-2 border-t border-gray-150 pt-3 flex justify-between items-center">
                         <div>
-                          <span className="text-[11px] text-gray-455 font-black uppercase tracking-wider block">MRV Compliance Status</span>
+                          <span className="text-[9px] text-gray-455 font-black uppercase tracking-wider block">MRV Compliance Status</span>
                           <span className="text-xs font-bold text-green-700 flex items-center gap-1 mt-0.5">
                             <CheckCircle2 size={11} className="text-green-600" /> Approved & Signed
                           </span>
                         </div>
-                        <span className="text-[11px] font-bold bg-slate-900 text-white px-2 py-0.5 rounded border uppercase">
+                        <span className="text-[8px] font-bold bg-slate-900 text-white px-2 py-0.5 rounded border uppercase">
                           VCS Standard
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex justify-between items-center pt-4 border-t border-gray-100 text-[11px] font-bold text-gray-600 uppercase tracking-wider">
+                  <div className="flex justify-between items-center pt-4 border-t border-gray-100 text-[8px] font-bold text-gray-600 uppercase tracking-wider">
                     <span>FARMINTELYTICS WEBPORTAL v3.2</span>
                     <span className="text-green-600">Certified Deforestation-Free</span>
                     <span>Page {pageCounter} of {totalPages}</span>
@@ -6294,7 +6297,7 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
               
               return (
                 <div className="w-full max-w-[700px] aspect-[1/1.414] bg-white border border-gray-200 shadow-md p-12 flex flex-col justify-between relative report-page-break mx-auto select-none">
-                  <div className="flex justify-between items-center pb-4 border-b border-gray-100 text-[11px] font-bold text-gray-455 uppercase tracking-widest">
+                  <div className="flex justify-between items-center pb-4 border-b border-gray-100 text-[9px] font-bold text-gray-455 uppercase tracking-widest">
                     <div className="flex items-center gap-1.5">
                       <Satellite size={12} className="text-green-600" />
                       <span>01. Vegetation Health Assessment</span>
@@ -6308,7 +6311,7 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
                         <h4 className="text-lg font-black text-gray-900 tracking-tight">CROP VEGETATION VIGOR & HEALTH STATUS</h4>
                         <p className="text-xs text-gray-600 font-semibold mt-1">Satellite derived NDVI analysis mapping canopy health distribution.</p>
                       </div>
-                      <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${
+                      <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${
                         isStressed ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-green-50 text-green-700 border border-green-200'
                       }`}>
                         {isStressed ? 'Warning (Stress)' : 'Optimal Performance'}
@@ -6316,7 +6319,7 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
                     </div>
 
                     <div className="space-y-2">
-                      <span className="text-[11px] font-bold text-gray-405 uppercase tracking-wider block">Temporal Trend Line</span>
+                      <span className="text-[9px] font-bold text-gray-405 uppercase tracking-wider block">Temporal Trend Line</span>
                       <div className="h-[180px] w-full bg-gray-50 border border-gray-100 p-4 rounded-2xl relative">
                         {isWholeFarm ? (
                           <Bar data={healthData} options={chartOptions} />
@@ -6328,19 +6331,19 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
 
                     <div className="grid grid-cols-3 gap-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
                       <div>
-                        <span className="text-[11px] text-gray-450 font-bold uppercase block">Mean NDVI</span>
+                        <span className="text-[9px] text-gray-450 font-bold uppercase block">Mean NDVI</span>
                         <span className="text-base font-black text-gray-800 mt-1 block">
                           {TIMELINE_DATA.length > 0 ? (TIMELINE_DATA.reduce((s, t) => s + (t.ndvi ?? 0), 0) / TIMELINE_DATA.length).toFixed(2) : '—'}
                         </span>
                       </div>
                       <div>
-                        <span className="text-[11px] text-gray-455 font-bold uppercase block">Active Chlorophyll</span>
+                        <span className="text-[9px] text-gray-455 font-bold uppercase block">Active Chlorophyll</span>
                         <span className="text-base font-black text-gray-850 mt-1 block">
                           {TIMELINE_DATA.length > 0 ? (TIMELINE_DATA.reduce((s, t) => s + (t.chlorophyll ?? 0), 0) / TIMELINE_DATA.length).toFixed(2) + ' GCVI' : '—'}
                         </span>
                       </div>
                       <div>
-                        <span className="text-[11px] text-gray-455 font-bold uppercase block">Zonal Coverage</span>
+                        <span className="text-[9px] text-gray-455 font-bold uppercase block">Zonal Coverage</span>
                         <span className="text-base font-black text-green-700 mt-1 block">
                           {'—'}
                         </span>
@@ -6348,7 +6351,7 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
                     </div>
 
                     <div className="p-4 bg-green-50/40 border border-green-100 rounded-xl space-y-1.5">
-                      <span className="text-[11px] font-extrabold uppercase tracking-wider text-green-800 flex items-center gap-1.5">
+                      <span className="text-[9px] font-extrabold uppercase tracking-wider text-green-800 flex items-center gap-1.5">
                         <Sparkles size={11} className="text-green-600" /> Agronomic Assessment
                       </span>
                       <p className="text-xs text-green-700 font-semibold leading-relaxed">
@@ -6362,7 +6365,7 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
                     </div>
                   </div>
 
-                  <div className="flex justify-between items-center pt-4 border-t border-gray-100 text-[11px] font-bold text-gray-600 uppercase tracking-wider">
+                  <div className="flex justify-between items-center pt-4 border-t border-gray-100 text-[8px] font-bold text-gray-600 uppercase tracking-wider">
                     <span>Plot: {plotName}</span>
                     <span className="text-green-600">Compliance Audit Approved</span>
                     <span>Page {pageCounter} of {totalPages}</span>
@@ -6381,7 +6384,7 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
 
               return (
                 <div className="w-full max-w-[700px] aspect-[1/1.414] bg-white border border-gray-200 shadow-md p-12 flex flex-col justify-between relative report-page-break mx-auto select-none">
-                  <div className="flex justify-between items-center pb-4 border-b border-gray-100 text-[11px] font-bold text-gray-450 uppercase tracking-widest">
+                  <div className="flex justify-between items-center pb-4 border-b border-gray-100 text-[9px] font-bold text-gray-450 uppercase tracking-widest">
                     <div className="flex items-center gap-1.5">
                       <CloudRain size={12} className="text-green-600" />
                       <span>02. Microclimate & Soil Moisture Profile</span>
@@ -6395,15 +6398,15 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
                         <h4 className="text-lg font-black text-gray-900 tracking-tight">CANOPY MOISTURE & TRANSPIRATION INDEX</h4>
                         <p className="text-xs text-gray-600 font-semibold mt-1">Root-zone water content tracking (NDMI) combined with meteorology logs.</p>
                       </div>
-                      <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${
-                        isStressed ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-green-50 text-green-700 border border-green-200'
+                      <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${
+                        isStressed ? 'bg-green-50 text-green-700 border border-green-200 animate-pulse' : 'bg-green-50 text-green-700 border border-green-200'
                       }`}>
                         {isStressed ? 'Deficit Alert' : 'Moisture Adequate'}
                       </span>
                     </div>
 
                     <div className="space-y-2">
-                      <span className="text-[11px] font-bold text-gray-450 uppercase tracking-wider block">NDMI Soil Moisture Trend</span>
+                      <span className="text-[9px] font-bold text-gray-450 uppercase tracking-wider block">NDMI Soil Moisture Trend</span>
                       <div className="h-[180px] w-full bg-gray-55 border border-gray-100 p-4 rounded-2xl relative">
                         {isWholeFarm ? (
                           <Bar data={climateData} options={chartOptions} />
@@ -6415,27 +6418,27 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
 
                     <div className="grid grid-cols-4 gap-3">
                       <div className="bg-gray-50 p-3.5 rounded-xl border border-gray-100 text-center">
-                        <span className="text-[11px] text-gray-600 font-bold uppercase block">Mean NDMI</span>
+                        <span className="text-[8px] text-gray-600 font-bold uppercase block">Mean NDMI</span>
                         <span className="text-xs font-black text-gray-800 mt-1 block">
                           {meanNdmi !== null ? meanNdmi.toFixed(2) : '—'}
                         </span>
                       </div>
                       <div className="bg-gray-50 p-3.5 rounded-xl border border-gray-100 text-center">
-                        <span className="text-[11px] text-gray-600 font-bold uppercase block">Soil Temp</span>
+                        <span className="text-[8px] text-gray-600 font-bold uppercase block">Soil Temp</span>
                         <span className="text-xs font-black text-gray-800 mt-1 block">—</span>
                       </div>
                       <div className="bg-gray-50 p-3.5 rounded-xl border border-gray-100 text-center">
-                        <span className="text-[11px] text-gray-600 font-bold uppercase block">VPD Stress</span>
+                        <span className="text-[8px] text-gray-600 font-bold uppercase block">VPD Stress</span>
                         <span className="text-xs font-black text-gray-800 mt-1 block">—</span>
                       </div>
                       <div className="bg-gray-50 p-3.5 rounded-xl border border-gray-100 text-center">
-                        <span className="text-[11px] text-gray-600 font-bold uppercase block">Rainfall</span>
+                        <span className="text-[8px] text-gray-600 font-bold uppercase block">Rainfall</span>
                         <span className="text-xs font-black text-green-700 mt-1 block">—</span>
                       </div>
                     </div>
 
                     <div className="p-4 bg-gray-55 border border-gray-150 rounded-xl space-y-1.5">
-                      <span className="text-[11px] font-extrabold uppercase tracking-wider text-gray-700 block">Hydrological Summary</span>
+                      <span className="text-[9px] font-extrabold uppercase tracking-wider text-gray-700 block">Hydrological Summary</span>
                       <p className="text-xs text-gray-500 font-semibold leading-relaxed">
                         {isStressed
                           ? 'Root-zone water stress is elevated. NDMI readings indicate below-threshold moisture levels. Immediate cover-cropping and crop mulching recommended to retain sub-surface soil hydration.'
@@ -6445,7 +6448,7 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
                     </div>
                   </div>
 
-                  <div className="flex justify-between items-center pt-4 border-t border-gray-100 text-[11px] font-bold text-gray-600 uppercase tracking-wider">
+                  <div className="flex justify-between items-center pt-4 border-t border-gray-100 text-[8px] font-bold text-gray-600 uppercase tracking-wider">
                     <span>Plot: {plotName}</span>
                     <span className="text-green-600">Meteorological Validation Log</span>
                     <span>Page {pageCounter} of {totalPages}</span>
@@ -6462,7 +6465,7 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
 
               return (
                 <div className="w-full max-w-[700px] aspect-[1/1.414] bg-white border border-gray-200 shadow-md p-12 flex flex-col justify-between relative report-page-break mx-auto select-none">
-                  <div className="flex justify-between items-center pb-4 border-b border-gray-100 text-[11px] font-bold text-gray-450 uppercase tracking-widest">
+                  <div className="flex justify-between items-center pb-4 border-b border-gray-100 text-[9px] font-bold text-gray-450 uppercase tracking-widest">
                     <div className="flex items-center gap-1.5">
                       <Waves size={12} className="text-green-600" />
                       <span>03. Water Hydrology Report</span>
@@ -6477,7 +6480,7 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
                     </div>
 
                     <div className="space-y-2">
-                      <span className="text-[11px] font-bold text-gray-455 uppercase tracking-wider block">NDWI Hydrological Index Profile</span>
+                      <span className="text-[9px] font-bold text-gray-455 uppercase tracking-wider block">NDWI Hydrological Index Profile</span>
                       <div className="h-[180px] w-full bg-gray-55 border border-gray-100 p-4 rounded-2xl relative">
                         {isWholeFarm ? (
                           <Bar data={hydrologyData} options={chartOptions} />
@@ -6489,33 +6492,33 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
 
                     <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
                       <div>
-                        <span className="text-[11px] text-gray-455 font-bold uppercase block">Mean NDWI</span>
+                        <span className="text-[9px] text-gray-455 font-bold uppercase block">Mean NDWI</span>
                         <span className="text-sm font-black text-gray-800 mt-1 block">
                           {TIMELINE_DATA.length > 0 ? (TIMELINE_DATA.reduce((s, t) => s + (t.ndwi ?? 0), 0) / TIMELINE_DATA.length).toFixed(2) : '—'}
                         </span>
                       </div>
                       <div>
-                        <span className="text-[11px] text-gray-455 font-bold uppercase block">Evapotranspiration Deficit</span>
+                        <span className="text-[9px] text-gray-455 font-bold uppercase block">Evapotranspiration Deficit</span>
                         <span className="text-sm font-black text-gray-800 mt-1 block">—</span>
                       </div>
                     </div>
 
                     <div className="border border-gray-200 rounded-xl p-4 space-y-3 bg-gray-50/50">
-                      <span className="text-[11px] font-black uppercase text-gray-455 tracking-wider block">Security Hash & Signatures</span>
-                      <div className="flex justify-between items-center text-[11px] text-gray-550 font-semibold">
+                      <span className="text-[9px] font-black uppercase text-gray-455 tracking-wider block">Security Hash & Signatures</span>
+                      <div className="flex justify-between items-center text-[10px] text-gray-550 font-semibold">
                         <div>
-                          <span className="block font-mono text-[11px] text-gray-600">Node ID: {tenant?.toUpperCase()}-S2-{generatedReport?.id?.slice(-4) || '0000'}</span>
-                          <span className="block font-mono text-[11px] text-gray-600">Digital Signature: SHA-256: {generatedReport?.id ? btoa(generatedReport.id).slice(0,15) : '—'}</span>
+                          <span className="block font-mono text-[9px] text-gray-600">Node ID: {tenant?.toUpperCase()}-S2-{generatedReport?.id?.slice(-4) || '0000'}</span>
+                          <span className="block font-mono text-[9px] text-gray-600">Digital Signature: SHA-256: {generatedReport?.id ? btoa(generatedReport.id).slice(0,15) : '—'}</span>
                         </div>
                         <div className="text-right">
                           <span className="block text-gray-850 font-extrabold">{profileName} (Lead GIS)</span>
-                          <span className="block text-[11px] text-green-600 uppercase">Electronically Signed</span>
+                          <span className="block text-[8px] text-green-600 uppercase">Electronically Signed</span>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex justify-between items-center pt-4 border-t border-gray-100 text-[11px] font-bold text-gray-450 uppercase tracking-wider">
+                  <div className="flex justify-between items-center pt-4 border-t border-gray-100 text-[8px] font-bold text-gray-450 uppercase tracking-wider">
                     <span>Registry: VCS & Gold Standard compliant</span>
                     <span className="text-green-600">Deforestation Free Verified</span>
                     <span>Page {pageCounter} of {totalPages}</span>
@@ -6532,7 +6535,7 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
 
               return (
                 <div className="w-full max-w-[700px] aspect-[1/1.414] bg-white border border-gray-200 shadow-md p-12 flex flex-col justify-between relative report-page-break mx-auto select-none">
-                  <div className="flex justify-between items-center pb-4 border-b border-gray-100 text-[11px] font-bold text-gray-455 uppercase tracking-widest">
+                  <div className="flex justify-between items-center pb-4 border-b border-gray-100 text-[9px] font-bold text-gray-455 uppercase tracking-widest">
                     <div className="flex items-center gap-1.5">
                       <Globe size={12} className="text-green-600" />
                       <span>04. Carbon Sequestration & Soil Chemistry</span>
@@ -6547,7 +6550,7 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
                     </div>
 
                     <div className="space-y-2">
-                      <span className="text-[11px] font-bold text-gray-450 uppercase tracking-wider block">Carbon Accumulation Chart</span>
+                      <span className="text-[9px] font-bold text-gray-450 uppercase tracking-wider block">Carbon Accumulation Chart</span>
                       <div className="h-[180px] w-full bg-gray-50 border border-gray-100 p-4 rounded-2xl relative">
                         <Bar data={carbonData} options={chartOptions} />
                       </div>
@@ -6555,31 +6558,31 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
 
                     <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
                       <div>
-                        <span className="text-[11px] text-gray-455 font-bold uppercase block">Baseline Soil Carbon (SOC)</span>
+                        <span className="text-[9px] text-gray-455 font-bold uppercase block">Baseline Soil Carbon (SOC)</span>
                         <span className="text-sm font-black text-gray-800 mt-1 block">—</span>
                       </div>
                       <div>
-                        <span className="text-[11px] text-gray-455 font-bold uppercase block">Aboveground Biomass (AGB)</span>
+                        <span className="text-[9px] text-gray-455 font-bold uppercase block">Aboveground Biomass (AGB)</span>
                         <span className="text-sm font-black text-gray-800 mt-1 block">—</span>
                       </div>
                     </div>
                   </div>
 
                   <div className="border border-gray-200 rounded-xl p-4 space-y-3 bg-gray-50/50">
-                    <span className="text-[11px] font-black uppercase text-gray-455 tracking-wider block">Security Hash & Signatures</span>
-                    <div className="flex justify-between items-center text-[11px] text-gray-550 font-semibold">
+                    <span className="text-[9px] font-black uppercase text-gray-455 tracking-wider block">Security Hash & Signatures</span>
+                    <div className="flex justify-between items-center text-[10px] text-gray-550 font-semibold">
                       <div>
-                        <span className="block font-mono text-[11px] text-gray-600">Node ID: {tenant?.toUpperCase()}-S2-{generatedReport?.id?.slice(-4) || '0000'}</span>
-                        <span className="block font-mono text-[11px] text-gray-600">Digital Signature: SHA-256: {generatedReport?.id ? btoa(generatedReport.id).slice(0,15) : '—'}</span>
+                        <span className="block font-mono text-[9px] text-gray-600">Node ID: {tenant?.toUpperCase()}-S2-{generatedReport?.id?.slice(-4) || '0000'}</span>
+                        <span className="block font-mono text-[9px] text-gray-600">Digital Signature: SHA-256: {generatedReport?.id ? btoa(generatedReport.id).slice(0,15) : '—'}</span>
                       </div>
                       <div className="text-right">
                         <span className="block text-gray-850 font-extrabold">{profileName} (Lead GIS)</span>
-                        <span className="block text-[11px] text-green-600 uppercase">Electronically Signed</span>
+                        <span className="block text-[8px] text-green-600 uppercase">Electronically Signed</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex justify-between items-center pt-4 border-t border-gray-100 text-[11px] font-bold text-gray-450 uppercase tracking-wider">
+                  <div className="flex justify-between items-center pt-4 border-t border-gray-100 text-[8px] font-bold text-gray-450 uppercase tracking-wider">
                     <span>Registry: VCS & Gold Standard compliant</span>
                     <span className="text-green-600">Deforestation Free Verified</span>
                     <span>Page {pageCounter} of {totalPages}</span>
@@ -6830,7 +6833,7 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
                             <div className="flex items-center gap-3">
                               <FileText size={18} className="text-green-500" />
                               <span className="font-mono text-xs font-bold text-slate-200">{generatedReport.id}.pdf</span>
-                              <span className="bg-slate-800 text-slate-400 text-[11px] font-bold px-2 py-0.5 rounded border border-slate-700">2 Pages</span>
+                              <span className="bg-slate-800 text-slate-400 text-[10px] font-bold px-2 py-0.5 rounded border border-slate-700">2 Pages</span>
                             </div>
                             <button
                               onClick={() => window.print()}
@@ -6846,7 +6849,7 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
                             {/* PAGE 1: COVER CERTIFICATE */}
                             <div className="bg-white shadow-2xl border border-gray-300 w-full max-w-[620px] aspect-[1/1.414] p-12 flex flex-col justify-between relative select-none">
                               {/* Confidential Header */}
-                              <div className="flex justify-between items-center text-[11px] font-black text-gray-600 uppercase tracking-widest border-b border-gray-100 pb-3">
+                              <div className="flex justify-between items-center text-[9px] font-black text-gray-600 uppercase tracking-widest border-b border-gray-100 pb-3">
                                 <span className="text-green-600 flex items-center gap-1 font-bold">
                                   <Globe size={10} /> FARMINTELYTICS SPATIAL MRV AUDIT
                                 </span>
@@ -6860,7 +6863,7 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
                                 </div>
                                 
                                 <div className="space-y-4">
-                                  <span className="text-[11px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200/30 px-3.5 py-1 rounded-full uppercase tracking-wider inline-block">
+                                  <span className="text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200/30 px-3.5 py-1 rounded-full uppercase tracking-wider inline-block">
                                     Verified Compliance Certificate
                                   </span>
                                   <h1 className="text-2xl font-black text-gray-900 tracking-tight leading-snug uppercase max-w-md mx-auto">
@@ -6875,13 +6878,13 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
                               {/* Metadata block at bottom */}
                               <div className="grid grid-cols-2 gap-4 bg-gray-50/50 p-4 rounded-xl border border-gray-200 text-left">
                                 <div>
-                                  <span className="text-[11px] text-gray-600 font-extrabold uppercase tracking-wider block mb-1">Scope Target</span>
+                                  <span className="text-[9px] text-gray-600 font-extrabold uppercase tracking-wider block mb-1">Scope Target</span>
                                   <span className="text-xs font-bold text-gray-800">
                                     {generatedReport.plot === 'WHOLE-FARM' ? 'Whole Farm (Aggregate)' : generatedReport.plot}
                                   </span>
                                 </div>
                                 <div>
-                                  <span className="text-[11px] text-gray-600 font-extrabold uppercase tracking-wider block mb-1">Report Category</span>
+                                  <span className="text-[9px] text-gray-600 font-extrabold uppercase tracking-wider block mb-1">Report Category</span>
                                   <span className="text-xs font-bold text-gray-800">
                                     {generatedReport.index === 'NDVI' ? 'NDVI — Vegetation Health Audit' :
                                      generatedReport.index === 'NDMI' ? 'NDMI — Soil Moisture Audit' :
@@ -6896,7 +6899,7 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
                             {/* PAGE 2: LEDGER DATA PAGE */}
                             <div className="bg-white shadow-2xl border border-gray-300 w-full max-w-[620px] aspect-[1/1.414] p-12 flex flex-col justify-between relative select-none">
                               {/* Page 2 Header */}
-                              <div className="flex justify-between items-center text-[11px] font-black text-gray-600 uppercase tracking-widest border-b border-gray-100 pb-3">
+                              <div className="flex justify-between items-center text-[9px] font-black text-gray-600 uppercase tracking-widest border-b border-gray-100 pb-3">
                                 <span className="text-green-600 flex items-center gap-1 font-bold">
                                   <Globe size={10} /> FARMINTELYTICS SPATIAL MRV AUDIT
                                 </span>
@@ -6913,7 +6916,7 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
                                     { label: 'Compiled At', value: generatedReport.date }
                                   ].map((row, i) => (
                                     <div key={i}>
-                                      <span className="text-[11px] text-gray-600 font-extrabold uppercase tracking-wider block mb-0.5">{row.label}</span>
+                                      <span className="text-[9px] text-gray-600 font-extrabold uppercase tracking-wider block mb-0.5">{row.label}</span>
                                       <span className={`text-[11px] font-bold ${row.color || 'text-gray-800'}`}>{row.value}</span>
                                     </div>
                                   ))}
@@ -6921,7 +6924,7 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
 
                                 {/* Chart */}
                                 <div className="space-y-2">
-                                  <span className="text-[11px] font-extrabold text-gray-600 uppercase tracking-wider block flex items-center gap-1">
+                                  <span className="text-[10px] font-extrabold text-gray-600 uppercase tracking-wider block flex items-center gap-1">
                                     <LineChart size={12} className="text-green-600" />
                                     {generatedReport.plot === 'WHOLE-FARM' ? 'Spatial Comparative Chart' : 'Temporal Historical Trend'}
                                   </span>
@@ -6936,7 +6939,7 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
 
                                 {/* Agronomic Insight */}
                                 <div className="p-4 bg-green-50/40 border border-green-100 rounded-xl space-y-1.5">
-                                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-green-800 flex items-center gap-1">
+                                  <span className="text-[9px] font-extrabold uppercase tracking-wider text-green-800 flex items-center gap-1">
                                     <Sparkles size={11} className="text-green-600" />
                                     Automated Agronomic Diagnostic Insight
                                   </span>
@@ -6947,7 +6950,7 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
                               </div>
 
                               {/* Page 2 Footer */}
-                              <div className="flex justify-between items-center pt-3 border-t border-gray-100 text-[11px] font-bold text-gray-600 uppercase tracking-wider">
+                              <div className="flex justify-between items-center pt-3 border-t border-gray-100 text-[8px] font-bold text-gray-600 uppercase tracking-wider">
                                 <span>FARMINTELYTICS WEBPORTAL v3.2</span>
                                 <span className="text-green-650 font-bold">Certified Deforestation-Free</span>
                                 <span>Page 2 of 2</span>
@@ -7486,7 +7489,7 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
                   setTimeout(() => setShowProfileSaved(false), 2000);
                 }}
                 className={`px-4.5 py-2 rounded-xl text-xs font-bold text-white shadow-sm transition-all hover:scale-102 active:scale-98 ${
-                  brandingMode === 'AM' ? 'bg-green-600 hover:bg-green-700 shadow-green-600/10' : 'bg-green-600 hover:bg-green-700 shadow-blue-600/10'
+                  brandingMode === 'AM' ? 'bg-green-600 hover:bg-green-700' : 'bg-green-600 hover:bg-green-700'
                 }`}
               >
                 Save Changes
@@ -7504,6 +7507,7 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
           }`}
         />
       )}
+
     </div>
   );
 };

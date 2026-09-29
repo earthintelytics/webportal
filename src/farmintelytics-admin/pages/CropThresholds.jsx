@@ -5,20 +5,20 @@ import { useConfirm } from '../components/ConfirmProvider';
 import ErrorBanner from '../components/ErrorBanner';
 
 const CROPS = [
-  { id: 'ffb', label: '🌴 Oil Palm (FFB)' },
-  { id: 'rice', label: '🌾 Rice' },
-  { id: 'maize', label: '🌽 Maize' },
-  { id: 'cocoa', label: '🍫 Cocoa' },
-  { id: 'cassava', label: '🌿 Cassava' },
-  { id: 'sugarcane', label: '🎋 Sugarcane' },
-  { id: 'rubber', label: '🌳 Rubber' },
-  { id: 'cashew', label: '🥜 Cashew' },
+  { id: 'ffb', label: 'Oil Palm (FFB)' },
+  { id: 'rice', label: 'Rice' },
+  { id: 'maize', label: 'Maize' },
+  { id: 'cocoa', label: 'Cocoa' },
+  { id: 'cassava', label: 'Cassava' },
+  { id: 'sugarcane', label: 'Sugarcane' },
+  { id: 'rubber', label: 'Rubber' },
+  { id: 'cashew', label: 'Cashew' },
 ];
 
 const inputStyle = {
   width: '100%', padding: '7px 9px', background: '#ffffff', border: '1px solid #cbd5e1',
   borderRadius: '8px', color: '#0f172a', fontSize: '12px', fontWeight: 600,
-  outline: 'none', boxSizing: 'border-box', fontFamily: "'Roboto', sans-serif",
+  outline: 'none', boxSizing: 'border-box', fontFamily: "var(--font-sans)",
 };
 const labelStyle = { display: 'block', fontSize: '11px', fontWeight: 800, color: '#475569', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '6px' };
 
@@ -102,7 +102,7 @@ const IndexCard = ({ item, cropType, companyId, onSaved, onError }) => {
             {item.crop_label ? `${item.crop_label} — ` : ''}{item.full}
           </div>
           {item.formula && (
-            <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '3px', fontFamily: 'monospace' }}>{item.formula}</div>
+            <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '3px', fontFamily: 'var(--font-mono)' }}>{item.formula}</div>
           )}
         </div>
         <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
@@ -146,8 +146,8 @@ const IndexCard = ({ item, cropType, companyId, onSaved, onError }) => {
               }}
             />
             <input style={inputStyle} value={c.label} onChange={e => updateLabel(i, e.target.value)} />
-            <input style={{ ...inputStyle, fontFamily: 'monospace' }} type="number" step="any" value={c.range[0]} onChange={e => updateBound(i, 'lo', e.target.value)} />
-            <input style={{ ...inputStyle, fontFamily: 'monospace' }} type="number" step="any" value={c.range[1]} onChange={e => updateBound(i, 'hi', e.target.value)} />
+            <input style={{ ...inputStyle, fontFamily: 'var(--font-mono)' }} type="number" step="any" value={c.range[0]} onChange={e => updateBound(i, 'lo', e.target.value)} />
+            <input style={{ ...inputStyle, fontFamily: 'var(--font-mono)' }} type="number" step="any" value={c.range[1]} onChange={e => updateBound(i, 'hi', e.target.value)} />
           </React.Fragment>
         ))}
       </div>

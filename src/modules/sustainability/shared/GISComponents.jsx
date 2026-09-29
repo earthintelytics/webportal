@@ -52,7 +52,7 @@ export const LayerSwitcher = ({ layers, activeLayer, onToggle }) => (
             {layer.icon || <MapIcon size={14} />}
             <span className="text-[11px] font-bold uppercase tracking-widest">{layer.label}</span>
           </div>
-          {activeLayer === layer.id && <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>}
+          {activeLayer === layer.id && <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>}
         </button>
       ))}
     </div>

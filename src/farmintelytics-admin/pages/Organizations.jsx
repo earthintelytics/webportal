@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Plus, Edit3, Trash2, X, Check, Building2, MapPin, Search, Layers, ImagePlus } from 'lucide-react';
+import { Plus, Edit3, Trash2, X, Check, Building2, MapPin, Search, Layers, ImagePlus, Link2, Copy } from 'lucide-react';
 import {
   fetchOrganizations, createOrganization, updateOrganization, deleteOrganization, uploadOrganizationLogo,
   fetchFarms, getBoundaryProperties,
@@ -9,14 +9,14 @@ import ErrorBanner from '../components/ErrorBanner';
 import OrgDetailPanel from './OrganizationFarms';
 
 export const CROP_LABELS = {
-  ffb: '🌴 Oil Palm (FFB)',
-  sugarcane: '🎋 Sugarcane',
-  rice: '🌾 Rice',
-  cocoa: '🍫 Cocoa',
-  cassava: '🌿 Cassava',
-  maize: '🌽 Maize',
-  rubber: '🌳 Rubber',
-  cashew: '🥜 Cashew',
+  ffb: 'Oil Palm (FFB)',
+  sugarcane: 'Sugarcane',
+  rice: 'Rice',
+  cocoa: 'Cocoa',
+  cassava: 'Cassava',
+  maize: 'Maize',
+  rubber: 'Rubber',
+  cashew: 'Cashew',
 };
 
 const ALL_MODULES = [
@@ -215,7 +215,7 @@ const OrgModal = ({ org, onSave, onClose }) => {
     width: '100%', padding: '10px 12px',
     background: '#ffffff', border: '1px solid #cbd5e1',
     borderRadius: '10px', color: '#0f172a', fontSize: '13px', fontWeight: 500,
-    outline: 'none', boxSizing: 'border-box', fontFamily: "'Roboto', sans-serif",
+    outline: 'none', boxSizing: 'border-box', fontFamily: "var(--font-sans)",
   };
   const labelStyle = { display: 'block', fontSize: '11px', fontWeight: 800, color: '#475569', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '6px' };
 
@@ -476,6 +476,15 @@ const Organizations = () => {
     catch (e) { setError(e.message); }
   };
 
+  const [copiedSchema, setCopiedSchema] = useState(null);
+
+  const copyDirectLink = (schema) => {
+    const url = `${window.location.origin}/login?tenant=${schema}`;
+    navigator.clipboard.writeText(url);
+    setCopiedSchema(schema);
+    setTimeout(() => setCopiedSchema(null), 2000);
+  };
+
   const filtered = orgs.filter(o =>
     o.display_name.toLowerCase().includes(search.toLowerCase()) ||
     o.schema_name.toLowerCase().includes(search.toLowerCase())
@@ -492,7 +501,7 @@ const Organizations = () => {
           display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px',
           background: '#15803d', border: 'none', borderRadius: '10px',
           color: 'white', fontSize: '13px', fontWeight: 700, cursor: 'pointer',
-          boxShadow: '0 4px 16px rgba(22,163,74,0.2)',
+          boxShadow: 'none',
         }}>
           <Plus size={16} />New Organization
         </button>
@@ -533,7 +542,7 @@ const Organizations = () => {
                   </div>
                   <div>
                     <p style={{ color: '#0f172a', fontSize: '14px', fontWeight: 700, margin: 0 }}>{org.display_name}</p>
-                    <p style={{ color: '#64748b', fontSize: '11px', fontWeight: 600, margin: '2px 0 0', fontFamily: 'monospace' }}>{org.schema_name}</p>
+                    <p style={{ color: '#64748b', fontSize: '11px', fontWeight: 600, margin: '2px 0 0', fontFamily: 'var(--font-mono)' }}>{org.schema_name}</p>
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: '6px' }} onClick={e => e.stopPropagation()}>
@@ -546,6 +555,32 @@ const Organizations = () => {
                     <Trash2 size={14} />
                   </button>
                 </div>
+              </div>
+
+              {/* Direct Access Link Badge */}
+              <div style={{
+                marginBottom: '12px', padding: '8px 10px', background: '#f8fafc',
+                border: '1px solid #e2e8f0', borderRadius: '8px',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px',
+              }} onClick={e => e.stopPropagation()}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+                  <Link2 size={13} color="#15803d" />
+                  <span style={{ fontSize: '11px', color: '#475569', fontFamily: 'var(--font-mono)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    /login?tenant={org.schema_name}
+                  </span>
+                </div>
+                <button
+                  onClick={() => copyDirectLink(org.schema_name)}
+                  style={{
+                    padding: '4px 8px', background: copiedSchema === org.schema_name ? '#15803d' : '#ffffff',
+                    border: '1px solid #cbd5e1', borderRadius: '6px',
+                    color: copiedSchema === org.schema_name ? '#ffffff' : '#334155',
+                    fontSize: '10px', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0,
+                  }}
+                >
+                  {copiedSchema === org.schema_name ? <Check size={11} /> : <Copy size={11} />}
+                  {copiedSchema === org.schema_name ? 'Copied' : 'Copy Link'}
+                </button>
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>

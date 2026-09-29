@@ -483,7 +483,7 @@ const MonitoringPortal = ({ cropName, onSignOut, onBack }) => {
                ))}
             </div>
             <div className="p-6 bg-gray-50/50 border-t border-gray-100">
-               <button onClick={onSignOut} className="w-full bg-red-500 text-white font-black uppercase tracking-widest py-5 rounded-2xl text-[11px] flex items-center justify-center gap-3 hover:bg-red-600 transition-all shadow-xl shadow-red-100"><LogOut size={16} /> Sign Out</button>
+               <button onClick={onSignOut} className="w-full bg-red-500 text-white font-black uppercase tracking-widest py-5 rounded-2xl text-[11px] flex items-center justify-center gap-3 hover:bg-red-600 transition-all shadow-xl"><LogOut size={16} /> Sign Out</button>
             </div>
          </aside>
          <main className="flex-1 flex flex-col relative bg-gray-50">{renderContent()}</main>

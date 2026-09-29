@@ -225,7 +225,7 @@ const Inventory = () => {
     };
   });
 
-  const inputStyle = { padding: '10px 12px', background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '10px', color: '#1e293b', fontSize: '13px', fontWeight: 600, outline: 'none', fontFamily: "'Roboto', sans-serif", cursor: 'pointer' };
+  const inputStyle = { padding: '10px 12px', background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '10px', color: '#1e293b', fontSize: '13px', fontWeight: 600, outline: 'none', fontFamily: "var(--font-sans)", cursor: 'pointer' };
   const labelStyle = { display: 'block', fontSize: '11px', fontWeight: 800, color: '#64748b', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '6px' };
 
   return (
@@ -240,7 +240,7 @@ const Inventory = () => {
           <button 
             onClick={handleSyncDatabase} 
             disabled={syncing}
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px', background: '#2563eb', border: 'none', borderRadius: '10px', color: 'white', fontSize: '13px', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 16px rgba(59,130,246,0.2)' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px', background: '#2563eb', border: 'none', borderRadius: '10px', color: 'white', fontSize: '13px', fontWeight: 700, cursor: 'pointer', boxShadow: 'none' }}
           >
             <RefreshCw size={14} className={syncing ? 'animate-spin' : ''} />
             {syncing ? 'Syncing…' : 'Force Sync Registry'}
@@ -355,7 +355,7 @@ const Inventory = () => {
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#64748b', fontWeight: 600, marginTop: '2px' }}>
                       <span>{type.count} {type.count === 1 ? 'file' : 'files'}</span>
-                      <span style={{ fontFamily: 'monospace' }}>{formatSize(type.size)}</span>
+                      <span style={{ fontFamily: 'var(--font-mono)' }}>{formatSize(type.size)}</span>
                     </div>
                   </div>
                 </div>
@@ -441,7 +441,7 @@ const Inventory = () => {
                     <tr key={farm.farm_id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                       <td style={{ padding: '12px 8px' }}>
                         <div style={{ fontWeight: 700, color: '#0f172a', fontSize: '13px' }}>{farm.farm_name}</div>
-                        <div style={{ fontFamily: 'monospace', fontSize: '11px', color: '#64748b', marginTop: '2px' }}>{farm.farm_id}</div>
+                        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: '#64748b', marginTop: '2px' }}>{farm.farm_id}</div>
                       </td>
                       <td style={{ padding: '12px 8px', fontSize: '12px', color: '#475569', fontWeight: 600 }}>{farm.company_name}</td>
                       <td style={{ padding: '12px 8px' }}>
@@ -456,7 +456,7 @@ const Inventory = () => {
                           {status}
                         </span>
                       </td>
-                      <td style={{ padding: '12px 8px', fontSize: '11px', fontFamily: 'monospace', color: '#475569' }}>{size}</td>
+                      <td style={{ padding: '12px 8px', fontSize: '11px', fontFamily: 'var(--font-mono)', color: '#475569' }}>{size}</td>
                       <td style={{ padding: '12px 8px', fontSize: '11px', color: '#64748b' }}>{lastModified}</td>
                     </tr>
                   ))
@@ -486,14 +486,14 @@ const Inventory = () => {
                   minioFiles.filter(searchFilter).map(file => (
                     <tr key={file.key} style={{ borderBottom: '1px solid #f1f5f9' }}>
                       <td style={{ padding: '12px 8px', maxWidth: '320px', wordBreak: 'break-all' }}>
-                        <div style={{ fontSize: '12px', fontWeight: 700, color: '#0f172a', fontFamily: 'monospace' }}>{file.key}</div>
+                        <div style={{ fontSize: '12px', fontWeight: 700, color: '#0f172a', fontFamily: 'var(--font-mono)' }}>{file.key}</div>
                       </td>
                       <td style={{ padding: '12px 8px' }}>
                         <span style={{ fontSize: '11px', fontWeight: 800, padding: '2px 8px', borderRadius: '6px', background: 'rgba(59,130,246,0.08)', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.15)' }}>
                           {file.file_type}
                         </span>
                       </td>
-                      <td style={{ padding: '12px 8px', fontSize: '11px', fontFamily: 'monospace', color: '#475569' }}>{formatSize(file.size_bytes)}</td>
+                      <td style={{ padding: '12px 8px', fontSize: '11px', fontFamily: 'var(--font-mono)', color: '#475569' }}>{formatSize(file.size_bytes)}</td>
                       <td style={{ padding: '12px 8px', fontSize: '11px', color: '#64748b' }}>{new Date(file.last_modified).toLocaleString()}</td>
                       <td style={{ padding: '12px 8px', textAlign: 'right' }}>
                         <div style={{ display: 'inline-flex', gap: '6px' }}>
@@ -543,7 +543,7 @@ const Inventory = () => {
           >
             <div style={{ padding: '16px 20px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '10px' }}>
               <FileJson size={16} color="#2563eb" />
-              <div style={{ fontSize: '12px', fontWeight: 700, color: '#0f172a', fontFamily: 'monospace', wordBreak: 'break-all' }}>{viewFile.key}</div>
+              <div style={{ fontSize: '12px', fontWeight: 700, color: '#0f172a', fontFamily: 'var(--font-mono)', wordBreak: 'break-all' }}>{viewFile.key}</div>
               <div style={{ marginLeft: 'auto', display: 'flex', gap: '6px' }}>
                 {viewContent && (
                   <button
@@ -570,7 +570,7 @@ const Inventory = () => {
                 </div>
               )}
               {!viewLoading && !viewError && (
-                <pre style={{ margin: 0, fontSize: '11.5px', lineHeight: 1.6, color: '#0f172a', fontFamily: 'monospace', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{viewContent}</pre>
+                <pre style={{ margin: 0, fontSize: '11.5px', lineHeight: 1.6, color: '#0f172a', fontFamily: 'var(--font-mono)', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{viewContent}</pre>
               )}
             </div>
           </div>

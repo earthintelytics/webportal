@@ -31,14 +31,19 @@ async function adminFetch(path, options = {}) {
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
   const res = await fetch(url, { cache: 'no-store', ...options, headers });
+  const requestId = res.headers.get('X-Request-ID');
   if (res.status === 401) handleAdminAuthFailure();
   if (!res.ok) {
     const text = await res.text();
     let msg = '';
+    let code = 'ERROR';
     try {
       const parsed = JSON.parse(text);
       if (typeof parsed === 'string') {
         msg = parsed;
+      } else if (parsed.error && typeof parsed.error === 'object') {
+        msg = parsed.error.message || JSON.stringify(parsed.error);
+        code = parsed.error.code || 'ERROR';
       } else if (parsed.message) {
         msg = parsed.message;
       } else if (parsed.error) {
@@ -57,11 +62,18 @@ async function adminFetch(path, options = {}) {
     }
     const err = new Error(msg);
     err.status = res.status;
+    err.code = code;
     err.path = path;
+    err.requestId = requestId;
     err.raw = text;
     throw err;
   }
-  return res.json();
+  const json = await res.json();
+  // Support both enveloped and direct payloads
+  if (json && typeof json === 'object' && json.status === 'success' && json.data !== undefined) {
+    return json.data;
+  }
+  return json;
 }
 
 /** Multipart upload helper with XMLHttpRequest progress tracking */

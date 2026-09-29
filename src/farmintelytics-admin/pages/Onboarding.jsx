@@ -35,18 +35,18 @@ const DEFAULT_ALERT_THRESHOLDS = {
 const inputStyle = {
   width: '100%', padding: '11px 13px', background: '#ffffff', border: '1px solid #cbd5e1',
   borderRadius: '10px', color: '#0f172a', fontSize: '14px', fontWeight: 500,
-  outline: 'none', boxSizing: 'border-box', fontFamily: "'Roboto', sans-serif",
+  outline: 'none', boxSizing: 'border-box', fontFamily: "var(--font-sans)",
 };
-const labelStyle = { display: 'block', fontSize: '12px', fontWeight: 800, color: '#475569', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '6px', fontFamily: "'Roboto', sans-serif" };
-const helpTextStyle = { color: '#64748b', fontSize: '13px', margin: '6px 0 0', lineHeight: 1.5, fontFamily: "'Roboto', sans-serif" };
+const labelStyle = { display: 'block', fontSize: '12px', fontWeight: 800, color: '#475569', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '6px', fontFamily: "var(--font-sans)" };
+const helpTextStyle = { color: '#64748b', fontSize: '13px', margin: '6px 0 0', lineHeight: 1.5, fontFamily: "var(--font-sans)" };
 const chip = chipStyle;
 const primaryBtn = (disabled) => ({
   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '13px 26px',
   background: '#15803d', border: 'none', borderRadius: '12px',
   color: 'white', cursor: disabled ? 'default' : 'pointer', fontWeight: 800, fontSize: '14px',
-  opacity: disabled ? 0.5 : 1, fontFamily: "'Roboto', sans-serif",
+  opacity: disabled ? 0.5 : 1, fontFamily: "var(--font-sans)",
 });
-const secondaryBtn = { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '13px 22px', background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '12px', color: '#334155', cursor: 'pointer', fontWeight: 700, fontSize: '14px', fontFamily: "'Roboto', sans-serif" };
+const secondaryBtn = { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '13px 22px', background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '12px', color: '#334155', cursor: 'pointer', fontWeight: 700, fontSize: '14px', fontFamily: "var(--font-sans)" };
 
 const FitToBounds = ({ data }) => {
   const map = useMap();
@@ -361,7 +361,7 @@ const Onboarding = () => {
               display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 14px', borderRadius: '10px',
               background: state === 'active' ? '#15803d' : '#ffffff',
               border: state === 'active' ? '1px solid #15803d' : state === 'done' ? '1px solid #15803d' : '1px solid #cbd5e1',
-              boxShadow: state === 'active' ? '0 2px 6px rgba(21,128,61,0.25)' : 'none',
+              boxShadow: 'none',
               transition: 'all 0.15s ease',
             }}>
               {state === 'done'
@@ -376,7 +376,7 @@ const Onboarding = () => {
     </div>
   );
 
-  const card = { background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '28px', display: 'flex', flexDirection: 'column', gap: '16px', width: '100%', boxSizing: 'border-box', fontFamily: "'Inter', sans-serif" };
+  const card = { background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '28px', display: 'flex', flexDirection: 'column', gap: '16px', width: '100%', boxSizing: 'border-box', fontFamily: "var(--font-sans)" };
 
   // Small "Step 1 of 3" indicator for the Company → Farm → Boundary mini flow.
   const OrgSubStepHeader = () => (
@@ -402,7 +402,7 @@ const Onboarding = () => {
   );
 
   return (
-    <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', overflowY: 'auto', height: '100%', boxSizing: 'border-box', fontFamily: "'Roboto', sans-serif" }}>
+    <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', overflowY: 'auto', height: '100%', boxSizing: 'border-box', fontFamily: "var(--font-sans)" }}>
     <div style={{ width: '100%', maxWidth: '760px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <div>
         <h2 style={{ color: '#0f172a', fontSize: '22px', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -634,7 +634,7 @@ const Onboarding = () => {
                 </p>
                 {previewGeoJSON && (
                   <div style={{ marginTop: '14px', borderRadius: '14px', overflow: 'hidden', border: '1px solid #cbd5e1', height: '240px', position: 'relative' }}>
-                    <MapContainer center={[6.43, 5.27]} zoom={11} style={{ width: '100%', height: '100%' }} zoomControl={false}>
+                    <MapContainer preferCanvas={true} center={[6.43, 5.27]} zoom={11} style={{ width: '100%', height: '100%' }} zoomControl={false}>
                       <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" attribution="Esri" maxZoom={19} />
                       <GeoJSON data={previewGeoJSON} style={{ color: '#16a34a', weight: 2.5, fillColor: '#22c55e', fillOpacity: 0.25 }} />
                       <FitToBounds data={previewGeoJSON} />
@@ -813,7 +813,7 @@ const Onboarding = () => {
             {autoSchedule && (
               <div>
                 <label style={labelStyle}>Cron Schedule</label>
-                <input style={{ ...inputStyle, fontFamily: 'monospace', maxWidth: '220px' }} value={scheduleCron} onChange={e => setScheduleCron(e.target.value)} />
+                <input style={{ ...inputStyle, fontFamily: 'var(--font-mono)', maxWidth: '220px' }} value={scheduleCron} onChange={e => setScheduleCron(e.target.value)} />
                 <p style={{ color: '#64748b', fontSize: '11px', margin: '4px 0 0' }}>Default runs at 03:00 every 5 days (same cadence as the existing all-farms job).</p>
               </div>
             )}

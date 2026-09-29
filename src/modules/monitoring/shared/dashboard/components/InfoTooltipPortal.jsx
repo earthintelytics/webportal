@@ -34,7 +34,7 @@ export const InfoTooltipPortal = ({ title, desc, done, formula }) => {
         {formula && (
           <div>
             <span style={{ fontWeight: 900, fontSize: 11, color: 'rgba(52,211,153,0.8)', textTransform: 'uppercase', letterSpacing: '0.1em', display: 'block' }}>Formula:</span>
-            <span style={{ fontFamily: 'monospace', color: '#86efac', fontSize: 9.5, fontWeight: 700, display: 'block', marginTop: 4, background: 'rgba(20,83,45,0.6)', padding: '4px 8px', borderRadius: 4, border: '1px solid rgba(22,101,52,0.3)', wordBreak: 'break-all', whiteSpace: 'normal' }}>{formula}</span>
+            <span style={{ fontFamily: 'var(--font-mono)', color: '#86efac', fontSize: 9.5, fontWeight: 700, display: 'block', marginTop: 4, background: 'rgba(20,83,45,0.6)', padding: '4px 8px', borderRadius: 4, border: '1px solid rgba(22,101,52,0.3)', wordBreak: 'break-all', whiteSpace: 'normal' }}>{formula}</span>
           </div>
         )}
       </>
@@ -74,7 +74,7 @@ export const InfoTooltipPortal = ({ title, desc, done, formula }) => {
             zIndex: 2147483647,
             lineHeight: 1.55,
             textAlign: 'left',
-            fontFamily: 'sans-serif',
+            fontFamily: 'var(--font-sans)',
             fontWeight: 500,
             textTransform: 'none',
             letterSpacing: 'normal',

@@ -92,7 +92,7 @@ const SustainabilityPortal = ({ title, type, onSignOut, onBack, children, sideba
             <div className="w-px h-8 bg-white/10"></div>
 
             <div className="flex items-center gap-4">
-               <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center p-2 shadow-[0_0_20px_rgba(16,185,129,0.3)]">
+               <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center p-2">
                   <Leaf className="text-white" size={20} />
                </div>
                <div>
@@ -112,7 +112,7 @@ const SustainabilityPortal = ({ title, type, onSignOut, onBack, children, sideba
                   <User size={20} className="text-gray-400" />
                </div>
             </div>
-            <button onClick={onSignOut} className="p-3 bg-red-600/20 text-red-500 border border-red-500/30 rounded-xl hover:bg-red-600 hover:text-white transition-all shadow-lg shadow-red-600/10 backdrop-blur-md">
+            <button onClick={onSignOut} className="p-3 bg-red-600/20 text-red-500 border border-red-500/30 rounded-xl hover:bg-red-600 hover:text-white transition-all shadow-lg backdrop-blur-md">
                <LogOut size={18} />
             </button>
          </div>
@@ -128,7 +128,7 @@ const SustainabilityPortal = ({ title, type, onSignOut, onBack, children, sideba
                 onClick={() => setActiveTab(tab.id)}
                 className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${
                   activeTab === tab.id 
-                    ? 'bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)]' 
+                    ? 'bg-emerald-600 text-white' 
                     : 'text-gray-500 hover:bg-white/5 hover:text-white'
                 }`}
               >

@@ -63,7 +63,7 @@ const Credentials = () => {
     catch (e) { setError(e.message); }
   };
 
-  const inputStyle = { width: '100%', padding: '10px 12px', background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '10px', color: '#1e293b', fontSize: '13px', fontWeight: 500, outline: 'none', boxSizing: 'border-box', fontFamily: "'Roboto', sans-serif" };
+  const inputStyle = { width: '100%', padding: '10px 12px', background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '10px', color: '#1e293b', fontSize: '13px', fontWeight: 500, outline: 'none', boxSizing: 'border-box', fontFamily: "var(--font-sans)" };
   const labelStyle = { display: 'block', fontSize: '11px', fontWeight: 800, color: '#64748b', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '6px' };
 
   // Group by company_id
@@ -80,7 +80,7 @@ const Credentials = () => {
           <h2 style={{ color: '#0f172a', fontSize: '20px', fontWeight: 800, margin: 0 }}>Credentials</h2>
           <p style={{ color: '#64748b', fontSize: '12px', fontWeight: 600, margin: '4px 0 0' }}>Manage tenant login email / access-code pairs</p>
         </div>
-        <button onClick={() => setShowForm(!showForm)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px', background: '#15803d', border: 'none', borderRadius: '10px', color: 'white', fontSize: '13px', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 16px rgba(22,163,74,0.25)' }}>
+        <button onClick={() => setShowForm(!showForm)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px', background: '#15803d', border: 'none', borderRadius: '10px', color: 'white', fontSize: '13px', fontWeight: 700, cursor: 'pointer', boxShadow: 'none' }}>
           <Plus size={16} />{showForm ? 'Cancel' : 'New Credential'}
         </button>
       </div>
@@ -146,10 +146,27 @@ const Credentials = () => {
             const org = orgs.find(o => o.schema_name === companyId);
             return (
               <div key={companyId} style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '14px', overflow: 'hidden' }}>
-                <div style={{ padding: '14px 20px', borderBottom: '1px solid rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <Shield size={14} color="#16a34a" />
-                  <span style={{ color: '#1e293b', fontSize: '13px', fontWeight: 700 }}>{org?.display_name || companyId}</span>
+                <div style={{ padding: '12px 20px', borderBottom: '1px solid #f1f5f9', background: '#f8fafc', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                  <Shield size={15} color="#16a34a" />
+                  <span style={{ color: '#0f172a', fontSize: '14px', fontWeight: 800 }}>{org?.display_name || companyId}</span>
                   <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>({credList.length} credentials)</span>
+                  <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <code style={{ fontSize: '11px', color: '#475569', background: '#ffffff', border: '1px solid #e2e8f0', padding: '3px 8px', borderRadius: '6px' }}>
+                      {`${window.location.origin}/login?tenant=${companyId}`}
+                    </code>
+                    <button
+                      onClick={() => copy(`${window.location.origin}/login?tenant=${companyId}`, `link-${companyId}`)}
+                      title="Copy Direct Tenant Access Link"
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px',
+                        background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '6px',
+                        color: copied === `link-${companyId}` ? '#16a34a' : '#334155', fontSize: '11px', fontWeight: 700, cursor: 'pointer',
+                      }}
+                    >
+                      {copied === `link-${companyId}` ? <Check size={12} color="#16a34a" /> : <Copy size={12} />}
+                      {copied === `link-${companyId}` ? 'Link Copied!' : 'Copy Direct Link'}
+                    </button>
+                  </div>
                 </div>
                 {credList.map(cred => (
                   <div key={cred.id} style={{ display: 'flex', alignItems: 'center', padding: '14px 20px', borderBottom: '1px solid rgba(255,255,255,0.03)', gap: '16px' }}>
@@ -162,11 +179,11 @@ const Credentials = () => {
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         {revealed[cred.id] ? (
                           <>
-                            <code style={{ fontSize: '12px', color: '#15803d', fontFamily: 'monospace', background: 'rgba(22,163,74,0.08)', padding: '2px 8px', borderRadius: '6px', fontWeight: 700 }}>{revealed[cred.id]}</code>
+                            <code style={{ fontSize: '12px', color: '#15803d', fontFamily: 'var(--font-mono)', background: 'rgba(22,163,74,0.08)', padding: '2px 8px', borderRadius: '6px', fontWeight: 700 }}>{revealed[cred.id]}</code>
                             <span style={{ fontSize: '11px', color: '#ef4444', fontWeight: 600 }}>Copy now — won't be shown again</span>
                           </>
                         ) : (
-                          <code style={{ fontSize: '12px', color: '#94a3b8', fontFamily: 'monospace', background: '#ffffff', padding: '2px 8px', borderRadius: '6px', letterSpacing: '2px' }}>••••••••••</code>
+                          <code style={{ fontSize: '12px', color: '#94a3b8', fontFamily: 'var(--font-mono)', background: '#ffffff', padding: '2px 8px', borderRadius: '6px', letterSpacing: '2px' }}>••••••••••</code>
                         )}
                         <span style={{ fontSize: '11px', color: '#475569' }}>Created {new Date(cred.created_at).toLocaleDateString()}</span>
                       </div>

@@ -115,7 +115,7 @@ const EstimatorPortal = (props) => {
                   </div>
 
                   <div className="pt-4">
-                     <button className="w-full py-4 bg-emerald-600 text-white rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-3">
+                     <button className="w-full py-4 bg-emerald-600 text-white rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] shadow-lg flex items-center justify-center gap-3">
                         <Play size={16} fill="currentColor" /> Run Simulation
                      </button>
                   </div>

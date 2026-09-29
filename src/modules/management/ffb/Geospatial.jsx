@@ -138,7 +138,7 @@ const Geospatial = () => {
               </div>
            </div>
 
-           <div className="bg-[#1A7A4A] p-6 rounded-3xl text-white shadow-xl shadow-green-500/20 relative overflow-hidden group">
+           <div className="bg-[#1A7A4A] p-6 rounded-3xl text-white shadow-xl relative overflow-hidden group">
               <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-500">
                  <Satellite size={80} />
               </div>

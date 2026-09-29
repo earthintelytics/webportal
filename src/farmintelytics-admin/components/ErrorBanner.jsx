@@ -5,19 +5,22 @@ const ErrorBanner = ({ message, onDismiss, onRetry }) => {
   const [copied, setCopied] = useState(false);
   if (!message) return null;
 
-  // Extract clean text if raw JSON was passed
+  // Extract clean text and optional request ID
   let text = typeof message === 'string' ? message : (message?.message || String(message));
+  let reqId = message?.requestId || message?.meta?.request_id || null;
   if (text.startsWith('{') && text.endsWith('}')) {
     try {
       const parsed = JSON.parse(text);
-      text = parsed.message || parsed.error || parsed.detail || text;
+      text = parsed.message || parsed.error?.message || parsed.error || parsed.detail || text;
+      reqId = reqId || parsed.meta?.request_id;
     } catch {
       // keep text
     }
   }
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(text);
+    const copyText = reqId ? `${text} (Request ID: ${reqId})` : text;
+    navigator.clipboard.writeText(copyText);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -33,7 +36,7 @@ const ErrorBanner = ({ message, onDismiss, onRetry }) => {
       display: 'flex',
       gap: '12px',
       alignItems: 'center',
-      boxShadow: '0 2px 4px rgba(239, 68, 68, 0.04)',
+      boxShadow: 'none',
     }}>
       <div style={{
         width: '28px', height: '28px', borderRadius: '8px',
@@ -46,6 +49,11 @@ const ErrorBanner = ({ message, onDismiss, onRetry }) => {
         <p style={{ margin: 0, fontWeight: 600, color: '#991b1b', lineHeight: 1.4, wordBreak: 'break-word' }}>
           {text}
         </p>
+        {reqId && (
+          <p style={{ margin: '4px 0 0', fontSize: '11px', color: '#b91c1c', fontFamily: 'var(--font-mono)' }}>
+            Request ID: {reqId}
+          </p>
+        )}
       </div>
       <button
         onClick={handleCopy}

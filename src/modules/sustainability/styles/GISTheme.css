@@ -10,7 +10,7 @@
   
   background-color: var(--gis-bg);
   color: var(--gis-text);
-  font-family: 'Inter', 'Roboto Mono', monospace;
+  font-family: var(--font-mono);
 }
 
 .gis-glass {
@@ -75,7 +75,7 @@
 
 /* Technical Metrics Styling */
 .gis-metric-value {
-  font-family: 'Roboto Mono', monospace;
+  font-family: var(--font-mono);
   letter-spacing: -0.05em;
   font-weight: 800;
 }

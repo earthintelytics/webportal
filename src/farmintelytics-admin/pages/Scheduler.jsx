@@ -55,7 +55,7 @@ const JobModal = ({ job, configs, onSave, onClose }) => {
     width: '100%', padding: '10px 12px',
     background: '#ffffff', border: '1px solid #cbd5e1',
     borderRadius: '10px', color: '#1e293b', fontSize: '13px', fontWeight: 500,
-    outline: 'none', boxSizing: 'border-box', fontFamily: "'Roboto', sans-serif"
+    outline: 'none', boxSizing: 'border-box', fontFamily: "var(--font-sans)"
   };
   const labelStyle = { display: 'block', fontSize: '11px', fontWeight: 800, color: '#64748b', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '6px' };
 
@@ -90,7 +90,7 @@ const JobModal = ({ job, configs, onSave, onClose }) => {
           </div>
           <div>
             <label style={labelStyle}>Cron Expression *</label>
-            <input style={{ ...inputStyle, fontFamily: 'monospace' }} placeholder="e.g. 0 3 */5 * *" value={form.cron} onChange={e => setForm(f => ({ ...f, cron: e.target.value }))} />
+            <input style={{ ...inputStyle, fontFamily: 'var(--font-mono)' }} placeholder="e.g. 0 3 */5 * *" value={form.cron} onChange={e => setForm(f => ({ ...f, cron: e.target.value }))} />
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '6px' }}>
               {COMMON_Schedules.map(sch => (
                 <button key={sch.cron} onClick={() => setForm(f => ({ ...f, cron: sch.cron }))} style={{
@@ -190,7 +190,7 @@ const Scheduler = () => {
           display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px',
           background: '#15803d', border: 'none', borderRadius: '10px',
           color: 'white', fontSize: '13px', fontWeight: 700, cursor: 'pointer',
-          boxShadow: '0 4px 16px rgba(22,163,74,0.25)',
+          boxShadow: 'none',
         }}>
           <Plus size={16} />Add Scheduled Run
         </button>
@@ -224,7 +224,7 @@ const Scheduler = () => {
                   </div>
                   <p style={{ color: '#475569', fontSize: '12px', margin: '4px 0 0' }}>{job.description || 'No description provided.'}</p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px' }}>
-                    <code style={{ fontSize: '11px', color: '#16a34a', background: 'rgba(22,163,74,0.06)', padding: '2px 8px', borderRadius: '6px', fontFamily: 'monospace' }}>{job.cron}</code>
+                    <code style={{ fontSize: '11px', color: '#16a34a', background: 'rgba(22,163,74,0.06)', padding: '2px 8px', borderRadius: '6px', fontFamily: 'var(--font-mono)' }}>{job.cron}</code>
                     <span style={{ color: '#475569', fontSize: '11px' }}>• runs on schedule</span>
                   </div>
                 </div>

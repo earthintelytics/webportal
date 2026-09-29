@@ -301,7 +301,7 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
                   placeholder="e.g. John Okoye"
                   value={scoutName}
                   onChange={(e) => setScoutName(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 />
               </div>
               <div>
@@ -311,7 +311,7 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
                   placeholder="e.g. +234 803 123 4567"
                   value={scoutContact}
                   onChange={(e) => setScoutContact(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 />
               </div>
             </div>
@@ -322,7 +322,7 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
                 type="date"
                 value={deadline}
                 onChange={(e) => setDeadline(e.target.value)}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
               />
             </div>
 
@@ -333,7 +333,7 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
                 placeholder="Specify specific quadrant or visual symptoms to inspect on the ground..."
                 value={dispatchNotes}
                 onChange={(e) => setDispatchNotes(e.target.value)}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 resize-none"
+                className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-none"
               />
             </div>
 
@@ -366,7 +366,7 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
                 <select
                   value={cropStage}
                   onChange={(e) => setCropStage(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-white"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
                 >
                   <option value="Emergence">Emergence / Seedling</option>
                   <option value="Vegetative">Vegetative Growth</option>
@@ -380,7 +380,7 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
                 <select
                   value={findingType}
                   onChange={(e) => setFindingType(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-white"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
                 >
                   <option value="pest_infestation">Pest / Caterpillar / Borer Infestation</option>
                   <option value="fungal_disease">Fungal / Foliar Blight</option>
@@ -427,7 +427,7 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
                 placeholder="Describe leaf symptoms, soil condition, or estimated affected percentage..."
                 value={obsNotes}
                 onChange={(e) => setObsNotes(e.target.value)}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 resize-none"
+                className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-none"
               />
             </div>
 
@@ -452,7 +452,7 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
               <select
                 value={resolveCategory}
                 onChange={(e) => setResolveCategory(e.target.value)}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-white"
+                className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
               >
                 <option value="pest_infestation">Confirmed Pest Infestation (Treated)</option>
                 <option value="disease_outbreak">Confirmed Disease Outbreak (Fungicide Applied)</option>
@@ -471,7 +471,7 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
                 placeholder="Document corrective treatment applied, chemical formulation, or reason for closure..."
                 value={resolveNotes}
                 onChange={(e) => setResolveNotes(e.target.value)}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 resize-none"
+                className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-none"
               />
             </div>
 

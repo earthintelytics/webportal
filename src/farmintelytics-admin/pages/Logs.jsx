@@ -110,7 +110,7 @@ const ErrorInspector = ({ error, compact = false }) => {
       <div style={{
         display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 10px',
         background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px',
-        color: '#b91c1c', fontSize: '11px', fontFamily: 'monospace', maxWidth: '100%',
+        color: '#b91c1c', fontSize: '11px', fontFamily: 'var(--font-mono)', maxWidth: '100%',
       }}>
         <AlertTriangle size={13} style={{ color: '#dc2626', flexShrink: 0 }} />
         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, fontWeight: 600 }}>
@@ -162,7 +162,7 @@ const ErrorInspector = ({ error, compact = false }) => {
 
       <div style={{ padding: '12px 14px', background: '#0f172a', overflowX: 'auto', maxHeight: '240px' }}>
         <pre style={{
-          margin: 0, fontSize: '11.5px', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+          margin: 0, fontSize: '11.5px', fontFamily: 'var(--font-mono)',
           color: '#fca5a5', lineHeight: 1.5, whiteSpace: 'pre-wrap', wordBreak: 'break-word',
         }}>
           {parsed.fullText}
@@ -189,7 +189,7 @@ const PipelineLogRow = ({ log, idx, onOpen, highlighted }) => {
         padding: '14px 18px', background: highlighted ? '#f8fafc' : '#ffffff', cursor: 'pointer',
         border: `1px solid ${highlighted ? '#2563eb' : (hasFailed ? '#fecaca' : '#e2e8f0')}`,
         borderRadius: '12px', transition: 'all 0.15s ease',
-        boxShadow: highlighted ? '0 0 0 2px rgba(37,99,235,0.15)' : 'none',
+        boxShadow: highlighted ? 'inset 0 0 0 1px var(--status-info)' : 'none',
       }}
       onMouseEnter={e => {
         if (!highlighted) e.currentTarget.style.borderColor = hasFailed ? '#f87171' : '#cbd5e1';
@@ -200,10 +200,10 @@ const PipelineLogRow = ({ log, idx, onOpen, highlighted }) => {
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
         <Terminal size={15} style={{ color: hasFailed ? '#dc2626' : '#64748b', flexShrink: 0 }} />
-        <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', fontFamily: 'monospace' }}>
+        <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', fontFamily: 'var(--font-mono)' }}>
           {folder ? `${folder}/` : ''}
         </span>
-        <span style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a', fontFamily: 'monospace' }}>
+        <span style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a', fontFamily: 'var(--font-mono)' }}>
           {filename}
         </span>
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -292,7 +292,7 @@ const PipelineLogModal = ({ log, idx, onClose }) => {
         }}>
           <Terminal size={18} color="#0f172a" />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a', fontFamily: 'monospace', wordBreak: 'break-all' }}>
+            <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a', fontFamily: 'var(--font-mono)', wordBreak: 'break-all' }}>
               {path}
             </div>
             <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
@@ -392,8 +392,8 @@ const PipelineLogModal = ({ log, idx, onClose }) => {
                           background: i % 2 === 0 ? '#fbfcfe' : '#ffffff', fontSize: '12px',
                         }}
                       >
-                        <span style={{ width: '180px', fontWeight: 700, color: '#475569', fontFamily: 'monospace' }}>{k}</span>
-                        <span style={{ flex: 1, color: '#0f172a', fontFamily: 'monospace', wordBreak: 'break-all' }}>
+                        <span style={{ width: '180px', fontWeight: 700, color: '#475569', fontFamily: 'var(--font-mono)' }}>{k}</span>
+                        <span style={{ flex: 1, color: '#0f172a', fontFamily: 'var(--font-mono)', wordBreak: 'break-all' }}>
                           {typeof v === 'object' ? JSON.stringify(v) : String(v)}
                         </span>
                       </div>
@@ -404,7 +404,7 @@ const PipelineLogModal = ({ log, idx, onClose }) => {
           ) : (
             <pre style={{
               margin: 0, padding: '16px', background: '#0f172a', color: '#e2e8f0',
-              borderRadius: '12px', fontSize: '12px', fontFamily: 'monospace',
+              borderRadius: '12px', fontSize: '12px', fontFamily: 'var(--font-mono)',
               whiteSpace: 'pre-wrap', wordBreak: 'break-word', overflowX: 'auto',
             }}>
               {JSON.stringify(payloadData, null, 2)}
@@ -675,11 +675,11 @@ const Logs = () => {
                         onMouseEnter={e => e.currentTarget.style.background = isFailed ? '#fff1f2' : '#f8fafc'}
                         onMouseLeave={e => e.currentTarget.style.background = isFailed ? '#fffafa' : (isExpanded ? '#f8fafc' : '#ffffff')}
                       >
-                        <span style={{ color: '#94a3b8', fontSize: '11px', fontWeight: 700, fontFamily: 'monospace' }}>#{job.id}</span>
+                        <span style={{ color: '#94a3b8', fontSize: '11px', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>#{job.id}</span>
                         <span style={{ color: '#0f172a', fontSize: '12px', fontWeight: 700 }}>
                           {job.plot_id ? `Plot #${job.plot_id}` : '—'}
                         </span>
-                        <span style={{ color: '#475569', fontSize: '11.5px', fontFamily: 'monospace', fontWeight: 600 }}>
+                        <span style={{ color: '#475569', fontSize: '11.5px', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
                           {job.sensor || '—'}
                         </span>
                         <StatusBadge status={job.status} />

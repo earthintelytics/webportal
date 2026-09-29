@@ -310,7 +310,7 @@ const UsersPage = () => {
                   {user.is_staff && <span style={{ fontSize: '11px', fontWeight: 800, color: '#7c3aed', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Django Staff</span>}
                 </div>
                 <TypeBadge type={user.account_type} />
-                <span style={{ fontSize: '11px', color: '#64748b', fontFamily: 'monospace', textTransform: 'capitalize' }}>{user.auth_provider || 'email'}</span>
+                <span style={{ fontSize: '11px', color: '#64748b', fontFamily: 'var(--font-mono)', textTransform: 'capitalize' }}>{user.auth_provider || 'email'}</span>
                 <span style={{ fontSize: '11px', color: user.is_active ? '#16a34a' : '#dc2626', fontWeight: 700 }}>{user.is_active ? 'Active' : 'Disabled'}</span>
                 <span style={{ fontSize: '11px', color: '#64748b' }}>{user.date_joined ? new Date(user.date_joined).toLocaleDateString() : user.created_at ? new Date(user.created_at).toLocaleDateString() : '—'}</span>
                 <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>

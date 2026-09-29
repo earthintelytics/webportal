@@ -49,7 +49,7 @@ const AdminPortal = () => {
 
   return (
     <ConfirmProvider>
-    <div style={{ display: 'flex', height: '100vh', background: '#f8fafc', fontFamily: "'Roboto', sans-serif", overflow: 'hidden' }}>
+    <div style={{ display: 'flex', height: '100vh', background: '#f8fafc', fontFamily: "var(--font-sans)", overflow: 'hidden' }}>
 
       {/* ── Sidebar ── */}
       <div style={{

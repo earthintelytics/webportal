@@ -209,7 +209,7 @@ const QuickAddFarmForm = ({ org, farms = [], onSave, onCancel }) => {
             flex: 2, padding: '10px', background: '#15803d', border: 'none', borderRadius: '10px',
             color: '#ffffff', cursor: (saving || !farmName.trim() || !boundaryFile) ? 'not-allowed' : 'pointer',
             fontWeight: 800, fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-            boxShadow: '0 2px 6px rgba(21,128,61,0.25)', opacity: (saving || !farmName.trim() || !boundaryFile) ? 0.6 : 1,
+            boxShadow: 'none', opacity: (saving || !farmName.trim() || !boundaryFile) ? 0.6 : 1,
           }}
         >
           {saving ? (
@@ -308,7 +308,7 @@ const FarmConfigModal = ({ farm, onClose }) => {
           <Settings size={16} color="#16a34a" />
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ color: '#0f172a', fontSize: '13px', fontWeight: 800, margin: 0 }}>{farm.farm_name} — Pipeline Config</p>
-            <p style={{ color: '#64748b', fontSize: '11px', fontWeight: 600, margin: '2px 0 0', fontFamily: 'monospace' }}>{filename}</p>
+            <p style={{ color: '#64748b', fontSize: '11px', fontWeight: 600, margin: '2px 0 0', fontFamily: 'var(--font-mono)' }}>{filename}</p>
           </div>
           <button onClick={onClose} style={{ background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '6px', cursor: 'pointer', color: '#475569', display: 'flex' }}><X size={14} /></button>
         </div>
@@ -334,7 +334,7 @@ const FarmConfigModal = ({ farm, onClose }) => {
             <>
               <textarea value={content} onChange={e => setContent(e.target.value)} style={{
                 width: '100%', minHeight: '320px', padding: '14px', background: '#f8fafc', border: '1px solid #cbd5e1',
-                borderRadius: '10px', color: '#15803d', fontFamily: 'monospace', fontSize: '12px', outline: 'none', resize: 'vertical', boxSizing: 'border-box',
+                borderRadius: '10px', color: '#15803d', fontFamily: 'var(--font-mono)', fontSize: '12px', outline: 'none', resize: 'vertical', boxSizing: 'border-box',
               }} />
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button onClick={handleGenerate} disabled={generating} style={{
@@ -411,7 +411,7 @@ const BoundaryViewModal = ({ farm, onClose }) => {
           <Map size={16} color="#16a34a" />
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ color: '#0f172a', fontSize: '14px', fontWeight: 800, margin: 0 }}>{farm.farm_name} — Current Boundary</p>
-            <p style={{ color: '#64748b', fontSize: '12px', fontWeight: 600, margin: '2px 0 0', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{farm.boundary_minio_path}</p>
+            <p style={{ color: '#64748b', fontSize: '12px', fontWeight: 600, margin: '2px 0 0', fontFamily: 'var(--font-mono)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{farm.boundary_minio_path}</p>
           </div>
           <button onClick={onClose} style={{ background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '6px', cursor: 'pointer', color: '#475569', display: 'flex', flexShrink: 0 }}><X size={14} /></button>
         </div>
@@ -425,7 +425,7 @@ const BoundaryViewModal = ({ farm, onClose }) => {
             </div>
           )}
           {!loading && !error && geo && (
-            <MapContainer center={[6.43, 5.27]} zoom={4} style={{ height: '100%', width: '100%' }}>
+            <MapContainer preferCanvas={true} center={[6.43, 5.27]} zoom={4} style={{ height: '100%', width: '100%' }}>
               <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" />
               <GeoJSON data={geo} style={{ color: '#22d3ee', weight: 2, fillOpacity: 0.15 }} />
               <FitToBounds data={geo} />
@@ -455,7 +455,7 @@ const FarmRow = ({ farm, onDelete, onReupload }) => {
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', borderRadius: '10px', background: '#f8fafc', border: '1px solid #e2e8f0' }}>
       <div>
         <p style={{ color: '#0f172a', fontSize: '13px', fontWeight: 700, margin: 0 }}>{farm.farm_name}</p>
-        <p style={{ color: '#64748b', fontSize: '11px', fontWeight: 600, margin: '2px 0 0', fontFamily: 'monospace' }}>{farm.farm_id}</p>
+        <p style={{ color: '#64748b', fontSize: '11px', fontWeight: 600, margin: '2px 0 0', fontFamily: 'var(--font-mono)' }}>{farm.farm_id}</p>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <span style={{
@@ -534,7 +534,7 @@ const OrgDetailPanel = ({ org, onClose }) => {
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ color: '#0f172a', fontSize: '15px', fontWeight: 800, margin: 0 }}>{org.display_name}</p>
-            <p style={{ color: '#64748b', fontSize: '11px', fontWeight: 600, margin: '2px 0 0', fontFamily: 'monospace' }}>{org.schema_name}</p>
+            <p style={{ color: '#64748b', fontSize: '11px', fontWeight: 600, margin: '2px 0 0', fontFamily: 'var(--font-mono)' }}>{org.schema_name}</p>
           </div>
           <button onClick={onClose} style={{ background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '6px', cursor: 'pointer', color: '#475569', display: 'flex' }}>
             <X size={14} />
