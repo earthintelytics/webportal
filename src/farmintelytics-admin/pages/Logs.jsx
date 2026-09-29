@@ -323,7 +323,7 @@ const PipelineLogModal = ({ log, idx, onClose }) => {
               style={{
                 padding: '6px 14px', borderRadius: '8px', border: 'none', cursor: 'pointer',
                 fontSize: '12px', fontWeight: 700,
-                background: activeSubTab === t.id ? '#0f172a' : '#f1f5f9',
+                background: activeSubTab === t.id ? '#15803d' : '#f1f5f9',
                 color: activeSubTab === t.id ? '#ffffff' : '#64748b',
               }}
             >
@@ -601,7 +601,7 @@ const Logs = () => {
                     padding: '6px 14px', borderRadius: '20px', border: '1px solid',
                     fontSize: '11px', fontWeight: 600, cursor: 'pointer',
                     letterSpacing: '0', transition: 'all 0.15s',
-                    background: statusFilter === s ? (s ? getStatus(s).bg : '#0f172a') : '#ffffff',
+                    background: statusFilter === s ? (s ? getStatus(s).bg : '#15803d') : '#ffffff',
                     color: statusFilter === s ? (s ? getStatus(s).color : '#ffffff') : '#64748b',
                     borderColor: statusFilter === s ? (s ? getStatus(s).border : '#0f172a') : '#e2e8f0',
                   }}
@@ -791,7 +791,7 @@ const Logs = () => {
                     padding: '6px 14px', borderRadius: '20px', border: '1px solid',
                     fontSize: '11px', fontWeight: 600, cursor: 'pointer',
                     letterSpacing: '0', transition: 'all 0.15s',
-                    background: pipelineStatusFilter === s ? (s ? getStatus(s).bg : '#0f172a') : '#ffffff',
+                    background: pipelineStatusFilter === s ? (s ? getStatus(s).bg : '#15803d') : '#ffffff',
                     color: pipelineStatusFilter === s ? (s ? getStatus(s).color : '#ffffff') : '#64748b',
                     borderColor: pipelineStatusFilter === s ? (s ? getStatus(s).border : '#0f172a') : '#e2e8f0',
                   }}

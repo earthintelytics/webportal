@@ -104,6 +104,23 @@ const IndexCard = ({ item, cropType, companyId, onSaved, onError }) => {
           {item.formula && (
             <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '3px', fontFamily: 'var(--font-mono)' }}>{item.formula}</div>
           )}
+          {/* Live legend preview: exactly how the map legend and tiles will read, updated as classes are edited */}
+          {classes.length > 0 && (
+            <div className="mt-3">
+              <div className="flex h-3 rounded-full overflow-hidden border border-gray-200">
+                {[...classes].sort((a, b) => Number(a.range?.[0]) - Number(b.range?.[0])).map((c, i) => (
+                  <span key={i} title={`${c.label}: ${c.range?.[0]} to ${c.range?.[1]}`} style={{ background: c.color, flex: Math.max(0.05, Math.abs(Number(c.range?.[1]) - Number(c.range?.[0])) || 0.05) }} />
+                ))}
+              </div>
+              <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2">
+                {[...classes].sort((a, b) => Number(b.range?.[0]) - Number(a.range?.[0])).map((c, i) => (
+                  <span key={i} className="inline-flex items-center gap-1.5 text-[11px] text-gray-600">
+                    <span className="w-2.5 h-2.5 rounded-sm border border-gray-200" style={{ background: c.color }} />{c.label}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
         <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
           {item.calibrated && (
