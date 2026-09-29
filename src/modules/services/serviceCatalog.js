@@ -50,9 +50,15 @@ export const SERVICE_CATALOG = {
     subtitle: 'Carbon for smallholder groups',
     overviewTitle: 'Group carbon overview',
     overviewText: 'Member plots, vegetation and land-use change across each smallholder group.',
+    register: {
+      title: 'Groups and members', file: 'group-members',
+      text: 'Member plots by group, with area. Group and member names come from the group membership data you upload (Settings, Your data).',
+      columns: [{ id: 'block', label: 'Plot' }, { id: 'estate', label: 'Group' }, { id: 'area', label: 'Area' }],
+    },
     sidebar: [
       { id: 'analytics', label: 'Overview' },
       { id: 'intelligence-layers', label: 'Member plots map' },
+      { id: 'register', label: 'Groups & members' },
       { id: 'crop-health', label: 'Plot condition' },
       { id: 'land-restoration', label: 'Land-use change' },
       { id: 'alerts', label: 'Alerts' },
@@ -106,9 +112,15 @@ export const SERVICE_CATALOG = {
     subtitle: 'Restoration sites and recovery',
     overviewTitle: 'Restoration overview',
     overviewText: 'Where land is degraded, where it is recovering, and how vegetation and moisture respond over time.',
+    register: {
+      title: 'Restoration zones', file: 'restoration-zones',
+      text: 'Every restoration zone with its area. Planting and survival come from your planting records and surveys (Settings, Your data).',
+      columns: [{ id: 'block', label: 'Zone' }, { id: 'estate', label: 'Site' }, { id: 'area', label: 'Area' }],
+    },
     sidebar: [
       { id: 'analytics', label: 'Overview' },
       { id: 'intelligence-layers', label: 'Restoration map' },
+      { id: 'register', label: 'Zone register' },
       { id: 'land-restoration', label: 'Restoration zones' },
       { id: 'crop-health', label: 'Vegetation recovery' },
       { id: 'moisture-content', label: 'Moisture' },
@@ -127,9 +139,16 @@ export const SERVICE_CATALOG = {
     subtitle: 'Deforestation-free evidence (EUDR)',
     overviewTitle: 'EUDR overview',
     overviewText: 'Plot geolocation and forest-cover change since the 31 December 2020 cut-off, for oil palm, cocoa and rubber supply.',
+    register: {
+      title: 'Plot register', file: 'eudr-plot-register',
+      text: 'Every plot that supplies EU buyers: estate, area, geolocation and the result of the deforestation check since 31 December 2020.',
+      note: 'The deforestation check is being rebuilt on the EU reference forest map and loss data. Until it runs, every plot shows "Not checked": no plot is marked deforestation-free without a real check.',
+      columns: [{ id: 'block', label: 'Plot' }, { id: 'estate', label: 'Estate' }, { id: 'area', label: 'Area' }, { id: 'geolocation', label: 'Geolocation' }, { id: 'status', label: 'Check result' }],
+    },
     sidebar: [
       { id: 'analytics', label: 'Overview' },
       { id: 'intelligence-layers', label: 'Plot map' },
+      { id: 'register', label: 'Plot register' },
       { id: 'land-restoration', label: 'Deforestation check' },
       { id: 'alerts', label: 'Alerts' },
     ],

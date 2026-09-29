@@ -95,6 +95,8 @@ import { Upload as UploadIcon, MapPin as EstateIcon } from 'lucide-react';
 import { fetchEstates } from '../../../services/estatesApi';
 import YourDataPage from '../../data/YourDataPage';
 import DataNeededDialog from '../../data/DataNeededDialog';
+import RegisterPage from '../../services/RegisterPage';
+import { Table2 as RegisterIcon } from 'lucide-react';
 import ScenarioBuilder from '../../assistant/ScenarioBuilder';
 import { ANSWER_FORMAT } from '../../assistant/scenarioTemplates';
 import { ResizeMap, MapPaneClipSetter, SwipeSliderOverlay, FitBoundsToPlots, FitToZarrBounds } from './dashboard/map/MapHelpers';
@@ -3637,7 +3639,9 @@ Context: ${context}.`;
                   { id: 'moisture-content',    label: 'Moisture Content',    icon: <Droplets size={17} /> },
                   { id: 'climate',             label: 'Climate',             icon: <CloudRain size={17} /> },
                   { id: 'land-restoration',    label: 'Land Restoration',    icon: <Leaf size={17} /> },
-                  { id: 'alerts',              label: 'Alerts',              icon: <AlertTriangle size={17} />, badge: alerts.filter(a => a.status === 'Active').length }
+                  { id: 'alerts',              label: 'Alerts',              icon: <AlertTriangle size={17} />, badge: alerts.filter(a => a.status === 'Active').length },
+                  // Service-only page kinds: pick() keeps them only when the service lists them
+                  ...(service ? [{ id: 'register', label: 'Register', icon: <RegisterIcon size={17} /> }] : []),
                 ], service?.sidebar).map(item => (
                   <button
                     key={item.id}
@@ -7144,6 +7148,10 @@ Context: ${context}.`;
               </div>
 
             </div>
+          )}
+
+          {activeSidebarItem === 'register' && service?.register && (
+            <RegisterPage register={service.register} plots={plotsData} />
           )}
 
           {activeSidebarItem === 'your-data' && (
