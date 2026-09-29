@@ -1,62 +1,62 @@
 import React from 'react';
 import { 
-  Sprout, 
   ArrowRight, 
-  Zap, 
   Globe, 
   Activity, 
-  Plane, 
   CreditCard, 
   ClipboardList, 
   MessageSquare, 
-  Wheat, 
-  Droplets, 
-  Coffee, 
   Leaf, 
-  Container, 
-  Users, 
   Satellite,
   ChevronDown,
   Trees
 } from 'lucide-react';
+import { 
+  OilPalmIcon, 
+  RubberIcon, 
+  SugarcaneIcon, 
+  CashewIcon, 
+  CocoaIcon, 
+  CassavaIcon, 
+  MaizeIcon, 
+  RiceIcon, 
+  DroneIcon, 
+  SmallholderIcon 
+} from '../components/CropIcons';
 import { fetchTenants, fetchCropMonitoringConfig } from '../services/organizationMonitorApi';
-import { getCropEmoji } from '../constants/crops';
-
 
 const ModuleCard = ({ title, crop, id, icon, active, onSelect, logoUrl }) => {
-  const emoji = getCropEmoji(crop || id);
   return (
     <button
       onClick={() => active && onSelect(id)}
       className={`group relative p-8 rounded-2xl transition-all duration-300 flex flex-col text-left border border-slate-200 shadow-sm ${
         active
-          ? 'bg-white hover:bg-slate-50 hover:shadow-md hover:-translate-y-0.5'
-        : 'bg-white opacity-40 cursor-not-allowed'
-    }`}
-  >
-    <div className={`p-4 rounded-xl w-fit mb-6 bg-slate-100 transition-colors overflow-hidden ${
-      active ? 'text-green-700 group-hover:bg-green-600 group-hover:text-white' : 'text-slate-500'
-    }`}>
-      {logoUrl ? <img src={logoUrl} alt="" className="w-8 h-8 object-contain" /> : React.cloneElement(icon, { size: 32 })}
-    </div>
-    
-    <div className="flex-1">
-      <div className={`text-[11px] font-black uppercase tracking-[0.2em] mb-2 flex items-center gap-1.5 ${active ? 'text-green-700' : 'text-slate-500'}`}>
-        <span className="text-base leading-none">{emoji}</span>
-        <span>{crop}</span>
+          ? 'bg-white hover:bg-slate-50 hover:border-slate-300 hover:shadow-md hover:-translate-y-0.5'
+          : 'bg-white opacity-40 cursor-not-allowed'
+      }`}
+    >
+      <div className={`p-4 rounded-xl w-fit mb-6 bg-white border border-slate-200 shadow-sm transition-all overflow-hidden flex items-center justify-center ${
+        active ? 'text-slate-800 group-hover:text-emerald-700 group-hover:border-slate-400' : 'text-slate-400'
+      }`}>
+        {logoUrl ? <img src={logoUrl} alt="" className="w-8 h-8 object-contain" /> : React.cloneElement(icon, { size: 30, strokeWidth: 1.75 })}
       </div>
-      <h3 className={`text-xl font-black tracking-tight leading-tight ${active ? 'text-slate-900' : 'text-slate-500'}`}>
-        {title}
-      </h3>
-    </div>
+      
+      <div className="flex-1">
+        <div className={`text-[11px] font-bold uppercase tracking-[0.2em] mb-2 ${active ? 'text-slate-500' : 'text-slate-400'}`}>
+          <span>{crop}</span>
+        </div>
+        <h3 className={`text-xl font-black tracking-tight leading-tight ${active ? 'text-slate-900' : 'text-slate-500'}`}>
+          {title}
+        </h3>
+      </div>
 
-    <div className="mt-8 flex items-center justify-between">
-       <span className={`text-[11px] font-black uppercase tracking-widest ${active ? 'text-slate-900' : 'text-slate-500'}`}>
-         {active ? 'Launch Portal' : 'Locked'}
-       </span>
-       {active && <ArrowRight size={18} className="text-slate-400 group-hover:text-green-600 transform group-hover:translate-x-2 transition-all" />}
-    </div>
-  </button>
+      <div className="mt-8 flex items-center justify-between">
+        <span className={`text-[11px] font-black uppercase tracking-widest ${active ? 'text-slate-900' : 'text-slate-500'}`}>
+          {active ? 'Launch Portal' : 'Locked'}
+        </span>
+        {active && <ArrowRight size={18} className="text-slate-400 group-hover:text-slate-900 transform group-hover:translate-x-2 transition-all" />}
+      </div>
+    </button>
   );
 };
 
@@ -90,9 +90,22 @@ const PortalHub = ({ onSelectModule }) => {
     loadTenants();
   }, []);
 
-  // All cards are active pre-login. The user clicks a card → login happens →
-  // the individual portal enforces tenant-level access after authentication.
-  const filterModules = (modules) => modules.map(m => ({ ...m, active: m.active !== false }));
+  // Before login every card is shown. After login, the organisation's allowed
+  // modules (TenantConfig.allowed_modules, set in the admin portal and stored
+  // at login as fi_allowed_modules) decide which cards appear, so a tenant
+  // never opens a module that would only answer "Not enabled".
+  const allowedModules = React.useMemo(() => {
+    try {
+      if (!localStorage.getItem('fi_token')) return null;
+      const list = JSON.parse(localStorage.getItem('fi_allowed_modules') || 'null');
+      return Array.isArray(list) && list.length > 0 ? new Set(list) : null;
+    } catch {
+      return null;
+    }
+  }, []);
+  const filterModules = (modules) => modules
+    .filter(m => !allowedModules || allowedModules.has(m.id))
+    .map(m => ({ ...m, active: m.active !== false }));
 
   const sections = [
     {
@@ -100,15 +113,15 @@ const PortalHub = ({ onSelectModule }) => {
       title: 'Management Solutions',
       description: 'Workforce logistics, biometrics, and smallholder group planning for large-scale estate and cooperative operations.',
       modules: filterModules([
-        { id: 'management-ffb',       title: 'FFB Intelligence',  crop: 'Oil Palm',  icon: <Sprout />,     active: true  },
-        { id: 'management-maize',     title: 'Maize Hub',         crop: 'Maize',     icon: <Wheat />,      active: true  },
-        { id: 'management-cassava',   title: 'Cassava Core',      crop: 'Cassava',   icon: <Container />,  active: true  },
-        { id: 'management-rice',      title: 'Rice Monitor',      crop: 'Rice',      icon: <Leaf />,       active: true  },
-        { id: 'management-cocoa',     title: 'Cocoa Core',        crop: 'Cocoa',     icon: <Coffee />,     active: true  },
-        { id: 'management-sugarcane', title: 'Cane Console',      crop: 'SugarCane', icon: <Zap />,        active: true  },
-        { id: 'management-cashew',    title: 'Cashew Hub',        crop: 'Cashew',    icon: <Activity />,   active: true  },
-        { id: 'management-rubber',    title: 'Rubber Hub',        crop: 'Rubber',    icon: <Droplets />,   active: true  },
-        { id: 'group-management',     title: 'Groups Hub',        crop: 'Smallholder', icon: <Users />,    active: true  },
+        { id: 'management-ffb',       title: 'FFB Intelligence',  crop: 'Oil Palm',    icon: <OilPalmIcon />,     active: true },
+        { id: 'management-maize',     title: 'Maize Hub',         crop: 'Maize',       icon: <MaizeIcon />,       active: true },
+        { id: 'management-cassava',   title: 'Cassava Core',      crop: 'Cassava',     icon: <CassavaIcon />,     active: true },
+        { id: 'management-rice',      title: 'Rice Monitor',      crop: 'Rice',        icon: <RiceIcon />,        active: true },
+        { id: 'management-cocoa',     title: 'Cocoa Core',        crop: 'Cocoa',       icon: <CocoaIcon />,       active: true },
+        { id: 'management-sugarcane', title: 'Cane Console',      crop: 'SugarCane',   icon: <SugarcaneIcon />,   active: true },
+        { id: 'management-cashew',    title: 'Cashew Hub',        crop: 'Cashew',      icon: <CashewIcon />,      active: true },
+        { id: 'management-rubber',    title: 'Rubber Hub',        crop: 'Rubber',      icon: <RubberIcon />,      active: true },
+        { id: 'group-management',     title: 'Groups Hub',        crop: 'Smallholder', icon: <SmallholderIcon />, active: true },
       ])
     },
     {
@@ -116,16 +129,16 @@ const PortalHub = ({ onSelectModule }) => {
       title: 'Geospatial Intelligence',
       description: 'Multispectral satellite imagery and drone-level field surveillance for high-precision monitoring.',
       modules: filterModules([
-        { id: 'rs-ffb',       title: 'Oil Palm',    crop: 'Oil Palm',  icon: <Sprout />,    active: true  },
-        { id: 'rs-maize',     title: 'Maize Hub',    crop: 'Maize',     icon: <Wheat />,     active: true  },
-        { id: 'rs-cassava',   title: 'Cassava',     crop: 'Cassava',   icon: <Container />, active: true  },
-        { id: 'rs-rice',      title: 'Rice Monitor', crop: 'Rice',      icon: <Leaf />,      active: true  },
-        { id: 'rs-cocoa',     title: 'Cocoa Core',  crop: 'Cocoa',     icon: <Coffee />,    active: true  },
-        { id: 'rs-sugarcane', title: 'SugarCane',   crop: 'SugarCane', icon: <Zap />,       active: true  },
-        { id: 'rs-cashew',    title: 'Cashew',      crop: 'Cashew',    icon: <Activity />,  active: true  },
-        { id: 'rs-rubber',    title: 'Rubber',      crop: 'Rubber',    icon: <Droplets />,  active: true  },
-        { id: 'rs-drone',     title: 'Drone Intel',  crop: 'Aerial',    icon: <Plane />, active: true  },
-        { id: 'group-monitoring', title: 'Smallholder', crop: 'Fusion',    icon: <Satellite />, active: true  },
+        { id: 'rs-ffb',       title: 'Oil Palm',    crop: 'Oil Palm',    icon: <OilPalmIcon />,     active: true },
+        { id: 'rs-maize',     title: 'Maize Hub',   crop: 'Maize',       icon: <MaizeIcon />,       active: true },
+        { id: 'rs-cassava',   title: 'Cassava',     crop: 'Cassava',     icon: <CassavaIcon />,     active: true },
+        { id: 'rs-rice',      title: 'Rice Monitor',crop: 'Rice',        icon: <RiceIcon />,        active: true },
+        { id: 'rs-cocoa',     title: 'Cocoa Core',  crop: 'Cocoa',       icon: <CocoaIcon />,       active: true },
+        { id: 'rs-sugarcane', title: 'SugarCane',   crop: 'SugarCane',   icon: <SugarcaneIcon />,   active: true },
+        { id: 'rs-cashew',    title: 'Cashew',      crop: 'Cashew',      icon: <CashewIcon />,      active: true },
+        { id: 'rs-rubber',    title: 'Rubber',      crop: 'Rubber',      icon: <RubberIcon />,      active: true },
+        { id: 'rs-drone',     title: 'Drone Intel', crop: 'Aerial',      icon: <DroneIcon />,       active: true },
+        { id: 'group-monitoring', title: 'Smallholder', crop: 'Fusion',  icon: <SmallholderIcon />, active: true },
       ])
     },
     {
@@ -164,7 +177,13 @@ const PortalHub = ({ onSelectModule }) => {
     },
   ];
 
-  const currentSection = sections.find(s => s.id === activeTab) || sections[0];
+  // Only live tabs, and only those with at least one card for this user.
+  const visibleTabs = [
+    { id: 'monitoring', label: 'Crop Monitoring' },
+    { id: 'custom', label: 'Organization' },
+  ].filter(tab => (sections.find(s => s.id === tab.id)?.modules.length ?? 0) > 0);
+  const currentTabId = visibleTabs.some(t => t.id === activeTab) ? activeTab : visibleTabs[0]?.id;
+  const currentSection = sections.find(s => s.id === currentTabId) || sections[0];
 
   return (
     <div className="min-h-screen bg-gray-50 p-8 lg:p-20 font-sans">
@@ -201,15 +220,12 @@ const PortalHub = ({ onSelectModule }) => {
               defined in `sections` below (real module cards, ready to show
               once those areas are built) but intentionally have no tab here
               — only Crop Monitoring and Organization are live right now. */}
-          {[
-            { id: 'monitoring', label: 'Crop Monitoring' },
-            { id: 'custom', label: 'Organization' }
-          ].map(tab => (
+          {visibleTabs.map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`text-[14px] font-black uppercase tracking-widest transition-all pb-4 border-b-4 ${
-                activeTab === tab.id
+                currentTabId === tab.id
                   ? 'text-green-600 border-green-600'
                   : 'text-slate-700 border-transparent hover:text-slate-900 font-bold'
               }`}
