@@ -10,7 +10,7 @@ const ServicePortal = ({ moduleId, onBack, onSignOut }) => (
   <CropDashboardLayout
     key={moduleId}
     mode="organization"
-    service={SERVICE_CATALOG[moduleId]}
+    service={{ id: moduleId, ...SERVICE_CATALOG[moduleId] }}
     onBack={onBack}
     onSignOut={onSignOut}
   />

@@ -92,6 +92,9 @@ import {
 } from 'chart.js';
 
 import { InfoTooltipPortal } from './dashboard/components/InfoTooltipPortal';
+import { Upload as UploadIcon } from 'lucide-react';
+import YourDataPage from '../../data/YourDataPage';
+import DataNeededDialog from '../../data/DataNeededDialog';
 import { ResizeMap, MapPaneClipSetter, SwipeSliderOverlay, FitBoundsToPlots, FitToZarrBounds } from './dashboard/map/MapHelpers';
 import { TOOLTIP_DESCRIPTIONS } from './dashboard/constants/tooltipDescriptions';
 import { getIndexFiveClasses } from './dashboard/constants/indexClasses';
@@ -151,6 +154,8 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
 
 
   const [activeSidebarItem, setActiveSidebarItem] = useState(service?.sidebar?.[0]?.id || 'analytics');
+  // Settings → Your data: which dataset to open (set by the sign-in "Data needed" dialog)
+  const [dataFocus, setDataFocus] = useState(null);
   const [activeTab, setActiveTab] = useState('monitor');
   const [activeAnalyticsSubpage, setActiveAnalyticsSubpage] = useState('overview');
 
@@ -3404,6 +3409,13 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
 
   return (
     <div className="h-screen flex flex-col bg-gray-50 text-gray-900 font-sans antialiased overflow-hidden">
+      {hasSession && (
+        <DataNeededDialog
+          cropType={isOrg ? null : cropType}
+          serviceId={service?.id}
+          onFill={(id) => { setActiveTab('monitor'); setActiveSidebarItem('your-data'); setDataFocus(id); }}
+        />
+      )}
       {/* ── TOP HEADER BAR ─────────────────────────────────────────────────── */}
       <header className="h-[72px] bg-white border-b border-gray-100 flex items-center justify-between px-8 z-[100] shadow-sm shrink-0">
 
@@ -3665,6 +3677,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
               <div className="space-y-1">
                 <div className="text-[11px] font-bold text-gray-600 uppercase tracking-widest px-3 mb-3">Settings</div>
                 {[
+                  { id: 'your-data', label: 'Your data',        icon: <UploadIcon size={17} /> },
                   { id: 'help',      label: 'Glossary',         icon: <Info size={17} /> }
                 ].map(item => (
                   <button
@@ -7125,6 +7138,10 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
               </div>
 
             </div>
+          )}
+
+          {activeSidebarItem === 'your-data' && (
+            <YourDataPage key={dataFocus || 'data'} cropType={isOrg ? null : cropType} serviceId={service?.id} plots={plots} initialDataset={dataFocus} />
           )}
 
           {activeSidebarItem === 'help' && (
