@@ -30,8 +30,8 @@ const TypeBadge = ({ type }) => {
   const cfg = TYPE_CFG[type] || TYPE_CFG.personal;
   return (
     <span style={{
-      fontSize: '11px', fontWeight: 800, padding: '2px 10px',
-      borderRadius: '20px', textTransform: 'uppercase', letterSpacing: '0.06em',
+      fontSize: '11px', fontWeight: 600, padding: '2px 10px',
+      borderRadius: '20px', letterSpacing: '0',
       color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.color}33`,
     }}>{cfg.label}</span>
   );
@@ -154,8 +154,8 @@ const UsersPage = () => {
     color: '#1e293b', fontSize: '13px', outline: 'none', boxSizing: 'border-box',
   };
   const lbl = {
-    display: 'block', fontSize: '11px', fontWeight: 800, color: '#64748b',
-    letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '5px',
+    display: 'block', fontSize: '11px', fontWeight: 600, color: '#64748b',
+    letterSpacing: '0', marginBottom: '5px',
   };
 
   return (
@@ -164,7 +164,7 @@ const UsersPage = () => {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <h2 style={{ color: '#0f172a', fontSize: '20px', fontWeight: 800, margin: 0 }}>User Accounts</h2>
+          <h2 style={{ color: '#0f172a', fontSize: '20px', fontWeight: 600, margin: 0 }}>User Accounts</h2>
           <p style={{ color: '#64748b', fontSize: '12px', fontWeight: 600, margin: '4px 0 0' }}>
             Create, manage and control all platform user accounts from here
           </p>
@@ -190,14 +190,14 @@ const UsersPage = () => {
       {/* Password Reset Result */}
       {resetResult && (
         <div style={{ padding: '16px 20px', background: '#fefce8', border: '1px solid #fde047', borderRadius: '12px' }}>
-          <div style={{ fontSize: '12px', fontWeight: 800, color: '#854d0e', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' }}>
+          <div style={{ fontSize: '12px', fontWeight: 600, color: '#854d0e', letterSpacing: '0', marginBottom: '8px' }}>
             🔑 New Password Generated — Share Securely
           </div>
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
             <div><span style={{ fontSize: '11px', color: '#713f12' }}>Email: </span><code style={{ fontSize: '12px', fontWeight: 700 }}>{resetResult.email}</code></div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span style={{ fontSize: '11px', color: '#713f12' }}>Password: </span>
-              <code style={{ fontSize: '14px', fontWeight: 900, letterSpacing: '0.05em', padding: '3px 10px', background: '#fff', border: '1px solid #fde047', borderRadius: '6px' }}>{resetResult.new_password}</code>
+              <code style={{ fontSize: '14px', fontWeight: 600, letterSpacing: '0', padding: '3px 10px', background: '#fff', border: '1px solid #fde047', borderRadius: '6px' }}>{resetResult.new_password}</code>
               <button onClick={() => copy(resetResult.new_password, 'pw')} style={{ padding: '5px', background: 'none', border: '1px solid #fde047', borderRadius: '6px', cursor: 'pointer', color: copied === 'pw' ? '#16a34a' : '#713f12', display: 'flex' }}>
                 {copied === 'pw' ? <Check size={13} /> : <Copy size={13} />}
               </button>
@@ -211,7 +211,7 @@ const UsersPage = () => {
       {showForm && (
         <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-            <p style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: '#0f172a' }}>Create New User Account</p>
+            <p style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: '#0f172a' }}>Create New User Account</p>
             <button onClick={() => setShowForm(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}><X size={16} /></button>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
@@ -239,7 +239,7 @@ const UsersPage = () => {
             <input type="checkbox" id="is_staff" checked={form.is_staff} onChange={e => setForm(f => ({ ...f, is_staff: e.target.checked }))} style={{ accentColor: '#0f172a' }} />
             <label htmlFor="is_staff" style={{ fontSize: '12px', fontWeight: 600, color: '#475569', cursor: 'pointer' }}>Django Staff access (Django Admin panel)</label>
           </div>
-          <button onClick={handleCreate} disabled={saving || !form.email} style={{ padding: '11px 24px', background: '#0f172a', border: 'none', borderRadius: '10px', color: 'white', fontSize: '13px', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', opacity: saving ? 0.6 : 1 }}>
+          <button onClick={handleCreate} disabled={saving || !form.email} style={{ padding: '11px 24px', background: '#0f172a', border: 'none', borderRadius: '10px', color: 'white', fontSize: '13px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', opacity: saving ? 0.6 : 1 }}>
             {saving ? <div style={{ width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} /> : <><Shield size={14} />Create Account</>}
           </button>
         </div>
@@ -249,7 +249,7 @@ const UsersPage = () => {
       {editUser && (
         <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-            <p style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: '#0f172a' }}>Edit — {editUser.email}</p>
+            <p style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: '#0f172a' }}>Edit — {editUser.email}</p>
             <button onClick={() => setEditUser(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}><X size={16} /></button>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
@@ -267,7 +267,7 @@ const UsersPage = () => {
             <input type="checkbox" id="edit_staff" checked={!!editUser.is_staff} onChange={e => setEditUser(u => ({ ...u, is_staff: e.target.checked }))} style={{ accentColor: '#0f172a' }} />
             <label htmlFor="edit_staff" style={{ fontSize: '12px', fontWeight: 600, color: '#475569', cursor: 'pointer' }}>Django Staff access</label>
           </div>
-          <button onClick={handleUpdate} disabled={saving} style={{ padding: '11px 24px', background: '#0f172a', border: 'none', borderRadius: '10px', color: 'white', fontSize: '13px', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', opacity: saving ? 0.6 : 1 }}>
+          <button onClick={handleUpdate} disabled={saving} style={{ padding: '11px 24px', background: '#0f172a', border: 'none', borderRadius: '10px', color: 'white', fontSize: '13px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', opacity: saving ? 0.6 : 1 }}>
             {saving ? <div style={{ width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} /> : <><Check size={14} />Save Changes</>}
           </button>
         </div>
@@ -289,7 +289,7 @@ const UsersPage = () => {
       <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '14px', overflow: 'hidden' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 140px 130px 80px 140px 120px', padding: '10px 16px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
           {['User', 'Account Type', 'Auth', 'Status', 'Joined', 'Actions'].map(h => (
-            <span key={h} style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', letterSpacing: '0.1em', textTransform: 'uppercase' }}>{h}</span>
+            <span key={h} style={{ fontSize: '11px', fontWeight: 600, color: '#64748b', letterSpacing: '0' }}>{h}</span>
           ))}
         </div>
         {loading ? (
@@ -307,7 +307,7 @@ const UsersPage = () => {
                 <div>
                   <div style={{ fontSize: '13px', fontWeight: 700, color: '#0f172a' }}>{user.first_name || user.last_name ? `${user.first_name} ${user.last_name}`.trim() : '—'}</div>
                   <div style={{ fontSize: '11px', color: '#64748b', marginTop: '1px' }}>{user.email}</div>
-                  {user.is_staff && <span style={{ fontSize: '11px', fontWeight: 800, color: '#7c3aed', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Django Staff</span>}
+                  {user.is_staff && <span style={{ fontSize: '11px', fontWeight: 600, color: '#7c3aed', letterSpacing: '0' }}>Django Staff</span>}
                 </div>
                 <TypeBadge type={user.account_type} />
                 <span style={{ fontSize: '11px', color: '#64748b', fontFamily: 'var(--font-mono)', textTransform: 'capitalize' }}>{user.auth_provider || 'email'}</span>

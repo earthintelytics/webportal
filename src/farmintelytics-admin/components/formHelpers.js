@@ -3,6 +3,9 @@
 
 export const SENSOR_OPTIONS = ['sentinel-2', 'sentinel-1', 'landsat-9'];
 
+// Crops an organisation can be licensed for (Onboarding and Organizations).
+export const ALL_CROPS = ['ffb', 'maize', 'rice', 'cocoa', 'rubber', 'cassava', 'sugarcane', 'cashew'];
+
 export const toggleInList = (list, v) => (list.includes(v) ? list.filter(x => x !== v) : [...list, v]);
 
 // size: 'sm' (compact, used in the Organizations quick-add form) | 'md' (default, Onboarding)

@@ -20,7 +20,7 @@ const inputStyle = {
   borderRadius: '8px', color: '#0f172a', fontSize: '12px', fontWeight: 600,
   outline: 'none', boxSizing: 'border-box', fontFamily: "var(--font-sans)",
 };
-const labelStyle = { display: 'block', fontSize: '11px', fontWeight: 800, color: '#475569', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '6px' };
+const labelStyle = { display: 'block', fontSize: '11px', fontWeight: 600, color: '#475569', letterSpacing: '0', marginBottom: '6px' };
 
 const IndexCard = ({ item, cropType, companyId, onSaved, onError }) => {
   const confirm = useConfirm();
@@ -93,10 +93,10 @@ const IndexCard = ({ item, cropType, companyId, onSaved, onError }) => {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '14px', gap: '12px' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a' }}>{item.label}</span>
+            <span style={{ fontSize: '14px', fontWeight: 600, color: '#0f172a' }}>{item.label}</span>
             {item.calibrated
-              ? <span style={{ fontSize: '11px', fontWeight: 800, padding: '2px 7px', borderRadius: '6px', background: 'rgba(22,163,74,0.1)', color: '#16a34a', border: '1px solid rgba(22,163,74,0.2)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Calibrated</span>
-              : <span style={{ fontSize: '11px', fontWeight: 800, padding: '2px 7px', borderRadius: '6px', background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Platform default</span>}
+              ? <span style={{ fontSize: '11px', fontWeight: 600, padding: '2px 7px', borderRadius: '6px', background: 'rgba(22,163,74,0.1)', color: '#16a34a', border: '1px solid rgba(22,163,74,0.2)', letterSpacing: '0' }}>Calibrated</span>
+              : <span style={{ fontSize: '11px', fontWeight: 600, padding: '2px 7px', borderRadius: '6px', background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0', letterSpacing: '0' }}>Platform default</span>}
           </div>
           <div style={{ fontSize: '11px', color: '#64748b', marginTop: '3px' }}>
             {item.crop_label ? `${item.crop_label} — ` : ''}{item.full}
@@ -113,7 +113,7 @@ const IndexCard = ({ item, cropType, companyId, onSaved, onError }) => {
             </button>
           )}
           <button onClick={handleSave} disabled={busy || !dirty}
-            style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '7px 12px', border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: 800, cursor: dirty ? 'pointer' : 'default',
+            style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '7px 12px', border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: 600, cursor: dirty ? 'pointer' : 'default',
               background: savedFlash ? '#16a34a' : dirty ? '#15803d' : '#e2e8f0',
               color: dirty || savedFlash ? 'white' : '#94a3b8' }}>
             <Check size={12} />{savedFlash ? 'Saved' : busy ? 'Saving…' : 'Save'}
@@ -185,7 +185,7 @@ const CropThresholds = () => {
   return (
     <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '18px', overflowY: 'auto', height: '100%', boxSizing: 'border-box' }}>
       <div>
-        <h2 style={{ color: '#0f172a', fontSize: '20px', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <h2 style={{ color: '#0f172a', fontSize: '20px', fontWeight: 600, margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
           <SlidersHorizontal size={20} color="#16a34a" /> Crop Index Thresholds
         </h2>
         <p style={{ color: '#64748b', fontSize: '12px', fontWeight: 600, margin: '4px 0 0' }}>

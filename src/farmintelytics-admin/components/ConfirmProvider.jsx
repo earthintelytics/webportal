@@ -39,7 +39,7 @@ export const ConfirmProvider = ({ children }) => {
             </div>
             <div style={{ display: 'flex', gap: '10px', marginTop: '22px' }}>
               <button onClick={() => respond(false)} style={{ flex: 1, padding: '11px', background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '10px', color: '#334155', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }}>Cancel</button>
-              <button onClick={() => respond(true)} style={{ flex: 1, padding: '11px', background: '#dc2626', border: 'none', borderRadius: '10px', color: 'white', cursor: 'pointer', fontWeight: 800, fontSize: '13px' }}>Confirm</button>
+              <button onClick={() => respond(true)} style={{ flex: 1, padding: '11px', background: '#dc2626', border: 'none', borderRadius: '10px', color: 'white', cursor: 'pointer', fontWeight: 600, fontSize: '13px' }}>Confirm</button>
             </div>
           </div>
         </div>

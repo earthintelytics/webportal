@@ -7,6 +7,7 @@ import {
 import { useConfirm } from '../components/ConfirmProvider';
 import ErrorBanner from '../components/ErrorBanner';
 import OrgDetailPanel from './OrganizationFarms';
+import { ALL_CROPS } from '../components/formHelpers';
 
 export const CROP_LABELS = {
   ffb: 'Oil Palm (FFB)',
@@ -217,14 +218,14 @@ const OrgModal = ({ org, onSave, onClose }) => {
     borderRadius: '10px', color: '#0f172a', fontSize: '13px', fontWeight: 500,
     outline: 'none', boxSizing: 'border-box', fontFamily: "var(--font-sans)",
   };
-  const labelStyle = { display: 'block', fontSize: '11px', fontWeight: 800, color: '#475569', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '6px' };
+  const labelStyle = { display: 'block', fontSize: '11px', fontWeight: 600, color: '#475569', letterSpacing: '0', marginBottom: '6px' };
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div style={{ width: '100%', maxWidth: '520px', maxHeight: '90vh', overflowY: 'auto', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '20px', padding: '28px', boxShadow: '0 20px 50px rgba(15,23,42,0.1)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
-          <h3 style={{ color: '#0f172a', fontSize: '16px', fontWeight: 800, margin: 0 }}>{org ? 'Edit Organization' : 'New Organization'}</h3>
+          <h3 style={{ color: '#0f172a', fontSize: '16px', fontWeight: 600, margin: 0 }}>{org ? 'Edit Organization' : 'New Organization'}</h3>
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}><X size={20} /></button>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -276,7 +277,7 @@ const OrgModal = ({ org, onSave, onClose }) => {
                     border: active ? '1px solid rgba(22,163,74,0.4)' : '1px solid #cbd5e1',
                     transition: 'all 0.15s',
                   }}>
-                    <span style={{ display: 'block', fontSize: '12px', fontWeight: 800, color: active ? '#15803d' : '#334155' }}>{m.label}</span>
+                    <span style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: active ? '#15803d' : '#334155' }}>{m.label}</span>
                     <span style={{ display: 'block', fontSize: '11px', color: '#64748b', marginTop: '2px', lineHeight: 1.35 }}>{m.desc}</span>
                   </button>
                 );
@@ -431,7 +432,7 @@ const OrgModal = ({ org, onSave, onClose }) => {
           <button onClick={onClose} style={{ flex: 1, padding: '12px', background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '12px', color: '#334155', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }}>Cancel</button>
           <button onClick={handleSave} disabled={saving || !form.company_name.trim()} style={{
             flex: 2, padding: '12px', background: '#15803d', border: 'none', borderRadius: '12px',
-            color: 'white', cursor: 'pointer', fontWeight: 800, fontSize: '13px', opacity: saving ? 0.6 : 1,
+            color: 'white', cursor: 'pointer', fontWeight: 600, fontSize: '13px', opacity: saving ? 0.6 : 1,
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
           }}>
             {saving ? <div style={{ width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} /> : <><Check size={15} />{org ? 'Update' : 'Create'}</>}
@@ -494,7 +495,7 @@ const Organizations = () => {
     <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <h2 style={{ color: '#0f172a', fontSize: '20px', fontWeight: 800, margin: 0 }}>Organizations</h2>
+          <h2 style={{ color: '#0f172a', fontSize: '20px', fontWeight: 600, margin: 0 }}>Organizations</h2>
           <p style={{ color: '#64748b', fontSize: '12px', fontWeight: 600, margin: '4px 0 0' }}>{orgs.length} registered tenants</p>
         </div>
         <button onClick={() => setModal({ org: null })} style={{
@@ -575,7 +576,7 @@ const Organizations = () => {
                     padding: '4px 8px', background: copiedSchema === org.schema_name ? '#15803d' : '#ffffff',
                     border: '1px solid #cbd5e1', borderRadius: '6px',
                     color: copiedSchema === org.schema_name ? '#ffffff' : '#334155',
-                    fontSize: '10px', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0,
+                    fontSize: '10px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0,
                   }}
                 >
                   {copiedSchema === org.schema_name ? <Check size={11} /> : <Copy size={11} />}

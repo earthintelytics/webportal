@@ -24,8 +24,8 @@ const StatusBadge = ({ status }) => {
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center', gap: '5px',
-      fontSize: '11px', fontWeight: 800, padding: '3px 10px',
-      borderRadius: '20px', textTransform: 'uppercase', letterSpacing: '0.06em',
+      fontSize: '11px', fontWeight: 600, padding: '3px 10px',
+      borderRadius: '20px', letterSpacing: '0',
       color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.border}`,
       flexShrink: 0,
     }}>
@@ -48,8 +48,8 @@ const SummaryCard = ({ icon: Icon, label, value, color }) => (
       <Icon size={20} style={{ color }} />
     </div>
     <div>
-      <div style={{ fontSize: '22px', fontWeight: 900, color: '#0f172a', lineHeight: 1 }}>{value}</div>
-      <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', marginTop: '3px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{label}</div>
+      <div style={{ fontSize: '22px', fontWeight: 600, color: '#0f172a', lineHeight: 1 }}>{value}</div>
+      <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', marginTop: '3px', letterSpacing: '0.04em' }}>{label}</div>
     </div>
   </div>
 );
@@ -143,7 +143,7 @@ const ErrorInspector = ({ error, compact = false }) => {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <AlertCircle size={15} style={{ color: '#e11d48' }} />
-          <span style={{ fontSize: '12px', fontWeight: 800, color: '#9f1239', letterSpacing: '0.02em' }}>
+          <span style={{ fontSize: '12px', fontWeight: 600, color: '#9f1239', letterSpacing: '0.02em' }}>
             {parsed.title}
           </span>
         </div>
@@ -203,7 +203,7 @@ const PipelineLogRow = ({ log, idx, onOpen, highlighted }) => {
         <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', fontFamily: 'var(--font-mono)' }}>
           {folder ? `${folder}/` : ''}
         </span>
-        <span style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a', fontFamily: 'var(--font-mono)' }}>
+        <span style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a', fontFamily: 'var(--font-mono)' }}>
           {filename}
         </span>
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -292,7 +292,7 @@ const PipelineLogModal = ({ log, idx, onClose }) => {
         }}>
           <Terminal size={18} color="#0f172a" />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a', fontFamily: 'var(--font-mono)', wordBreak: 'break-all' }}>
+            <div style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a', fontFamily: 'var(--font-mono)', wordBreak: 'break-all' }}>
               {path}
             </div>
             <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
@@ -357,30 +357,30 @@ const PipelineLogModal = ({ log, idx, onClose }) => {
                 gap: '12px', background: '#f8fafc', padding: '14px', borderRadius: '12px', border: '1px solid #e2e8f0',
               }}>
                 <div>
-                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Job Name</div>
-                  <div style={{ fontSize: '13px', fontWeight: 800, color: '#0f172a', marginTop: '2px' }}>{log.job_name || '—'}</div>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b' }}>Job Name</div>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a', marginTop: '2px' }}>{log.job_name || '—'}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Timestamp</div>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b' }}>Timestamp</div>
                   <div style={{ fontSize: '13px', fontWeight: 700, color: '#0f172a', marginTop: '2px' }}>
                     {log.timestamp ? new Date(log.timestamp).toLocaleString() : '—'}
                   </div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Duration</div>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b' }}>Duration</div>
                   <div style={{ fontSize: '13px', fontWeight: 700, color: '#0f172a', marginTop: '2px' }}>
                     {log.duration != null ? `${log.duration} seconds` : '—'}
                   </div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Plots Processed</div>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b' }}>Plots Processed</div>
                   <div style={{ fontSize: '13px', fontWeight: 700, color: '#0f172a', marginTop: '2px' }}>{log.plots_processed ?? '—'}</div>
                 </div>
               </div>
 
               {/* Extra details list */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div style={{ fontSize: '12px', fontWeight: 800, color: '#0f172a' }}>Execution Metadata</div>
+                <div style={{ fontSize: '12px', fontWeight: 600, color: '#0f172a' }}>Execution Metadata</div>
                 <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '10px', overflow: 'hidden' }}>
                   {Object.entries(payloadData)
                     .filter(([k]) => !['job_name', 'timestamp', 'duration', 'plots_processed', 'error', 'status'].includes(k))
@@ -521,7 +521,7 @@ const Logs = () => {
       {/* Page Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
         <div>
-          <h1 style={{ color: '#0f172a', fontSize: '22px', fontWeight: 900, margin: 0, letterSpacing: '-0.02em' }}>
+          <h1 style={{ color: '#0f172a', fontSize: '22px', fontWeight: 600, margin: 0, letterSpacing: '-0.02em' }}>
             System & Pipeline Logs
           </h1>
           <p style={{ color: '#64748b', fontSize: '13px', fontWeight: 600, margin: '4px 0 0' }}>
@@ -566,7 +566,7 @@ const Logs = () => {
               padding: '9px 20px', borderRadius: '10px', border: 'none', cursor: 'pointer',
               background: activeTab === key ? '#ffffff' : 'transparent',
               color: activeTab === key ? '#0f172a' : '#64748b',
-              fontWeight: 800, fontSize: '12px',
+              fontWeight: 600, fontSize: '12px',
               boxShadow: activeTab === key ? '0 2px 6px rgba(0,0,0,0.06)' : 'none',
               transition: 'all 0.15s ease',
             }}
@@ -599,8 +599,8 @@ const Logs = () => {
                   onClick={() => { setStatusFilter(s); setPage(1); }}
                   style={{
                     padding: '6px 14px', borderRadius: '20px', border: '1px solid',
-                    fontSize: '11px', fontWeight: 800, cursor: 'pointer', textTransform: 'uppercase',
-                    letterSpacing: '0.05em', transition: 'all 0.15s',
+                    fontSize: '11px', fontWeight: 600, cursor: 'pointer',
+                    letterSpacing: '0', transition: 'all 0.15s',
                     background: statusFilter === s ? (s ? getStatus(s).bg : '#0f172a') : '#ffffff',
                     color: statusFilter === s ? (s ? getStatus(s).color : '#ffffff') : '#64748b',
                     borderColor: statusFilter === s ? (s ? getStatus(s).border : '#0f172a') : '#e2e8f0',
@@ -632,7 +632,7 @@ const Logs = () => {
             <div style={{
               display: 'grid', gridTemplateColumns: '60px 100px 110px 130px 130px 160px 1fr 30px',
               padding: '12px 16px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0',
-              fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em',
+              fontSize: '11px', fontWeight: 600, color: '#64748b', letterSpacing: '0',
             }}>
               <span>ID</span>
               <span>Plot</span>
@@ -758,7 +758,7 @@ const Logs = () => {
               >
                 ← Prev
               </button>
-              <span style={{ color: '#0f172a', fontSize: '12px', fontWeight: 800 }}>
+              <span style={{ color: '#0f172a', fontSize: '12px', fontWeight: 600 }}>
                 Page {page} of {Math.ceil(totalJobs / 50) || 1}
               </span>
               <button
@@ -789,8 +789,8 @@ const Logs = () => {
                   onClick={() => setPipelineStatusFilter(s)}
                   style={{
                     padding: '6px 14px', borderRadius: '20px', border: '1px solid',
-                    fontSize: '11px', fontWeight: 800, cursor: 'pointer', textTransform: 'uppercase',
-                    letterSpacing: '0.05em', transition: 'all 0.15s',
+                    fontSize: '11px', fontWeight: 600, cursor: 'pointer',
+                    letterSpacing: '0', transition: 'all 0.15s',
                     background: pipelineStatusFilter === s ? (s ? getStatus(s).bg : '#0f172a') : '#ffffff',
                     color: pipelineStatusFilter === s ? (s ? getStatus(s).color : '#ffffff') : '#64748b',
                     borderColor: pipelineStatusFilter === s ? (s ? getStatus(s).border : '#0f172a') : '#e2e8f0',
@@ -856,7 +856,7 @@ const Logs = () => {
                     padding: '12px', marginTop: '6px',
                     borderRadius: '12px', border: '1px solid #e2e8f0',
                     background: '#ffffff', color: '#0f172a',
-                    fontSize: '13px', fontWeight: 800, cursor: pipelineLoadingMore ? 'default' : 'pointer',
+                    fontSize: '13px', fontWeight: 600, cursor: pipelineLoadingMore ? 'default' : 'pointer',
                     boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
                   }}
                 >

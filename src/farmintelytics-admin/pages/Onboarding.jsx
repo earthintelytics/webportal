@@ -9,9 +9,8 @@ import {
 } from '../../services/adminApi';
 import { slugify, modulesForAccessModel, ACCESS_MODELS, ALL_RS_INDICES } from './Organizations';
 import ErrorBanner from '../components/ErrorBanner';
-import { SENSOR_OPTIONS, toggleInList, chipStyle } from '../components/formHelpers';
+import { SENSOR_OPTIONS, ALL_CROPS, toggleInList, chipStyle } from '../components/formHelpers';
 
-const ALL_CROPS = ['ffb', 'maize', 'rice', 'cocoa', 'rubber', 'cassava', 'sugarcane', 'cashew'];
 const CROP_LABELS = {
   ffb: 'Oil Palm (FFB)', maize: 'Maize', rice: 'Rice', cocoa: 'Cocoa',
   rubber: 'Rubber', cassava: 'Cassava', sugarcane: 'Sugarcane', cashew: 'Cashew',
@@ -37,13 +36,13 @@ const inputStyle = {
   borderRadius: '10px', color: '#0f172a', fontSize: '14px', fontWeight: 500,
   outline: 'none', boxSizing: 'border-box', fontFamily: "var(--font-sans)",
 };
-const labelStyle = { display: 'block', fontSize: '12px', fontWeight: 800, color: '#475569', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '6px', fontFamily: "var(--font-sans)" };
+const labelStyle = { display: 'block', fontSize: '12px', fontWeight: 600, color: '#475569', letterSpacing: '0.04em', marginBottom: '6px', fontFamily: "var(--font-sans)" };
 const helpTextStyle = { color: '#64748b', fontSize: '13px', margin: '6px 0 0', lineHeight: 1.5, fontFamily: "var(--font-sans)" };
 const chip = chipStyle;
 const primaryBtn = (disabled) => ({
   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '13px 26px',
   background: '#15803d', border: 'none', borderRadius: '12px',
-  color: 'white', cursor: disabled ? 'default' : 'pointer', fontWeight: 800, fontSize: '14px',
+  color: 'white', cursor: disabled ? 'default' : 'pointer', fontWeight: 600, fontSize: '14px',
   opacity: disabled ? 0.5 : 1, fontFamily: "var(--font-sans)",
 });
 const secondaryBtn = { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '13px 22px', background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '12px', color: '#334155', cursor: 'pointer', fontWeight: 700, fontSize: '14px', fontFamily: "var(--font-sans)" };
@@ -367,7 +366,7 @@ const Onboarding = () => {
               {state === 'done'
                 ? <Check size={14} color="#15803d" strokeWidth={3} />
                 : <Icon size={14} color={state === 'active' ? '#ffffff' : '#64748b'} />}
-              <span style={{ fontSize: '12px', fontWeight: 800, color: state === 'active' ? '#ffffff' : state === 'done' ? '#15803d' : '#64748b' }}>{s.label}</span>
+              <span style={{ fontSize: '12px', fontWeight: 600, color: state === 'active' ? '#ffffff' : state === 'done' ? '#15803d' : '#64748b' }}>{s.label}</span>
             </div>
             {i < STEPS.length - 1 && <ChevronRight size={14} color="#94a3b8" />}
           </React.Fragment>
@@ -391,7 +390,7 @@ const Onboarding = () => {
             <span style={{
               width: '22px', height: '22px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center',
               background: i === orgSubStep ? '#15803d' : i < orgSubStep ? '#15803d' : '#f1f5f9',
-              color: i <= orgSubStep ? '#ffffff' : '#64748b', fontSize: '11px', fontWeight: 800,
+              color: i <= orgSubStep ? '#ffffff' : '#64748b', fontSize: '11px', fontWeight: 600,
             }}>{i < orgSubStep ? <Check size={12} strokeWidth={3} /> : i + 1}</span>
             {s.label}
           </div>
@@ -405,7 +404,7 @@ const Onboarding = () => {
     <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', overflowY: 'auto', height: '100%', boxSizing: 'border-box', fontFamily: "var(--font-sans)" }}>
     <div style={{ width: '100%', maxWidth: '760px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <div>
-        <h2 style={{ color: '#0f172a', fontSize: '22px', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <h2 style={{ color: '#0f172a', fontSize: '22px', fontWeight: 600, margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
           <Rocket size={20} color="#16a34a" /> Company Onboarding
         </h2>
         <p style={{ color: '#64748b', fontSize: '13px', fontWeight: 600, margin: '4px 0 0' }}>
@@ -454,7 +453,7 @@ const Onboarding = () => {
                         background: active ? 'rgba(22,163,74,0.1)' : '#ffffff',
                         border: active ? '1px solid rgba(22,163,74,0.4)' : '1px solid #cbd5e1',
                       }}>
-                        <span style={{ display: 'block', fontSize: '13px', fontWeight: 800, color: active ? '#15803d' : '#334155' }}>{m.label}</span>
+                        <span style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: active ? '#15803d' : '#334155' }}>{m.label}</span>
                         <span style={{ display: 'block', fontSize: '11px', color: '#64748b', marginTop: '2px', lineHeight: 1.4 }}>{m.desc}</span>
                       </button>
                     );
@@ -832,7 +831,7 @@ const Onboarding = () => {
               <Check size={22} color="#16a34a" />
             </div>
             <div>
-              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 800, color: '#0f172a' }}>{done.org?.display_name} onboarded</h3>
+              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600, color: '#0f172a' }}>{done.org?.display_name} onboarded</h3>
               <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#64748b' }}>Config: <code>{done.config?.filename}</code></p>
             </div>
           </div>

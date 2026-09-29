@@ -226,14 +226,14 @@ const Inventory = () => {
   });
 
   const inputStyle = { padding: '10px 12px', background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '10px', color: '#1e293b', fontSize: '13px', fontWeight: 600, outline: 'none', fontFamily: "var(--font-sans)", cursor: 'pointer' };
-  const labelStyle = { display: 'block', fontSize: '11px', fontWeight: 800, color: '#64748b', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '6px' };
+  const labelStyle = { display: 'block', fontSize: '11px', fontWeight: 600, color: '#64748b', letterSpacing: '0', marginBottom: '6px' };
 
   return (
     <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <h2 style={{ color: '#0f172a', fontSize: '20px', fontWeight: 800, margin: 0 }}>Data Sync & MinIO</h2>
+          <h2 style={{ color: '#0f172a', fontSize: '20px', fontWeight: 600, margin: 0 }}>Data Sync & MinIO</h2>
           <p style={{ color: '#64748b', fontSize: '12px', fontWeight: 600, margin: '4px 0 0' }}>Review database configurations and clean storage state</p>
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
@@ -273,8 +273,8 @@ const Inventory = () => {
             <Database size={20} color="#16a34a" />
           </div>
           <div>
-            <p style={{ color: '#64748b', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>Total Storage Objects</p>
-            <p style={{ color: '#0f172a', fontSize: '20px', fontWeight: 800, margin: '2px 0 0' }}>{minioFiles.length}</p>
+            <p style={{ color: '#64748b', fontSize: '11px', fontWeight: 600, letterSpacing: '0', margin: 0 }}>Total Storage Objects</p>
+            <p style={{ color: '#0f172a', fontSize: '20px', fontWeight: 600, margin: '2px 0 0' }}>{minioFiles.length}</p>
           </div>
         </div>
 
@@ -283,8 +283,8 @@ const Inventory = () => {
             <HardDrive size={20} color="#3b82f6" />
           </div>
           <div>
-            <p style={{ color: '#64748b', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>Total Storage Footprint</p>
-            <p style={{ color: '#0f172a', fontSize: '20px', fontWeight: 800, margin: '2px 0 0' }}>{formatSize(totalSize)}</p>
+            <p style={{ color: '#64748b', fontSize: '11px', fontWeight: 600, letterSpacing: '0', margin: 0 }}>Total Storage Footprint</p>
+            <p style={{ color: '#0f172a', fontSize: '20px', fontWeight: 600, margin: '2px 0 0' }}>{formatSize(totalSize)}</p>
           </div>
         </div>
 
@@ -293,8 +293,8 @@ const Inventory = () => {
             <Server size={20} color="#f59e0b" />
           </div>
           <div>
-            <p style={{ color: '#64748b', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>Postgres Farms</p>
-            <p style={{ color: '#0f172a', fontSize: '20px', fontWeight: 800, margin: '2px 0 0' }}>{farms.length}</p>
+            <p style={{ color: '#64748b', fontSize: '11px', fontWeight: 600, letterSpacing: '0', margin: 0 }}>Postgres Farms</p>
+            <p style={{ color: '#0f172a', fontSize: '20px', fontWeight: 600, margin: '2px 0 0' }}>{farms.length}</p>
           </div>
         </div>
 
@@ -303,8 +303,8 @@ const Inventory = () => {
             <Building2 size={20} color="#a855f7" />
           </div>
           <div>
-            <p style={{ color: '#64748b', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>Organizations</p>
-            <p style={{ color: '#0f172a', fontSize: '20px', fontWeight: 800, margin: '2px 0 0' }}>{orgs.length}</p>
+            <p style={{ color: '#64748b', fontSize: '11px', fontWeight: 600, letterSpacing: '0', margin: 0 }}>Organizations</p>
+            <p style={{ color: '#0f172a', fontSize: '20px', fontWeight: 600, margin: '2px 0 0' }}>{orgs.length}</p>
           </div>
         </div>
       </div>
@@ -313,7 +313,7 @@ const Inventory = () => {
       {minioFiles.length > 0 && (
         <div style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '16px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div>
-            <h3 style={{ color: '#0f172a', fontSize: '14px', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <h3 style={{ color: '#0f172a', fontSize: '14px', fontWeight: 600, margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Layers size={15} color="#16a34a" />
               MinIO Storage Distribution by Data Type
             </h3>
@@ -423,12 +423,12 @@ const Inventory = () => {
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-                  <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Farm</th>
-                  <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Org</th>
-                  <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Postgres Flag</th>
-                  <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Sync Indicator</th>
-                  <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>MinIO Size</th>
-                  <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Sync Time</th>
+                  <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: 600, color: '#64748b', letterSpacing: '0' }}>Farm</th>
+                  <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: 600, color: '#64748b', letterSpacing: '0' }}>Org</th>
+                  <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: 600, color: '#64748b', letterSpacing: '0' }}>Postgres Flag</th>
+                  <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: 600, color: '#64748b', letterSpacing: '0' }}>Sync Indicator</th>
+                  <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: 600, color: '#64748b', letterSpacing: '0' }}>MinIO Size</th>
+                  <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: 600, color: '#64748b', letterSpacing: '0' }}>Sync Time</th>
                 </tr>
               </thead>
               <tbody>
@@ -445,12 +445,12 @@ const Inventory = () => {
                       </td>
                       <td style={{ padding: '12px 8px', fontSize: '12px', color: '#475569', fontWeight: 600 }}>{farm.company_name}</td>
                       <td style={{ padding: '12px 8px' }}>
-                        <span style={{ fontSize: '11px', fontWeight: 800, padding: '2px 8px', borderRadius: '6px', background: farm.boundary_uploaded ? 'rgba(22, 163, 74, 0.08)' : '#f1f5f9', color: farm.boundary_uploaded ? '#16a34a' : '#64748b', border: `1px solid ${farm.boundary_uploaded ? 'rgba(22, 163, 74, 0.15)' : '#cbd5e1'}` }}>
+                        <span style={{ fontSize: '11px', fontWeight: 600, padding: '2px 8px', borderRadius: '6px', background: farm.boundary_uploaded ? 'rgba(22, 163, 74, 0.08)' : '#f1f5f9', color: farm.boundary_uploaded ? '#16a34a' : '#64748b', border: `1px solid ${farm.boundary_uploaded ? 'rgba(22, 163, 74, 0.15)' : '#cbd5e1'}` }}>
                           {farm.boundary_uploaded ? 'Uploaded' : 'No Boundary'}
                         </span>
                       </td>
                       <td style={{ padding: '12px 8px' }}>
-                        <span style={{ fontSize: '11px', fontWeight: 800, padding: '3px 8px', borderRadius: '6px', color, background: bg, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 600, padding: '3px 8px', borderRadius: '6px', color, background: bg, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                           {status === 'Synced' && <CheckCircle size={10} />}
                           {status === 'Missing in MinIO' && <AlertCircle size={10} />}
                           {status}
@@ -470,11 +470,11 @@ const Inventory = () => {
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-                  <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>MinIO Key (Storage Path)</th>
-                  <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>File Type</th>
-                  <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Size</th>
-                  <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Last Modified</th>
-                  <th style={{ padding: '12px 8px', textAlign: 'right', fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Actions</th>
+                  <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: 600, color: '#64748b', letterSpacing: '0' }}>MinIO Key (Storage Path)</th>
+                  <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: 600, color: '#64748b', letterSpacing: '0' }}>File Type</th>
+                  <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: 600, color: '#64748b', letterSpacing: '0' }}>Size</th>
+                  <th style={{ padding: '12px 8px', fontSize: '11px', fontWeight: 600, color: '#64748b', letterSpacing: '0' }}>Last Modified</th>
+                  <th style={{ padding: '12px 8px', textAlign: 'right', fontSize: '11px', fontWeight: 600, color: '#64748b', letterSpacing: '0' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -489,7 +489,7 @@ const Inventory = () => {
                         <div style={{ fontSize: '12px', fontWeight: 700, color: '#0f172a', fontFamily: 'var(--font-mono)' }}>{file.key}</div>
                       </td>
                       <td style={{ padding: '12px 8px' }}>
-                        <span style={{ fontSize: '11px', fontWeight: 800, padding: '2px 8px', borderRadius: '6px', background: 'rgba(59,130,246,0.08)', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.15)' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 600, padding: '2px 8px', borderRadius: '6px', background: 'rgba(59,130,246,0.08)', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.15)' }}>
                           {file.file_type}
                         </span>
                       </td>

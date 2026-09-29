@@ -57,14 +57,14 @@ const JobModal = ({ job, configs, onSave, onClose }) => {
     borderRadius: '10px', color: '#1e293b', fontSize: '13px', fontWeight: 500,
     outline: 'none', boxSizing: 'border-box', fontFamily: "var(--font-sans)"
   };
-  const labelStyle = { display: 'block', fontSize: '11px', fontWeight: 800, color: '#64748b', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '6px' };
+  const labelStyle = { display: 'block', fontSize: '11px', fontWeight: 600, color: '#64748b', letterSpacing: '0', marginBottom: '6px' };
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div style={{ width: '100%', maxWidth: '500px', background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '20px', padding: '28px', boxShadow: '0 32px 80px rgba(0,0,0,0.6)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
-          <h3 style={{ color: '#0f172a', fontSize: '16px', fontWeight: 800, margin: 0 }}>{job ? 'Edit Scheduled Job' : 'New Scheduled Job'}</h3>
+          <h3 style={{ color: '#0f172a', fontSize: '16px', fontWeight: 600, margin: 0 }}>{job ? 'Edit Scheduled Job' : 'New Scheduled Job'}</h3>
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}><X size={20} /></button>
         </div>
 
@@ -109,7 +109,7 @@ const JobModal = ({ job, configs, onSave, onClose }) => {
           <button onClick={onClose} style={{ flex: 1, padding: '12px', background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '12px', color: '#334155', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }}>Cancel</button>
           <button onClick={handleSave} disabled={saving} style={{
             flex: 2, padding: '12px', background: '#15803d', border: 'none', borderRadius: '12px',
-            color: 'white', cursor: 'pointer', fontWeight: 800, fontSize: '13px', opacity: saving ? 0.6 : 1,
+            color: 'white', cursor: 'pointer', fontWeight: 600, fontSize: '13px', opacity: saving ? 0.6 : 1,
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
           }}>
             {saving ? <div style={{ width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} /> : <><Check size={15} />{job ? 'Update' : 'Schedule'}</>}
@@ -183,7 +183,7 @@ const Scheduler = () => {
     <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <h2 style={{ color: '#0f172a', fontSize: '20px', fontWeight: 800, margin: 0 }}>Pipeline Scheduler</h2>
+          <h2 style={{ color: '#0f172a', fontSize: '20px', fontWeight: 600, margin: 0 }}>Pipeline Scheduler</h2>
           <p style={{ color: '#64748b', fontSize: '12px', fontWeight: 600, margin: '4px 0 0' }}>Orchestrate end-to-end processing schedules dynamically</p>
         </div>
         <button onClick={() => setModal({ job: null })} style={{
@@ -220,7 +220,7 @@ const Scheduler = () => {
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ color: '#1e293b', fontSize: '14px', fontWeight: 700 }}>{job.name}</span>
-                    <span style={{ fontSize: '11px', fontWeight: 800, padding: '1px 6px', borderRadius: '5px', background: '#ffffff', color: '#334155', border: '1px solid #e2e8f0' }}>{job.config_path.replace('configs/', '')}</span>
+                    <span style={{ fontSize: '11px', fontWeight: 600, padding: '1px 6px', borderRadius: '5px', background: '#ffffff', color: '#334155', border: '1px solid #e2e8f0' }}>{job.config_path.replace('configs/', '')}</span>
                   </div>
                   <p style={{ color: '#475569', fontSize: '12px', margin: '4px 0 0' }}>{job.description || 'No description provided.'}</p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '8px' }}>
@@ -233,7 +233,7 @@ const Scheduler = () => {
               <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                 {/* Active switch */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{job.enabled ? 'Active' : 'Disabled'}</span>
+                  <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, letterSpacing: '0.04em' }}>{job.enabled ? 'Active' : 'Disabled'}</span>
                   <button onClick={() => handleToggle(job)} style={{
                     width: '38px', height: '22px', borderRadius: '20px',
                     background: job.enabled ? '#16a34a' : '#1f2937',

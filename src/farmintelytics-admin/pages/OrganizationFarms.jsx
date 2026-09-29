@@ -105,7 +105,7 @@ const QuickAddFarmForm = ({ org, farms = [], onSave, onCancel }) => {
       <ErrorBanner message={error} onDismiss={() => setError('')} />
       
       <div>
-        <label style={{ display: 'block', fontSize: '11px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' }}>
+        <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#475569', letterSpacing: '0.04em', marginBottom: '4px' }}>
           Farm / Estate Name *
         </label>
         <input
@@ -118,7 +118,7 @@ const QuickAddFarmForm = ({ org, farms = [], onSave, onCancel }) => {
       </div>
 
       <div>
-        <label style={{ display: 'block', fontSize: '11px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>
+        <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#475569', letterSpacing: '0.04em', marginBottom: '6px' }}>
           Sensors
         </label>
         <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
@@ -127,7 +127,7 @@ const QuickAddFarmForm = ({ org, farms = [], onSave, onCancel }) => {
       </div>
 
       <div>
-        <label style={{ display: 'block', fontSize: '11px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px' }}>
+        <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#475569', letterSpacing: '0.04em', marginBottom: '6px' }}>
           Vegetation & Moisture Indices
         </label>
         <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
@@ -137,7 +137,7 @@ const QuickAddFarmForm = ({ org, farms = [], onSave, onCancel }) => {
 
       {existingParents.length > 0 && (
         <div>
-          <label style={{ display: 'block', fontSize: '11px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' }}>
+          <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#475569', letterSpacing: '0.04em', marginBottom: '4px' }}>
             Hierarchy / Parent Farm
           </label>
           <select
@@ -153,7 +153,7 @@ const QuickAddFarmForm = ({ org, farms = [], onSave, onCancel }) => {
       )}
 
       <div>
-        <label style={{ display: 'block', fontSize: '11px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' }}>
+        <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#475569', letterSpacing: '0.04em', marginBottom: '4px' }}>
           Farm Boundary (GeoJSON) *
         </label>
         <label style={{
@@ -169,7 +169,7 @@ const QuickAddFarmForm = ({ org, farms = [], onSave, onCancel }) => {
             </span>
           </div>
           {boundaryFile && (
-            <span style={{ fontSize: '10px', fontWeight: 800, background: '#15803d', color: '#ffffff', padding: '2px 8px', borderRadius: '6px' }}>
+            <span style={{ fontSize: '10px', fontWeight: 600, background: '#15803d', color: '#ffffff', padding: '2px 8px', borderRadius: '6px' }}>
               READY
             </span>
           )}
@@ -179,7 +179,7 @@ const QuickAddFarmForm = ({ org, farms = [], onSave, onCancel }) => {
 
       {saving && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', padding: '10px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', fontWeight: 800 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', fontWeight: 600 }}>
             <span style={{ color: '#15803d' }}>{statusText || 'Processing…'}</span>
             <span style={{ color: '#0f172a' }}>{uploadPercent}%</span>
           </div>
@@ -208,7 +208,7 @@ const QuickAddFarmForm = ({ org, farms = [], onSave, onCancel }) => {
           style={{
             flex: 2, padding: '10px', background: '#15803d', border: 'none', borderRadius: '10px',
             color: '#ffffff', cursor: (saving || !farmName.trim() || !boundaryFile) ? 'not-allowed' : 'pointer',
-            fontWeight: 800, fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+            fontWeight: 600, fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
             boxShadow: 'none', opacity: (saving || !farmName.trim() || !boundaryFile) ? 0.6 : 1,
           }}
         >
@@ -307,7 +307,7 @@ const FarmConfigModal = ({ farm, onClose }) => {
         <div style={{ padding: '16px 20px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '10px' }}>
           <Settings size={16} color="#16a34a" />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ color: '#0f172a', fontSize: '13px', fontWeight: 800, margin: 0 }}>{farm.farm_name} — Pipeline Config</p>
+            <p style={{ color: '#0f172a', fontSize: '13px', fontWeight: 600, margin: 0 }}>{farm.farm_name} — Pipeline Config</p>
             <p style={{ color: '#64748b', fontSize: '11px', fontWeight: 600, margin: '2px 0 0', fontFamily: 'var(--font-mono)' }}>{filename}</p>
           </div>
           <button onClick={onClose} style={{ background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '6px', cursor: 'pointer', color: '#475569', display: 'flex' }}><X size={14} /></button>
@@ -350,7 +350,7 @@ const FarmConfigModal = ({ farm, onClose }) => {
                 <button onClick={handleSave} disabled={saving} style={{
                   marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px', padding: '9px 16px',
                   background: '#15803d', border: 'none', borderRadius: '10px', color: 'white',
-                  fontSize: '12px', fontWeight: 800, cursor: 'pointer', opacity: saving ? 0.6 : 1,
+                  fontSize: '12px', fontWeight: 600, cursor: 'pointer', opacity: saving ? 0.6 : 1,
                 }}><Save size={13} />{saving ? 'Saving…' : 'Save Config'}</button>
               </div>
             </>
@@ -410,7 +410,7 @@ const BoundaryViewModal = ({ farm, onClose }) => {
         <div style={{ padding: '14px 18px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '10px' }}>
           <Map size={16} color="#16a34a" />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ color: '#0f172a', fontSize: '14px', fontWeight: 800, margin: 0 }}>{farm.farm_name} — Current Boundary</p>
+            <p style={{ color: '#0f172a', fontSize: '14px', fontWeight: 600, margin: 0 }}>{farm.farm_name} — Current Boundary</p>
             <p style={{ color: '#64748b', fontSize: '12px', fontWeight: 600, margin: '2px 0 0', fontFamily: 'var(--font-mono)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{farm.boundary_minio_path}</p>
           </div>
           <button onClick={onClose} style={{ background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '6px', cursor: 'pointer', color: '#475569', display: 'flex', flexShrink: 0 }}><X size={14} /></button>
@@ -533,7 +533,7 @@ const OrgDetailPanel = ({ org, onClose }) => {
             <Building2 size={18} color="#16a34a" />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ color: '#0f172a', fontSize: '15px', fontWeight: 800, margin: 0 }}>{org.display_name}</p>
+            <p style={{ color: '#0f172a', fontSize: '15px', fontWeight: 600, margin: 0 }}>{org.display_name}</p>
             <p style={{ color: '#64748b', fontSize: '11px', fontWeight: 600, margin: '2px 0 0', fontFamily: 'var(--font-mono)' }}>{org.schema_name}</p>
           </div>
           <button onClick={onClose} style={{ background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '6px', cursor: 'pointer', color: '#475569', display: 'flex' }}>
@@ -547,7 +547,7 @@ const OrgDetailPanel = ({ org, onClose }) => {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Layers size={14} color="#16a34a" />
-              <span style={{ fontSize: '12px', fontWeight: 800, color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Farms & Boundaries</span>
+              <span style={{ fontSize: '12px', fontWeight: 600, color: '#0f172a', letterSpacing: '0' }}>Farms & Boundaries</span>
             </div>
             <button onClick={() => setAddOpen(o => !o)} style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'none', border: 'none', cursor: 'pointer', color: '#16a34a', fontSize: '11px', fontWeight: 700 }}>
               <Plus size={13} />{addOpen ? 'Cancel' : 'Add Farm'}

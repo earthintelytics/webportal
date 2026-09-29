@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import {
-  Building2, Key, Activity, LayoutDashboard, LogOut,
-  ChevronRight, Shield, Menu, X,
+  Building2, Key, Activity, LayoutDashboard, LogOut, Menu, X,
   Clock, Database, Users, Rocket, SlidersHorizontal,
 } from 'lucide-react';
 
@@ -16,16 +15,25 @@ import Inventory from './pages/Inventory';
 import UsersPage from './pages/Users';
 import { ConfirmProvider } from './components/ConfirmProvider';
 
-const NAV_ITEMS = [
-  { id: 'onboarding',    label: 'Onboard Organization', icon: Rocket, path: '/admin/onboarding' },
-  { id: 'users',         label: 'User Accounts',   icon: Users,     path: '/admin/users' },
-  { id: 'organizations', label: 'Organizations',   icon: Building2, path: '/admin/organizations' },
-  { id: 'inventory',    label: 'Data Sync & MinIO', icon: Database, path: '/admin/inventory' },
-  { id: 'credentials',  label: 'Credentials',      icon: Key,       path: '/admin/credentials' },
-  { id: 'scheduler',    label: 'Scheduler',        icon: Clock,     path: '/admin/scheduler' },
-  { id: 'thresholds',   label: 'Crop Thresholds',  icon: SlidersHorizontal, path: '/admin/thresholds' },
-  { id: 'logs',         label: 'Logs',             icon: Activity,  path: '/admin/logs' },
+// Grouped by what the team is doing: setting clients up, running the
+// platform, or tuning how data is interpreted.
+const NAV_GROUPS = [
+  { label: 'Setup', items: [
+    { id: 'onboarding',    label: 'Onboard organisation', icon: Rocket,    path: '/admin/onboarding' },
+    { id: 'organizations', label: 'Organisations',        icon: Building2, path: '/admin/organizations' },
+    { id: 'credentials',   label: 'Credentials',          icon: Key,       path: '/admin/credentials' },
+    { id: 'users',         label: 'User accounts',        icon: Users,     path: '/admin/users' },
+  ]},
+  { label: 'Operations', items: [
+    { id: 'scheduler',     label: 'Scheduler',            icon: Clock,     path: '/admin/scheduler' },
+    { id: 'inventory',     label: 'Data & storage',       icon: Database,  path: '/admin/inventory' },
+    { id: 'logs',          label: 'Logs',                 icon: Activity,  path: '/admin/logs' },
+  ]},
+  { label: 'Configuration', items: [
+    { id: 'thresholds',    label: 'Crop thresholds',      icon: SlidersHorizontal, path: '/admin/thresholds' },
+  ]},
 ];
+const NAV_ITEMS = NAV_GROUPS.flatMap(g => g.items);
 
 const AdminPortal = () => {
   const navigate = useNavigate();
@@ -47,143 +55,89 @@ const AdminPortal = () => {
 
   const activeId = NAV_ITEMS.find(n => location.pathname.startsWith(n.path))?.id || 'organizations';
 
+  const activeItem = NAV_ITEMS.find(n => n.id === activeId);
+
   return (
     <ConfirmProvider>
-    <div style={{ display: 'flex', height: '100vh', background: '#f8fafc', fontFamily: "var(--font-sans)", overflow: 'hidden' }}>
+    <div className="flex h-screen overflow-hidden bg-[var(--bg-main)] text-[var(--text-main)] font-sans">
 
       {/* ── Sidebar ── */}
-      <div style={{
-        width: sidebarOpen ? '240px' : '64px',
-        background: '#ffffff',
-        borderRight: '1px solid #e2e8f0',
-        display: 'flex', flexDirection: 'column',
-        transition: 'width 0.25s cubic-bezier(0.4,0,0.2,1)',
-        flexShrink: 0, overflow: 'hidden',
-        position: 'relative', zIndex: 20,
-      }}>
-        {/* Logo */}
-        <div style={{
-          padding: sidebarOpen ? '20px 16px' : '20px 8px',
-          borderBottom: '1px solid #e2e8f0',
-          display: 'flex', alignItems: 'center', gap: '10px',
-          overflow: 'hidden',
-        }}>
-          <img src="/farmintelytics-logo.png" alt="Logo" style={{ height: '36px', width: 'auto', flexShrink: 0 }} />
+      <aside className={`relative flex flex-col shrink-0 bg-white border-r border-slate-200 transition-[width] duration-200 ${sidebarOpen ? 'w-64' : 'w-[68px]'}`}>
+        <div className={`h-16 flex items-center gap-3 border-b border-slate-200 ${sidebarOpen ? 'px-5' : 'justify-center'}`}>
+          <img src="/farmintelytics-logo.png" alt="FarmIntelytics" className="h-9 w-9 object-contain shrink-0" width="36" height="36" />
           {sidebarOpen && (
-            <div>
-              <div style={{ color: '#0f172a', fontSize: '13px', fontWeight: 900, letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>FarmIntelytics</div>
-              <div style={{ color: '#16a34a', fontSize: '11px', fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase' }}>Admin Console</div>
+            <div className="leading-tight min-w-0">
+              <p className="font-display text-sm font-semibold truncate">FarmIntelytics</p>
+              <p className="text-xs text-[var(--text-muted)]">Admin console</p>
             </div>
           )}
         </div>
 
-        {/* Nav */}
-        <nav style={{ flex: 1, padding: '12px 8px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
-          {NAV_ITEMS.map(item => {
-            const active = activeId === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => navigate(item.path)}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '12px',
-                  padding: sidebarOpen ? '10px 12px' : '10px',
-                  borderRadius: '10px', border: 'none', cursor: 'pointer',
-                  background: active ? 'rgba(22,163,74,0.1)' : 'transparent',
-                  color: active ? '#16a34a' : '#475569',
-                  transition: 'all 0.15s',
-                  whiteSpace: 'nowrap', overflow: 'hidden',
-                  justifyContent: sidebarOpen ? 'flex-start' : 'center',
-                }}
-                onMouseEnter={e => { if (!active) { e.currentTarget.style.background = '#f1f5f9'; e.currentTarget.style.color = '#0f172a'; } }}
-                onMouseLeave={e => { e.currentTarget.style.background = active ? 'rgba(22,163,74,0.1)' : 'transparent'; e.currentTarget.style.color = active ? '#16a34a' : '#475569'; }}
-                title={!sidebarOpen ? item.label : undefined}
-              >
-                <item.icon size={17} style={{ flexShrink: 0 }} />
-                {sidebarOpen && (
-                  <span style={{ fontSize: '13px', fontWeight: 600 }}>{item.label}</span>
-                )}
-                {sidebarOpen && active && <ChevronRight size={14} style={{ marginLeft: 'auto' }} />}
-              </button>
-            );
-          })}
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
+          {NAV_GROUPS.map(group => (
+            <div key={group.label}>
+              {sidebarOpen && <p className="px-3 mb-2 text-xs font-medium text-slate-400">{group.label}</p>}
+              <div className="space-y-0.5">
+                {group.items.map(item => {
+                  const active = activeId === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => navigate(item.path)}
+                      title={!sidebarOpen ? item.label : undefined}
+                      className={`w-full flex items-center gap-3 rounded-[10px] text-sm transition-colors ${sidebarOpen ? 'px-3 py-2' : 'justify-center py-2.5'} ${
+                        active ? 'bg-emerald-50 text-emerald-800 font-medium' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                      }`}
+                    >
+                      <item.icon size={17} className={`shrink-0 ${active ? 'text-[var(--brand-primary)]' : ''}`} />
+                      {sidebarOpen && <span className="truncate">{item.label}</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
 
-        {/* User / Sign-out */}
-        <div style={{
-          padding: '12px 8px',
-          borderTop: '1px solid #e2e8f0',
-        }}>
+        <div className="p-3 border-t border-slate-200 space-y-1">
           {sidebarOpen && (
-            <div style={{
-              padding: '10px 12px', marginBottom: '4px',
-              borderRadius: '10px', background: '#f8fafc',
-            }}>
-              <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Logged in as</div>
-              <div style={{ fontSize: '12px', color: '#334155', fontWeight: 600, marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{adminEmail}</div>
+            <div className="px-3 py-2">
+              <p className="text-xs text-slate-400">Signed in as</p>
+              <p className="text-sm text-slate-700 truncate">{adminEmail}</p>
             </div>
           )}
-          <button
-            onClick={handleSignOut}
-            style={{
-              display: 'flex', alignItems: 'center', gap: '10px',
-              padding: sidebarOpen ? '10px 12px' : '10px',
-              borderRadius: '10px', border: 'none', cursor: 'pointer',
-              background: 'transparent', color: '#ef4444',
-              width: '100%', transition: 'all 0.15s',
-              justifyContent: sidebarOpen ? 'flex-start' : 'center',
-            }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.06)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-          >
-            <LogOut size={17} />
-            {sidebarOpen && <span style={{ fontSize: '13px', fontWeight: 600 }}>Sign Out</span>}
+          <button onClick={() => navigate('/')} title="Platform hub"
+            className={`w-full flex items-center gap-3 rounded-[10px] text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors ${sidebarOpen ? 'px-3 py-2' : 'justify-center py-2.5'}`}>
+            <LayoutDashboard size={17} className="shrink-0" />{sidebarOpen && 'Platform hub'}
+          </button>
+          <button onClick={handleSignOut} title="Sign out"
+            className={`w-full flex items-center gap-3 rounded-[10px] text-sm text-slate-600 hover:bg-red-50 hover:text-red-700 transition-colors ${sidebarOpen ? 'px-3 py-2' : 'justify-center py-2.5'}`}>
+            <LogOut size={17} className="shrink-0" />{sidebarOpen && 'Sign out'}
           </button>
         </div>
 
-        {/* Collapse toggle */}
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          style={{
-            position: 'absolute', top: '24px', right: '-12px',
-            width: '24px', height: '24px', borderRadius: '50%',
-            background: '#ffffff', border: '1px solid #cbd5e1',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', color: '#64748b', zIndex: 30,
-          }}
-          onMouseEnter={e => { e.currentTarget.style.color = '#ffffff'; e.currentTarget.style.background = '#16a34a'; }}
-          onMouseLeave={e => { e.currentTarget.style.color = '#64748b'; e.currentTarget.style.background = '#ffffff'; }}
-        >
+        <button onClick={() => setSidebarOpen(!sidebarOpen)} aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+          className="absolute top-5 -right-3 w-6 h-6 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-900 z-30">
           {sidebarOpen ? <X size={12} /> : <Menu size={12} />}
         </button>
-      </div>
+      </aside>
 
-      {/* ── Main Content ── */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        {/* Top bar */}
-        <div style={{
-          height: '56px', borderBottom: '1px solid #e2e8f0',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '0 24px', background: 'rgba(255,255,255,0.85)',
-          backdropFilter: 'blur(12px)', flexShrink: 0,
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            {NAV_ITEMS.find(n => n.id === activeId) && (() => {
-              const item = NAV_ITEMS.find(n => n.id === activeId);
-              return (
-                <>
-                  <item.icon size={15} color="#16a34a" />
-                  <span style={{ color: '#0f172a', fontSize: '14px', fontWeight: 700 }}>{item.label}</span>
-                </>
-              );
-            })()}
-          </div>
-        </div>
+      {/* ── Main ── */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Slim breadcrumb: each page renders its own title, counts and actions */}
+        <header className="shrink-0 h-12 flex items-center bg-white border-b border-slate-200 px-8 text-sm">
+          <span className="text-slate-400">Admin console</span>
+          {activeItem && <>
+            <span className="mx-2 text-slate-300">/</span>
+            <span className="text-slate-400">{NAV_GROUPS.find(g => g.items.includes(activeItem))?.label}</span>
+            <span className="mx-2 text-slate-300">/</span>
+            <span className="font-medium text-slate-800">{activeItem.label}</span>
+          </>}
+        </header>
 
-        {/* Page content */}
-        <div style={{ flex: 1, overflow: 'auto', background: '#f8fafc' }}>
+        <main className="flex-1 overflow-auto">
           <Routes>
-            <Route index element={<Navigate to="users" replace />} />
+            <Route index element={<Navigate to="organizations" replace />} />
             <Route path="onboarding"    element={<Onboarding />} />
             <Route path="users"         element={<UsersPage />} />
             <Route path="organizations" element={<Organizations />} />
@@ -193,7 +147,7 @@ const AdminPortal = () => {
             <Route path="thresholds"    element={<CropThresholds />} />
             <Route path="logs"          element={<Logs />} />
           </Routes>
-        </div>
+        </main>
       </div>
     </div>
     </ConfirmProvider>
