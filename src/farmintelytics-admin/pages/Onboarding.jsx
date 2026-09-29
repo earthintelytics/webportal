@@ -10,6 +10,8 @@ import {
 import { slugify, modulesForAccessModel, ACCESS_MODELS, ALL_RS_INDICES } from './Organizations';
 import ErrorBanner from '../components/ErrorBanner';
 import { SENSOR_OPTIONS, ALL_CROPS, toggleInList } from '../components/formHelpers';
+import { WEEKDAYS, cronFor, scheduleText as scheduleWords } from '../components/schedule';
+const scheduleText = (s) => { const w = scheduleWords(s); return w.charAt(0).toLowerCase() + w.slice(1); };
 import { CROP_PHOTOS, SERVICE_PHOTOS, SERVICE_GROUPS, SERVICE_PACKAGES } from '../../constants/servicePhotos';
 import { HERO_PLACEHOLDERS } from '../../constants/heroPlaceholders';
 import { SERVICE_CATALOG } from '../../modules/services/serviceCatalog';
@@ -31,7 +33,6 @@ const ALL_INDICES = ['NDVI', 'EVI', 'NDMI', 'RECI', 'NDWI', 'LSWI', 'LAI', 'NDRE
 const CROP_PAGES = ['Overview', 'Map', 'Crop health', 'Crop yield', 'Moisture', 'Climate', 'Alerts', 'Your data'];
 const DEFAULT_ALERT_THRESHOLDS = { alert_ndvi_drop_pct: 0.25, alert_smi_critical: 0.2, alert_ndmi_water_stress_critical: 0.0, alert_ndvi_health_critical: 0.35 };
 const STEPS = ['Organisation', 'Crops and services', 'Estates', 'Blocks and filters', 'Login', 'Schedule', 'Finish'];
-const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const NEAR_KM = 20; // estates further apart than this are processed separately
 
 const blankEstate = () => ({
@@ -55,19 +56,6 @@ function distanceKm(a, b) {
   const h = Math.sin(dLat / 2) ** 2 + Math.cos(r(a.lat)) * Math.cos(r(b.lat)) * Math.sin(dLon / 2) ** 2;
   return 2 * R * Math.asin(Math.sqrt(h));
 }
-function cronFor(s, offsetMin = 0) {
-  const m = offsetMin % 60, h = (s.hour + Math.floor(offsetMin / 60)) % 24;
-  if (s.mode === 'weekly') return `${m} ${h} * * ${s.weekday}`;
-  if (s.mode === 'monthly') return `${m} ${h} ${s.monthday} * *`;
-  return `${m} ${h} */${s.every} * *`;
-}
-function scheduleText(s) {
-  const t = `${String(s.hour).padStart(2, '0')}:00`;
-  if (s.mode === 'weekly') return `every ${WEEKDAYS[s.weekday]} at ${t}`;
-  if (s.mode === 'monthly') return `on day ${s.monthday} of every month at ${t}`;
-  return `every ${s.every} days at ${t}`;
-}
-
 const FitToBounds = ({ data }) => {
   const map = useMap();
   useEffect(() => {
