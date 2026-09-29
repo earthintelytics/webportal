@@ -6,6 +6,7 @@ import {
 } from '../../services/adminApi';
 import { useConfirm } from '../components/ConfirmProvider';
 import ErrorBanner from '../components/ErrorBanner';
+import { SERVICE_GROUPS } from '../../constants/servicePhotos';
 import OrgDetailPanel from './OrganizationFarms';
 import { ALL_CROPS } from '../components/formHelpers';
 
@@ -412,22 +413,46 @@ const OrgModal = ({ org, onSave, onClose }) => {
             </div>
           )}
           <div>
-            <label style={labelStyle}>Allowed modules</label>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', maxHeight: '180px', overflowY: 'auto', padding: '8px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
-              {[...new Set([...ALL_MODULES, ...form.allowed_modules])].map(m => {
-                const active = form.allowed_modules.includes(m);
+            <label style={labelStyle}>What this organisation can open</label>
+            {/* Grouped like the hub and onboarding; parked families (not in the current plan) are collapsed */}
+            <div className="space-y-3 p-3 bg-gray-50 border border-gray-200 rounded-xl">
+              {(() => {
+                const all = [...new Set([...ALL_MODULES, ...form.allowed_modules])];
+                const svcLabel = Object.fromEntries(SERVICE_GROUPS.flatMap(g => g.services.map(s => [s.id, s.label])));
+                const cropName = (m) => ({ ffb: 'Oil palm', maize: 'Maize', rice: 'Rice', cocoa: 'Cocoa', sugarcane: 'Sugarcane', cashew: 'Cashew', rubber: 'Rubber', cassava: 'Cassava', drone: 'Drone' }[m.replace('rs-', '')] || m);
+                const groups = [
+                  { label: 'Organisation dashboard', items: all.filter(m => m.startsWith('custom-agromonitor-')), name: m => `Dashboard (${m.replace('custom-agromonitor-', '')})` },
+                  { label: 'Crop monitoring', items: all.filter(m => m.startsWith('rs-')), name: cropName },
+                  ...SERVICE_GROUPS.map(g => ({ label: g.label, items: g.services.map(s => s.id).filter(id => all.includes(id)), name: m => svcLabel[m] || m })),
+                ];
+                const grouped = new Set(groups.flatMap(g => g.items));
+                const parked = all.filter(m => !grouped.has(m));
+                const chip = (m, name) => {
+                  const on = form.allowed_modules.includes(m);
+                  return (
+                    <button key={m} type="button" onClick={() => toggleModule(m)}
+                      className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold border ${on ? 'bg-green-50 border-green-600 text-green-800' : 'bg-white border-gray-300 text-gray-600 hover:border-gray-400'}`}>
+                      {name(m)}
+                    </button>
+                  );
+                };
                 return (
-                  <button key={m} onClick={() => toggleModule(m)} style={{
-                    padding: '5px 10px', borderRadius: '8px', cursor: 'pointer', fontSize: '11px', fontWeight: 700,
-                    background: active ? 'rgba(59,130,246,0.1)' : '#ffffff',
-                    border: active ? '1px solid rgba(59,130,246,0.3)' : '1px solid #cbd5e1',
-                    color: active ? '#3b82f6' : '#475569',
-                    transition: 'all 0.15s',
-                  }}>
-                    {MODULE_LABELS[m] || (m.startsWith('custom-agromonitor-') ? `Org Dashboard (${m.replace('custom-agromonitor-', '')})` : m)}
-                  </button>
+                  <>
+                    {groups.filter(g => g.items.length).map(g => (
+                      <div key={g.label}>
+                        <div className="text-[11px] font-semibold text-gray-500 mb-1.5">{g.label}</div>
+                        <div className="flex flex-wrap gap-1.5">{g.items.map(m => chip(m, g.name))}</div>
+                      </div>
+                    ))}
+                    {parked.length > 0 && (
+                      <details>
+                        <summary className="text-[11px] font-semibold text-gray-500 cursor-pointer">Not in the current plan ({parked.length})</summary>
+                        <div className="flex flex-wrap gap-1.5 mt-1.5">{parked.map(m => chip(m, x => MODULE_LABELS[x] || x))}</div>
+                      </details>
+                    )}
+                  </>
                 );
-              })}
+              })()}
             </div>
           </div>
         </div>
@@ -550,7 +575,7 @@ const Organizations = () => {
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: '6px' }} onClick={e => e.stopPropagation()}>
-                  <button onClick={() => setModal({ org })} style={{ background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '6px', cursor: 'pointer', color: '#475569', display: 'flex' }}
+                  <button aria-label="Edit organisation" title="Edit organisation" onClick={() => setModal({ org })} style={{ background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '6px', cursor: 'pointer', color: '#475569', display: 'flex' }}
                     onMouseEnter={e => { e.currentTarget.style.color = '#0f172a'; e.currentTarget.style.background = '#f1f5f9'; }} onMouseLeave={e => { e.currentTarget.style.color = '#475569'; e.currentTarget.style.background = '#f8fafc'; }}>
                     <Edit3 size={14} />
                   </button>
