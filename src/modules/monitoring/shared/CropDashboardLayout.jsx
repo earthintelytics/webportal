@@ -111,8 +111,15 @@ ChartJS.register(
   Filler
 );
 
-const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks, cropIndices, cropLoading, cropError, mapCenter, onBack, onSignOut }) => {
-  const isOrg = mode === 'organization';
+const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSummary, cropBlocks, cropIndices, cropLoading, cropError, mapCenter, onBack, onSignOut }) => {
+  const isOrg = mode === 'organization' || Boolean(service);
+  // Service portals (sustainability, field advisory, finance) reuse this
+  // exact layout; the service config only picks and names the sub-pages.
+  // pick(defaults, list): keep the service's entries, in its order, with
+  // its labels, and the default icon for each id.
+  const pick = (defaults, list) => !list ? defaults : list
+    .map(s => { const d = defaults.find(x => x.id === s.id); return d ? { ...d, label: s.label || d.label } : null; })
+    .filter(Boolean);
   const cropLabel = isOrg ? '' : (CROP_META[cropType]?.label || CROP_CONFIG_KEYS[cropType] || cropType);
   // Tenant identity comes strictly from the authenticated session — no default
   // organization. Without a session, bounce straight back to login.
@@ -143,7 +150,7 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
   const [farmBoundary, setFarmBoundary] = useState(null); // GeoJSON Feature for tenants with no plot polygons
 
 
-  const [activeSidebarItem, setActiveSidebarItem] = useState('analytics');
+  const [activeSidebarItem, setActiveSidebarItem] = useState(service?.sidebar?.[0]?.id || 'analytics');
   const [activeTab, setActiveTab] = useState('monitor');
   const [activeAnalyticsSubpage, setActiveAnalyticsSubpage] = useState('overview');
 
@@ -3411,12 +3418,12 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
             </div>
             <div>
               <h1 className="text-base font-bold tracking-tight text-gray-900 leading-none flex items-center gap-1.5">
-                {tenantDisplayName} {isOrg
+                {tenantDisplayName} {service ? service.title : isOrg
                   ? (brandingMode === 'AM' ? 'Agro Monitoring' : 'Farm Tools')
                   : <>{cropLabel} {brandingMode === 'AM' ? 'Monitoring' : 'Farm Tools'}</>}
               </h1>
               <p className={`text-[11px] font-semibold uppercase tracking-widest mt-1 leading-none ${brandingMode === 'AM' ? 'text-green-600' : 'text-green-600'}`}>
-                {brandingMode === 'AM' ? 'Enterprise Satellite Node' : 'Agricultural Operations Hub'}
+                {service ? service.subtitle : brandingMode === 'AM' ? 'Enterprise Satellite Node' : 'Agricultural Operations Hub'}
               </p>
             </div>
           </div>
@@ -3424,12 +3431,12 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
 
         {/* ── TOP TABS ── */}
         <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl">
-          {[
+          {pick([
             { id: 'monitor',      label: 'Monitor',      icon: <Activity size={15} /> },
             { id: 'reports',      label: 'Reports',      icon: <FileText size={15} /> },
             { id: 'verification', label: 'Verification', icon: <Shield size={15} /> },
             { id: 'ai-assistant', label: 'AI Scenario Modeler', icon: <Sparkles size={15} /> }
-          ].map(tab => (
+          ], service?.topTabs).map(tab => (
             <button
               key={tab.id}
               onClick={() => handleTopNavTabClick(tab.id)}
@@ -3552,7 +3559,7 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
               {/* MAIN */}
               <div className="space-y-1">
                 <div className="text-[11px] font-bold text-gray-600 uppercase tracking-widest px-3 mb-3">Main</div>
-                {[
+                {pick([
                   { id: 'analytics',           label: 'Analytics Hub',       icon: <LayoutDashboard size={17} /> },
                   { id: 'intelligence-layers', label: 'Intelligence Layers', icon: <MapIcon size={17} /> },
                   { id: 'crop-health',         label: 'Crop Health',         icon: <Activity size={17} /> },
@@ -3561,7 +3568,7 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
                   { id: 'climate',             label: 'Climate',             icon: <CloudRain size={17} /> },
                   { id: 'land-restoration',    label: 'Land Restoration',    icon: <Leaf size={17} /> },
                   { id: 'alerts',              label: 'Alerts',              icon: <AlertTriangle size={17} />, badge: alerts.filter(a => a.status === 'Active').length }
-                ].map(item => (
+                ], service?.sidebar).map(item => (
                   <button
                     key={item.id}
                     onClick={() => handleSidebarClick(item.id)}
@@ -3689,22 +3696,22 @@ const CropDashboardLayout = ({ mode = 'crop', cropType, cropSummary, cropBlocks,
               DASHBOARD — MONITOR
           ══════════════════════════════════════════════════════════════ */}
           {activeSidebarItem === 'analytics' && activeTab === 'monitor' && (() => {
-            const ANALYTICS_SUBPAGES = [
+            const ANALYTICS_SUBPAGES = pick([
               { id: 'overview', label: 'Overview', icon: <LayoutDashboard size={15} /> },
               { id: 'vigor-health', label: 'Vigor & Phenology', icon: <TrendingUp size={15} /> },
               { id: 'moisture-et', label: 'Moisture & ET', icon: <Droplets size={15} /> },
               { id: 'et-log', label: 'ET Historical Log', icon: <Clock size={15} /> },
               { id: 'water-management', label: 'Water Management', icon: <Waves size={15} /> },
               { id: 'soil-nutrients', label: 'Soil & Nutrients', icon: <Sun size={15} /> },
-            ];
+            ], service?.analytics);
             return (
               <div className="p-10 space-y-10">
                 {/* Page header */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                   <div>
-                    <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Agro Analytics Hub</h2>
+                    <h2 className="text-3xl font-bold text-gray-900 tracking-tight">{service?.overviewTitle || 'Agro Analytics Hub'}</h2>
                     <p className="text-sm text-gray-500 font-medium mt-2 max-w-lg">
-                      Direct analytical metrics derived from Sentinel-2 & Landsat-8 imagery pass dates.
+                      {service?.overviewText || 'Direct analytical metrics derived from Sentinel-2 & Landsat-8 imagery pass dates.'}
                     </p>
                   </div>
                   <div className="bg-white px-5 py-3 rounded-2xl border border-gray-200 shadow-sm flex items-center gap-3 shrink-0">

@@ -23,7 +23,7 @@ export const CROP_LABELS = {
 const ALL_MODULES = [
   'rs-ffb', 'rs-maize', 'rs-rice', 'rs-cocoa', 'rs-sugarcane', 'rs-cashew', 'rs-rubber', 'rs-cassava', 'rs-drone',
   'management-ffb', 'management-maize', 'management-rice', 'management-cocoa', 'management-sugarcane', 'management-cashew', 'management-rubber', 'management-cassava',
-  'group-management', 'group-monitoring', 'carbon-ffb', 'carbon-groups', 'forestry-intel', 'carbon-estimator', 'advisor', 'finance-hub'
+  'group-management', 'group-monitoring', 'carbon-ffb', 'carbon-groups', 'forestry-intel', 'carbon-estimator', 'land-restoration', 'eudr-check', 'activity-ffb', 'advisor', 'finance-hub'
 ];
 
 const MODULE_LABELS = {
@@ -50,6 +50,9 @@ const MODULE_LABELS = {
   'carbon-groups': 'Group Carbon',
   'forestry-intel': 'Forestry Intel',
   'carbon-estimator': 'Carbon Est.',
+  'land-restoration': 'Land Restoration',
+  'eudr-check': 'EUDR Check',
+  'activity-ffb': 'Field Logs',
   'advisor': 'Farm Advisor',
   'finance-hub': 'Finance Hub'
 };

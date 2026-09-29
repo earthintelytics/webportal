@@ -17,7 +17,7 @@ class ErrorBoundary extends Component {
     return this.props.children;
   }
 }
-import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate, useLocation, useParams } from 'react-router-dom';
 import Login from './pages/Login';
 import PortalHub from './pages/PortalHub';
 import PortalLayout from './layouts/PortalLayout';
@@ -41,13 +41,12 @@ const RubberDashboard = React.lazy(() => import('./modules/management/rubber/Das
 const CassavaDashboard = React.lazy(() => import('./modules/management/cassava/Dashboard'));
 const MaizeDashboard = React.lazy(() => import('./modules/management/maize/Dashboard'));
 
-// === Field Advisory & Agronomy ===
-const ClimateIntelligence = React.lazy(() => import('./modules/advisor/ClimateIntelligence'));
 const MonitoringPortal = React.lazy(() => import('./modules/monitoring/MonitoringPortal'));
-const EstatePortal = React.lazy(() => import('./modules/sustainability/estate/EstatePortal'));
-const GroupsPortal = React.lazy(() => import('./modules/sustainability/groups/GroupsPortal'));
-const ForestryPortal = React.lazy(() => import('./modules/sustainability/forestry/ForestryPortal'));
-const EstimatorPortal = React.lazy(() => import('./modules/sustainability/estimator/EstimatorPortal'));
+
+// === Sustainability, Field Advisory & Finance ===
+// One portal for all of them: the organisation monitoring layout with the
+// sub-pages each service defines in modules/services/serviceCatalog.js.
+const ServicePortal = React.lazy(() => import('./modules/services/ServicePortal'));
 
 // === Specialized Monitoring Apps ===
 const RiceMonitoring = React.lazy(() => import('./modules/monitoring/rice/Monitoring'));
@@ -62,9 +61,6 @@ const RubberMonitoring = React.lazy(() => import('./modules/monitoring/rubber/Mo
 // === Cooperative & Group Management ===
 const GroupsDashboard = React.lazy(() => import('./modules/cooperative/Dashboard'));
 
-// === Finance & Payments ===
-const FinanceDashboard = React.lazy(() => import('./modules/finance/Dashboard'));
-
 const OrganizationMonitor = React.lazy(() => import('./modules/organization-monitor/OrganizationMonitor'));
 
 // === Super Admin Portal ===
@@ -72,6 +68,7 @@ import AdminLogin from './farmintelytics-admin/AdminLogin';
 const AdminPortal = React.lazy(() => import('./farmintelytics-admin/AdminPortal'));
 
 import { crops } from './constants/crops.jsx';
+import { isServiceModule } from './modules/services/serviceCatalog';
 import { Zap } from 'lucide-react';
 
 const RouteLoading = () => (
@@ -102,7 +99,13 @@ const MODULE_NAMES = {
   'rs-cassava':           'Cassava Monitoring',
   'rs-maize':             'Maize Monitoring',
   'rs-drone':             'Drone Intelligence',
-  'finance-hub':          'Central Finance Hub',
+  'finance-hub':          'Central Ledger',
+  'carbon-ffb':           'Estate Carbon',
+  'carbon-groups':        'Group Carbon',
+  'forestry-intel':       'Forestry Intelligence',
+  'carbon-estimator':     'Carbon Estimator',
+  'land-restoration':     'Land Restoration',
+  'eudr-check':           'EUDR Check',
   'management-ffb':       'Oil Palm Management',
   'management-cashew':    'Cashew Management',
   'management-sugarcane': 'SugarCane Management',
@@ -113,7 +116,7 @@ const MODULE_NAMES = {
   'management-maize':     'Maize Management',
   'group-management':     'Groups Management',
   'group-monitoring':     'Group Monitoring',
-  'activity-ffb':         'Operations Logs',
+  'activity-ffb':         'Field Logs',
   'advisor':              'Farm Advisor',
   'custom-agromonitor':   'Agro Monitoring',
   'custom-agromonitor-olam': 'Olam Agro Monitoring',
@@ -152,7 +155,7 @@ const HubPage = () => {
 
   const handleSelectModule = (moduleId) => {
     sessionStorage.setItem('fi_module', moduleId);
-    navigate('/login');
+    navigate(`/login?module=${encodeURIComponent(moduleId)}`);
   };
   const handleSignOut = () => {
     localStorage.removeItem('fi_admin_token');
@@ -202,11 +205,12 @@ const LoginPage = () => {
   // Where does the portal land after login?
   const portalPath = (moduleId && (moduleId.startsWith('custom-agromonitor') || directTenant))
     ? AGROMONITOR_PATH
-    : '/portal';
+    : moduleId ? `/portal/${encodeURIComponent(moduleId)}` : '/';
 
   const handleLogin = () => navigate(portalPath);
-  // Clients arriving by direct link never see a way back to the internal hub
-  const handleBack  = (RESTRICTED_MODULE || directTenant || directModule) ? null : () => navigate('/');
+  // Clients arriving by direct link never see a way back to the internal hub;
+  // the FarmIntelytics team (signed in to the hub) always does.
+  const handleBack  = (RESTRICTED_MODULE || ((directTenant || directModule) && !hasValidTeamSession())) ? null : () => navigate('/');
 
   return (
     <Login
@@ -224,7 +228,12 @@ const PortalPage = () => {
   const [activeSection, setActiveSection] = useState('dashboard');
   const [currentCrop, setCurrentCrop]     = useState(crops[0]);
 
-  const moduleId = sessionStorage.getItem('fi_module');
+  // The module is part of the URL (/portal/<module-id>) so a refresh or a
+  // shared link opens the same service; /portal alone falls back to the
+  // module chosen before sign-in.
+  const { moduleId: moduleFromUrl } = useParams();
+  const moduleId = moduleFromUrl || sessionStorage.getItem('fi_module');
+  useEffect(() => { if (moduleFromUrl) sessionStorage.setItem('fi_module', moduleFromUrl); }, [moduleFromUrl]);
 
   const handleSignOut   = () => {
     // These used to be left in localStorage — a signed-out session could
@@ -233,12 +242,13 @@ const PortalPage = () => {
     ['fi_token', 'fi_email', 'fi_tenant', 'fi_role', 'fi_full_name',
      'fi_display_name', 'fi_allowed_modules', 'fi_allowed_crops', 'fi_map_center']
       .forEach(key => localStorage.removeItem(key));
-    navigate('/login');
+    navigate(`/login?module=${encodeURIComponent(moduleId || '')}`);
     setActiveSection('dashboard');
   };
   const handleBackToHub = () => { navigate('/');     setActiveSection('dashboard'); };
 
   if (!moduleId) return <Navigate to="/" replace />;
+  if (!moduleFromUrl) return <Navigate to={`/portal/${encodeURIComponent(moduleId)}`} replace />;
 
   // ── Organization-level module licensing ──
   // The admin portal assigns each organization its allowed modules
@@ -308,18 +318,15 @@ const PortalPage = () => {
       'drone-ffb':    <ComingSoon title="Drone Inspection" description="Live drone feed and high-resolution field surveillance." />,
       'drone-cashew': <ComingSoon title="Orchard Survey" description="Tree count, canopy gap analysis and disease spot detection." />,
 
-      'carbon-ffb':       <EstatePortal onSignOut={handleSignOut} onBack={handleBackToHub} />,
-      'carbon-groups':    <GroupsPortal onSignOut={handleSignOut} onBack={handleBackToHub} />,
-      'forestry-intel':   <ForestryPortal onSignOut={handleSignOut} onBack={handleBackToHub} />,
-      'carbon-estimator': <EstimatorPortal onSignOut={handleSignOut} onBack={handleBackToHub} />,
-
-      'finance-hub':  <FinanceDashboard onSignOut={handleSignOut} />,
-      'activity-ffb': <ComingSoon title="Operations Log" description="Geo-referenced daily field logs — harvesting, planting, spraying." />,
-      'advisor':      <ClimateIntelligence onSignOut={handleSignOut} onBack={handleBackToHub} />,
 
       'group-management': <GroupsDashboard mode="group-management" onSignOut={handleSignOut} />,
       'group-monitoring': <MonitoringPortal cropName="Smallholder" onSignOut={handleSignOut} onBack={handleBackToHub} />,
     };
+
+    // Sustainability, field advisory and finance services
+    if (isServiceModule(moduleId)) {
+      return <ServicePortal moduleId={moduleId} onSignOut={handleSignOut} onBack={handleBackToHub} />;
+    }
 
     return routeMap[moduleId] || (
       <ComingSoon title={moduleId.replace(/-/g, ' ')} description="This module is under active development." />
@@ -330,7 +337,7 @@ const PortalPage = () => {
 
   // Standalone modules (full-screen, no PortalLayout sidebar)
   const standaloneModules = ['rs-', 'group-monitoring', 'carbon-', 'forestry-', 'advisor'];
-  const isStandalone = standaloneModules.some(m => moduleId.startsWith(m) || moduleId === m);
+  const isStandalone = isServiceModule(moduleId) || standaloneModules.some(m => moduleId.startsWith(m) || moduleId === m);
 
   if (isStandalone || moduleId === 'group-management') {
     // Pass back/signout handlers if the component accepts them (RS portals already have them)
@@ -394,6 +401,7 @@ const App = () => {
         <Route path="/"                       element={<HubPage />} />
         <Route path="/login"                  element={<LoginPage />} />
         <Route path="/portal"                 element={<PortalPage />} />
+        <Route path="/portal/:moduleId"       element={<PortalPage />} />
         <Route path={AGROMONITOR_PATH}        element={<OrganizationMonitorPage />} />
         <Route path="/admin/login"            element={<AdminLogin />} />
         <Route path="/admin/*"               element={<AdminPortal />} />

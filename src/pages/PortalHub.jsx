@@ -38,6 +38,10 @@ const CARD_PHOTOS = {
   'rs-rubber': '/crops/rubber.webp', 'management-rubber': '/crops/rubber.webp',
   'rs-drone': '/crops/drone.webp',
   'group-monitoring': '/crops/smallholder.webp', 'group-management': '/crops/smallholder.webp',
+  'carbon-ffb': '/crops/oil_palm.webp', 'carbon-groups': '/crops/smallholder.webp',
+  'forestry-intel': '/crops/forestry.webp', 'carbon-estimator': '/crops/estimator.webp',
+  'land-restoration': '/crops/restoration.webp', 'eudr-check': '/crops/eudr.webp',
+  'finance-hub': '/crops/finance.webp', 'activity-ffb': '/crops/field_logs.webp', 'advisor': '/crops/advisor.webp',
 };
 const photoFor = (id) => CARD_PHOTOS[id] || (id?.startsWith('custom-agromonitor') ? '/crops/organization.webp' : null);
 
@@ -75,7 +79,7 @@ const ModuleCard = ({ title, crop, id, icon, active, onSelect, logoUrl }) => {
         <p className="text-xs font-medium text-slate-500">{crop}</p>
         <h3 className="font-display text-lg font-semibold text-slate-900 leading-snug mt-1">{title}</h3>
         <span className={`mt-5 flex items-center gap-1.5 text-sm font-medium ${active ? 'text-[var(--brand-primary)]' : 'text-slate-400'}`}>
-          {active ? 'Open sign-in' : 'Not available'}
+          {active ? 'Open sign-in' : 'Coming soon'}
           {active && <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />}
         </span>
       </div>
@@ -153,30 +157,36 @@ const PortalHub = ({ onSelectModule, onSignOut, onOpenAdmin }) => {
     },
     {
       id: 'sustainability',
-      title: 'Sustainability & Carbon',
-      description: 'Carbon sequestration monitoring, forestry biomass estimation, and smallholder group carbon verification.',
+      title: 'Sustainability',
+      // Services that are not tied to one crop's day-to-day monitoring. Land
+      // restoration and EUDR moved here from the crop portals (docs/crops,
+      // shared principles section 7). All open in the organisation monitoring
+      // layout with their own sub-pages (modules/services/serviceCatalog.js).
+      description: 'Carbon, forestry, land restoration and deforestation-free (EUDR) services, for estates and smallholder groups.',
       modules: filterModules([
-        { id: 'carbon-ffb',       title: 'Estate Carbon', crop: 'Industrial', icon: <Leaf />, active: true  },
-        { id: 'carbon-groups',    title: 'Group Carbon',  crop: 'Smallholder', icon: <Globe />, active: true  },
-        { id: 'forestry-intel',   title: 'Forestry Intel', crop: 'High Density', icon: <Trees />, active: true  },
-        { id: 'carbon-estimator', title: 'Carbon Est.',   crop: 'Analytical', icon: <Activity />, active: true  },
+        { id: 'carbon-ffb',       title: 'Estate carbon',         crop: 'Estates',            icon: <Leaf />,     active: true  },
+        { id: 'carbon-groups',    title: 'Group carbon',          crop: 'Smallholder groups', icon: <Globe />,    active: true  },
+        { id: 'forestry-intel',   title: 'Forestry intelligence', crop: 'Forests',            icon: <Trees />,    active: true  },
+        { id: 'carbon-estimator', title: 'Carbon estimator',      crop: 'Planning',           icon: <Activity />, active: true  },
+        { id: 'land-restoration', title: 'Land restoration',      crop: 'Restoration sites',  icon: <Leaf />,     active: true  },
+        { id: 'eudr-check',       title: 'EUDR deforestation check', crop: 'Oil palm, cocoa, rubber', icon: <Globe />, active: true  },
       ])
     },
     {
       id: 'payments',
       title: 'Finance & Ledger',
-      description: 'Immutable farm ledgers and secure multi-crop disbursement systems.',
+      description: 'Farm production and payment records across crops.',
       modules: filterModules([
-        { id: 'finance-hub', title: 'Central Ledger', crop: 'Multi-Crop', icon: <CreditCard />, active: true  },
+        { id: 'finance-hub', title: 'Central ledger', crop: 'Multi-crop', icon: <CreditCard />, active: true  },
       ])
     },
     {
       id: 'field-advisory',
       title: 'Field Advisory',
-      description: 'Geo-referenced field logs and location-aware agronomic insights.',
+      description: 'Field operation logs, weather and advice for each field.',
       modules: filterModules([
-        { id: 'activity-ffb', title: 'Field Logs',    crop: 'Operations', icon: <ClipboardList />, active: true  },
-        { id: 'advisor',      title: 'Farm Advisor',    crop: 'Agronomy',   icon: <MessageSquare />, active: true  },
+        { id: 'activity-ffb', title: 'Field logs',    crop: 'Operations', icon: <ClipboardList />, active: true  },
+        { id: 'advisor',      title: 'Farm advisor',  crop: 'Agronomy',   icon: <MessageSquare />, active: true  },
       ])
     },
     {
@@ -187,16 +197,20 @@ const PortalHub = ({ onSelectModule, onSignOut, onOpenAdmin }) => {
     },
   ];
 
-  // Only live tabs, and only those with at least one card for this user.
+  // Every service family has its tab; organisations come last.
   const visibleTabs = [
-    { id: 'monitoring', label: 'Crop Monitoring' },
-    { id: 'custom', label: 'Organization' },
+    { id: 'monitoring', label: 'Crop monitoring' },
+    { id: 'management', label: 'Management' },
+    { id: 'sustainability', label: 'Sustainability' },
+    { id: 'field-advisory', label: 'Field advisory' },
+    { id: 'payments', label: 'Finance & ledger' },
+    { id: 'custom', label: 'Organisations' },
   ].filter(tab => (sections.find(s => s.id === tab.id)?.modules.length ?? 0) > 0);
   const currentTabId = visibleTabs.some(t => t.id === activeTab) ? activeTab : visibleTabs[0]?.id;
   const currentSection = sections.find(s => s.id === currentTabId) || sections[0];
 
-  const cropCount = sections.find(s => s.id === 'monitoring')?.modules.length ?? 0;
   const orgCount = sections.find(s => s.id === 'custom')?.modules.length ?? 0;
+  const serviceCount = sections.filter(s => s.id !== 'custom').reduce((n, s) => n + s.modules.length, 0);
 
   return (
     <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] font-sans">
@@ -229,9 +243,9 @@ const PortalHub = ({ onSelectModule, onSignOut, onOpenAdmin }) => {
           <p className="text-sm font-medium text-[var(--brand-primary)]">FarmIntelytics team</p>
           <h1 className="font-display text-4xl lg:text-5xl font-semibold tracking-tight mt-2">Every service, one place.</h1>
           <p className="text-base text-[var(--text-muted)] leading-relaxed mt-4">
-            Open any crop monitoring or organisation service to check it the way a client sees it. Clients never see this page &mdash; each gets a direct link to their own sign-in.
+            Open any service or organisation to check it the way a client sees it. Clients never see this page &mdash; each gets a direct link to their own sign-in.
           </p>
-          <p className="text-sm text-slate-500 mt-5">{cropCount} crop services &middot; {orgCount} organisations</p>
+          <p className="text-sm text-slate-500 mt-5">{serviceCount} services &middot; {orgCount} organisations</p>
         </section>
 
         <nav className="mt-12 flex gap-8 border-b border-slate-200">
@@ -246,7 +260,7 @@ const PortalHub = ({ onSelectModule, onSignOut, onOpenAdmin }) => {
                   on ? 'border-[var(--brand-primary)] text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-800'
                 }`}
               >
-                {tab.label === 'Crop Monitoring' ? 'Crop monitoring' : 'Organisations'}
+                {tab.label}
                 <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${on ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>{count}</span>
               </button>
             );
