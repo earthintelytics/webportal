@@ -11,5 +11,9 @@ All from Wikimedia Commons, resized and converted to WebP.
 | finance.webp | [Mobile Money Kiosk](https://commons.wikimedia.org/wiki/File:Mobile_Money_Kiosk.jpg) | Bukulu Steven | CC BY-SA 4.0 |
 | field_logs.webp | [Women smallholder farmers in Kenya](https://commons.wikimedia.org/wiki/File:Women_smallholder_farmers_in_Kenya.jpg) | McKay Savage | CC BY 2.0 |
 | advisor.webp | [Africa Food Security 20](https://commons.wikimedia.org/wiki/File:Africa_Food_Security_20_(10665337483).jpg) | Kate Holt / AusAID | CC BY 2.0 |
+| estate_carbon.webp | [Oil palm and rainforest fragment Borneo](https://commons.wikimedia.org/wiki/File:Oil_palm_and_rainforest_fragment_Borneo.JPG) | T. R. Shankar Raman | CC BY-SA 4.0 |
+| group_carbon.webp | [Climate smart agriculture in Machakos county](https://commons.wikimedia.org/wiki/File:Climate_smart_agriculture_in_Machakos_county_(15453997230).jpg) | CGIAR Climate Change, Agriculture and Food Security (CCAFS) | CC BY 2.0 |
+
+The same photos at 1280 px are in `hero/` (sign-in pages).
 
 CC BY and CC BY-SA require this credit to stay with the images.

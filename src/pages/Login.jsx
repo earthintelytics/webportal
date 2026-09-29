@@ -205,10 +205,10 @@ const CROP_DESIGNS = {
     branding: 'Central Finance Hub',
     accentColor: '#059669', // Emerald Finance
     lightBg: '#ECFDF5',
-    badge: 'Financial Ledger Console',
-    heroImage: '/crops/organization.webp',
-    title: <>Automating <span className="text-emerald-600 font-black">Enterprise Liquidity</span></>,
-    desc: 'Direct disbursement, immutable financial reconciliation, worker payroll, and supplier ledger integration.',
+    badge: 'Finance · Central ledger',
+    heroImage: '/crops/hero/finance.webp',
+    title: <>Farm production and payments, <span className="text-emerald-500 font-black">one ledger</span></>,
+    desc: 'Production signals per block next to the deliveries and payments recorded for each farmer.',
     features: [
       { icon: <Landmark size={20} />, title: 'Multi-Bank Settlement', desc: 'Instant automated worker & farmer payroll disbursements' },
       { icon: <ShieldCheck size={20} />, title: 'Immutable Audit Ledger', desc: 'Verified transaction logs and balance sheets' },
@@ -219,6 +219,111 @@ const CROP_DESIGNS = {
       { label: 'Settlement Speed', value: '< 2 Seconds' },
       { label: 'Audit Accuracy', value: '100% Reconciled' }
     ]
+  },
+  // ─── Sustainability, field advisory and finance services ───
+  estate_carbon: {
+    key: 'estate_carbon',
+    name: 'Estate Carbon',
+    branding: 'Estate Carbon',
+    accentColor: '#16A34A',
+    lightBg: '#F0FDF4',
+    badge: 'Sustainability · Estate carbon',
+    heroImage: '/crops/hero/estate_carbon.webp',
+    title: <>Carbon on your <span className="text-emerald-500 font-black">estate</span>, tracked from space</>,
+    desc: 'Biomass, land-use change and carbon signals for every block of the estate, ready for carbon reporting.',
+    features: [],
+    stats: []
+  },
+  group_carbon: {
+    key: 'group_carbon',
+    name: 'Group Carbon',
+    branding: 'Group Carbon',
+    accentColor: '#16A34A',
+    lightBg: '#F0FDF4',
+    badge: 'Sustainability · Group carbon',
+    heroImage: '/crops/hero/group_carbon.webp',
+    title: <>Carbon for <span className="text-emerald-500 font-black">smallholder groups</span></>,
+    desc: 'Member plots, tree cover and land-use change for each cooperative or community group.',
+    features: [],
+    stats: []
+  },
+  forestry: {
+    key: 'forestry',
+    name: 'Forestry Intelligence',
+    branding: 'Forestry Intelligence',
+    accentColor: '#16A34A',
+    lightBg: '#F0FDF4',
+    badge: 'Sustainability · Forestry',
+    heroImage: '/crops/hero/forestry.webp',
+    title: <>Know your <span className="text-emerald-500 font-black">forest</span>, every season</>,
+    desc: 'Canopy condition, moisture and forest-cover change from optical and radar satellites.',
+    features: [],
+    stats: []
+  },
+  estimator: {
+    key: 'estimator',
+    name: 'Carbon Estimator',
+    branding: 'Carbon Estimator',
+    accentColor: '#16A34A',
+    lightBg: '#F0FDF4',
+    badge: 'Sustainability · Carbon estimator',
+    heroImage: '/crops/hero/estimator.webp',
+    title: <>Estimate <span className="text-emerald-500 font-black">carbon</span> before you commit</>,
+    desc: 'Vegetation and land-cover inputs for a site, with carbon estimates and scenarios.',
+    features: [],
+    stats: []
+  },
+  restoration: {
+    key: 'restoration',
+    name: 'Land Restoration',
+    branding: 'Land Restoration',
+    accentColor: '#16A34A',
+    lightBg: '#F0FDF4',
+    badge: 'Sustainability · Land restoration',
+    heroImage: '/crops/hero/restoration.webp',
+    title: <>Watch degraded land <span className="text-emerald-500 font-black">recover</span></>,
+    desc: 'Restoration zones, vegetation recovery and moisture over time, site by site.',
+    features: [],
+    stats: []
+  },
+  eudr: {
+    key: 'eudr',
+    name: 'EUDR Check',
+    branding: 'EUDR Check',
+    accentColor: '#16A34A',
+    lightBg: '#F0FDF4',
+    badge: 'Sustainability · EUDR',
+    heroImage: '/crops/hero/eudr.webp',
+    title: <>Deforestation-free <span className="text-emerald-500 font-black">evidence</span> for EU buyers</>,
+    desc: 'Plot geolocation and forest-cover change since the 31 December 2020 cut-off, for oil palm, cocoa and rubber.',
+    features: [],
+    stats: []
+  },
+  field_logs: {
+    key: 'field_logs',
+    name: 'Field Logs',
+    branding: 'Field Logs',
+    accentColor: '#16A34A',
+    lightBg: '#F0FDF4',
+    badge: 'Field advisory · Field logs',
+    heroImage: '/crops/hero/field_logs.webp',
+    title: <>Every field <span className="text-emerald-500 font-black">operation</span>, on the map</>,
+    desc: 'Field condition from satellite next to the harvesting, planting, spraying and scouting recorded for each block.',
+    features: [],
+    stats: []
+  },
+  advisor: {
+    key: 'advisor',
+    name: 'Farm Advisor',
+    branding: 'Farm Advisor',
+    accentColor: '#16A34A',
+    lightBg: '#F0FDF4',
+    badge: 'Field advisory · Farm advisor',
+    heroImage: '/crops/hero/advisor.webp',
+    title: <>Advice for <span className="text-emerald-500 font-black">every field</span></>,
+    desc: 'Crop condition, water and weather turned into plain advice for each field.',
+    features: [],
+    stats: []
   },
   drone: {
     key: 'drone',
@@ -253,6 +358,16 @@ function resolveCropDesign(moduleName) {
   if (!moduleName) return CROP_DESIGNS.oil_palm;
   const lower = moduleName.toLowerCase();
 
+  // Services first: their names contain crop/group words ("Group Carbon").
+  if (lower.includes('estate carbon')) return CROP_DESIGNS.estate_carbon;
+  if (lower.includes('group carbon')) return CROP_DESIGNS.group_carbon;
+  if (lower.includes('forestry')) return CROP_DESIGNS.forestry;
+  if (lower.includes('carbon estimator')) return CROP_DESIGNS.estimator;
+  if (lower.includes('restoration')) return CROP_DESIGNS.restoration;
+  if (lower.includes('eudr')) return CROP_DESIGNS.eudr;
+  if (lower.includes('field logs')) return CROP_DESIGNS.field_logs;
+  if (lower.includes('advisor')) return CROP_DESIGNS.advisor;
+  if (lower.includes('ledger') || lower.includes('finance')) return CROP_DESIGNS.finance;
   if (lower.includes('oil palm') || lower.includes('ffb') || lower.includes('rs-ffb')) return CROP_DESIGNS.oil_palm;
   if (lower.includes('cashew')) return CROP_DESIGNS.cashew;
   if (lower.includes('sugarcane') || lower.includes('cane')) return CROP_DESIGNS.sugarcane;

@@ -38,7 +38,7 @@ const CARD_PHOTOS = {
   'rs-rubber': '/crops/rubber.webp', 'management-rubber': '/crops/rubber.webp',
   'rs-drone': '/crops/drone.webp',
   'group-monitoring': '/crops/smallholder.webp', 'group-management': '/crops/smallholder.webp',
-  'carbon-ffb': '/crops/oil_palm.webp', 'carbon-groups': '/crops/smallholder.webp',
+  'carbon-ffb': '/crops/estate_carbon.webp', 'carbon-groups': '/crops/group_carbon.webp',
   'forestry-intel': '/crops/forestry.webp', 'carbon-estimator': '/crops/estimator.webp',
   'land-restoration': '/crops/restoration.webp', 'eudr-check': '/crops/eudr.webp',
   'finance-hub': '/crops/finance.webp', 'activity-ffb': '/crops/field_logs.webp', 'advisor': '/crops/advisor.webp',
@@ -197,20 +197,19 @@ const PortalHub = ({ onSelectModule, onSignOut, onOpenAdmin }) => {
     },
   ];
 
-  // Every service family has its tab; organisations come last.
+  // Organisations come last. Management and Finance & ledger are hidden for
+  // now (their sections stay defined above; add the tab back to show them).
   const visibleTabs = [
     { id: 'monitoring', label: 'Crop monitoring' },
-    { id: 'management', label: 'Management' },
     { id: 'sustainability', label: 'Sustainability' },
     { id: 'field-advisory', label: 'Field advisory' },
-    { id: 'payments', label: 'Finance & ledger' },
     { id: 'custom', label: 'Organisations' },
   ].filter(tab => (sections.find(s => s.id === tab.id)?.modules.length ?? 0) > 0);
   const currentTabId = visibleTabs.some(t => t.id === activeTab) ? activeTab : visibleTabs[0]?.id;
   const currentSection = sections.find(s => s.id === currentTabId) || sections[0];
 
   const orgCount = sections.find(s => s.id === 'custom')?.modules.length ?? 0;
-  const serviceCount = sections.filter(s => s.id !== 'custom').reduce((n, s) => n + s.modules.length, 0);
+  const serviceCount = sections.filter(s => s.id !== 'custom' && visibleTabs.some(v => v.id === s.id)).reduce((n, s) => n + s.modules.length, 0);
 
   return (
     <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] font-sans">
