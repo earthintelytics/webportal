@@ -130,15 +130,37 @@ const AGROMONITOR_PATH = '/farmintelytics-engine/agromonitoring';
 
 
 // ─── Hub page ────────────────────────────────────────────────────────────────
+// The hub is the FarmIntelytics team's own screen (every crop and organisation
+// service). Clients never see it: they get a direct link to their service's
+// login — /login?tenant=<org> or /login?module=<module-id>.
+const hasValidTeamSession = () => {
+  try {
+    const token = localStorage.getItem('fi_admin_token');
+    if (!token) return false;
+    const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+    return payload.role === 'superadmin' && (!payload.exp || payload.exp * 1000 > Date.now());
+  } catch {
+    return false;
+  }
+};
+
 const HubPage = () => {
   const navigate = useNavigate();
+  const [signedIn, setSignedIn] = useState(hasValidTeamSession);
+
+  if (!signedIn) return <AdminLogin context="hub" onSuccess={() => setSignedIn(true)} />;
 
   const handleSelectModule = (moduleId) => {
     sessionStorage.setItem('fi_module', moduleId);
     navigate('/login');
   };
+  const handleSignOut = () => {
+    localStorage.removeItem('fi_admin_token');
+    localStorage.removeItem('fi_admin_email');
+    setSignedIn(false);
+  };
 
-  return <PortalHub onSelectModule={handleSelectModule} />;
+  return <PortalHub onSelectModule={handleSelectModule} onSignOut={handleSignOut} onOpenAdmin={() => navigate('/admin/organizations')} />;
 };
 
 
@@ -147,19 +169,26 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Extract direct tenant parameter from ?tenant= or ?org=
+  // Direct client links: ?tenant=<org> (organisation services) or
+  // ?module=<module-id> (e.g. rs-ffb for oil palm crop monitoring).
   const searchParams = new URLSearchParams(location.search);
   const directTenant = searchParams.get('tenant') || searchParams.get('org') || null;
+  const directModule = searchParams.get('module') || null;
 
   useEffect(() => {
     if (directTenant) {
       sessionStorage.setItem('fi_module', `custom-agromonitor-${directTenant}`);
       sessionStorage.setItem('fi_target_tenant', directTenant);
+    } else if (directModule) {
+      sessionStorage.setItem('fi_module', directModule);
     }
-  }, [directTenant]);
+  }, [directTenant, directModule]);
 
-  // In restricted mode the module is fixed; otherwise read from directTenant or sessionStorage
-  const moduleId = RESTRICTED_MODULE || (directTenant ? `custom-agromonitor-${directTenant}` : sessionStorage.getItem('fi_module'));
+  // In restricted mode the module is fixed; otherwise read from the link or sessionStorage
+  const moduleId = RESTRICTED_MODULE
+    || (directTenant ? `custom-agromonitor-${directTenant}` : null)
+    || directModule
+    || sessionStorage.getItem('fi_module');
   
   // Dynamically onboarded organizations get a friendly title derived from their slug
   const prettyDynamicName = (id) => {
@@ -176,8 +205,8 @@ const LoginPage = () => {
     : '/portal';
 
   const handleLogin = () => navigate(portalPath);
-  // If direct tenant link was used, do not allow going back to the public hub
-  const handleBack  = (RESTRICTED_MODULE || directTenant) ? null : () => navigate('/');
+  // Clients arriving by direct link never see a way back to the internal hub
+  const handleBack  = (RESTRICTED_MODULE || directTenant || directModule) ? null : () => navigate('/');
 
   return (
     <Login
@@ -230,9 +259,17 @@ const PortalPage = () => {
         <p className="text-[var(--text-muted)] font-semibold max-w-md uppercase text-[11px] tracking-[0.2em]">
           This module is not enabled for your organization. Contact your administrator to request access.
         </p>
-        <button onClick={handleBackToHub} className="mt-8 px-6 py-3 bg-white text-[var(--text-main)] border border-[var(--border-light)] rounded-xl font-bold text-xs uppercase tracking-widest shadow-sm hover:bg-[var(--bg-main)] transition-all">
-          Back to Hub
-        </button>
+        {/* Clients arrive by direct link and never see the internal hub: send
+            them back to their own sign-in; the team goes back to the hub. */}
+        {hasValidTeamSession() ? (
+          <button onClick={handleBackToHub} className="mt-8 px-6 py-3 bg-white text-[var(--text-main)] border border-[var(--border-light)] rounded-xl font-bold text-xs uppercase tracking-widest shadow-sm hover:bg-[var(--bg-main)] transition-all">
+            Back to Hub
+          </button>
+        ) : (
+          <button onClick={() => { handleSignOut(); navigate(`/login?module=${encodeURIComponent(moduleId)}`); }} className="mt-8 px-6 py-3 bg-white text-[var(--text-main)] border border-[var(--border-light)] rounded-xl font-bold text-xs uppercase tracking-widest shadow-sm hover:bg-[var(--bg-main)] transition-all">
+            Back to sign in
+          </button>
+        )}
       </div>
     );
   }
@@ -328,7 +365,8 @@ const OrganizationMonitorPage = () => {
 
   // In restricted mode there is no hub to go back to
   const handleSignOut   = () => navigate('/login');
-  const handleBackToHub = RESTRICTED_MODULE ? null : () => navigate('/');
+  // Only the FarmIntelytics team has a way back to the internal hub
+  const handleBackToHub = (RESTRICTED_MODULE || !hasValidTeamSession()) ? null : () => navigate('/');
 
   return <ErrorBoundary><OrganizationMonitor onSignOut={handleSignOut} onBack={handleBackToHub} /></ErrorBoundary>;
 };

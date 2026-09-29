@@ -8,7 +8,6 @@ import {
   MessageSquare, 
   Leaf, 
   Satellite,
-  ChevronDown,
   Trees
 } from 'lucide-react';
 import { 
@@ -24,43 +23,67 @@ import {
   SmallholderIcon 
 } from '../components/CropIcons';
 import { fetchTenants, fetchCropMonitoringConfig } from '../services/organizationMonitorApi';
+import { HERO_PLACEHOLDERS } from '../constants/heroPlaceholders';
+
+// Photo per service (compressed WebP in /public/crops). Organisation cards use
+// the organisation photo unless the organisation has uploaded its own logo.
+const CARD_PHOTOS = {
+  'rs-ffb': '/crops/oil_palm.webp', 'management-ffb': '/crops/oil_palm.webp',
+  'rs-maize': '/crops/maize.webp', 'management-maize': '/crops/maize.webp',
+  'rs-rice': '/crops/rice.webp', 'management-rice': '/crops/rice.webp',
+  'rs-cassava': '/crops/cassava.webp', 'management-cassava': '/crops/cassava.webp',
+  'rs-cocoa': '/crops/cocoa.webp', 'management-cocoa': '/crops/cocoa.webp',
+  'rs-sugarcane': '/crops/sugarcane.webp', 'management-sugarcane': '/crops/sugarcane.webp',
+  'rs-cashew': '/crops/cashew.webp', 'management-cashew': '/crops/cashew.webp',
+  'rs-rubber': '/crops/rubber.webp', 'management-rubber': '/crops/rubber.webp',
+  'rs-drone': '/crops/drone.webp',
+  'group-monitoring': '/crops/smallholder.webp', 'group-management': '/crops/smallholder.webp',
+};
+const photoFor = (id) => CARD_PHOTOS[id] || (id?.startsWith('custom-agromonitor') ? '/crops/organization.webp' : null);
 
 const ModuleCard = ({ title, crop, id, icon, active, onSelect, logoUrl }) => {
+  const photo = photoFor(id);
   return (
     <button
       onClick={() => active && onSelect(id)}
-      className={`group relative p-8 rounded-2xl transition-all duration-300 flex flex-col text-left border border-slate-200 shadow-sm ${
-        active
-          ? 'bg-white hover:bg-slate-50 hover:border-slate-300 hover:shadow-md hover:-translate-y-0.5'
-          : 'bg-white opacity-40 cursor-not-allowed'
+      disabled={!active}
+      className={`group flex flex-col text-left bg-white rounded-2xl border border-slate-200 overflow-hidden transition-colors ${
+        active ? 'hover:border-slate-300' : 'opacity-50 cursor-not-allowed'
       }`}
     >
-      <div className={`p-4 rounded-xl w-fit mb-6 bg-white border border-slate-200 shadow-sm transition-all overflow-hidden flex items-center justify-center ${
-        active ? 'text-slate-800 group-hover:text-emerald-700 group-hover:border-slate-400' : 'text-slate-400'
-      }`}>
-        {logoUrl ? <img src={logoUrl} alt="" className="w-8 h-8 object-contain" /> : React.cloneElement(icon, { size: 30, strokeWidth: 1.75 })}
-      </div>
-      
-      <div className="flex-1">
-        <div className={`text-[11px] font-bold uppercase tracking-[0.2em] mb-2 ${active ? 'text-slate-500' : 'text-slate-400'}`}>
-          <span>{crop}</span>
-        </div>
-        <h3 className={`text-xl font-black tracking-tight leading-tight ${active ? 'text-slate-900' : 'text-slate-500'}`}>
-          {title}
-        </h3>
+      <div
+        className="relative h-36 w-full overflow-hidden bg-slate-100 bg-cover bg-center"
+        style={photo && HERO_PLACEHOLDERS[photo] ? { backgroundImage: `url(${HERO_PLACEHOLDERS[photo]})` } : undefined}
+      >
+        {photo && (
+          <img
+            src={photo}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            className="absolute inset-0 w-full h-full object-cover saturate-[0.9] transition-transform duration-500 group-hover:scale-[1.03]"
+          />
+        )}
+        {(logoUrl || !photo) && (
+          <div className="absolute left-4 bottom-4 w-11 h-11 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-700">
+            {logoUrl ? <img src={logoUrl} alt="" className="w-7 h-7 object-contain" /> : React.cloneElement(icon, { size: 22, strokeWidth: 1.75 })}
+          </div>
+        )}
       </div>
 
-      <div className="mt-8 flex items-center justify-between">
-        <span className={`text-[11px] font-black uppercase tracking-widest ${active ? 'text-slate-900' : 'text-slate-500'}`}>
-          {active ? 'Launch Portal' : 'Locked'}
+      <div className="flex-1 flex flex-col p-5">
+        <p className="text-xs font-medium text-slate-500">{crop}</p>
+        <h3 className="font-display text-lg font-semibold text-slate-900 leading-snug mt-1">{title}</h3>
+        <span className={`mt-5 flex items-center gap-1.5 text-sm font-medium ${active ? 'text-[var(--brand-primary)]' : 'text-slate-400'}`}>
+          {active ? 'Open sign-in' : 'Not available'}
+          {active && <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />}
         </span>
-        {active && <ArrowRight size={18} className="text-slate-400 group-hover:text-slate-900 transform group-hover:translate-x-2 transition-all" />}
       </div>
     </button>
   );
 };
 
-const PortalHub = ({ onSelectModule }) => {
+const PortalHub = ({ onSelectModule, onSignOut, onOpenAdmin }) => {
   const [activeTab, setActiveTab] = React.useState('monitoring');
   const [customModules, setCustomModules] = React.useState([
     { id: 'custom-agromonitor-olam', title: 'Olam Agro Monitoring', crop: 'Olam', icon: <Satellite />, active: true },
@@ -90,22 +113,9 @@ const PortalHub = ({ onSelectModule }) => {
     loadTenants();
   }, []);
 
-  // Before login every card is shown. After login, the organisation's allowed
-  // modules (TenantConfig.allowed_modules, set in the admin portal and stored
-  // at login as fi_allowed_modules) decide which cards appear, so a tenant
-  // never opens a module that would only answer "Not enabled".
-  const allowedModules = React.useMemo(() => {
-    try {
-      if (!localStorage.getItem('fi_token')) return null;
-      const list = JSON.parse(localStorage.getItem('fi_allowed_modules') || 'null');
-      return Array.isArray(list) && list.length > 0 ? new Set(list) : null;
-    } catch {
-      return null;
-    }
-  }, []);
-  const filterModules = (modules) => modules
-    .filter(m => !allowedModules || allowedModules.has(m.id))
-    .map(m => ({ ...m, active: m.active !== false }));
+  // Internal team hub: every crop and organisation service is always shown.
+  // Clients reach their own service through a direct login link instead.
+  const filterModules = (modules) => modules.map(m => ({ ...m, active: m.active !== false }));
 
   const sections = [
     {
@@ -185,86 +195,77 @@ const PortalHub = ({ onSelectModule }) => {
   const currentTabId = visibleTabs.some(t => t.id === activeTab) ? activeTab : visibleTabs[0]?.id;
   const currentSection = sections.find(s => s.id === currentTabId) || sections[0];
 
+  const cropCount = sections.find(s => s.id === 'monitoring')?.modules.length ?? 0;
+  const orgCount = sections.find(s => s.id === 'custom')?.modules.length ?? 0;
+
   return (
-    <div className="min-h-screen bg-gray-50 p-8 lg:p-20 font-sans">
-      <div className="max-w-[1400px] mx-auto">
-        <header className="flex flex-col lg:flex-row justify-between lg:items-center gap-8 mb-20">
-          <div className="flex items-center gap-5">
-             <div className="h-20 bg-white p-3 rounded-2xl border border-gray-100 shadow-sm">
-                <img src="/farmintelytics-logo.png" alt="Logo" className="h-full w-auto object-contain" />
-             </div>
-             <div>
-                <h1 className="text-xl font-black uppercase tracking-tighter text-gray-900 leading-none">FarmIntelytics</h1>
-                <p className="text-[11px] font-black uppercase tracking-[0.3em] text-green-600 mt-1.5">Verified · Monitored · Connected</p>
-             </div>
+    <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] font-sans">
+      <header className="bg-white border-b border-slate-200">
+        <div className="max-w-6xl mx-auto px-6 lg:px-10 h-20 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img src="/farmintelytics-logo.png" alt="FarmIntelytics" className="h-10 w-10 object-contain" width="40" height="40" />
+            <div className="leading-tight">
+              <p className="font-display text-base font-semibold">FarmIntelytics</p>
+              <p className="text-xs text-[var(--text-muted)]">Platform hub</p>
+            </div>
           </div>
-          <div className="flex items-center gap-6">
-             <div className="w-10 h-10 rounded-xl bg-gray-900 flex items-center justify-center text-white">
-                <ChevronDown size={18} className="animate-bounce" />
-             </div>
+          <div className="flex items-center gap-3">
+            {onOpenAdmin && (
+              <button onClick={onOpenAdmin} className="px-4 py-2 rounded-[10px] border border-slate-200 bg-white text-sm font-medium hover:bg-slate-50 transition-colors">
+                Admin console
+              </button>
+            )}
+            {onSignOut && (
+              <button onClick={onSignOut} className="px-4 py-2 rounded-[10px] text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors">
+                Sign out
+              </button>
+            )}
           </div>
-        </header>
-
-        <div className="mb-24">
-           <h2 className="text-6xl font-black text-slate-900 tracking-tighter leading-none mb-8">
-             Operational <br />
-             <span className="text-green-600">Intelligence Hub.</span>
-           </h2>
-           <p className="text-lg text-slate-800 font-bold max-w-3xl leading-relaxed">
-             A unified enterprise gateway for large-scale agricultural management. Orchestrate your entire multi-crop operation from real-time monitoring to automated logistics.
-           </p>
         </div>
+      </header>
 
-        <div className="flex flex-wrap items-center gap-12 mb-10 border-b border-slate-200">
-          {/* Management, Sustainability, Finance, and Field Advisory are
-              defined in `sections` below (real module cards, ready to show
-              once those areas are built) but intentionally have no tab here
-              — only Crop Monitoring and Organization are live right now. */}
-          {visibleTabs.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`text-[14px] font-black uppercase tracking-widest transition-all pb-4 border-b-4 ${
-                currentTabId === tab.id
-                  ? 'text-green-600 border-green-600'
-                  : 'text-slate-700 border-transparent hover:text-slate-900 font-bold'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+      <main className="max-w-6xl mx-auto px-6 lg:px-10 py-14">
+        <section className="max-w-2xl">
+          <p className="text-sm font-medium text-[var(--brand-primary)]">FarmIntelytics team</p>
+          <h1 className="font-display text-4xl lg:text-5xl font-semibold tracking-tight mt-2">Every service, one place.</h1>
+          <p className="text-base text-[var(--text-muted)] leading-relaxed mt-4">
+            Open any crop monitoring or organisation service to check it the way a client sees it. Clients never see this page &mdash; each gets a direct link to their own sign-in.
+          </p>
+          <p className="text-sm text-slate-500 mt-5">{cropCount} crop services &middot; {orgCount} organisations</p>
+        </section>
 
-        <div className="space-y-12">
-          <div className="max-w-2xl">
-            <h3 className="text-[12px] font-black uppercase tracking-[0.4em] text-slate-900 mb-4">{currentSection.title}</h3>
-            <p className="text-[13px] text-slate-800 font-bold leading-relaxed uppercase tracking-wider">
-              {currentSection.description}
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-8">
+        <nav className="mt-12 flex gap-8 border-b border-slate-200">
+          {visibleTabs.map(tab => {
+            const count = sections.find(s => s.id === tab.id)?.modules.length ?? 0;
+            const on = currentTabId === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`-mb-px pb-3 border-b-2 text-sm font-medium transition-colors ${
+                  on ? 'border-[var(--brand-primary)] text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                {tab.label === 'Crop Monitoring' ? 'Crop monitoring' : 'Organisations'}
+                <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${on ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>{count}</span>
+              </button>
+            );
+          })}
+        </nav>
+
+        <section className="mt-8">
+          <p className="text-sm text-[var(--text-muted)] max-w-2xl">{currentSection.description}</p>
+          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {currentSection.modules.map(module => (
-              <ModuleCard 
-                key={module.id} 
-                {...module} 
-                onSelect={onSelectModule}
-              />
+              <ModuleCard key={module.id} {...module} onSelect={onSelectModule} />
             ))}
           </div>
-        </div>
+        </section>
+      </main>
 
-        <footer className="mt-48 pt-12 flex flex-col lg:flex-row justify-between items-center gap-12 pb-12 border-t border-slate-200">
-            <div className="flex items-center gap-12">
-               <div className="text-[11px] font-bold uppercase tracking-widest text-slate-700">© 2026 FarmIntelytics.</div>
-               <div className="flex gap-8">
-                  {['Docs', 'Status', 'Support'].map(i => (
-                    <button key={i} className="text-[11px] font-black text-slate-800 hover:text-green-600 transition-colors uppercase tracking-widest">{i}</button>
-                  ))}
-               </div>
-            </div>
-            <div className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-600">Intelligence Layer v1.0</div>
-        </footer>
-      </div>
+      <footer className="max-w-6xl mx-auto px-6 lg:px-10 py-10 border-t border-slate-200 text-xs text-slate-400">
+        &copy; {new Date().getFullYear()} FarmIntelytics &middot; Internal platform hub
+      </footer>
     </div>
   );
 };

@@ -3,7 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { Lock, Mail, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { adminLogin } from '../services/adminApi';
 
-const AdminLogin = () => {
+// Also used as the gate for the internal platform hub (`/`): pass onSuccess
+// to stay on the current page instead of opening the admin console.
+const AdminLogin = ({ onSuccess = null, context = 'admin' }) => {
+  const isHub = context === 'hub';
   const navigate = useNavigate();
   const [email, setEmail] = useState('superadmin@farmintelytics.com');
   const [code, setCode] = useState('');
@@ -20,7 +23,7 @@ const AdminLogin = () => {
       if (res.status === 'success' && res.token) {
         localStorage.setItem('fi_admin_token', res.token);
         localStorage.setItem('fi_admin_email', res.email);
-        navigate('/admin/organizations');
+        if (onSuccess) onSuccess(); else navigate('/admin/organizations');
       } else {
         setError(res.message || 'Authentication failed');
       }
@@ -38,14 +41,14 @@ const AdminLogin = () => {
           <img src="/farmintelytics-logo.png" alt="FarmIntelytics" className="h-10 w-10 object-contain" width="40" height="40" />
           <div className="leading-tight">
             <p className="font-display text-base font-semibold">FarmIntelytics</p>
-            <p className="text-xs text-[var(--text-muted)]">Admin console</p>
+            <p className="text-xs text-[var(--text-muted)]">{isHub ? 'Platform hub' : 'Admin console'}</p>
           </div>
         </div>
 
         <div className="bg-white rounded-2xl border border-[var(--border-light)] p-8 sm:p-10">
-          <p className="text-sm font-medium text-[var(--brand-primary)]">Super-admin access</p>
+          <p className="text-sm font-medium text-[var(--brand-primary)]">{isHub ? 'FarmIntelytics team' : 'Super-admin access'}</p>
           <h2 className="font-display text-3xl font-semibold mt-1">Sign in</h2>
-          <p className="text-sm text-[var(--text-muted)] mt-2">Manage organisations, farms, logins and schedules.</p>
+          <p className="text-sm text-[var(--text-muted)] mt-2">{isHub ? 'Internal access to every crop and organisation service.' : 'Manage organisations, farms, logins and schedules.'}</p>
 
           {error && (
             <div className="mt-6 p-3.5 rounded-[10px] border border-red-200 bg-red-50 text-sm text-red-800">{error}</div>
