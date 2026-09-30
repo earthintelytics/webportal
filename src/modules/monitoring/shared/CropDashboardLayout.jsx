@@ -96,6 +96,8 @@ import { fetchEstates } from '../../../services/estatesApi';
 import YourDataPage from '../../data/YourDataPage';
 import DataNeededDialog from '../../data/DataNeededDialog';
 import RegisterPage from '../../services/RegisterPage';
+import ReportBuilder from '../../reports/ReportBuilder';
+import VerificationPage from '../../reports/VerificationPage';
 import { CheckPage, LogPage, AdvicePage } from '../../services/ServicePages';
 import { ShieldCheck as CheckIcon, ClipboardList as LogIcon, Lightbulb as AdviceIcon } from 'lucide-react';
 import { Table2 as RegisterIcon } from 'lucide-react';
@@ -176,6 +178,8 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
   }, [filterEstate]);
   // Settings → Your data: which dataset to open (set by the sign-in "Data needed" dialog)
   const [dataFocus, setDataFocus] = useState(null);
+  // Reports tab: new report builder by default; the previous report view stays one click away
+  const [legacyReports, setLegacyReports] = useState(false);
   const [activeTab, setActiveTab] = useState('monitor');
   const [activeAnalyticsSubpage, setActiveAnalyticsSubpage] = useState('overview');
 
@@ -6237,13 +6241,29 @@ Context: ${context}.`;
               VERIFICATION
           ══════════════════════════════════════════════════════════════ */}
           {activeSidebarItem === 'analytics' && activeTab === 'verification' && (
-            <div className="p-10 space-y-10" />
+            <VerificationPage plots={plotsData} serviceId={service?.id} onOpenData={(id) => { setDataFocus(id); setActiveTab('monitor'); setActiveSidebarItem('your-data'); }} />
+          )}
+
+          {activeSidebarItem === 'analytics' && activeTab === 'reports' && !legacyReports && (
+            <ReportBuilder
+              plots={plotsData}
+              alerts={alerts}
+              estates={estateOptions}
+              tenant={tenant}
+              orgName={tenantDisplayName}
+              subject={service ? `${tenantDisplayName} ${service.title}` : isOrg ? tenantDisplayName : `${tenantDisplayName} ${cropLabel}`}
+              cropType={cropType}
+              onLegacy={() => setLegacyReports(true)}
+            />
           )}
 
           {/* ══════════════════════════════════════════════════════════════
               REPORTS
           ══════════════════════════════════════════════════════════════ */}
-          {activeSidebarItem === 'analytics' && activeTab === 'reports' && (() => {
+          {activeSidebarItem === 'analytics' && activeTab === 'reports' && legacyReports && (
+            <div className="px-10 pt-6"><button onClick={() => setLegacyReports(false)} className="text-sm font-semibold text-green-700 hover:underline">Back to the new report builder</button></div>
+          )}
+          {activeSidebarItem === 'analytics' && activeTab === 'reports' && legacyReports && (() => {
             const isWholeFarm = reportPlot === 'WHOLE-FARM';
             const showAllPages = (selectedThemeReport || reportIndex) === 'ALL';
             const showHealthPage = showAllPages || (selectedThemeReport || reportIndex) === 'NDVI';

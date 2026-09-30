@@ -111,3 +111,12 @@ button:active {
 .flex-1.relative.min-w-0 {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+
+/* Reports: "Download PDF" prints only the report (#fi-report) */
+@media print {
+  body.fi-print-report * { visibility: hidden; }
+  body.fi-print-report #fi-report, body.fi-print-report #fi-report * { visibility: visible; }
+  body.fi-print-report #fi-report { position: absolute; left: 0; top: 0; width: 100%; padding: 24px; }
+  body.fi-print-report .no-print { display: none !important; }
+}
