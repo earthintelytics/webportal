@@ -1,5 +1,23 @@
 import React, { useState, useEffect, Component } from 'react';
 
+// After a new deploy the page chunks get new file names; a tab opened before
+// the deploy still asks for the old ones and the import fails ("Failed to
+// fetch dynamically imported module"). Reload once to pick up the new build
+// instead of showing an error.
+const RELOAD_KEY = 'fi_chunk_reload';
+const isChunkError = (e) => /Failed to fetch dynamically imported module|Importing a module script failed|error loading dynamically imported module/i.test(String(e?.message || e));
+const lazyWithReload = (factory) => React.lazy(() => factory().then(
+  (m) => { sessionStorage.removeItem(RELOAD_KEY); return m; },
+  (e) => {
+    if (isChunkError(e) && !sessionStorage.getItem(RELOAD_KEY)) {
+      sessionStorage.setItem(RELOAD_KEY, '1');
+      window.location.reload();
+      return new Promise(() => {}); // keep the loading state until the reload
+    }
+    throw e;
+  },
+));
+
 class ErrorBoundary extends Component {
   constructor(props) { super(props); this.state = { error: null }; }
   static getDerivedStateFromError(err) { return { error: err }; }
@@ -30,42 +48,42 @@ import PortalLayout from './layouts/PortalLayout';
 // chunk is only fetched when its route actually renders.
 
 // === FFB Management ===
-const FFBDashboard = React.lazy(() => import('./modules/management/ffb/Dashboard'));
+const FFBDashboard = lazyWithReload(() => import('./modules/management/ffb/Dashboard'));
 
 // === Crop Management Portals ===
-const CashewDashboard = React.lazy(() => import('./modules/management/cashew/Dashboard'));
-const SugarcaneDashboard = React.lazy(() => import('./modules/management/sugarcane/Dashboard'));
-const RiceDashboard = React.lazy(() => import('./modules/management/rice/Dashboard'));
-const CocoaDashboard = React.lazy(() => import('./modules/management/cocoa/Dashboard'));
-const RubberDashboard = React.lazy(() => import('./modules/management/rubber/Dashboard'));
-const CassavaDashboard = React.lazy(() => import('./modules/management/cassava/Dashboard'));
-const MaizeDashboard = React.lazy(() => import('./modules/management/maize/Dashboard'));
+const CashewDashboard = lazyWithReload(() => import('./modules/management/cashew/Dashboard'));
+const SugarcaneDashboard = lazyWithReload(() => import('./modules/management/sugarcane/Dashboard'));
+const RiceDashboard = lazyWithReload(() => import('./modules/management/rice/Dashboard'));
+const CocoaDashboard = lazyWithReload(() => import('./modules/management/cocoa/Dashboard'));
+const RubberDashboard = lazyWithReload(() => import('./modules/management/rubber/Dashboard'));
+const CassavaDashboard = lazyWithReload(() => import('./modules/management/cassava/Dashboard'));
+const MaizeDashboard = lazyWithReload(() => import('./modules/management/maize/Dashboard'));
 
-const MonitoringPortal = React.lazy(() => import('./modules/monitoring/MonitoringPortal'));
+const MonitoringPortal = lazyWithReload(() => import('./modules/monitoring/MonitoringPortal'));
 
 // === Sustainability, Field Advisory & Finance ===
 // One portal for all of them: the organisation monitoring layout with the
 // sub-pages each service defines in modules/services/serviceCatalog.js.
-const ServicePortal = React.lazy(() => import('./modules/services/ServicePortal'));
+const ServicePortal = lazyWithReload(() => import('./modules/services/ServicePortal'));
 
 // === Specialized Monitoring Apps ===
-const RiceMonitoring = React.lazy(() => import('./modules/monitoring/rice/Monitoring'));
-const MaizeMonitoring = React.lazy(() => import('./modules/monitoring/maize/Monitoring'));
-const CocoaMonitoring = React.lazy(() => import('./modules/monitoring/cocoa/Monitoring'));
-const OilPalmMonitoring = React.lazy(() => import('./modules/monitoring/oil_palm/Monitoring'));
-const CassavaMonitoring = React.lazy(() => import('./modules/monitoring/cassava/Monitoring'));
-const SugarcaneMonitoring = React.lazy(() => import('./modules/monitoring/sugarcane/Monitoring'));
-const CashewMonitoring = React.lazy(() => import('./modules/monitoring/cashew/Monitoring'));
-const RubberMonitoring = React.lazy(() => import('./modules/monitoring/rubber/Monitoring'));
+const RiceMonitoring = lazyWithReload(() => import('./modules/monitoring/rice/Monitoring'));
+const MaizeMonitoring = lazyWithReload(() => import('./modules/monitoring/maize/Monitoring'));
+const CocoaMonitoring = lazyWithReload(() => import('./modules/monitoring/cocoa/Monitoring'));
+const OilPalmMonitoring = lazyWithReload(() => import('./modules/monitoring/oil_palm/Monitoring'));
+const CassavaMonitoring = lazyWithReload(() => import('./modules/monitoring/cassava/Monitoring'));
+const SugarcaneMonitoring = lazyWithReload(() => import('./modules/monitoring/sugarcane/Monitoring'));
+const CashewMonitoring = lazyWithReload(() => import('./modules/monitoring/cashew/Monitoring'));
+const RubberMonitoring = lazyWithReload(() => import('./modules/monitoring/rubber/Monitoring'));
 
 // === Cooperative & Group Management ===
-const GroupsDashboard = React.lazy(() => import('./modules/cooperative/Dashboard'));
+const GroupsDashboard = lazyWithReload(() => import('./modules/cooperative/Dashboard'));
 
-const OrganizationMonitor = React.lazy(() => import('./modules/organization-monitor/OrganizationMonitor'));
+const OrganizationMonitor = lazyWithReload(() => import('./modules/organization-monitor/OrganizationMonitor'));
 
 // === Super Admin Portal ===
 import AdminLogin from './farmintelytics-admin/AdminLogin';
-const AdminPortal = React.lazy(() => import('./farmintelytics-admin/AdminPortal'));
+const AdminPortal = lazyWithReload(() => import('./farmintelytics-admin/AdminPortal'));
 
 import { crops } from './constants/crops.jsx';
 import { isServiceModule } from './modules/services/serviceCatalog';
@@ -155,6 +173,7 @@ const HubPage = () => {
 
   const handleSelectModule = (moduleId) => {
     sessionStorage.setItem('fi_module', moduleId);
+    sessionStorage.setItem('fi_from_hub', '1'); // keeps "Back to hub" on the sign-in even if the team token expires
     navigate(`/login?module=${encodeURIComponent(moduleId)}`);
   };
   const handleSignOut = () => {
@@ -210,7 +229,8 @@ const LoginPage = () => {
   const handleLogin = () => navigate(portalPath);
   // Clients arriving by direct link never see a way back to the internal hub;
   // the FarmIntelytics team (signed in to the hub) always does.
-  const handleBack  = (RESTRICTED_MODULE || ((directTenant || directModule) && !hasValidTeamSession())) ? null : () => navigate('/');
+  const cameFromHub = hasValidTeamSession() || sessionStorage.getItem('fi_from_hub') === '1';
+  const handleBack  = (RESTRICTED_MODULE || ((directTenant || directModule) && !cameFromHub)) ? null : () => navigate('/');
 
   return (
     <Login
