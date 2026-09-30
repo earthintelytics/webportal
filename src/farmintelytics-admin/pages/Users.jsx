@@ -10,6 +10,7 @@ import {
 } from '../../services/adminApi';
 import { useConfirm } from '../components/ConfirmProvider';
 import ErrorBanner from '../components/ErrorBanner';
+import { emailError, accessCodeError, slugError } from '../components/validation';
 
 const ACCOUNT_TYPES = [
   { value: '',                     label: 'All Types' },
@@ -91,6 +92,8 @@ const UsersPage = () => {
 
   const handleCreate = async () => {
     if (!form.email) return;
+    const invalid = emailError(form.email) || (form.password && form.password.length < 8 ? 'Use a password of at least 8 characters, or leave it blank to generate one.' : null);
+    if (invalid) { setError(invalid); return; }
     setSaving(true);
     try {
       const result = await createUser(form);

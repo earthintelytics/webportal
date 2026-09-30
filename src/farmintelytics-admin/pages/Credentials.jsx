@@ -3,6 +3,7 @@ import { Key, Plus, Trash2, Copy, Check, X, RefreshCw, AlertCircle, Shield } fro
 import { fetchCredentials, createCredential, deleteCredential, rotateCredential, fetchOrganizations } from '../../services/adminApi';
 import { useConfirm } from '../components/ConfirmProvider';
 import ErrorBanner from '../components/ErrorBanner';
+import { emailError, accessCodeError, slugError } from '../components/validation';
 
 const Credentials = () => {
   const confirm = useConfirm();
@@ -37,6 +38,8 @@ const Credentials = () => {
 
   const handleCreate = async () => {
     if (!form.company_id || !form.email) return;
+    const invalid = emailError(form.email) || accessCodeError(form.access_code.trim());
+    if (invalid) { setError(invalid); return; }
     setSaving(true);
     try {
       const cred = await createCredential({ ...form, access_code: form.access_code.trim() || '' });

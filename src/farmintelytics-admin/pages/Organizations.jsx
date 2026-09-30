@@ -6,6 +6,7 @@ import {
 } from '../../services/adminApi';
 import { useConfirm } from '../components/ConfirmProvider';
 import ErrorBanner from '../components/ErrorBanner';
+import { emailError, accessCodeError, slugError } from '../components/validation';
 import { SERVICE_GROUPS } from '../../constants/servicePhotos';
 import OrgDetailPanel from './OrganizationFarms';
 import { ALL_CROPS } from '../components/formHelpers';
@@ -188,8 +189,15 @@ const OrgModal = ({ org, onSave, onClose }) => {
     ...f, allowed_indices: f.allowed_indices.includes(i) ? f.allowed_indices.filter(x => x !== i) : [...f.allowed_indices, i],
   }));
 
+  const [formError, setFormError] = useState('');
   const handleSave = async () => {
     if (!form.company_name.trim()) return;
+    const lat = Number(form.map_center_lat), lon = Number(form.map_center_lon);
+    const invalid = slugError(String(form.schema_name || '').trim())
+      || (!Number.isFinite(lat) || lat < -90 || lat > 90 ? 'Map centre latitude must be between -90 and 90.' : null)
+      || (!Number.isFinite(lon) || lon < -180 || lon > 180 ? 'Map centre longitude must be between -180 and 180.' : null);
+    if (invalid) { setFormError(invalid); return; }
+    setFormError('');
     setSaving(true);
     try { await onSave(org?.id, form); }
     finally { setSaving(false); }
@@ -456,6 +464,7 @@ const OrgModal = ({ org, onSave, onClose }) => {
             </div>
           </div>
         </div>
+        {formError && <div className="mt-4 text-sm text-red-700">{formError}</div>}
         <div style={{ display: 'flex', gap: '10px', marginTop: '24px' }}>
           <button onClick={onClose} style={{ flex: 1, padding: '12px', background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '12px', color: '#334155', cursor: 'pointer', fontWeight: 700, fontSize: '13px' }}>Cancel</button>
           <button onClick={handleSave} disabled={saving || !form.company_name.trim()} style={{
