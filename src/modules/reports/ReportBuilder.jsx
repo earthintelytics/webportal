@@ -785,7 +785,7 @@ export default function ReportBuilder({ plots, alerts, estates, tenant, orgName,
 
           {/* SECTION 6: Time-Series Comparison Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {[['Crop Health (NDVI)', report.health, report.healthCmp], ['Leaf Water Potential (NDMI)', report.water, report.waterCmp]].map(([label, a, b]) => (
+            {[['Crop health', report.health, report.healthCmp], ['Leaf water', report.water, report.waterCmp]].map(([label, a, b]) => (
               <Card key={label} className="p-6">
                 <div className="text-sm font-bold text-gray-900">{label} Trend</div>
                 <div className="text-xs text-gray-500 mt-1">Multi-spectral index mean per clear Sentinel-2 acquisition window.</div>
@@ -845,19 +845,27 @@ export default function ReportBuilder({ plots, alerts, estates, tenant, orgName,
             )}
           </Card>
 
-          {/* SECTION 8: Data Transparency & Scientific Limits */}
-          <Card className="p-6 space-y-3 bg-gray-50/50 border-gray-200">
-            <div className="flex items-center gap-2 text-sm font-bold text-gray-900">
-              <Layers size={16} className="text-gray-600" />
-              Data Provenance & Methodological Limits
-            </div>
-            <ul className="text-xs text-gray-600 space-y-1.5 list-disc pl-5">
-              <li>{report.health.length} cloud-free Sentinel-2 multi-spectral scene{report.health.length === 1 ? '' : 's'} analysed in the primary observation period.</li>
-              <li>Moisture deficits and canopy vigour are derived satellite index proxies, cross-referenced with Open-Meteo agro-meteorological reanalysis.</li>
-              {(report.limits || []).map((lim, i) => (
-                <li key={i}>{lim}</li>
-              ))}
+          {/* SECTION 8: Data used and limits (plain words) */}
+          <Card className="p-6 space-y-3">
+            <div className="flex items-center gap-2 text-sm font-bold text-gray-900"><Layers size={16} className="text-gray-600" />Data used and limits</div>
+            <ul className="text-sm text-gray-700 space-y-1.5 list-disc pl-5">
+              <li>{report.health.length ? `${report.health.length} clear view${report.health.length === 1 ? '' : 's'} of the farm from space in this period${report.cmp ? `, ${report.healthCmp.length} in the comparison period` : ''}. Cloudy days are left out.` : 'No clear view of the farm in this period because of cloud.'}</li>
+              <li>Crop health and leaf water are estimates from satellite images, not measurements on the ground.</li>
+              {(report.limits || []).map((lim, i) => <li key={i}>{lim}</li>)}
             </ul>
+          </Card>
+
+          {/* SECTION 9: Technical appendix (included by default; for agronomists, buyers and auditors) */}
+          <Card className="p-6 space-y-4 bg-gray-50/60">
+            <div className="text-sm font-bold text-gray-900">Technical appendix</div>
+            <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3 text-xs text-gray-700">
+              <div><dt className="font-semibold text-gray-900">Imagery</dt><dd>{(report.data_used?.sources || []).filter(s => !/sar|radar|sentinel-1/i.test(s)).map(s => s.replace(/\s*Zarr Store/i, '').replace(/10m/i, '10 m')).join('; ') || 'Sentinel-2 (ESA Copernicus), 10 m'}</dd></div>
+              <div><dt className="font-semibold text-gray-900">Measures behind the words</dt><dd>Crop health = NDVI (vegetation index); Leaf water = NDMI (moisture index). Farm averages per clear view.</dd></div>
+              <div><dt className="font-semibold text-gray-900">Period</dt><dd>{report.period.from} to {report.period.to}{report.cmp ? `; comparison ${report.cmp.from} to ${report.cmp.to}` : ''}</dd></div>
+              <div><dt className="font-semibold text-gray-900">Clear-view dates</dt><dd>{report.health.map(d => d.date).join(', ') || 'none'}</dd></div>
+              <div><dt className="font-semibold text-gray-900">Method</dt><dd>Cloud-masked images; values averaged over the chosen area; block status from the latest clear view, classified with the legend classes set for this crop.</dd></div>
+              <div><dt className="font-semibold text-gray-900">Weather</dt><dd>Open-Meteo reanalysis and forecast for the farm location.</dd></div>
+            </dl>
           </Card>
         </div>
       )}

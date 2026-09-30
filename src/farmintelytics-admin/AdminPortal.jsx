@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import {
   Building2, Key, Activity, LayoutDashboard, LogOut, Menu, X,
-  Clock, Database, Users, Rocket, SlidersHorizontal,
+  Clock, Database, Users, Rocket, SlidersHorizontal, Sparkles,
 } from 'lucide-react';
 
 import Onboarding from './pages/Onboarding';
@@ -13,6 +13,7 @@ import Logs from './pages/Logs';
 import Scheduler from './pages/Scheduler';
 import Inventory from './pages/Inventory';
 import UsersPage from './pages/Users';
+import AiSettings from './pages/AiSettings';
 import { ConfirmProvider } from './components/ConfirmProvider';
 
 // Grouped by what the team is doing: setting clients up, running the
@@ -31,6 +32,7 @@ const NAV_GROUPS = [
   ]},
   { label: 'Configuration', items: [
     { id: 'thresholds',    label: 'Crop thresholds',      icon: SlidersHorizontal, path: '/admin/thresholds' },
+    { id: 'ai',            label: 'AI settings',          icon: Sparkles,  path: '/admin/ai' },
   ]},
 ];
 const NAV_ITEMS = NAV_GROUPS.flatMap(g => g.items);
@@ -145,6 +147,7 @@ const AdminPortal = () => {
             <Route path="credentials"   element={<Credentials />} />
             <Route path="scheduler"     element={<Scheduler />} />
             <Route path="thresholds"    element={<CropThresholds />} />
+            <Route path="ai"            element={<AiSettings />} />
             <Route path="logs"          element={<Logs />} />
           </Routes>
         </main>

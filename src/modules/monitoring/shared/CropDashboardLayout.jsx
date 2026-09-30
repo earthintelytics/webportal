@@ -45,7 +45,6 @@ import {
   MessageSquare,
   Sparkles,
   Send,
-  Database,
   CheckSquare,
   Lock,
   Download,
@@ -97,6 +96,7 @@ import YourDataPage from '../../data/YourDataPage';
 import DataNeededDialog from '../../data/DataNeededDialog';
 import RegisterPage from '../../services/RegisterPage';
 import { CROP_CATALOG, ORGANISATION_PAGES, loadCropPages } from '../cropCatalog';
+import CropGlossary from './CropGlossary';
 import ReportBuilder from '../../reports/ReportBuilder';
 import VerificationPage from '../../reports/VerificationPage';
 import { CheckPage, LogPage, AdvicePage } from '../../services/ServicePages';
@@ -190,6 +190,9 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
     return () => { active = false; };
   }, [cropType, service, mode]);
   const pageSet = service || cropPages;
+  // Glossary entry to open (links from farmer words on screen)
+  const [glossaryFocus, setGlossaryFocus] = useState(null);
+  const openGlossary = (key) => { setGlossaryFocus(key); setActiveTab('monitor'); setActiveSidebarItem('help'); };
   const [activeTab, setActiveTab] = useState('monitor');
   const [activeAnalyticsSubpage, setActiveAnalyticsSubpage] = useState('overview');
 
@@ -1094,8 +1097,6 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
   const [chatInput, setChatInput] = useState('');
   const chatEndRef = useRef(null);
   const [selectedThemeReport, setSelectedThemeReport] = useState('');
-  const [glossarySearch, setGlossarySearch] = useState('');
-  const [glossaryTab, setGlossaryTab] = useState('remote-sensing'); // 'remote-sensing' or 'farmer-inputs'
 
   // Map play / calendar / user menu
   const [isPlaying, setIsPlaying]       = useState(false);
@@ -1375,9 +1376,8 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
     return current.includes(name) ? current.filter(g => g !== name) : [...current, name];
   });
 
-  const emptyLegendMessage = isOrg
-    ? 'No satellite indices in the archive yet (No data).'
-    : "Crop index profile unavailable — connect to the backend to load this crop's legends.";
+  // Plain empty state (docs/INFORMATION_PRESENTATION.md, section 5)
+  const emptyLegendMessage = "We're preparing your first satellite views. They usually appear within a few days of setup.";
 
   // Reused by every map section's Map Layers sidebar. The switch puts that
   // index's raster ON the map — one raster at a time. Cards are grouped
@@ -1403,13 +1403,13 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
                   {isOnMap && <span className="text-[11px] font-bold text-green-700 bg-green-50 border border-green-200 rounded-full px-1.5 py-0.5">On Map</span>}
                 </div>
                 <span className="text-[11px] text-gray-600">
-                  {entry.subtitle}{!entry.hasData && <span className="font-bold text-gray-600"> (No data)</span>}
+                  <button type="button" onClick={(ev) => { ev.stopPropagation(); openGlossary(entry.key); }} className="underline decoration-dotted hover:text-green-700">What is this?</button>{!entry.hasData && <span className="text-gray-500"> · no clear view yet</span>}
                 </span>
               </div>
               <button
                 onClick={handleSwitch}
                 disabled={!entry.hasData}
-                title={!entry.hasData ? 'No satellite data in the archive for this index yet' : isOnMap ? 'Hide this raster' : 'Show this raster on the map'}
+                title={!entry.hasData ? 'Not available for this farm yet' : isOnMap ? 'Hide from map' : 'Show on map'}
                 className="w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0"
                 style={{ backgroundColor: isOnMap ? '#16A34A' : '#E5E7EB', cursor: entry.hasData ? 'pointer' : 'not-allowed' }}
               >
@@ -6404,116 +6404,8 @@ Context: ${context}.`;
           )}
 
           {activeSidebarItem === 'help' && (
-            <div className="p-10 space-y-8 overflow-y-auto h-full">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                  <h2 className="text-3xl font-bold text-gray-900 tracking-tight flex items-center gap-3">
-                    <Info size={28} className="text-green-650" />
-                    Platform Glossary
-                  </h2>
-                  <p className="text-sm text-gray-500 font-medium mt-2">
-                    Dictionary of key Remote Sensing Indices, Biophysical Indicators, and Cadastral metrics.
-                  </p>
-                </div>
-                <div className="relative max-w-xs w-full">
-                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600" />
-                  <input
-                    type="text"
-                    value={glossarySearch}
-                    onChange={(e) => setGlossarySearch(e.target.value)}
-                    placeholder="Search terms, formulas..."
-                    className="w-full bg-white border border-gray-200 rounded-xl py-2.5 pl-9 pr-4 text-xs font-semibold outline-none focus:border-green-500 transition-all text-gray-700 shadow-sm"
-                  />
-                  {glossarySearch && (
-                    <button 
-                      onClick={() => setGlossarySearch('')}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-455 hover:text-gray-755 text-xs"
-                    >
-                      ×
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Glossary Subpages Tab Selector */}
-              <div className="flex border-b border-gray-100 bg-gray-50/30 p-1 rounded-xl gap-1 shrink-0">
-                <button
-                  onClick={() => setGlossaryTab('remote-sensing')}
-                  className={`flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg font-bold text-xs transition-all cursor-pointer ${
-                    glossaryTab === 'remote-sensing'
-                      ? 'bg-green-600 text-white shadow-sm font-semibold'
-                      : 'text-gray-500 hover:text-gray-800 hover:bg-gray-100'
-                  }`}
-                >
-                  <Satellite size={13} />
-                  Remote Sensing Indices
-                </button>
-                <button
-                  onClick={() => setGlossaryTab('farmer-inputs')}
-                  className={`flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg font-bold text-xs transition-all cursor-pointer ${
-                    glossaryTab === 'farmer-inputs'
-                      ? 'bg-green-600 text-white shadow-sm font-semibold'
-                      : 'text-gray-500 hover:text-gray-800 hover:bg-gray-100'
-                  }`}
-                >
-                  <Database size={13} />
-                  Farmer Inputs
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1 min-h-0 overflow-y-auto pr-1">
-                {Object.entries(TOOLTIP_DESCRIPTIONS)
-                  .filter(([key, value]) => {
-                    const searchLower = glossarySearch.toLowerCase();
-                    const categoryMatch = value.category === glossaryTab;
-                    const textMatch = 
-                      key.toLowerCase().includes(searchLower) ||
-                      (value.desc && value.desc.toLowerCase().includes(searchLower)) ||
-                      (value.done && value.done.toLowerCase().includes(searchLower)) ||
-                      (value.formula && value.formula.toLowerCase().includes(searchLower));
-                    return categoryMatch && textMatch;
-                  })
-                  .map(([key, value]) => (
-                    <div key={key} className="bg-white p-6 rounded-2xl border border-gray-150 shadow-sm flex flex-col justify-between hover:shadow-md transition-all gap-4">
-                      <div>
-                        <h3 className="text-base font-bold text-gray-950 flex items-center justify-between gap-2">
-                          {key}
-                        </h3>
-                        <p className="text-xs text-gray-555 font-semibold leading-relaxed mt-2 text-left">
-                          {value.desc}
-                        </p>
-                      </div>
-                      
-                      <div className="space-y-3 pt-3 border-t border-gray-100 text-left">
-                        {value.done && (
-                          <div className="text-[11px] text-gray-650 font-semibold">
-                            <span className="font-semibold text-gray-600 text-[11px] block mb-0.5">Methodology</span>
-                            {value.done}
-                          </div>
-                        )}
-                        {value.formula && (
-                          <div className="text-[11px] text-gray-650 font-semibold">
-                            <span className="font-semibold text-gray-600 text-[11px] block mb-1">Formula / Expression</span>
-                            <code className="block font-mono text-[11px] text-green-705 bg-green-50/50 border border-green-100 rounded-lg p-2 overflow-x-auto whitespace-pre-wrap word-break-all">
-                              {value.formula}
-                            </code>
-                          </div>
-                        )}
-                        {value.references && (
-                          <div className="text-[11px] text-gray-650 font-semibold">
-                            <span className="font-semibold text-gray-600 text-[11px] block mb-1">References Cited</span>
-                            <div className="text-[11px] text-gray-500 font-medium italic leading-relaxed bg-gray-50/50 border border-gray-100 rounded-lg p-2.5">
-                              {value.references}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </div>
+            <CropGlossary entries={cropProfileEntries} extra={pageSet?.glossary} cropName={service ? service.title : isOrg ? '' : cropLabel} focusKey={glossaryFocus} />
           )}
-
         </main>
       </div>
 
