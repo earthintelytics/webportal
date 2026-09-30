@@ -7,7 +7,12 @@ import { NotConnectedError } from './datasetsApi';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/farmintelytics-engine/agromonitoring';
 
+// Until the backend ships GET /estates, remember that for the browser session
+// so every page load does not repeat a 404.
+const UNAVAILABLE = 'fi_estates_unavailable';
+
 export async function fetchEstates() {
+  if (sessionStorage.getItem(UNAVAILABLE)) throw new NotConnectedError();
   const token = localStorage.getItem('fi_token');
   let res;
   try {
@@ -15,7 +20,10 @@ export async function fetchEstates() {
   } catch {
     throw new NotConnectedError();
   }
-  if (res.status === 404 || res.status === 405 || !(res.headers.get('content-type') || '').includes('json')) throw new NotConnectedError();
+  if (res.status === 404 || res.status === 405 || !(res.headers.get('content-type') || '').includes('json')) {
+    sessionStorage.setItem(UNAVAILABLE, '1');
+    throw new NotConnectedError();
+  }
   if (!res.ok) throw new Error(`Estates error ${res.status}`);
   return res.json();
 }

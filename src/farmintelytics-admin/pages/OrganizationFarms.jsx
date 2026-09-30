@@ -366,6 +366,11 @@ const FarmConfigModal = ({ farm, onClose }) => {
 const FitToBounds = ({ data }) => {
   const map = useMap();
   useEffect(() => {
+    // Modal is still animating/laying out when the map mounts; re-measure so tiles fill it
+    const t = setTimeout(() => map.invalidateSize(), 150);
+    return () => clearTimeout(t);
+  }, [map]);
+  useEffect(() => {
     if (!data) return;
     try {
       const bounds = L.geoJSON(data).getBounds();
@@ -381,12 +386,16 @@ const BoundaryViewModal = ({ farm, onClose }) => {
   const [geo, setGeo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [seconds, setSeconds] = useState(0);
+  useEffect(() => {
+    if (!loading) return undefined;
+    const t = setInterval(() => setSeconds(s => s + 1), 1000);
+    return () => clearInterval(t);
+  }, [loading]);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      setLoading(true);
-      setError('');
       try {
         const res = await fetchMinioObjectContent(farm.boundary_minio_path);
         const parsed = JSON.parse(res.content);
@@ -417,7 +426,10 @@ const BoundaryViewModal = ({ farm, onClose }) => {
         </div>
         <div style={{ flex: 1, position: 'relative', background: '#f1f5f9' }}>
           {loading && (
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', fontSize: '13px', fontWeight: 600 }}>Loading boundary…</div>
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'center', justifyContent: 'center', color: '#64748b', fontSize: '13px', fontWeight: 600, textAlign: 'center', padding: '24px' }}>
+              <span>Loading the boundary file… {seconds}s</span>
+              {seconds >= 8 && <span style={{ fontWeight: 500, maxWidth: '380px' }}>Large boundary files (Okomu&rsquo;s has 1,133 blocks, about 1.2 MB compressed) take a while on slow connections.</span>}
+            </div>
           )}
           {error && (
             <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>

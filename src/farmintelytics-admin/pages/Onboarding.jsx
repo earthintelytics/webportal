@@ -11,6 +11,7 @@ import { slugify, modulesForAccessModel, ACCESS_MODELS, ALL_RS_INDICES } from '.
 import ErrorBanner from '../components/ErrorBanner';
 import { SENSOR_OPTIONS, ALL_CROPS, toggleInList } from '../components/formHelpers';
 import { WEEKDAYS, cronFor, cronError, scheduleText as scheduleWords } from '../components/schedule';
+import { emailError, slugError, accessCodeError, boundaryCheck } from '../components/validation';
 import { CustomRule } from './Scheduler';
 const scheduleText = (s) => { const w = scheduleWords(s); return w.charAt(0).toLowerCase() + w.slice(1); };
 import { CROP_PHOTOS, SERVICE_PHOTOS, SERVICE_GROUPS, SERVICE_PACKAGES } from '../../constants/servicePhotos';
@@ -59,6 +60,11 @@ function distanceKm(a, b) {
 }
 const FitToBounds = ({ data }) => {
   const map = useMap();
+  useEffect(() => {
+    // The card may still be laying out when the map mounts; re-measure so tiles fill it
+    const t = setTimeout(() => map.invalidateSize(), 150);
+    return () => clearTimeout(t);
+  }, [map]);
   useEffect(() => {
     if (!data) return;
     try { const b = L.geoJSON(data).getBounds(); if (b.isValid()) map.fitBounds(b, { padding: [20, 20] }); } catch { /* malformed */ }
@@ -159,8 +165,12 @@ const Onboarding = () => {
     if (!file) return setEstate(key, { boundaryFile: null, geojson: null, centre: null });
     const reader = new FileReader();
     reader.onload = (ev) => {
-      try { const g = JSON.parse(ev.target.result); setEstate(key, { boundaryFile: file, geojson: g, centre: geojsonCentre(g) }); }
-      catch { setEstate(key, { boundaryFile: file, geojson: null, centre: null }); setError(`${file.name} is not valid GeoJSON.`); }
+      let g;
+      try { g = JSON.parse(ev.target.result); } catch { g = null; }
+      const check = boundaryCheck(g, file.size);
+      setEstate(key, check.error
+        ? { boundaryFile: file, geojson: null, centre: null, boundaryError: check.error, boundaryInfo: null }
+        : { boundaryFile: file, geojson: g, centre: geojsonCentre(g), boundaryError: null, boundaryInfo: `${check.polygons} polygon${check.polygons > 1 ? 's' : ''}${check.warning ? ` · ${check.warning}` : ''}` });
     };
     reader.readAsText(file);
   };
@@ -179,12 +189,20 @@ const Onboarding = () => {
     return datasetsForScope(DATASET_DEFINITIONS, keys);
   }, [crops, services]);
 
+  // Front-end validation (the backend checks again)
+  const slugErr = slugError(company.schema_name.trim());
+  const nameCounts = estates.reduce((m, e) => { const k = e.farm_name.trim().toLowerCase(); if (k) m[k] = (m[k] || 0) + 1; return m; }, {});
+  const estateErr = (e) => (nameCounts[e.farm_name.trim().toLowerCase()] > 1 ? 'Two estates have this name; give each a different name.'
+    : e.farm_id.trim() && slugError(e.farm_id.trim()) ? `Estate ID: ${slugError(e.farm_id.trim())}` : null);
+  const emailErr = cred.email ? emailError(cred.email) : null;
+  const codeErr = accessCodeError(cred.access_code);
+
   const canNext = [
-    company.company_name.trim(),
+    company.company_name.trim() && !slugErr,
     (accessModel === 'organization' || crops.length > 0),
-    estates.length > 0 && estates.every(e => e.farm_name.trim() && e.boundaryFile && e.geojson && (accessModel !== 'crop' || e.crop || crops.length <= 1)),
+    estates.length > 0 && estates.every(e => e.farm_name.trim() && e.boundaryFile && e.geojson && !e.boundaryError && !estateErr(e) && (accessModel !== 'crop' || e.crop || crops.length <= 1)),
     true,
-    cred.email.trim(),
+    cred.email.trim() && !emailErr && !codeErr,
     true,
   ];
 
@@ -326,6 +344,7 @@ const Onboarding = () => {
             <Advanced>
               <Field label="Short ID" hint={`Used in links and storage paths. Leave blank to use: ${slug || '—'}`} optional>
                 <input className={inputCls} placeholder={slug || 'generated from the name'} value={company.schema_name} onChange={e => setCompany(c => ({ ...c, schema_name: e.target.value }))} />
+                {slugErr && <span className="block text-xs text-red-700 mt-1">{slugErr}</span>}
               </Field>
             </Advanced>
             <div className="flex justify-end"><Primary disabled={!canNext[0]} onClick={() => setStep(1)}>Next: crops and services <ChevronRight size={15} /></Primary></div>
@@ -437,6 +456,9 @@ const Onboarding = () => {
                       ) : <div className="h-full flex items-center justify-center text-xs text-gray-500">Map preview appears here</div>}
                     </div>
                   </div>
+                  {e.boundaryError && <div className="text-sm text-red-700">{e.boundaryError}</div>}
+                  {e.boundaryInfo && !e.boundaryError && <div className="text-xs text-gray-600">Boundary read: {e.boundaryInfo}</div>}
+                  {estateErr(e) && <div className="text-sm text-red-700">{estateErr(e)}</div>}
                   <Toggle on={e.is_irrigated} label="Irrigated" sub="Adds irrigation pages and water-demand layers where the crop uses them." onChange={v => setEstate(e.key, { is_irrigated: v })} />
                   <Advanced title="Satellite processing (for agronomists)">
                     <Field label="Estate ID" optional hint={`Leave blank to use ${slug}_${slugify(e.farm_name) || '…'}`}><input className={inputCls} value={e.farm_id} onChange={ev => setEstate(e.key, { farm_id: ev.target.value })} /></Field>
@@ -537,8 +559,8 @@ const Onboarding = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Name"><input className={inputCls} placeholder="Full name" value={cred.full_name} onChange={e => setCred(c => ({ ...c, full_name: e.target.value }))} /></Field>
               <Field label="Role"><select className={inputCls} value={cred.role} onChange={e => setCred(c => ({ ...c, role: e.target.value }))}><option value="admin">Admin: everything</option><option value="analyst">Analyst: monitoring and reports</option><option value="viewer">Viewer: read only</option></select></Field>
-              <Field label="Email"><input className={inputCls} type="email" placeholder="name@company.com" value={cred.email} onChange={e => setCred(c => ({ ...c, email: e.target.value }))} /></Field>
-              <Field label="Access code" optional hint="Leave blank to generate a strong one"><input className={inputCls} value={cred.access_code} onChange={e => setCred(c => ({ ...c, access_code: e.target.value }))} /></Field>
+              <Field label="Email"><input className={inputCls} type="email" placeholder="name@company.com" value={cred.email} onChange={e => setCred(c => ({ ...c, email: e.target.value }))} />{emailErr && <span className="block text-xs text-red-700 mt-1">{emailErr}</span>}</Field>
+              <Field label="Access code" optional hint="Leave blank to generate a strong one"><input className={inputCls} value={cred.access_code} onChange={e => setCred(c => ({ ...c, access_code: e.target.value }))} />{codeErr && <span className="block text-xs text-red-700 mt-1">{codeErr}</span>}</Field>
             </div>
             <div className="flex justify-end"><Primary disabled={busy || !canNext[4]} onClick={submitLogin}>{busy ? 'Creating…' : 'Next: schedule'} <ChevronRight size={15} /></Primary></div>
           </Card>
