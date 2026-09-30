@@ -298,6 +298,81 @@ export async function generateCertificate(payload) {
 }
 
 /**
+ * GET /api/reports/options
+ * Returns available report types, estates, blocks, filter columns, and months with data.
+ */
+export async function fetchReportOptions() {
+  return apiFetch('/reports/options');
+}
+
+/**
+ * POST /api/reports
+ * Creates a report grounded in multidimensional indices, timeseries, and AI decision intelligence.
+ */
+export async function createReport(payload) {
+  return apiFetch('/reports', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+/**
+ * GET /api/reports
+ * Returns list of generated reports for the tenant.
+ */
+export async function fetchReportsHistory() {
+  return apiFetch('/reports');
+}
+
+/**
+ * GET /api/reports/{id}
+ * Returns a specific report by ID.
+ */
+export async function fetchReportById(reportId) {
+  return apiFetch(`/reports/${encodeURIComponent(reportId)}`);
+}
+
+/**
+ * POST /api/reports/schedules
+ * Creates a recurring report schedule.
+ */
+export async function scheduleReport(payload) {
+  return apiFetch('/reports/schedules', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+/**
+ * GET /api/reports/schedules
+ * Returns active report schedules.
+ */
+export async function fetchReportSchedules() {
+  return apiFetch('/reports/schedules');
+}
+
+/**
+ * POST /api/reports/ai-recommendations
+ * Generates on-demand decision intelligence recommendations for reports.
+ */
+export async function fetchAiReportRecommendations(payload) {
+  return apiFetch('/reports/ai-recommendations', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+/**
+ * GET /api/verification?kind=...&farm_id=...
+ * Returns verification checklist and evidence for a claim.
+ */
+export async function fetchVerificationData(kind = 'boundary', farmId = null) {
+  const q = new URLSearchParams({ kind });
+  if (farmId) q.set('farm_id', farmId);
+  return apiFetch(`/verification?${q.toString()}`);
+}
+
+/**
  * GET /api/reports/list
  * Returns list of pre-compiled environmental reports.
  * Each item: { report_id, title, metric, scope, plot_id, generated_at, download_url }
@@ -305,6 +380,7 @@ export async function generateCertificate(payload) {
 export async function fetchReportsList() {
   return apiFetch('/reports/list');
 }
+
 
 // ─── AI Assistant ────────────────────────────────────────────────────────────
 
