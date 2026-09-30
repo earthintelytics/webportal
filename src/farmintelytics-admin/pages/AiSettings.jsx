@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { KeyRound, BarChart3, Gauge, Check, Info, PlugZap } from 'lucide-react';
 import { fetchAiSettings, saveAiSettings, saveAiProvider, testAiProvider, saveAiPrices, fetchAiUsage, fetchAiLimits, saveAiLimits, AiNotConnected } from '../../services/aiAdminApi';
-import { fetchOrganizations } from '../../services/adminApi';
+import { fetchOrganizations, fetchCredentials } from '../../services/adminApi';
 
 /**
  * AI settings (super admin): API keys and models, usage and cost, limits.
@@ -147,7 +147,10 @@ function UsageTab({ connected, orgNames }) {
     fetchAiUsage({ ...range, group }).then(d => { if (active) { setData(d); setError(''); } }).catch(e => { if (active) setError(e.message); });
     return () => { active = false; };
   }, [range, group, connected]);
-  const tot = data?.totals || {};
+  // Only figures recorded from real AI calls are shown (the service marks them
+  // with recorded: true); anything else is treated as not live yet.
+  const live = connected && data?.recorded === true;
+  const tot = live ? data?.totals || {} : {};
   const cur = data?.currency || 'USD';
   return (
     <div className="space-y-6">
@@ -162,12 +165,12 @@ function UsageTab({ connected, orgNames }) {
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[['Requests', num(tot.requests)], ['Input tokens', num(tot.input_tokens)], ['Output tokens', num(tot.output_tokens)], ['Cost', money(tot.cost, cur)]].map(([k, v]) => (
-          <Card key={k} className="px-5 py-4"><div className="text-xs font-semibold text-gray-600">{k}</div><div className="text-2xl font-bold text-gray-900 mt-1">{connected ? v : '—'}</div></Card>
+          <Card key={k} className="px-5 py-4"><div className="text-xs font-semibold text-gray-600">{k}</div><div className="text-2xl font-bold text-gray-900 mt-1">{live ? v : '—'}</div></Card>
         ))}
       </div>
       {error && <div className="text-sm text-red-700">{error}</div>}
       <Card className="overflow-hidden">
-        {!connected || !data?.rows?.length ? <div className="p-10 text-center text-sm text-gray-500">{connected ? 'No AI use in this period.' : 'Usage appears here once the AI settings service records it.'}</div> : (
+        {!live || !data?.rows?.length ? <div className="p-10 text-center text-sm text-gray-500">{!connected ? 'Usage appears here once the AI settings service records it.' : !live ? 'Usage recording is not live yet: figures appear once each AI call is recorded with its tokens and cost.' : 'No AI use in this period.'}</div> : (
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-left text-xs font-semibold text-gray-600"><tr><th className="px-5 py-3 capitalize">{group}</th><th className="px-5 py-3">Requests</th><th className="px-5 py-3">Tokens in / out</th><th className="px-5 py-3">Cost</th><th className="px-5 py-3">Of limit</th></tr></thead>
             <tbody className="divide-y divide-gray-100">
@@ -189,7 +192,16 @@ function UsageTab({ connected, orgNames }) {
 }
 
 function LimitsTab({ connected, orgs }) {
-  const [limits, setLimits] = useState({ org_limits: [], user_daily_requests: null, alert_at_pct: 80, on_exceed: 'fallback' });
+  const [limits, setLimits] = useState({ org_limits: [], user_limits: [], user_daily_requests: null, alert_at_pct: 80, on_exceed: 'fallback' });
+  const [logins, setLogins] = useState([]);
+  const [userQuery, setUserQuery] = useState('');
+  useEffect(() => {
+    let active = true;
+    fetchCredentials().then(c => { if (active) setLogins(Array.isArray(c) ? c : c?.items || []); }).catch(() => {});
+    return () => { active = false; };
+  }, []);
+  const userLimit = (email, company) => (limits.user_limits || []).find(u => u.email === email && u.company_id === company) || { email, company_id: company, ai_enabled: true, daily_requests: '' };
+  const setUser = (email, company, patch) => setLimits(l => ({ ...l, user_limits: [...(l.user_limits || []).filter(u => !(u.email === email && u.company_id === company)), { ...userLimit(email, company), ...patch }] }));
   const [msg, setMsg] = useState('');
   useEffect(() => {
     if (!connected) return undefined;
@@ -200,7 +212,8 @@ function LimitsTab({ connected, orgs }) {
   const orgLimit = (id) => limits.org_limits.find(o => o.company_id === id) || { company_id: id, monthly_budget: '', monthly_tokens: '' };
   const setOrg = (id, patch) => setLimits(l => ({ ...l, org_limits: [...l.org_limits.filter(o => o.company_id !== id), { ...orgLimit(id), ...patch }] }));
   const save = async () => {
-    const bad = limits.org_limits.some(o => (o.monthly_budget !== '' && Number(o.monthly_budget) < 0) || (o.monthly_tokens !== '' && Number(o.monthly_tokens) < 0));
+    const bad = limits.org_limits.some(o => (o.monthly_budget !== '' && Number(o.monthly_budget) < 0) || (o.monthly_tokens !== '' && Number(o.monthly_tokens) < 0))
+      || (limits.user_limits || []).some(u => u.daily_requests !== '' && u.daily_requests != null && Number(u.daily_requests) < 0);
     if (bad || (limits.user_daily_requests != null && limits.user_daily_requests < 0) || limits.alert_at_pct < 1 || limits.alert_at_pct > 100) return setMsg('Limits must be positive, and the alert level between 1 and 100%.');
     try { await saveAiLimits(limits); setMsg('Saved.'); } catch (e) { setMsg(e instanceof AiNotConnected ? 'Not connected yet.' : e.message); }
   };
@@ -230,6 +243,31 @@ function LimitsTab({ connected, orgs }) {
             ); })}
           </tbody>
         </table>
+      </Card>
+      <Card className="overflow-hidden">
+        <div className="px-6 pt-5 pb-3 flex flex-wrap items-center justify-between gap-3">
+          <div><div className="text-sm font-semibold text-gray-900">Per user</div><div className="text-xs text-gray-500">Switch AI off for anyone, or give them their own daily limit (blank uses the limit for everyone).</div></div>
+          <input value={userQuery} onChange={e => setUserQuery(e.target.value)} placeholder="Search users" className="px-3 py-2 rounded-xl border border-gray-300 text-sm w-56" />
+        </div>
+        {logins.length === 0 ? <div className="px-6 pb-6 text-sm text-gray-500">No user logins found.</div> : (
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 text-left text-xs font-semibold text-gray-600"><tr><th className="px-6 py-3">User</th><th className="px-6 py-3">Organisation</th><th className="px-6 py-3">AI allowed</th><th className="px-6 py-3">Daily requests</th></tr></thead>
+            <tbody className="divide-y divide-gray-100">
+              {logins.filter(c => !userQuery || `${c.email} ${c.full_name || ''} ${c.company_id}`.toLowerCase().includes(userQuery.toLowerCase())).map(c => { const u = userLimit(c.email, c.company_id); return (
+                <tr key={`${c.company_id}-${c.email}`} className={u.ai_enabled === false ? 'bg-gray-50/70' : ''}>
+                  <td className="px-6 py-3"><div className="font-semibold text-gray-900">{c.full_name || c.email}</div>{c.full_name && <div className="text-xs text-gray-500">{c.email}</div>}</td>
+                  <td className="px-6 py-3 text-gray-700">{orgs.find(o => o.schema_name === c.company_id)?.display_name || c.company_id}</td>
+                  <td className="px-6 py-3">
+                    <button role="switch" aria-checked={u.ai_enabled !== false} aria-label={`AI for ${c.email}`} onClick={() => setUser(c.email, c.company_id, { ai_enabled: u.ai_enabled === false })} className={`relative w-10 h-6 rounded-full transition-colors ${u.ai_enabled !== false ? 'bg-green-600' : 'bg-gray-300'}`}>
+                      <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${u.ai_enabled !== false ? 'left-5' : 'left-1'}`} />
+                    </button>
+                  </td>
+                  <td className="px-6 py-3"><input type="number" min="0" disabled={u.ai_enabled === false} className={`${inputCls} max-w-[140px] disabled:bg-gray-100`} value={u.daily_requests ?? ''} onChange={e => setUser(c.email, c.company_id, { daily_requests: e.target.value === '' ? '' : Number(e.target.value) })} placeholder={limits.user_daily_requests ? `${limits.user_daily_requests} (default)` : 'No limit'} /></td>
+                </tr>
+              ); })}
+            </tbody>
+          </table>
+        )}
       </Card>
       <div className="flex items-center gap-3"><button onClick={save} disabled={!connected} className="px-5 py-2.5 rounded-xl bg-green-700 text-white text-sm font-semibold disabled:bg-gray-200 disabled:text-gray-500"><Check size={15} className="inline mr-1" />Save limits</button>{msg && <span className="text-xs text-gray-600">{msg}</span>}</div>
     </div>

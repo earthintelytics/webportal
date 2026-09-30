@@ -96,7 +96,7 @@ import YourDataPage from '../../data/YourDataPage';
 import DataNeededDialog from '../../data/DataNeededDialog';
 import RegisterPage from '../../services/RegisterPage';
 import { CROP_CATALOG, ORGANISATION_PAGES, loadCropPages } from '../cropCatalog';
-import CropGlossary from './CropGlossary';
+import CropGlossary, { ViewGlossary } from './CropGlossary';
 import ReportBuilder from '../../reports/ReportBuilder';
 import VerificationPage from '../../reports/VerificationPage';
 import { CheckPage, LogPage, AdvicePage } from '../../services/ServicePages';
@@ -6401,6 +6401,24 @@ Context: ${context}.`;
 
           {activeSidebarItem === 'your-data' && (
             <YourDataPage key={dataFocus || 'data'} cropType={isOrg ? null : cropType} serviceId={service?.id} plots={plots} initialDataset={dataFocus} />
+          )}
+
+          {activeTab === 'monitor' && !['help', 'your-data', 'register', 'check', 'log', 'advice'].includes(activeSidebarItem) && (
+            <ViewGlossary
+              entries={cropProfileEntries}
+              view={activeSidebarItem}
+              viewKeys={(() => {
+                const groups = {
+                  'crop-health': ['Vegetation Health', 'Nutrient & Chlorophyll'],
+                  'crop-yield': ['Vegetation Health'],
+                  'moisture-content': ['Vegetation Moisture', 'Ground Moisture'],
+                }[activeSidebarItem];
+                if (activeSidebarItem === 'analytics') return ['ndvi', 'ndmi', 'evi', 'lst', 'rvi'];
+                if (activeSidebarItem === 'climate' || activeSidebarItem === 'alerts') return [];
+                return legendEntries.filter(e => !groups || groups.includes(e.group)).map(e => e.key);
+              })()}
+              onOpenFull={() => setActiveSidebarItem('help')}
+            />
           )}
 
           {activeSidebarItem === 'help' && (

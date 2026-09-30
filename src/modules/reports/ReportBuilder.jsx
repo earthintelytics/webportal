@@ -859,7 +859,7 @@ export default function ReportBuilder({ plots, alerts, estates, tenant, orgName,
           <Card className="p-6 space-y-4 bg-gray-50/60">
             <div className="text-sm font-bold text-gray-900">Technical appendix</div>
             <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3 text-xs text-gray-700">
-              <div><dt className="font-semibold text-gray-900">Imagery</dt><dd>{(report.data_used?.sources || []).filter(s => !/sar|radar|sentinel-1/i.test(s)).map(s => s.replace(/\s*Zarr Store/i, '').replace(/10m/i, '10 m')).join('; ') || 'Sentinel-2 (ESA Copernicus), 10 m'}</dd></div>
+              <div><dt className="font-semibold text-gray-900">Imagery</dt><dd>{(report.data_used?.sources || []).map(s => s.replace(/\s*Zarr Store/i, '').replace(/10m/i, '10 m').replace(/SAR Structure/i, 'radar (cloud-independent)')).join('; ') || 'Sentinel-2 (ESA Copernicus), 10 m'}</dd></div>
               <div><dt className="font-semibold text-gray-900">Measures behind the words</dt><dd>Crop health = NDVI (vegetation index); Leaf water = NDMI (moisture index). Farm averages per clear view.</dd></div>
               <div><dt className="font-semibold text-gray-900">Period</dt><dd>{report.period.from} to {report.period.to}{report.cmp ? `; comparison ${report.cmp.from} to ${report.cmp.to}` : ''}</dd></div>
               <div><dt className="font-semibold text-gray-900">Clear-view dates</dt><dd>{report.health.map(d => d.date).join(', ') || 'none'}</dd></div>

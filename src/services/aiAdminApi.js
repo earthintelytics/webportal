@@ -24,6 +24,7 @@ export const saveAiSettings = (data) => call('/ai/settings', { method: 'PUT', bo
 export const saveAiProvider = (id, data) => call(`/ai/providers/${id}`, { method: 'PUT', body: JSON.stringify(data) });
 export const testAiProvider = (id) => call(`/ai/providers/${id}/test`, { method: 'POST' });
 export const saveAiPrices = (prices) => call('/ai/prices', { method: 'PUT', body: JSON.stringify({ prices }) });
-export const fetchAiUsage = ({ from, to, group }) => call(`/ai/usage?${new URLSearchParams({ from, to, group })}`);
+// from/to per the contract; from_date/to_date as the current backend reads them
+export const fetchAiUsage = ({ from, to, group }) => call(`/ai/usage?${new URLSearchParams({ from, to, from_date: from, to_date: to, group })}`);
 export const fetchAiLimits = () => call('/ai/limits');
 export const saveAiLimits = (data) => call('/ai/limits', { method: 'PUT', body: JSON.stringify(data) });
