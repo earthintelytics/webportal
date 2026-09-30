@@ -238,10 +238,10 @@ const MonitoringPortal = ({ cropName, onSignOut, onBack }) => {
   const columns = [
     { key: 'id', label: 'Plot ID' },
     { key: 'area', label: 'Area' },
-    { key: 'health', label: 'Health Score', render: (val) => <span className={`font-black ${parseInt(val) < 40 ? 'text-red-500' : 'text-emerald-500'}`}>{val}</span> },
-    { key: 'status', label: 'Status', render: (val) => <span className={`text-[11px] font-black uppercase px-2 py-0.5 rounded-lg ${val === 'Stressed' ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'}`}>{val}</span> },
+    { key: 'health', label: 'Health Score', render: (val) => <span className={`font-bold ${parseInt(val) < 40 ? 'text-red-500' : 'text-emerald-500'}`}>{val}</span> },
+    { key: 'status', label: 'Status', render: (val) => <span className={`text-[11px] font-bold px-2 py-0.5 rounded-lg ${val === 'Stressed' ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'}`}>{val}</span> },
     { key: 'layman', label: 'Field Summary' },
-    { key: 'action', label: 'Drill Down', render: (_, row) => <button onClick={() => { setSelectedPlot(row); setActiveTab('geospatial'); }} className="text-sky-600 font-black uppercase text-[11px] hover:underline">View History</button> }
+    { key: 'action', label: 'Drill Down', render: (_, row) => <button onClick={() => { setSelectedPlot(row); setActiveTab('geospatial'); }} className="text-sky-600 font-bold text-[11px] hover:underline">View History</button> }
   ];
 
   const mapCenter = useMemo(() => {
@@ -263,7 +263,7 @@ const MonitoringPortal = ({ cropName, onSignOut, onBack }) => {
                       <input type="text" placeholder={`Locate ${cropName} Plot...`} className="w-full bg-gray-50 border border-gray-100 rounded-xl py-3 pl-12 pr-4 text-[13px] font-bold outline-none focus:border-emerald-500 transition-all" />
                    </div>
                 </div>
-                <div className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 italic">Scientific Standard: Sentinel-2 Multispectral</div>
+                <div className="text-[11px] font-bold tracking-[0.2em] text-gray-400 italic">Scientific Standard: Sentinel-2 Multispectral</div>
              </div>
 
              <div className="flex-1 bg-gray-200 relative overflow-hidden">
@@ -283,7 +283,7 @@ const MonitoringPortal = ({ cropName, onSignOut, onBack }) => {
                       <div className="p-5 flex items-center justify-between border-b border-gray-50">
                          <div className="flex items-center gap-2">
                             <Layers size={16} className="text-gray-900" />
-                            <span className="text-[11px] font-black uppercase tracking-widest leading-none">Remote Sensing Legend</span>
+                            <span className="text-[11px] font-bold leading-none">Remote Sensing Legend</span>
                          </div>
                          <button onClick={() => setShowLayerList(!showLayerList)} className="p-2 hover:bg-gray-50 rounded-full transition-all"><Settings2 size={16} className="text-gray-400" /></button>
                       </div>
@@ -292,13 +292,13 @@ const MonitoringPortal = ({ cropName, onSignOut, onBack }) => {
                            {layers.map(layer => (
                              <div key={layer.id} className="space-y-3">
                                 <button onClick={() => setLayers(layers.map(l => l.id === layer.id ? { ...l, active: !l.active } : l))} className="flex items-center gap-3 group text-left">
-                                   <div className={`w-4 h-4 rounded border-2 transition-all shrink-0 flex items-center justify-center ${layer.active ? 'bg-gray-900 border-gray-900' : 'border-gray-200'}`}>{layer.active && <CheckCircle2 size={10} className="text-white" />}</div>
-                                   <span className={`text-[11px] font-black uppercase tracking-widest leading-tight ${layer.active ? 'text-gray-900' : 'text-gray-300'}`}>{layer.label}</span>
+                                   <div className={`w-4 h-4 rounded border-2 transition-all shrink-0 flex items-center justify-center ${layer.active ? 'bg-green-700 border-green-700' : 'border-gray-200'}`}>{layer.active && <CheckCircle2 size={10} className="text-white" />}</div>
+                                   <span className={`text-[11px] font-bold leading-tight ${layer.active ? 'text-gray-900' : 'text-gray-300'}`}>{layer.label}</span>
                                 </button>
                                 {layer.active && (
                                   <div className="pl-7 space-y-3">
                                      <div className="space-y-1.5">
-                                        <div className="flex justify-between items-center text-[11px] font-black text-gray-400 uppercase tracking-widest"><span>{layer.legend}</span><span>{layer.opacity}%</span></div>
+                                        <div className="flex justify-between items-center text-[11px] font-bold text-gray-400"><span>{layer.legend}</span><span>{layer.opacity}%</span></div>
                                         <div className={`h-1.5 w-full rounded-full bg-gradient-to-r ${layer.color}`}></div>
                                      </div>
                                      <input type="range" min="0" max="100" value={layer.opacity} onChange={(e) => setLayers(layers.map(l => l.id === layer.id ? { ...l, opacity: e.target.value } : l))} className="w-full h-1 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-gray-900" />
@@ -314,18 +314,18 @@ const MonitoringPortal = ({ cropName, onSignOut, onBack }) => {
                      <div className="bg-white border border-gray-100 rounded-[2.5rem] p-6 shadow-2xl animate-in slide-in-from-right-10 duration-500 pointer-events-auto flex flex-col gap-6">
                         <div className="flex justify-between items-start">
                            <div>
-                              <div className="text-[11px] font-black text-emerald-600 uppercase tracking-[0.3em] mb-1 leading-none italic">{config.drillDownType}</div>
-                              <h3 className="text-2xl font-black uppercase italic tracking-tighter leading-none">{selectedPlot.id}</h3>
+                              <div className="text-[11px] font-bold text-emerald-600 tracking-[0.3em] mb-1 leading-none italic">{config.drillDownType}</div>
+                              <h3 className="text-2xl font-bold italic tracking-tighter leading-none">{selectedPlot.id}</h3>
                            </div>
                            <button onClick={() => setSelectedPlot(null)} className="p-2 hover:bg-gray-50 rounded-full transition-all text-gray-300"><X size={18} /></button>
                         </div>
-                        <div className="bg-gray-900 p-5 rounded-3xl text-white">
-                           <div className="text-[11px] font-black text-gray-400 uppercase mb-2 italic">Layman Summary</div>
+                        <div className="bg-green-700 p-5 rounded-3xl text-white">
+                           <div className="text-[11px] font-bold text-gray-400 mb-2 italic">Layman Summary</div>
                            <p className="text-[13px] font-bold italic leading-tight">"{selectedPlot.layman}"</p>
                         </div>
                         <div className="space-y-3">
                            <div className="flex items-center justify-between px-1">
-                              <span className="text-[11px] font-black text-gray-400 uppercase tracking-widest leading-none italic">Temporal Trajectory</span>
+                              <span className="text-[11px] font-bold text-gray-400 leading-none italic">Temporal Trajectory</span>
                               <TrendingUp size={12} className="text-emerald-500" />
                            </div>
                            <div className="h-32 bg-gray-50 rounded-2xl p-2">
@@ -340,7 +340,7 @@ const MonitoringPortal = ({ cropName, onSignOut, onBack }) => {
                         </div>
                         <div className="flex items-center gap-3 pt-4 border-t border-gray-50">
                            <Zap size={14} className="text-emerald-500" />
-                           <span className="text-[11px] font-black uppercase tracking-widest text-emerald-700 italic leading-tight">{selectedPlot.advice}</span>
+                           <span className="text-[11px] font-bold text-emerald-700 italic leading-tight">{selectedPlot.advice}</span>
                         </div>
                      </div>
                    )}
@@ -353,7 +353,7 @@ const MonitoringPortal = ({ cropName, onSignOut, onBack }) => {
           <div className="p-10 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 overflow-y-auto h-full">
              <div className="flex flex-col lg:flex-row justify-between lg:items-end gap-6">
                 <div>
-                   <h2 className="text-4xl font-black text-gray-900 tracking-tighter italic uppercase">{cropName} Analytical Ledger</h2>
+                   <h2 className="text-4xl font-bold text-gray-900 tracking-tighter italic">{cropName} Analytical Ledger</h2>
                    <p className="text-[14px] text-gray-400 font-medium mt-1">Literature-validated remote sensing outputs aggregated per farm block</p>
                 </div>
                 <div className="flex gap-4">
@@ -375,29 +375,29 @@ const MonitoringPortal = ({ cropName, onSignOut, onBack }) => {
                <div className="flex items-center gap-4">
                   <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400"><Calendar size={20} /></div>
                   <div>
-                     <div className="text-[11px] font-black text-gray-400 uppercase tracking-widest leading-none italic">Crop Theme: {config.theme}</div>
-                     <select value={dateRange} onChange={(e) => setDateRange(e.target.value)} className="text-lg font-black italic uppercase outline-none bg-transparent cursor-pointer mt-1">
+                     <div className="text-[11px] font-bold text-gray-400 leading-none italic">Crop Theme: {config.theme}</div>
+                     <select value={dateRange} onChange={(e) => setDateRange(e.target.value)} className="text-lg font-bold italic outline-none bg-transparent cursor-pointer mt-1">
                         <option>Current Season Analytics</option>
                         <option>Historical Time-Series</option>
                      </select>
                   </div>
                </div>
                <div className="flex gap-4">
-                  <button className="px-6 py-2.5 bg-gray-900 text-white text-[11px] font-black uppercase tracking-widest rounded-xl shadow-lg">Generate Report</button>
+                  <button className="px-6 py-2.5 bg-green-700 text-white text-[11px] font-bold rounded-xl shadow-lg">Generate Report</button>
                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                {config.kpis.map((kpi, i) => (
                  <div key={i} className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm flex items-center gap-6 group hover:shadow-2xl transition-all">
-                    <div className="w-14 h-14 bg-gray-900 rounded-2xl flex items-center justify-center text-white group-hover:scale-110 transition-transform">
+                    <div className="w-14 h-14 bg-green-700 rounded-2xl flex items-center justify-center text-white group-hover:scale-110 transition-transform">
                        {React.cloneElement(kpi.icon, { size: 24 })}
                     </div>
                     <div>
-                       <div className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-1 italic">{kpi.label}</div>
+                       <div className="text-[11px] font-bold text-gray-400 mb-1 italic">{kpi.label}</div>
                        <div className="flex items-baseline gap-1">
-                          <span className="text-3xl font-black italic tracking-tighter uppercase">{kpi.value}</span>
-                          <span className="text-[12px] font-black text-gray-300">{kpi.unit}</span>
+                          <span className="text-3xl font-bold italic tracking-tighter">{kpi.value}</span>
+                          <span className="text-[12px] font-bold text-gray-300">{kpi.unit}</span>
                        </div>
                     </div>
                  </div>
@@ -448,24 +448,24 @@ const MonitoringPortal = ({ cropName, onSignOut, onBack }) => {
       <header className="h-20 bg-white border-b border-gray-100 flex items-center justify-between px-8 z-[1100] shadow-sm">
          <div className="flex items-center gap-10">
             <div className="flex flex-col">
-              <span className="text-[11px] font-black uppercase tracking-widest text-gray-400 leading-none">Intelligence Platform</span>
-              <span className="text-[14px] font-black tracking-tight mt-1">FarmIntelytics</span>
+              <span className="text-[11px] font-bold text-gray-400 leading-none">Intelligence Platform</span>
+              <span className="text-[14px] font-bold tracking-tight mt-1">FarmIntelytics</span>
             </div>
 
             <div className="w-px h-8 bg-gray-100"></div>
 
             <div className="flex items-center gap-4">
-               <div className="w-10 h-10 bg-gray-900 rounded-xl flex items-center justify-center p-2 shadow-lg ring-4 ring-gray-50"><Satellite className="text-white" size={20} /></div>
+               <div className="w-10 h-10 bg-green-700 rounded-xl flex items-center justify-center p-2 shadow-lg ring-4 ring-gray-50"><Satellite className="text-white" size={20} /></div>
                <div>
-                  <h1 className="text-lg font-black tracking-tighter leading-none uppercase italic">{cropName} <span className="text-gray-400 font-medium ml-1">Geospatial Intelligence</span></h1>
-                  <p className="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-600 mt-1 leading-none italic uppercase">Theme: {config.theme}</p>
+                  <h1 className="text-lg font-bold tracking-tighter leading-none italic">{cropName} <span className="text-gray-400 font-medium ml-1">Geospatial Intelligence</span></h1>
+                  <p className="text-[11px] font-bold tracking-[0.2em] text-emerald-600 mt-1 leading-none italic">Theme: {config.theme}</p>
                </div>
             </div>
          </div>
          <div className="flex items-center gap-4">
             <div className="text-right">
-               <div className="text-[11px] font-black text-gray-900 leading-none italic uppercase">{userName}</div>
-               <div className="text-[11px] font-black text-emerald-600 uppercase tracking-widest mt-1 italic">Enterprise Auditor</div>
+               <div className="text-[11px] font-bold text-gray-900 leading-none italic">{userName}</div>
+               <div className="text-[11px] font-bold text-emerald-600 mt-1 italic">Enterprise Auditor</div>
             </div>
             <div className="w-10 h-10 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center overflow-hidden ring-2 ring-emerald-50"><User size={20} className="text-gray-400" /></div>
          </div>
@@ -473,17 +473,17 @@ const MonitoringPortal = ({ cropName, onSignOut, onBack }) => {
       <div className="flex-1 flex overflow-hidden">
          <aside className="sticky top-0 h-screen w-80 bg-white border-r border-gray-100 flex flex-col z-[1050] shadow-2xl">
             <div className="flex-1 overflow-y-auto p-6 space-y-2">
-               <div className="text-[11px] font-black text-gray-300 uppercase tracking-[0.3em] px-4 mb-4 leading-none italic">Intelligence Nodes</div>
+               <div className="text-[11px] font-bold text-gray-300 tracking-[0.3em] px-4 mb-4 leading-none italic">Intelligence Nodes</div>
                {[
                  { id: 'overview', label: 'Dashboard Hub', icon: <LayoutDashboard /> },
                  { id: 'geospatial', label: 'Geospatial Intel', icon: <MapIcon /> },
                  { id: 'plots', label: 'Plots Analytics', icon: <BarChart4 /> },
                ].map(tab => (
-                 <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`w-full flex items-center gap-4 px-6 py-4 rounded-xl transition-all ${activeTab === tab.id ? 'bg-gray-900 text-white shadow-xl translate-x-2' : 'text-gray-400 hover:bg-gray-50 hover:text-gray-900'}`}>{React.cloneElement(tab.icon, { size: 18 })}<span className="text-[12px] font-black uppercase tracking-widest">{tab.label}</span></button>
+                 <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`w-full flex items-center gap-4 px-6 py-4 rounded-xl transition-all ${activeTab === tab.id ? 'bg-green-700 text-white shadow-xl translate-x-2' : 'text-gray-400 hover:bg-gray-50 hover:text-gray-900'}`}>{React.cloneElement(tab.icon, { size: 18 })}<span className="text-[12px] font-bold">{tab.label}</span></button>
                ))}
             </div>
             <div className="p-6 bg-gray-50/50 border-t border-gray-100">
-               <button onClick={onSignOut} className="w-full bg-red-500 text-white font-black uppercase tracking-widest py-5 rounded-2xl text-[11px] flex items-center justify-center gap-3 hover:bg-red-600 transition-all shadow-xl"><LogOut size={16} /> Sign Out</button>
+               <button onClick={onSignOut} className="w-full bg-red-500 text-white font-bold py-5 rounded-2xl text-[11px] flex items-center justify-center gap-3 hover:bg-red-600 transition-all shadow-xl"><LogOut size={16} /> Sign Out</button>
             </div>
          </aside>
          <main className="flex-1 flex flex-col relative bg-gray-50">{renderContent()}</main>

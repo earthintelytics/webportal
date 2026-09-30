@@ -145,11 +145,16 @@ export const SERVICE_CATALOG = {
       note: 'The deforestation check is being rebuilt on the EU reference forest map and loss data. Until it runs, every plot shows "Not checked": no plot is marked deforestation-free without a real check.',
       columns: [{ id: 'block', label: 'Plot' }, { id: 'estate', label: 'Estate' }, { id: 'area', label: 'Area' }, { id: 'geolocation', label: 'Geolocation' }, { id: 'status', label: 'Check result' }],
     },
+    check: {
+      title: 'Deforestation check',
+      text: 'For each plot: was it forest on 31 December 2020, has any been cleared since, does it overlap a protected area, and on what evidence.',
+    },
     sidebar: [
       { id: 'analytics', label: 'Overview' },
       { id: 'intelligence-layers', label: 'Plot map' },
       { id: 'register', label: 'Plot register' },
-      { id: 'land-restoration', label: 'Deforestation check' },
+      { id: 'check', label: 'Deforestation check' },
+      { id: 'land-restoration', label: 'Land cover change' },
       { id: 'alerts', label: 'Alerts' },
     ],
     analytics: [
@@ -162,9 +167,15 @@ export const SERVICE_CATALOG = {
     subtitle: 'Field operations and scouting',
     overviewTitle: 'Field operations overview',
     overviewText: 'Field condition from satellite, next to the operations and scouting recorded for each block.',
+    log: {
+      title: 'Operations log', dataset: 'field-operations',
+      text: 'What was done in each block, when and by whom: harvesting, spraying, pruning, fertiliser and scouting.',
+      types: ['Harvest', 'Spray', 'Prune', 'Fertilise', 'Weed', 'Scout'],
+    },
     sidebar: [
       { id: 'analytics', label: 'Overview' },
       { id: 'intelligence-layers', label: 'Field map' },
+      { id: 'log', label: 'Operations log' },
       { id: 'crop-health', label: 'Field condition' },
       { id: 'climate', label: 'Weather' },
       { id: 'alerts', label: 'Field alerts' },
@@ -180,8 +191,13 @@ export const SERVICE_CATALOG = {
     subtitle: 'Weather and field advice',
     overviewTitle: 'Advisory overview',
     overviewText: 'Crop condition, water and weather, turned into advice for each field.',
+    advice: {
+      title: 'This week',
+      text: 'What to do in each field this week, most urgent first, with the reason behind it.',
+    },
     sidebar: [
       { id: 'analytics', label: 'Overview' },
+      { id: 'advice', label: 'This week' },
       { id: 'intelligence-layers', label: 'Advisory map' },
       { id: 'crop-health', label: 'Crop condition' },
       { id: 'moisture-content', label: 'Water' },

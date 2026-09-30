@@ -96,6 +96,8 @@ import { fetchEstates } from '../../../services/estatesApi';
 import YourDataPage from '../../data/YourDataPage';
 import DataNeededDialog from '../../data/DataNeededDialog';
 import RegisterPage from '../../services/RegisterPage';
+import { CheckPage, LogPage, AdvicePage } from '../../services/ServicePages';
+import { ShieldCheck as CheckIcon, ClipboardList as LogIcon, Lightbulb as AdviceIcon } from 'lucide-react';
 import { Table2 as RegisterIcon } from 'lucide-react';
 import ScenarioBuilder from '../../assistant/ScenarioBuilder';
 import { ANSWER_FORMAT } from '../../assistant/scenarioTemplates';
@@ -1000,7 +1002,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
                   key={src.id}
                   onClick={() => { setSelectedBasemap(src.id); setShowBasemapDropdown(false); }}
                   className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-sm text-left transition-all ${
-                    selectedBasemap === src.id ? 'bg-green-50 text-green-700 font-extrabold' : 'hover:bg-gray-55 text-gray-700'
+                    selectedBasemap === src.id ? 'bg-green-50 text-green-700 font-semibold' : 'hover:bg-gray-55 text-gray-700'
                   }`}
                 >
                   <span className="text-xs shrink-0">{src.emoji}</span>
@@ -1364,7 +1366,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
               <div onClick={() => toggleLegendKey(entry.key)} style={{ cursor: 'pointer' }}>
                 <div className="text-xs font-bold text-gray-700 leading-tight flex items-center gap-1.5">
                   {entry.title} {renderInfoTooltip(entry.tooltip)}
-                  {isOnMap && <span className="text-[11px] font-black uppercase tracking-wider text-green-700 bg-green-50 border border-green-200 rounded-full px-1.5 py-0.5">On Map</span>}
+                  {isOnMap && <span className="text-[11px] font-bold text-green-700 bg-green-50 border border-green-200 rounded-full px-1.5 py-0.5">On Map</span>}
                 </div>
                 <span className="text-[11px] text-gray-600">
                   {entry.subtitle}{!entry.hasData && <span className="font-bold text-gray-600"> (No data)</span>}
@@ -1434,7 +1436,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
             indices, which can come from either Sentinel-2 or Landsat. */}
         {!allSar && (
           <div className="flex items-center justify-between px-0.5 pb-1">
-            <span className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">Satellite</span>
+            <span className="text-[11px] font-bold text-gray-600">Satellite</span>
             <div className="flex rounded-full border border-gray-200 overflow-hidden">
               {['sentinel-2', 'landsat'].map(s => (
                 <button
@@ -1456,11 +1458,11 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
             <div key={name} className="space-y-2.5">
               <div
                 onClick={() => toggleLegendGroup(name)}
-                className="flex items-center gap-1 text-[11px] font-bold text-gray-600 hover:text-gray-800 uppercase tracking-widest cursor-pointer select-none transition-colors"
+                className="flex items-center gap-1 text-[11px] font-bold text-gray-600 hover:text-gray-800 cursor-pointer select-none transition-colors"
               >
                 {isOpen ? <ChevronDown size={12} /> : <ChevronRight size={12} />} {name}
                 <span className="font-semibold normal-case tracking-normal text-gray-500">({entries.length})</span>
-                {onMapCount > 0 && <span className="text-[11px] font-black uppercase tracking-wider text-green-700 bg-green-50 border border-green-200 rounded-full px-1.5 py-0.5">On Map</span>}
+                {onMapCount > 0 && <span className="text-[11px] font-bold text-green-700 bg-green-50 border border-green-200 rounded-full px-1.5 py-0.5">On Map</span>}
               </div>
               {isOpen && <div className="space-y-3">{entries.map(entry => renderLegendCard(entry))}</div>}
             </div>
@@ -2657,7 +2659,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
                 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '3px', textAlign: 'center', alignContent: 'start' }}>
                   {['S','M','T','W','T','F','S'].map((d, i) => (
-                    <span key={i} className="text-[11px] font-extrabold text-gray-600 h-4 flex items-center justify-center">{d}</span>
+                    <span key={i} className="text-[11px] font-semibold text-gray-600 h-4 flex items-center justify-center">{d}</span>
                   ))}
                   {Array.from({ length: calFirstDay }).map((_, i) => <span key={`pad-${i}`} className="h-5" />)}
                   {Array.from({ length: calDaysInMonth }, (_, i) => {
@@ -2775,7 +2777,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
               nearby explaining which satellite each color is. */}
           {!hideCalendarAndSlider && showCalendarTool && (
             <div className="py-3 px-2.5 shrink-0 w-[76px] bg-white flex flex-col gap-2.5">
-              <span className="text-[11px] font-extrabold uppercase text-gray-600 tracking-wider">Satellite</span>
+              <span className="text-[11px] font-semibold text-gray-600">Satellite</span>
               {[
                 { s: 'sentinel-2', label: 'Sentinel-2' },
                 { s: 'landsat', label: 'Landsat' },
@@ -2806,7 +2808,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
                       <div className="flex items-center gap-1.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-green-600 shrink-0" />
                         <span className="text-[11px] font-bold text-gray-700">A: {currentTimelineA.label?.split(',')[0]}</span>
-                        <span className="text-[11px] font-extrabold text-gray-600 bg-gray-100 px-1 py-0.5 rounded uppercase shrink-0">
+                        <span className="text-[11px] font-semibold text-gray-600 bg-gray-100 px-1 py-0.5 rounded shrink-0">
                           {effectiveSensor === 'sentinel-1' ? 'S1 SAR' : effectiveSensor === 'landsat' ? 'L9' : 'S2'}
                         </span>
                         <span className="text-[11px] text-gray-500 font-mono">{(selectedIndex || 'NDVI').toUpperCase()}</span>
@@ -2816,7 +2818,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
                       <div className="flex items-center gap-1.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-gray-400 shrink-0" />
                         <span className="text-[11px] font-bold text-gray-700">B: {currentTimelineB.label?.split(',')[0]}</span>
-                        <span className="text-[11px] font-extrabold text-gray-600 bg-gray-100 px-1 py-0.5 rounded uppercase shrink-0">
+                        <span className="text-[11px] font-semibold text-gray-600 bg-gray-100 px-1 py-0.5 rounded shrink-0">
                           {effectiveSensor === 'sentinel-1' ? 'S1 SAR' : effectiveSensor === 'landsat' ? 'L9' : 'S2'}
                         </span>
                         <span className="text-[11px] text-gray-500 font-mono">{(selectedIndex || 'NDVI').toUpperCase()}</span>
@@ -2826,13 +2828,13 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
                 ) : (
                   currentTimeline && (
                     <div className="flex flex-col gap-0.5">
-                      <div className="text-[11px] font-extrabold uppercase text-gray-600 tracking-wider">Selected Acquisition Pass</div>
+                      <div className="text-[11px] font-semibold text-gray-600">Selected Acquisition Pass</div>
                       <div className="flex items-center gap-1 flex-wrap">
-                        <span className="text-[11px] font-black text-gray-800 tracking-tight">{currentTimeline.label?.split(',')[0]}</span>
-                        <span className="text-[11px] font-bold text-green-700 bg-green-50 px-1.5 py-0.5 rounded-full border border-green-200 uppercase">
+                        <span className="text-[11px] font-bold text-gray-800 tracking-tight">{currentTimeline.label?.split(',')[0]}</span>
+                        <span className="text-[11px] font-bold text-green-700 bg-green-50 px-1.5 py-0.5 rounded-full border border-green-200">
                           {effectiveSensor === 'sentinel-1' ? 'S1 SAR' : effectiveSensor === 'landsat' ? 'L9' : 'S2'}
                         </span>
-                        <span className="text-[11px] font-bold text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded-full border border-gray-100 uppercase">
+                        <span className="text-[11px] font-bold text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded-full border border-gray-100">
                           {(selectedIndex || 'NDVI').toUpperCase()}
                         </span>
                       </div>
@@ -2859,7 +2861,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
                     <div className="flex items-start gap-1.5">
                       <CalendarIcon size={11} className="text-gray-600 shrink-0 mt-0.5" />
                       <div className="flex flex-col">
-                        <span className="text-[11px] font-black uppercase tracking-wider text-gray-700 leading-none mb-0.5">
+                        <span className="text-[11px] font-bold text-gray-700 leading-none mb-0.5">
                           {monthCoverage.length} {monthCoverage.length === 1 ? 'Pass' : 'Passes'} This Month
                         </span>
                         <span className="text-[11px] text-gray-500 font-medium leading-normal">
@@ -2877,7 +2879,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
                   <>
                     <div className="h-px bg-gray-100" />
                     <div className="flex flex-col gap-1.5">
-                      <span className="text-[11px] font-extrabold uppercase text-gray-600 tracking-wider">Recent Passes</span>
+                      <span className="text-[11px] font-semibold text-gray-600">Recent Passes</span>
                       <div className="flex flex-col gap-1">
                         {calendarDates.slice(-5).reverse().map(d => {
                           const isActive = currentTimeline?.date === d.date;
@@ -3446,7 +3448,7 @@ Context: ${context}.`;
       Stressed: { bg: '#FEE2E2', color: '#B91C1C' }
     }[health] || { bg: '#F3F4F6', color: '#6B7280' };
     return (
-      <span className="text-xs font-bold uppercase px-2.5 py-1 rounded-full" style={{ backgroundColor: cfg.bg, color: cfg.color }}>
+      <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ backgroundColor: cfg.bg, color: cfg.color }}>
         {health}
       </span>
     );
@@ -3479,7 +3481,7 @@ Context: ${context}.`;
                   ? (brandingMode === 'AM' ? 'Agro Monitoring' : 'Farm Tools')
                   : <>{cropLabel} {brandingMode === 'AM' ? 'Monitoring' : 'Farm Tools'}</>}
               </h1>
-              <p className={`text-[11px] font-semibold uppercase tracking-widest mt-1 leading-none ${brandingMode === 'AM' ? 'text-green-600' : 'text-green-600'}`}>
+              <p className={`text-[11px] font-semibold mt-1 leading-none ${brandingMode === 'AM' ? 'text-green-600' : 'text-green-600'}`}>
                 {service ? service.subtitle : brandingMode === 'AM' ? 'Enterprise Satellite Node' : 'Agricultural Operations Hub'}
               </p>
             </div>
@@ -3539,7 +3541,7 @@ Context: ${context}.`;
             {showNotifications && (
               <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-gray-200 rounded-2xl shadow-2xl z-[500] overflow-hidden">
                 <div className="px-4 py-3.5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                  <div className="text-xs font-black uppercase tracking-wider text-gray-700">Live Alerts Feed</div>
+                  <div className="text-xs font-bold text-gray-700">Live Alerts Feed</div>
                   <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${brandingMode === 'AM' ? 'bg-green-50 text-green-700' : 'bg-green-50 text-green-700'}`}>
                     {alerts.filter(a => a.status === 'Active').length} Active
                   </span>
@@ -3575,7 +3577,7 @@ Context: ${context}.`;
             >
               <div className="text-right">
                 <div className="text-sm font-bold text-gray-900 leading-none">{profileName}</div>
-                <div className={`text-[11px] font-semibold tracking-wider mt-1 uppercase ${brandingMode === 'AM' ? 'text-green-600' : 'text-green-600'}`}>{profileRole}</div>
+                <div className={`text-[11px] font-semibold mt-1 ${brandingMode === 'AM' ? 'text-green-600' : 'text-green-600'}`}>{profileRole}</div>
               </div>
               <div className={`w-11 h-11 rounded-xl flex items-center justify-center font-bold text-sm shadow-sm border transition-all ${brandingMode === 'AM' ? 'text-green-700 border-green-200 bg-green-50' : 'text-green-700 border-green-200 bg-green-50'}`}>
                 {brandingMode === 'AM' ? 'AM' : 'FT'}
@@ -3587,9 +3589,9 @@ Context: ${context}.`;
                   <div className="w-16 h-16 rounded-2xl flex items-center justify-center font-bold text-white text-xl shadow-md mb-2.5" style={{ backgroundColor: brandingMode === 'AM' ? '#16A34A' : '#2563EB' }}>
                     {brandingMode === 'AM' ? 'AM' : 'FT'}
                   </div>
-                  <div className="text-sm font-extrabold text-gray-950">{profileName}</div>
+                  <div className="text-sm font-semibold text-gray-950">{profileName}</div>
                   <div className="text-[11px] font-semibold text-gray-600 mt-0.5">{profileEmail}</div>
-                  <span className={`inline-block text-[11px] font-extrabold px-2 py-0.5 rounded-full mt-2 border ${brandingMode === 'AM' ? 'bg-green-50 text-green-700 border-green-150' : 'bg-green-50 text-green-700 border-green-100'}`}>
+                  <span className={`inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full mt-2 border ${brandingMode === 'AM' ? 'bg-green-50 text-green-700 border-green-150' : 'bg-green-50 text-green-700 border-green-100'}`}>
                     {profileRole}
                   </span>
                 </div>
@@ -3630,7 +3632,7 @@ Context: ${context}.`;
 
               {/* MAIN */}
               <div className="space-y-1">
-                <div className="text-[11px] font-bold text-gray-600 uppercase tracking-widest px-3 mb-3">Main</div>
+                <div className="text-[11px] font-bold text-gray-600 px-3 mb-3">Main</div>
                 {pick([
                   { id: 'analytics',           label: 'Analytics Hub',       icon: <LayoutDashboard size={17} /> },
                   { id: 'intelligence-layers', label: 'Intelligence Layers', icon: <MapIcon size={17} /> },
@@ -3641,7 +3643,7 @@ Context: ${context}.`;
                   { id: 'land-restoration',    label: 'Land Restoration',    icon: <Leaf size={17} /> },
                   { id: 'alerts',              label: 'Alerts',              icon: <AlertTriangle size={17} />, badge: alerts.filter(a => a.status === 'Active').length },
                   // Service-only page kinds: pick() keeps them only when the service lists them
-                  ...(service ? [{ id: 'register', label: 'Register', icon: <RegisterIcon size={17} /> }] : []),
+                  ...(service ? [{ id: 'register', label: 'Register', icon: <RegisterIcon size={17} /> }, { id: 'check', label: 'Check', icon: <CheckIcon size={17} /> }, { id: 'log', label: 'Log', icon: <LogIcon size={17} /> }, { id: 'advice', label: 'Advice', icon: <AdviceIcon size={17} /> }] : []),
                 ], service?.sidebar).map(item => (
                   <button
                     key={item.id}
@@ -3658,7 +3660,7 @@ Context: ${context}.`;
                     </span>
                     <span className="flex-1 text-left">{item.label}</span>
                     {item.badge > 0 && (
-                      <span className={`text-[11px] font-extrabold px-1.5 py-0.5 rounded-full min-w-[18px] text-center ${activeSidebarItem === item.id ? 'bg-white/25 text-white' : 'bg-green-100 text-green-700'}`}>
+                      <span className={`text-[11px] font-semibold px-1.5 py-0.5 rounded-full min-w-[18px] text-center ${activeSidebarItem === item.id ? 'bg-white/25 text-white' : 'bg-green-100 text-green-700'}`}>
                         {item.badge}
                       </span>
                     )}
@@ -3668,7 +3670,7 @@ Context: ${context}.`;
 
               {/* TOOLS */}
               <div className="space-y-1">
-                <div className="text-[11px] font-bold text-gray-600 uppercase tracking-widest px-3 mb-3">Tools</div>
+                <div className="text-[11px] font-bold text-gray-600 px-3 mb-3">Tools</div>
                 {[
                   { id: 'calendar-tool', label: 'Calendar',     icon: <CalendarIcon size={17} />, active: showCalendarTool, toggle: () => setShowCalendarTool(!showCalendarTool) },
                   { id: 'slider-tool',   label: 'Time Slider',  icon: <SlidersHorizontal size={17} />, active: showTimeSliderTool, toggle: () => setShowTimeSliderTool(!showTimeSliderTool) },
@@ -3708,11 +3710,11 @@ Context: ${context}.`;
 
                 {isCompareMode && (
                   <div className="px-3 py-2.5 bg-green-50/40 rounded-xl mt-1.5 space-y-2 border border-green-100/50">
-                    <div className="text-[11px] font-bold text-green-700 uppercase tracking-widest px-1">Active Date Slot</div>
+                    <div className="text-[11px] font-bold text-green-700 px-1">Active Date Slot</div>
                     <div className="grid grid-cols-2 gap-1.5">
                       <button
                         onClick={() => setActiveDateSlot('A')}
-                        className={`py-2 px-1.5 rounded-lg text-[11px] font-extrabold text-center border transition-all ${
+                        className={`py-2 px-1.5 rounded-lg text-[11px] font-semibold text-center border transition-all ${
                           activeDateSlot === 'A'
                             ? 'bg-green-600 text-white border-green-600 shadow-sm'
                             : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
@@ -3722,7 +3724,7 @@ Context: ${context}.`;
                       </button>
                       <button
                         onClick={() => setActiveDateSlot('B')}
-                        className={`py-2 px-1.5 rounded-lg text-[11px] font-extrabold text-center border transition-all ${
+                        className={`py-2 px-1.5 rounded-lg text-[11px] font-semibold text-center border transition-all ${
                           activeDateSlot === 'B'
                             ? 'bg-green-600 text-white border-green-600 shadow-sm'
                             : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
@@ -3737,7 +3739,7 @@ Context: ${context}.`;
 
               {/* SETTINGS */}
               <div className="space-y-1">
-                <div className="text-[11px] font-bold text-gray-600 uppercase tracking-widest px-3 mb-3">Settings</div>
+                <div className="text-[11px] font-bold text-gray-600 px-3 mb-3">Settings</div>
                 {[
                   { id: 'your-data', label: 'Your data',        icon: <UploadIcon size={17} /> },
                   { id: 'help',      label: 'Glossary',         icon: <Info size={17} /> }
@@ -3830,7 +3832,7 @@ Context: ${context}.`;
                   <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
                     {/* Estate Filter */}
                     <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2">
-                      <span className="text-[11px] uppercase font-extrabold text-gray-600 tracking-wider">Estate</span>
+                      <span className="text-[11px] font-semibold text-gray-600">Estate</span>
                       <select
                         value={filterEstate}
                         onChange={e => handleEstateChange(e.target.value)}
@@ -3845,7 +3847,7 @@ Context: ${context}.`;
 
                     {/* Plot Filter — populated from real plot IDs */}
                     <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2">
-                      <span className="text-[11px] uppercase font-extrabold text-gray-600 tracking-wider">Plot</span>
+                      <span className="text-[11px] font-semibold text-gray-600">Plot</span>
                       <select
                         value={filterPlot}
                         onChange={e => handlePlotFilterChange(e.target.value)}
@@ -3860,7 +3862,7 @@ Context: ${context}.`;
 
                     {/* Date Filter */}
                     <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2">
-                      <span className="text-[11px] uppercase font-extrabold text-gray-600 tracking-wider">Date</span>
+                      <span className="text-[11px] font-semibold text-gray-600">Date</span>
                       <select
                         value={filterDate}
                         onChange={e => setFilterDate(e.target.value)}
@@ -3901,13 +3903,13 @@ Context: ${context}.`;
                         >
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex-1 min-w-0">
-                              <span className="text-xs font-semibold text-gray-600 uppercase tracking-wider block mb-3">
+                              <span className="text-xs font-semibold text-gray-600 block mb-3">
                                 {kpi.label} {renderInfoTooltip(kpi.label)}
                               </span>
                               <span className="text-4xl font-bold tracking-tight text-gray-900 block mb-2">
                                 {kpi.value}
                               </span>
-                              <span className="text-xs text-gray-600 font-medium block uppercase tracking-wide">
+                              <span className="text-xs text-gray-600 font-medium block tracking-wide">
                                 {kpi.subtext}
                               </span>
                             </div>
@@ -3931,7 +3933,7 @@ Context: ${context}.`;
                             <TrendingUp size={18} className="text-green-600" />
                             Geospatial Vegetation Vigor & Health Trends {renderInfoTooltip("Geospatial Vegetation Vigor & Health Trends")}
                           </h3>
-                          <span className="text-xs bg-green-50 text-green-700 font-bold px-3 py-1 rounded-full uppercase tracking-wide">
+                          <span className="text-xs bg-green-50 text-green-700 font-bold px-3 py-1 rounded-full tracking-wide">
                             NDVI
                           </span>
                         </div>
@@ -3947,7 +3949,7 @@ Context: ${context}.`;
                             <Droplets size={18} className="text-green-600" />
                             Canopy Moisture Retention (NDMI) Trends {renderInfoTooltip("Moisture Retention (NDMI)")}
                           </h3>
-                          <span className="text-xs bg-green-50 text-green-700 font-bold px-3 py-1 rounded-full uppercase tracking-wide">
+                          <span className="text-xs bg-green-50 text-green-700 font-bold px-3 py-1 rounded-full tracking-wide">
                             NDMI
                           </span>
                         </div>
@@ -3963,7 +3965,7 @@ Context: ${context}.`;
                             <Thermometer size={18} className="text-green-600" />
                             Land Surface Temperature Trends {renderInfoTooltip("Land Surface Temperature Trends")}
                           </h3>
-                          <span className="text-xs bg-green-50 text-green-700 font-bold px-3 py-1 rounded-full uppercase tracking-wide">
+                          <span className="text-xs bg-green-50 text-green-700 font-bold px-3 py-1 rounded-full tracking-wide">
                             LST °C
                           </span>
                         </div>
@@ -3985,7 +3987,7 @@ Context: ${context}.`;
                             <Wind size={18} className="text-purple-500" />
                             Vapor Pressure Deficit (VPD) Stress Trends {renderInfoTooltip("Vapor Pressure Deficit (VPD)")}
                           </h3>
-                          <span className="text-xs bg-green-50 text-green-700 font-bold px-3 py-1 rounded-full uppercase tracking-wide">
+                          <span className="text-xs bg-green-50 text-green-700 font-bold px-3 py-1 rounded-full tracking-wide">
                             VPD kPa
                           </span>
                         </div>
@@ -4008,7 +4010,7 @@ Context: ${context}.`;
                           <h3 className="text-base font-bold text-gray-900 flex items-center gap-2.5">
                             <TrendingUp size={18} className="text-green-600" />
                             Geospatial Vegetation Vigor & Health Trends {renderInfoTooltip("Geospatial Vegetation Vigor & Health Trends")}</h3>
-                          <span className="text-xs bg-green-50 text-green-700 font-bold px-3 py-1 rounded-full uppercase tracking-wide">
+                          <span className="text-xs bg-green-50 text-green-700 font-bold px-3 py-1 rounded-full tracking-wide">
                             NDVI Normalized
                           </span>
                         </div>
@@ -4026,7 +4028,7 @@ Context: ${context}.`;
                           <h3 className="text-base font-bold text-gray-900 flex items-center gap-2.5">
                             <Activity size={18} className="text-green-600" />
                             Seasonal Trajectory vs GDD Reference Curve {renderInfoTooltip("Seasonal Trajectory vs GDD Reference Curve")}</h3>
-                          <span className="text-xs bg-green-50 text-green-700 font-bold px-3 py-1 rounded-full uppercase tracking-wide">
+                          <span className="text-xs bg-green-50 text-green-700 font-bold px-3 py-1 rounded-full tracking-wide">
                             GDD Model
                           </span>
                         </div>
@@ -4044,7 +4046,7 @@ Context: ${context}.`;
                           <h3 className="text-base font-bold text-gray-900 flex items-center gap-2.5">
                             <TrendingUp size={18} className="text-green-600" />
                             Radar Vegetation Index (RVI) Growth Trends {renderInfoTooltip("Radar Vegetation Index (RVI)")}</h3>
-                          <span className="text-xs bg-green-50 text-green-700 font-bold px-3 py-1 rounded-full uppercase tracking-wide">
+                          <span className="text-xs bg-green-50 text-green-700 font-bold px-3 py-1 rounded-full tracking-wide">
                             SAR RVI
                           </span>
                         </div>
@@ -4062,7 +4064,7 @@ Context: ${context}.`;
                           <h3 className="text-base font-bold text-gray-900 flex items-center gap-2.5">
                             <Activity size={18} className="text-green-600" />
                             Plot-by-Plot Growing Degree Days (GDD) Completion Rate {renderInfoTooltip("Plot-by-Plot Growing Degree Days (GDD) Completion Rate")}</h3>
-                          <span className="text-xs bg-green-50 text-green-700 font-bold px-3 py-1 rounded-full uppercase tracking-wide">
+                          <span className="text-xs bg-green-50 text-green-700 font-bold px-3 py-1 rounded-full tracking-wide">
                             Thermal Units
                           </span>
                         </div>
@@ -4086,7 +4088,7 @@ Context: ${context}.`;
                           <h3 className="text-base font-bold text-gray-900 flex items-center gap-2.5">
                             <Droplets size={18} className="text-green-600" />
                             FAO-56 Evapotranspiration Model {renderInfoTooltip("FAO-56 Evapotranspiration Model")}</h3>
-                          <span className="text-xs bg-green-50 text-green-700 font-bold px-3 py-1 rounded-full uppercase tracking-wide">
+                          <span className="text-xs bg-green-50 text-green-700 font-bold px-3 py-1 rounded-full tracking-wide">
                             ETc vs ETa
                           </span>
                         </div>
@@ -4104,7 +4106,7 @@ Context: ${context}.`;
                           <h3 className="text-base font-bold text-gray-900 flex items-center gap-2.5">
                             <Droplets size={18} className="text-green-600" />
                             Canopy Moisture Retention (NDMI) Trends {renderInfoTooltip("Moisture Retention (NDMI)")}</h3>
-                          <span className="text-xs bg-green-50 text-green-700 font-bold px-3 py-1 rounded-full uppercase tracking-wide">
+                          <span className="text-xs bg-green-50 text-green-700 font-bold px-3 py-1 rounded-full tracking-wide">
                             NDMI
                           </span>
                         </div>
@@ -4122,7 +4124,7 @@ Context: ${context}.`;
                           <h3 className="text-base font-bold text-gray-900 flex items-center gap-2.5">
                             <Sun size={18} className="text-green-600" />
                             Soil Temperature Trends {renderInfoTooltip("Soil Temp")}</h3>
-                          <span className="text-xs bg-green-50 text-green-700 font-bold px-3 py-1 rounded-full uppercase tracking-wide">
+                          <span className="text-xs bg-green-50 text-green-700 font-bold px-3 py-1 rounded-full tracking-wide">
                             Soil Temp
                           </span>
                         </div>
@@ -4140,7 +4142,7 @@ Context: ${context}.`;
                           <h3 className="text-base font-bold text-gray-900 flex items-center gap-2.5">
                             <Activity size={18} className="text-green-600" />
                             Vapor Pressure Deficit (VPD) Stress Trends {renderInfoTooltip("VPD Stress")}</h3>
-                          <span className="text-xs bg-green-50 text-green-700 font-bold px-3 py-1 rounded-full uppercase tracking-wide">
+                          <span className="text-xs bg-green-50 text-green-700 font-bold px-3 py-1 rounded-full tracking-wide">
                             VPD Index
                           </span>
                         </div>
@@ -4173,7 +4175,7 @@ Context: ${context}.`;
                         <div className="overflow-x-auto">
                           <table className="w-full text-left text-xs border-collapse">
                             <thead>
-                              <tr className="border-b border-gray-200 text-gray-600 uppercase tracking-wider font-extrabold text-[11px]">
+                              <tr className="border-b border-gray-200 text-gray-600 font-semibold text-[11px]">
                                 <th className="py-3 px-4">Plot</th>
                                 <th className="py-3 px-4">Area (ha)</th>
                                 <th className="py-3 px-4">Demand ETc (mm/day)</th>
@@ -4227,20 +4229,20 @@ Context: ${context}.`;
                           {/* KPI cards */}
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div className="border border-gray-100 rounded-xl p-4 bg-white shadow-sm">
-                              <div className="text-[11px] font-bold text-gray-600 uppercase tracking-widest mb-1">Avg. Crop Water Demand</div>
-                              <div className="text-2xl font-black text-gray-800">
+                              <div className="text-[11px] font-bold text-gray-600 mb-1">Avg. Crop Water Demand</div>
+                              <div className="text-2xl font-bold text-gray-800">
                                 {avgEtc != null ? `${avgEtc.toFixed(2)}` : '—'} <span className="text-xs font-semibold text-gray-600">mm/day</span>
                               </div>
                             </div>
                             <div className="border border-gray-100 rounded-xl p-4 bg-white shadow-sm">
-                              <div className="text-[11px] font-bold text-gray-600 uppercase tracking-widest mb-1">Cumulative Rainfall</div>
-                              <div className="text-2xl font-black text-gray-800">
+                              <div className="text-[11px] font-bold text-gray-600 mb-1">Cumulative Rainfall</div>
+                              <div className="text-2xl font-bold text-gray-800">
                                 {farm.cumulative_rainfall_mm != null ? farm.cumulative_rainfall_mm.toFixed(1) : '—'} <span className="text-xs font-semibold text-gray-600">mm</span>
                               </div>
                             </div>
                             <div className="border border-gray-100 rounded-xl p-4 bg-white shadow-sm">
-                              <div className="text-[11px] font-bold text-gray-600 uppercase tracking-widest mb-1">Irrigation Efficiency</div>
-                              <div className="text-2xl font-black text-gray-800">
+                              <div className="text-[11px] font-bold text-gray-600 mb-1">Irrigation Efficiency</div>
+                              <div className="text-2xl font-bold text-gray-800">
                                 {farm.irrigation_efficiency != null ? `${(farm.irrigation_efficiency * 100).toFixed(0)}%` : '—'}
                               </div>
                               <div className="text-[11px] text-gray-600 mt-1">Rainfall received / crop water demand over the run period</div>
@@ -4249,10 +4251,10 @@ Context: ${context}.`;
 
                           {/* Per-plot ETc table */}
                           <div className="border border-gray-100 rounded-xl bg-white shadow-sm overflow-hidden">
-                            <div className="px-4 py-3 border-b border-gray-100 text-xs font-bold text-gray-700 uppercase tracking-widest">Per-Plot Crop Water Demand</div>
+                            <div className="px-4 py-3 border-b border-gray-100 text-xs font-bold text-gray-700">Per-Plot Crop Water Demand</div>
                             <div className="max-h-80 overflow-y-auto">
                               <table className="w-full text-xs">
-                                <thead className="bg-gray-50 text-gray-600 uppercase tracking-widest text-[11px]">
+                                <thead className="bg-gray-50 text-gray-600 text-[11px]">
                                   <tr>
                                     <th className="text-left px-4 py-2">Plot</th>
                                     <th className="text-left px-4 py-2">Area (ha)</th>
@@ -4309,7 +4311,7 @@ Context: ${context}.`;
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
                           {/* Parameters Table/List */}
                           <div className="space-y-3">
-                            <h4 className="text-[11px] font-extrabold uppercase text-gray-600 tracking-wider">Diagnostic Metrics</h4>
+                            <h4 className="text-[11px] font-semibold text-gray-600">Diagnostic Metrics</h4>
                             {[
                               { name: 'Soil pH', value: '—', status: '—', color: 'text-gray-500' },
                               { name: 'Organic Carbon', value: '—', status: '—', color: 'text-gray-500' },
@@ -4326,7 +4328,7 @@ Context: ${context}.`;
 
                           {/* Actionable Recommendations */}
                           <div className="space-y-3">
-                            <h4 className="text-[11px] font-extrabold uppercase text-gray-600 tracking-wider">Agronomic Recommendations</h4>
+                            <h4 className="text-[11px] font-semibold text-gray-600">Agronomic Recommendations</h4>
                             <div className="bg-green-50/50 border border-green-100 p-4 rounded-xl space-y-3">
                               <p className="text-xs text-gray-500 font-semibold leading-relaxed">
                                 Soil chemistry data not yet connected. Upload soil sample results to generate agronomic recommendations for this plot.
@@ -4485,7 +4487,7 @@ Context: ${context}.`;
 
                         <div 
                           onClick={() => setIntelOpExpanded(!intelOpExpanded)}
-                          className="flex items-center gap-1 text-[11px] font-bold text-gray-600 hover:text-gray-800 uppercase tracking-widest cursor-pointer select-none transition-colors"
+                          className="flex items-center gap-1 text-[11px] font-bold text-gray-600 hover:text-gray-800 cursor-pointer select-none transition-colors"
                         >
                           {intelOpExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />} Operational
                         </div>
@@ -4673,7 +4675,7 @@ Context: ${context}.`;
 
                         <div 
                           onClick={() => setHealthOpExpanded(!healthOpExpanded)}
-                          className="flex items-center gap-1 text-[11px] font-bold text-gray-600 hover:text-gray-800 uppercase tracking-widest cursor-pointer select-none transition-colors"
+                          className="flex items-center gap-1 text-[11px] font-bold text-gray-600 hover:text-gray-800 cursor-pointer select-none transition-colors"
                         >
                           {healthOpExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />} Operational
                         </div>
@@ -4882,7 +4884,7 @@ Context: ${context}.`;
 
                         <div 
                           onClick={() => setYieldOpExpanded(!yieldOpExpanded)}
-                          className="flex items-center gap-1 text-[11px] font-bold text-gray-600 hover:text-gray-800 uppercase tracking-widest cursor-pointer select-none transition-colors"
+                          className="flex items-center gap-1 text-[11px] font-bold text-gray-600 hover:text-gray-800 cursor-pointer select-none transition-colors"
                         >
                           {yieldOpExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />} Operational
                         </div>
@@ -4956,7 +4958,7 @@ Context: ${context}.`;
                       <div className="space-y-3">
                         <div
                           onClick={() => setYieldProdExpanded(!yieldProdExpanded)}
-                          className="flex items-center gap-1 text-[11px] font-bold text-gray-600 hover:text-gray-800 uppercase tracking-widest cursor-pointer select-none transition-colors"
+                          className="flex items-center gap-1 text-[11px] font-bold text-gray-600 hover:text-gray-800 cursor-pointer select-none transition-colors"
                         >
                           {yieldProdExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />} Production
                         </div>
@@ -5011,7 +5013,7 @@ Context: ${context}.`;
                       </div>                      <div className="space-y-3">
                         <div
                           onClick={() => setYieldStatExpanded(!yieldStatExpanded)}
-                          className="flex items-center gap-1 text-[11px] font-bold text-gray-600 hover:text-gray-800 uppercase tracking-widest cursor-pointer select-none transition-colors"
+                          className="flex items-center gap-1 text-[11px] font-bold text-gray-600 hover:text-gray-800 cursor-pointer select-none transition-colors"
                         >
                           {yieldStatExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />} Statistics
                         </div>
@@ -5145,7 +5147,7 @@ Context: ${context}.`;
                       <div className="space-y-3">
                         <div 
                           onClick={() => setMoistureOpExpanded(!moistureOpExpanded)}
-                          className="flex items-center gap-1 text-[11px] font-bold text-gray-600 hover:text-gray-800 uppercase tracking-widest cursor-pointer select-none transition-colors"
+                          className="flex items-center gap-1 text-[11px] font-bold text-gray-600 hover:text-gray-800 cursor-pointer select-none transition-colors"
                         >
                           {moistureOpExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />} Operational
                         </div>
@@ -5328,7 +5330,7 @@ Context: ${context}.`;
 
                         <div 
                           onClick={() => setRestoreOpExpanded(!restoreOpExpanded)}
-                          className="flex items-center gap-1 text-[11px] font-bold text-gray-600 hover:text-gray-800 uppercase tracking-widest cursor-pointer select-none transition-colors"
+                          className="flex items-center gap-1 text-[11px] font-bold text-gray-600 hover:text-gray-800 cursor-pointer select-none transition-colors"
                         >
                           {restoreOpExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />} Operational
                         </div>
@@ -5402,7 +5404,7 @@ Context: ${context}.`;
                       <div className="space-y-3">
                         <div
                           onClick={() => setRestoreEcoExpanded(!restoreEcoExpanded)}
-                          className="flex items-center gap-1 text-[11px] font-bold text-gray-600 hover:text-gray-800 uppercase tracking-widest cursor-pointer select-none transition-colors"
+                          className="flex items-center gap-1 text-[11px] font-bold text-gray-600 hover:text-gray-800 cursor-pointer select-none transition-colors"
                         >
                           {restoreEcoExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />} Ecological
                         </div>
@@ -5519,7 +5521,7 @@ Context: ${context}.`;
                       </div>                      <div className="space-y-3">
                         <div
                           onClick={() => setRestoreLulcExpanded(!restoreLulcExpanded)}
-                          className="flex items-center gap-1 text-[11px] font-bold text-gray-600 hover:text-gray-800 uppercase tracking-widest cursor-pointer select-none transition-colors"
+                          className="flex items-center gap-1 text-[11px] font-bold text-gray-600 hover:text-gray-800 cursor-pointer select-none transition-colors"
                         >
                           {restoreLulcExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />} LULC
                         </div>
@@ -5587,7 +5589,7 @@ Context: ${context}.`;
                       </div>                      <div className="space-y-3">
                         <div
                           onClick={() => setRestoreEudrExpanded(!restoreEudrExpanded)}
-                          className="flex items-center gap-1 text-[11px] font-bold text-gray-600 hover:text-gray-800 uppercase tracking-widest cursor-pointer select-none transition-colors"
+                          className="flex items-center gap-1 text-[11px] font-bold text-gray-600 hover:text-gray-800 cursor-pointer select-none transition-colors"
                         >
                           {restoreEudrExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />} EUDR
                         </div>
@@ -5650,14 +5652,14 @@ Context: ${context}.`;
                   </div>
                   <div>
                     <h2 className="text-xl font-bold text-gray-900 tracking-tight leading-none">Alerts Command Center</h2>
-                    <p className="text-[11px] font-bold text-green-600 uppercase tracking-widest mt-0.5">Live Anomaly Intelligence · Farmintelytics Agro Node</p>
+                    <p className="text-[11px] font-bold text-green-600 mt-0.5">Live Anomaly Intelligence · Farmintelytics Agro Node</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
                   <div className="bg-white px-4 py-2 rounded-xl border border-gray-200 shadow-sm flex items-center gap-2.5">
                     <span className="w-2 h-2 rounded-full bg-status-live animate-pulse shrink-0" />
                     <div>
-                      <span className="text-[11px] font-bold text-gray-600 uppercase tracking-wider block">Operational Status</span>
+                      <span className="text-[11px] font-bold text-gray-600 block">Operational Status</span>
                       <span className="text-xs font-bold text-gray-800">{alerts.filter(a => a.status === 'Active').length} Active Anomalies</span>
                     </div>
                   </div>
@@ -5766,20 +5768,20 @@ Context: ${context}.`;
                               <div className="flex items-start gap-2.5 min-w-0">
                                 <div className={`w-2 h-2 rounded-full mt-1 shrink-0 ${dotColor} ${isCrit || isWarn ? 'animate-pulse' : ''}`} />
                                 <div className="min-w-0">
-                                  <div className="text-xs font-extrabold text-gray-900 leading-tight truncate">{p.name}</div>
+                                  <div className="text-xs font-semibold text-gray-900 leading-tight truncate">{p.name}</div>
                                   <div className="text-[11px] text-gray-600 font-bold mt-0.5 truncate">{p.id} · {p.estate}</div>
                                 </div>
                               </div>
-                              <div className={`shrink-0 text-[11px] font-black px-2 py-0.5 rounded-full border ${badgeBg}`}>
+                              <div className={`shrink-0 text-[11px] font-bold px-2 py-0.5 rounded-full border ${badgeBg}`}>
                                 {p.total} {p.total === 1 ? 'issue' : 'issues'}
                               </div>
                             </div>
 
                             {/* Mini severity badges */}
                             <div className="flex items-center gap-1.5 mt-2.5 pl-4.5">
-                              {p.critCount > 0 && <span className="text-[11px] font-black bg-green-50 text-green-700 border border-green-200 px-1.5 py-0.5 rounded-full">{p.critCount} Critical</span>}
-                              {p.warnCount > 0 && <span className="text-[11px] font-black bg-green-50 text-green-700 border border-green-200 px-1.5 py-0.5 rounded-full">{p.warnCount} Warning</span>}
-                              {p.infoCount > 0 && <span className="text-[11px] font-black bg-green-50 text-green-700 border border-green-200 px-1.5 py-0.5 rounded-full">{p.infoCount} Info</span>}
+                              {p.critCount > 0 && <span className="text-[11px] font-bold bg-green-50 text-green-700 border border-green-200 px-1.5 py-0.5 rounded-full">{p.critCount} Critical</span>}
+                              {p.warnCount > 0 && <span className="text-[11px] font-bold bg-green-50 text-green-700 border border-green-200 px-1.5 py-0.5 rounded-full">{p.warnCount} Warning</span>}
+                              {p.infoCount > 0 && <span className="text-[11px] font-bold bg-green-50 text-green-700 border border-green-200 px-1.5 py-0.5 rounded-full">{p.infoCount} Info</span>}
                             </div>
                           </button>
                         );
@@ -5830,9 +5832,9 @@ Context: ${context}.`;
                                 ) : (
                                   <span className="w-2.5 h-2.5 rounded-full bg-green-400 shrink-0" />
                                 )}
-                                <h3 className="text-xl font-extrabold text-gray-950 tracking-tight leading-tight">{meta.name}</h3>
+                                <h3 className="text-xl font-semibold text-gray-950 tracking-tight leading-tight">{meta.name}</h3>
                               </div>
-                              <span className="text-[11px] text-gray-600 font-bold block uppercase tracking-wider">{meta.estate}</span>
+                              <span className="text-[11px] text-gray-600 font-bold block">{meta.estate}</span>
                             </div>
                             <button
                               id="alerts-close-detail"
@@ -5852,8 +5854,8 @@ Context: ${context}.`;
                               { label: 'Acknowledged', value: plotAlerts.length - activePlotAlerts.length, color: (plotAlerts.length - activePlotAlerts.length) > 0 ? 'text-green-700' : 'text-gray-600', bg: (plotAlerts.length - activePlotAlerts.length) > 0 ? 'bg-green-50/70 border-green-100' : 'bg-gray-50/50 border-gray-150' }
                             ].map((s, i) => (
                               <div key={i} className={`${s.bg} border rounded-xl p-3 text-center`}>
-                                <div className={`text-xl font-black ${s.color}`}>{s.value}</div>
-                                <div className="text-[11px] font-bold text-gray-600 uppercase tracking-wider mt-0.5">{s.label}</div>
+                                <div className={`text-xl font-bold ${s.color}`}>{s.value}</div>
+                                <div className="text-[11px] font-bold text-gray-600 mt-0.5">{s.label}</div>
                               </div>
                             ))}
                           </div>
@@ -5897,7 +5899,7 @@ Context: ${context}.`;
 
                           {/* Timeline */}
                           <div className="space-y-3">
-                            <h4 className="text-[11px] font-extrabold text-gray-600 uppercase tracking-widest flex items-center gap-2">
+                            <h4 className="text-[11px] font-semibold text-gray-600 flex items-center gap-2">
                               <span>Chronological Incident Log</span>
                               <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-[11px]">{plotAlerts.length} entries</span>
                             </h4>
@@ -5925,14 +5927,14 @@ Context: ${context}.`;
                                     <div className={`p-4 rounded-2xl border transition-colors ${isActive ? 'bg-white border-gray-150 hover:bg-gray-50/50' : 'bg-gray-50/30 border-gray-100'}`}>
                                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
                                         <div className="flex items-center gap-2 flex-wrap">
-                                          <span className="text-xs font-black text-gray-800 tabular-nums">{alert.id}</span>
+                                          <span className="text-xs font-bold text-gray-800 tabular-nums">{alert.id}</span>
                                           <span className="text-[11px] text-gray-500">•</span>
                                           <span className="text-xs text-gray-600 font-semibold">{alert.date} at {alert.time}</span>
                                         </div>
                                         <div className="flex items-center gap-1.5">
-                                          <span className={`text-[11px] font-black uppercase px-2.5 py-0.5 rounded-full border ${severityColor}`}>{alert.severity}</span>
-                                          <span className="text-[11px] font-extrabold bg-gray-100 text-gray-700 border border-gray-200 px-2 py-0.5 rounded-full uppercase">{alert.category}</span>
-                                          {!isActive && <span className="text-[11px] font-extrabold bg-green-50 text-green-600 border border-green-200 px-2 py-0.5 rounded-full uppercase">Acked</span>}
+                                          <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${severityColor}`}>{alert.severity}</span>
+                                          <span className="text-[11px] font-semibold bg-gray-100 text-gray-700 border border-gray-200 px-2 py-0.5 rounded-full">{alert.category}</span>
+                                          {!isActive && <span className="text-[11px] font-semibold bg-green-50 text-green-600 border border-green-200 px-2 py-0.5 rounded-full">Acked</span>}
                                         </div>
                                       </div>
 
@@ -6077,7 +6079,7 @@ Context: ${context}.`;
 
                         <div 
                           onClick={() => setClimateOpExpanded(!climateOpExpanded)}
-                          className="flex items-center gap-1 text-[11px] font-bold text-gray-600 hover:text-gray-800 uppercase tracking-widest cursor-pointer select-none transition-colors"
+                          className="flex items-center gap-1 text-[11px] font-bold text-gray-600 hover:text-gray-800 cursor-pointer select-none transition-colors"
                         >
                           {climateOpExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />} Operational
                         </div>
@@ -6124,7 +6126,7 @@ Context: ${context}.`;
                       <div className="space-y-3">
                         <div
                           onClick={() => setClimateBioExpanded(!climateBioExpanded)}
-                          className="flex items-center gap-1 text-[11px] font-bold text-gray-600 hover:text-gray-800 uppercase tracking-widest cursor-pointer select-none transition-colors"
+                          className="flex items-center gap-1 text-[11px] font-bold text-gray-600 hover:text-gray-800 cursor-pointer select-none transition-colors"
                         >
                           {climateBioExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />} Biophysical
                         </div>
@@ -6166,7 +6168,7 @@ Context: ${context}.`;
                       </div>                      <div className="space-y-3">
                         <div
                           onClick={() => setClimateAtmExpanded(!climateAtmExpanded)}
-                          className="flex items-center gap-1 text-[11px] font-bold text-gray-600 hover:text-gray-800 uppercase tracking-widest cursor-pointer select-none transition-colors"
+                          className="flex items-center gap-1 text-[11px] font-bold text-gray-600 hover:text-gray-800 cursor-pointer select-none transition-colors"
                         >
                           {climateAtmExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />} Atmospheric
                         </div>
@@ -7150,6 +7152,16 @@ Context: ${context}.`;
             </div>
           )}
 
+          {activeSidebarItem === 'check' && service?.check && (
+            <CheckPage page={service.check} plots={plotsData} onOpenData={() => setActiveSidebarItem('your-data')} />
+          )}
+          {activeSidebarItem === 'log' && service?.log && (
+            <LogPage page={service.log} onOpenData={() => { setDataFocus(service.log.dataset); setActiveSidebarItem('your-data'); }} />
+          )}
+          {activeSidebarItem === 'advice' && service?.advice && (
+            <AdvicePage page={service.advice} alerts={alerts} onAsk={(q) => { setActiveSidebarItem('analytics'); setActiveTab('ai-assistant'); handleChatSubmit(q); }} />
+          )}
+
           {activeSidebarItem === 'register' && service?.register && (
             <RegisterPage register={service.register} plots={plotsData} />
           )}
@@ -7196,7 +7208,7 @@ Context: ${context}.`;
                   onClick={() => setGlossaryTab('remote-sensing')}
                   className={`flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg font-bold text-xs transition-all cursor-pointer ${
                     glossaryTab === 'remote-sensing'
-                      ? 'bg-green-600 text-white shadow-sm font-extrabold'
+                      ? 'bg-green-600 text-white shadow-sm font-semibold'
                       : 'text-gray-500 hover:text-gray-800 hover:bg-gray-100'
                   }`}
                 >
@@ -7207,7 +7219,7 @@ Context: ${context}.`;
                   onClick={() => setGlossaryTab('farmer-inputs')}
                   className={`flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg font-bold text-xs transition-all cursor-pointer ${
                     glossaryTab === 'farmer-inputs'
-                      ? 'bg-green-600 text-white shadow-sm font-extrabold'
+                      ? 'bg-green-600 text-white shadow-sm font-semibold'
                       : 'text-gray-500 hover:text-gray-800 hover:bg-gray-100'
                   }`}
                 >
@@ -7242,13 +7254,13 @@ Context: ${context}.`;
                       <div className="space-y-3 pt-3 border-t border-gray-100 text-left">
                         {value.done && (
                           <div className="text-[11px] text-gray-650 font-semibold">
-                            <span className="font-extrabold text-gray-600 uppercase text-[11px] block tracking-wider mb-0.5">Methodology</span>
+                            <span className="font-semibold text-gray-600 text-[11px] block mb-0.5">Methodology</span>
                             {value.done}
                           </div>
                         )}
                         {value.formula && (
                           <div className="text-[11px] text-gray-650 font-semibold">
-                            <span className="font-extrabold text-gray-600 uppercase text-[11px] block tracking-wider mb-1">Formula / Expression</span>
+                            <span className="font-semibold text-gray-600 text-[11px] block mb-1">Formula / Expression</span>
                             <code className="block font-mono text-[11px] text-green-705 bg-green-50/50 border border-green-100 rounded-lg p-2 overflow-x-auto whitespace-pre-wrap word-break-all">
                               {value.formula}
                             </code>
@@ -7256,7 +7268,7 @@ Context: ${context}.`;
                         )}
                         {value.references && (
                           <div className="text-[11px] text-gray-650 font-semibold">
-                            <span className="font-extrabold text-gray-600 uppercase text-[11px] block tracking-wider mb-1">References Cited</span>
+                            <span className="font-semibold text-gray-600 text-[11px] block mb-1">References Cited</span>
                             <div className="text-[11px] text-gray-500 font-medium italic leading-relaxed bg-gray-50/50 border border-gray-100 rounded-lg p-2.5">
                               {value.references}
                             </div>
@@ -7280,7 +7292,7 @@ Context: ${context}.`;
             <div className="px-6 py-4.5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
               <div className="flex items-center gap-2.5">
                 <Settings2 className={brandingMode === 'AM' ? 'text-green-600' : 'text-green-600'} size={19} />
-                <span className="text-base font-extrabold text-gray-950">Settings Center</span>
+                <span className="text-base font-semibold text-gray-950">Settings Center</span>
               </div>
               <button 
                 onClick={() => setShowSettingsModal(false)}
@@ -7305,7 +7317,7 @@ Context: ${context}.`;
                     onClick={() => setSettingsTab(tab.id)}
                     className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold text-left transition-all ${
                       settingsTab === tab.id
-                        ? (brandingMode === 'AM' ? 'bg-green-50 text-green-700 font-extrabold' : 'bg-green-50 text-green-700 font-extrabold')
+                        ? (brandingMode === 'AM' ? 'bg-green-50 text-green-700 font-semibold' : 'bg-green-50 text-green-700 font-semibold')
                         : 'text-gray-600 hover:bg-gray-100'
                     }`}
                   >
@@ -7319,10 +7331,10 @@ Context: ${context}.`;
               <div className="flex-1 p-6 overflow-y-auto space-y-5">
                 {settingsTab === 'profile' && (
                   <div className="space-y-4">
-                    <div className="text-xs font-black uppercase tracking-wider text-gray-600">User Profile Settings</div>
+                    <div className="text-xs font-bold text-gray-600">User Profile Settings</div>
                     <div className="space-y-3">
                       <div>
-                        <label className="text-[11px] font-black uppercase text-gray-600 block mb-1">Full Name</label>
+                        <label className="text-[11px] font-bold text-gray-600 block mb-1">Full Name</label>
                         <input 
                           type="text" 
                           value={profileName} 
@@ -7331,7 +7343,7 @@ Context: ${context}.`;
                         />
                       </div>
                       <div>
-                        <label className="text-[11px] font-black uppercase text-gray-600 block mb-1">Active Role</label>
+                        <label className="text-[11px] font-bold text-gray-600 block mb-1">Active Role</label>
                         <input 
                           type="text" 
                           value={profileRole} 
@@ -7340,7 +7352,7 @@ Context: ${context}.`;
                         />
                       </div>
                       <div>
-                        <label className="text-[11px] font-black uppercase text-gray-600 block mb-1">Email Identity</label>
+                        <label className="text-[11px] font-bold text-gray-600 block mb-1">Email Identity</label>
                         <input 
                           type="email" 
                           value={profileEmail} 
@@ -7354,7 +7366,7 @@ Context: ${context}.`;
                 
                 {settingsTab === 'branding' && (
                   <div className="space-y-4">
-                    <div className="text-xs font-black uppercase tracking-wider text-gray-600">Platform System Mode</div>
+                    <div className="text-xs font-bold text-gray-600">Platform System Mode</div>
                     <div className="grid grid-cols-1 gap-3">
                       <div 
                         onClick={() => setBrandingMode('AM')}
@@ -7363,7 +7375,7 @@ Context: ${context}.`;
                         }`}
                       >
                         <div>
-                          <div className="text-xs font-extrabold text-gray-900 flex items-center gap-1.5">
+                          <div className="text-xs font-semibold text-gray-900 flex items-center gap-1.5">
                             <span className="w-1.5 h-1.5 rounded-full bg-green-600" />
                             AgroMonitor Mode (AM)
                           </div>
@@ -7379,7 +7391,7 @@ Context: ${context}.`;
                         }`}
                       >
                         <div>
-                          <div className="text-xs font-extrabold text-gray-900 flex items-center gap-1.5">
+                          <div className="text-xs font-semibold text-gray-900 flex items-center gap-1.5">
                             <span className="w-1.5 h-1.5 rounded-full bg-green-600" />
                             Farm Tools Harvest Mode (FT)
                           </div>
@@ -7393,10 +7405,10 @@ Context: ${context}.`;
                 
                 {settingsTab === 'map' && (
                   <div className="space-y-4">
-                    <div className="text-xs font-black uppercase tracking-wider text-gray-600">Map Default Configuration</div>
+                    <div className="text-xs font-bold text-gray-600">Map Default Configuration</div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="text-[11px] font-black uppercase text-gray-600 block mb-1">Center Latitude</label>
+                        <label className="text-[11px] font-bold text-gray-600 block mb-1">Center Latitude</label>
                         <input 
                           type="number" 
                           step="0.0001" 
@@ -7406,7 +7418,7 @@ Context: ${context}.`;
                         />
                       </div>
                       <div>
-                        <label className="text-[11px] font-black uppercase text-gray-600 block mb-1">Center Longitude</label>
+                        <label className="text-[11px] font-bold text-gray-600 block mb-1">Center Longitude</label>
                         <input 
                           type="number" 
                           step="0.0001" 
@@ -7416,7 +7428,7 @@ Context: ${context}.`;
                         />
                       </div>
                       <div className="col-span-2">
-                        <label className="text-[11px] font-black uppercase text-gray-600 block mb-1">Initial Zoom level</label>
+                        <label className="text-[11px] font-bold text-gray-600 block mb-1">Initial Zoom level</label>
                         <input 
                           type="number" 
                           value={defaultMapZoom} 
@@ -7430,7 +7442,7 @@ Context: ${context}.`;
                 
                 {settingsTab === 'users' && (
                   <div className="space-y-4">
-                    <div className="text-xs font-black uppercase tracking-wider text-gray-600">Team Access Management</div>
+                    <div className="text-xs font-bold text-gray-600">Team Access Management</div>
                     <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                       {settingsUsers.map(user => (
                         <div key={user.id} className="flex items-center justify-between p-2.5 border border-gray-100 rounded-xl bg-gray-50/30">
@@ -7460,7 +7472,7 @@ Context: ${context}.`;
                     
                     {/* Add User mini-form */}
                     <div className="pt-2 border-t border-gray-100 space-y-2">
-                      <div className="text-[11px] font-black uppercase tracking-wider text-gray-600">Add Team Member</div>
+                      <div className="text-[11px] font-bold text-gray-600">Add Team Member</div>
                       <div className="grid grid-cols-2 gap-2">
                         <input 
                           id="new-user-name"

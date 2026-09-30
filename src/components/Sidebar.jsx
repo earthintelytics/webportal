@@ -15,13 +15,13 @@ const Sidebar = ({ activeSection, setActiveSection, currentCrop, onSignOut }) =>
           <img src="/farmintelytics-logo.png" alt="Logo" className="w-full h-auto" />
         </div>
         <div className="text-center mt-3">
-          <div className="font-black text-[15px] uppercase tracking-tighter text-gray-900">FarmIntelytics</div>
-          <div className="text-[11px] text-gray-400 font-bold uppercase tracking-widest mt-1">Management Node</div>
+          <div className="font-bold text-[15px] tracking-tighter text-gray-900">FarmIntelytics</div>
+          <div className="text-[11px] text-gray-400 font-bold mt-1">Management Node</div>
         </div>
       </div>
 
       <div className="flex-1 px-4 space-y-1 mt-4">
-        <label className="text-[11px] font-black text-gray-300 uppercase tracking-[0.2em] px-4 mb-3 block">Navigation</label>
+        <label className="text-[11px] font-bold text-gray-300 tracking-[0.2em] px-4 mb-3 block">Navigation</label>
         {menuItems.map(item => (
           <button
             key={item.id}
@@ -50,14 +50,14 @@ const Sidebar = ({ activeSection, setActiveSection, currentCrop, onSignOut }) =>
             <img src={currentCrop.logo} alt="Crop" className="w-full h-auto" />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-[12px] font-black text-gray-900 truncate uppercase tracking-tighter">{currentCrop.name}</div>
-            <div className="text-[11px] text-gray-400 font-bold uppercase">Active Division</div>
+            <div className="text-[12px] font-bold text-gray-900 truncate tracking-tighter">{currentCrop.name}</div>
+            <div className="text-[11px] text-gray-400 font-bold">Active Division</div>
           </div>
         </div>
 
         <button 
           onClick={onSignOut}
-          className="w-full flex items-center justify-center gap-2 text-[11px] font-black uppercase tracking-widest text-red-500 hover:text-white hover:bg-red-500 py-3 rounded-xl transition-all border border-red-100"
+          className="w-full flex items-center justify-center gap-2 text-[11px] font-bold text-red-500 hover:text-white hover:bg-red-500 py-3 rounded-xl transition-all border border-red-100"
         >
           <LogOut size={14} />
           Sign Out

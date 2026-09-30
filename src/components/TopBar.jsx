@@ -13,8 +13,8 @@ const TopBar = ({ title }) => {
     <header className="h-20 bg-white border-b border-gray-100 flex items-center px-8 gap-8 shrink-0 z-40">
       <div className="flex items-center gap-6">
         <div className="flex flex-col">
-           <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 mb-1">Management Module</h2>
-           <div className="text-[18px] font-black text-gray-900 capitalize tracking-tight">{title}</div>
+           <h2 className="text-[11px] font-bold tracking-[0.2em] text-gray-400 mb-1">Management Module</h2>
+           <div className="text-[18px] font-bold text-gray-900 capitalize tracking-tight">{title}</div>
         </div>
 
         <div className="h-8 w-px bg-gray-100 hidden sm:block"></div>
@@ -52,7 +52,7 @@ const TopBar = ({ title }) => {
         <div className="flex items-center gap-3">
           <div className="text-right hidden sm:block">
             <div className="text-[12px] font-bold text-gray-900">Farm Admin</div>
-            <div className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Operations</div>
+            <div className="text-[11px] font-bold text-gray-400">Operations</div>
           </div>
           <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center text-green-700 font-bold">
             <User size={20} />
