@@ -48,18 +48,9 @@ import PortalLayout from './layouts/PortalLayout';
 // chunk is only fetched when its route actually renders.
 
 // === FFB Management ===
-const FFBDashboard = lazyWithReload(() => import('./modules/management/ffb/Dashboard'));
 
 // === Crop Management Portals ===
-const CashewDashboard = lazyWithReload(() => import('./modules/management/cashew/Dashboard'));
-const SugarcaneDashboard = lazyWithReload(() => import('./modules/management/sugarcane/Dashboard'));
-const RiceDashboard = lazyWithReload(() => import('./modules/management/rice/Dashboard'));
-const CocoaDashboard = lazyWithReload(() => import('./modules/management/cocoa/Dashboard'));
-const RubberDashboard = lazyWithReload(() => import('./modules/management/rubber/Dashboard'));
-const CassavaDashboard = lazyWithReload(() => import('./modules/management/cassava/Dashboard'));
-const MaizeDashboard = lazyWithReload(() => import('./modules/management/maize/Dashboard'));
 
-const MonitoringPortal = lazyWithReload(() => import('./modules/monitoring/MonitoringPortal'));
 
 // === Sustainability, Field Advisory & Finance ===
 // One portal for all of them: the organisation monitoring layout with the
@@ -77,7 +68,6 @@ const CashewMonitoring = lazyWithReload(() => import('./modules/monitoring/cashe
 const RubberMonitoring = lazyWithReload(() => import('./modules/monitoring/rubber/Monitoring'));
 
 // === Cooperative & Group Management ===
-const GroupsDashboard = lazyWithReload(() => import('./modules/cooperative/Dashboard'));
 
 const OrganizationMonitor = lazyWithReload(() => import('./modules/organization-monitor/OrganizationMonitor'));
 
@@ -101,8 +91,8 @@ const ComingSoon = ({ title, description }) => (
     <div className="w-20 h-20 rounded-[2.5rem] bg-white border border-[var(--border-light)] flex items-center justify-center mx-auto mb-8 shadow-premium">
       <Zap size={32} className="text-[var(--brand-primary)]" />
     </div>
-    <h2 className="font-display text-4xl font-bold text-[var(--text-main)] mb-4 tracking-tight uppercase">{title}</h2>
-    <p className="text-[var(--text-muted)] font-semibold max-w-md uppercase text-[11px] tracking-[0.2em]">{description}</p>
+    <h2 className="font-display text-3xl font-semibold text-[var(--text-main)] mb-4 tracking-tight">{title}</h2>
+    <p className="text-[var(--text-muted)] max-w-md text-sm">{description}</p>
   </div>
 );
 
@@ -285,18 +275,18 @@ const PortalPage = () => {
         <div className="w-20 h-20 rounded-[2.5rem] bg-white border border-[var(--border-light)] flex items-center justify-center mx-auto mb-8 shadow-premium">
           <Zap size={32} className="text-[var(--brand-primary)]" />
         </div>
-        <h2 className="font-display text-4xl font-bold text-[var(--text-main)] mb-4 tracking-tight uppercase">Not Enabled</h2>
-        <p className="text-[var(--text-muted)] font-semibold max-w-md uppercase text-[11px] tracking-[0.2em]">
+        <h2 className="font-display text-3xl font-semibold text-[var(--text-main)] mb-4 tracking-tight">Not enabled</h2>
+        <p className="text-[var(--text-muted)] max-w-md text-sm">
           This module is not enabled for your organization. Contact your administrator to request access.
         </p>
         {/* Clients arrive by direct link and never see the internal hub: send
             them back to their own sign-in; the team goes back to the hub. */}
         {hasValidTeamSession() ? (
-          <button onClick={handleBackToHub} className="mt-8 px-6 py-3 bg-white text-[var(--text-main)] border border-[var(--border-light)] rounded-xl font-bold text-xs uppercase tracking-widest shadow-sm hover:bg-[var(--bg-main)] transition-all">
+          <button onClick={handleBackToHub} className="mt-8 px-6 py-3 bg-white text-[var(--text-main)] border border-[var(--border-light)] rounded-xl font-semibold text-sm shadow-sm hover:bg-[var(--bg-main)] transition-all">
             Back to Hub
           </button>
         ) : (
-          <button onClick={() => { handleSignOut(); navigate(`/login?module=${encodeURIComponent(moduleId)}`); }} className="mt-8 px-6 py-3 bg-white text-[var(--text-main)] border border-[var(--border-light)] rounded-xl font-bold text-xs uppercase tracking-widest shadow-sm hover:bg-[var(--bg-main)] transition-all">
+          <button onClick={() => { handleSignOut(); navigate(`/login?module=${encodeURIComponent(moduleId)}`); }} className="mt-8 px-6 py-3 bg-white text-[var(--text-main)] border border-[var(--border-light)] rounded-xl font-semibold text-sm shadow-sm hover:bg-[var(--bg-main)] transition-all">
             Back to sign in
           </button>
         )}
@@ -307,6 +297,10 @@ const PortalPage = () => {
   // ── resolve the component for this module ──
   const getContent = () => {
     // Remote-sensing monitoring portals
+    // Services (and Drone surveys / Smallholder monitoring) use the shared layout
+    if (isServiceModule(moduleId)) {
+      return <ServicePortal moduleId={moduleId} onSignOut={handleSignOut} onBack={handleBackToHub} />;
+    }
     if (moduleId.startsWith('rs-')) {
       const rsApps = {
         'rs-ffb':      <OilPalmMonitoring />,
@@ -321,26 +315,24 @@ const PortalPage = () => {
       if (rsApps[moduleId]) {
         return React.cloneElement(rsApps[moduleId], { onSignOut: handleSignOut, onBack: handleBackToHub });
       }
-      const cropMap = { 'rs-drone': 'Drone Intelligence' };
-      return <MonitoringPortal cropName={cropMap[moduleId] || 'Crop'} onSignOut={handleSignOut} onBack={handleBackToHub} />;
+      return <ComingSoon title={moduleId.replace(/-/g, ' ')} description="This crop portal is not set up yet." />;
     }
 
     const routeMap = {
-      'management-ffb':       <FFBDashboard activeSection={activeSection} />,
-      'management-cashew':    <CashewDashboard activeSection={activeSection} />,
-      'management-sugarcane': <SugarcaneDashboard activeSection={activeSection} />,
-      'management-rice':      <RiceDashboard activeSection={activeSection} />,
-      'management-cocoa':     <CocoaDashboard activeSection={activeSection} />,
-      'management-rubber':    <RubberDashboard activeSection={activeSection} />,
-      'management-cassava':   <CassavaDashboard activeSection={activeSection} />,
-      'management-maize':     <MaizeDashboard activeSection={activeSection} />,
+      'management-ffb': <ComingSoon title="Not in the current plan" description="Management dashboards are parked. They showed sample figures, which have been removed; they return with real data if they come back into the plan." />,
+      'management-cashew': <ComingSoon title="Not in the current plan" description="Management dashboards are parked. They showed sample figures, which have been removed; they return with real data if they come back into the plan." />,
+      'management-sugarcane': <ComingSoon title="Not in the current plan" description="Management dashboards are parked. They showed sample figures, which have been removed; they return with real data if they come back into the plan." />,
+      'management-rice': <ComingSoon title="Not in the current plan" description="Management dashboards are parked. They showed sample figures, which have been removed; they return with real data if they come back into the plan." />,
+      'management-cocoa': <ComingSoon title="Not in the current plan" description="Management dashboards are parked. They showed sample figures, which have been removed; they return with real data if they come back into the plan." />,
+      'management-rubber': <ComingSoon title="Not in the current plan" description="Management dashboards are parked. They showed sample figures, which have been removed; they return with real data if they come back into the plan." />,
+      'management-cassava': <ComingSoon title="Not in the current plan" description="Management dashboards are parked. They showed sample figures, which have been removed; they return with real data if they come back into the plan." />,
+      'management-maize': <ComingSoon title="Not in the current plan" description="Management dashboards are parked. They showed sample figures, which have been removed; they return with real data if they come back into the plan." />,
 
       'drone-ffb':    <ComingSoon title="Drone Inspection" description="Live drone feed and high-resolution field surveillance." />,
       'drone-cashew': <ComingSoon title="Orchard Survey" description="Tree count, canopy gap analysis and disease spot detection." />,
 
 
-      'group-management': <GroupsDashboard mode="group-management" onSignOut={handleSignOut} />,
-      'group-monitoring': <MonitoringPortal cropName="Smallholder" onSignOut={handleSignOut} onBack={handleBackToHub} />,
+      'group-management': <ComingSoon title="Not in the current plan" description="Group management is parked. It showed sample figures, which have been removed." />,
     };
 
     // Sustainability, field advisory and finance services

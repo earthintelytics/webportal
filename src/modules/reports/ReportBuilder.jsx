@@ -11,7 +11,6 @@ import {
   Sparkles,
   AlertTriangle,
   CheckCircle2,
-  Info,
   BrainCircuit,
   Send,
   Clock,
@@ -91,7 +90,7 @@ const Card = ({ className = '', children }) => (
 
 const selectCls = 'px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-green-600';
 
-export default function ReportBuilder({ plots, alerts, estates, tenant, orgName, subject, cropType, onLegacy }) {
+export default function ReportBuilder({ plots, alerts, estates, tenant, orgName, subject, cropType }) {
   const [typesList] = useState(DEFAULT_TYPES);
   const [type, setType] = useState('monthly');
   const [level, setLevel] = useState('organisation');
@@ -217,6 +216,7 @@ export default function ReportBuilder({ plots, alerts, estates, tenant, orgName,
         scope: where,
         plot_id: level === 'blocks' && blocks[0] ? blocks[0] : null,
         crop: cropType,
+        service: subject,
         focus_area: focusArea !== 'general' ? focusArea : null,
       });
       if (recs && recs.summary) {
@@ -282,7 +282,28 @@ export default function ReportBuilder({ plots, alerts, estates, tenant, orgName,
       ];
     }
 
+    let savedReportId = `REP-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+
+    // Persist report to backend
+    try {
+      const saved = await api.createReport({
+        type,
+        scope: { level, farm_id: level === 'estate' ? estate : null, field_ids: level === 'blocks' ? blocks : [] },
+        period,
+        compare: cmp,
+        crop: cropType,
+        service: subject,
+        focus_area: focusArea !== 'general' ? focusArea : null,
+      });
+      if (saved?.report_id) {
+        savedReportId = saved.report_id;
+      }
+    } catch (err) {
+      console.warn('Report backend persist error (client copy maintained):', err);
+    }
+
     const reportObj = {
+      report_id: savedReportId,
       type,
       where,
       period,
@@ -361,7 +382,7 @@ export default function ReportBuilder({ plots, alerts, estates, tenant, orgName,
             <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Reports & Decision Intelligence</h2>
           </div>
           <p className="text-sm text-gray-500 font-medium mt-2 max-w-2xl">
-            Choose what, where and when. Get plain executive reports with AI-driven agronomic recommendations, risk analysis, and prioritized field decisions grounded in real satellite and weather data.
+            Choose what, where and when on the left; your report appears on the right, in plain language, ready to download or share.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -371,56 +392,28 @@ export default function ReportBuilder({ plots, alerts, estates, tenant, orgName,
           >
             {historyTab ? 'Back to Generator' : `Past Reports (${history.length})`}
           </button>
-          {onLegacy && (
-            <button onClick={onLegacy} className="text-sm font-semibold text-gray-500 hover:text-gray-800">
-              Previous report view
-            </button>
-          )}
         </div>
       </div>
 
+      <div className="grid grid-cols-1 xl:grid-cols-[380px_minmax(0,1fr)] gap-8 items-start">
+      {/* LEFT: settings */}
+      <aside className="xl:sticky xl:top-6 space-y-4 no-print">
       {/* History View */}
-      {historyTab && (
-        <Card className="p-6 space-y-4">
-          <h3 className="text-lg font-bold text-gray-900">Generated Reports History</h3>
-          {history.length === 0 ? (
-            <p className="text-sm text-gray-500">No reports generated yet. Use the builder below to create your first report.</p>
-          ) : (
-            <div className="divide-y divide-gray-100">
-              {history.map((h, i) => (
-                <div key={i} className="py-3.5 flex items-center justify-between">
-                  <div>
-                    <div className="font-semibold text-sm text-gray-900">{h.title || `${h.type?.toUpperCase()} Report — ${h.where}`}</div>
-                    <div className="text-xs text-gray-500">{fmtDate(h.period?.from)} – {fmtDate(h.period?.to)} · Generated {h.created ? new Date(h.created).toLocaleString() : 'recently'}</div>
-                  </div>
-                  <button
-                    onClick={() => { setReport(h); setHistoryTab(false); }}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-green-50 text-green-800 border border-green-200 hover:bg-green-100"
-                  >
-                    Open <ChevronRight size={14} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </Card>
-      )}
-
       {/* Report Generator Config Card */}
-      {!historyTab && (
-        <Card className="p-7 space-y-7 border-green-100 shadow-sm">
+      {(
+        <Card className="p-6 space-y-6">
           {/* 1. Type */}
           <div className="space-y-3">
             <div className="text-sm font-semibold text-gray-900 flex items-center gap-2">
               <span className="w-5 h-5 rounded-full bg-green-100 text-green-800 text-xs flex items-center justify-center font-bold">1</span>
               What kind of report?
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            <div className="grid grid-cols-1 gap-2">
               {typesList.map(t => (
                 <button
                   key={t.id}
                   onClick={() => setType(t.id)}
-                  className={`text-left p-4 rounded-2xl border transition-all ${
+                  className={`text-left px-4 py-3 rounded-xl border transition-all ${
                     type === t.id
                       ? 'border-green-600 ring-2 ring-green-600/20 bg-green-50/40 shadow-xs'
                       : 'border-gray-200 hover:border-gray-300'
@@ -430,7 +423,7 @@ export default function ReportBuilder({ plots, alerts, estates, tenant, orgName,
                     {t.icon}
                     <span className="text-sm font-semibold text-gray-900">{t.label}</span>
                   </div>
-                  <div className="text-xs text-gray-500 mt-1.5 line-clamp-2">{t.desc}</div>
+                  <div className="text-xs text-gray-500 mt-1 line-clamp-1">{t.desc}</div>
                 </button>
               ))}
             </div>
@@ -481,7 +474,7 @@ export default function ReportBuilder({ plots, alerts, estates, tenant, orgName,
           </div>
 
           {/* 3. Period & Agronomic Focus */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="space-y-6">
             <div className="space-y-3">
               <div className="text-sm font-semibold text-gray-900 flex items-center gap-2">
                 <span className="w-5 h-5 rounded-full bg-green-100 text-green-800 text-xs flex items-center justify-center font-bold">3</span>
@@ -518,9 +511,9 @@ export default function ReportBuilder({ plots, alerts, estates, tenant, orgName,
             <div className="space-y-3">
               <div className="text-sm font-semibold text-gray-900 flex items-center gap-2">
                 <span className="w-5 h-5 rounded-full bg-green-100 text-green-800 text-xs flex items-center justify-center font-bold">4</span>
-                Agronomic Focus Area
+                Focus
               </div>
-              <p className="text-xs text-gray-500">Tailor AI decision recommendations to a specific operational priority:</p>
+              <p className="text-xs text-gray-500">What the advice should concentrate on.</p>
               <div className="flex flex-wrap gap-2">
                 {FOCUS_AREAS.map(f => (
                   <Chip key={f.id} on={focusArea === f.id} onClick={() => setFocusArea(f.id)}>
@@ -532,43 +525,63 @@ export default function ReportBuilder({ plots, alerts, estates, tenant, orgName,
           </div>
 
           {/* Action Trigger */}
-          <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-gray-100">
-            <div className="flex items-center gap-4">
+          <div className="space-y-3 pt-4 border-t border-gray-100">
+            <div className="space-y-2">
               <button
                 onClick={create}
                 disabled={busy || !canCreate}
-                className="inline-flex items-center gap-2.5 px-6 py-3 rounded-xl text-sm font-semibold text-white bg-green-700 hover:bg-green-800 shadow-sm hover:shadow disabled:bg-gray-200 disabled:text-gray-500 transition-all"
+                className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3 rounded-xl text-sm font-semibold text-white bg-green-700 hover:bg-green-800 shadow-sm hover:shadow disabled:bg-gray-200 disabled:text-gray-500 transition-all"
               >
                 <FileText size={16} />
-                {busy ? 'Generating AI Decision Report…' : 'Generate Report & Decisions'}
+                {busy ? 'Creating your report…' : 'Create report'}
               </button>
-              <span className="text-xs font-medium text-gray-500">
+              <span className="block text-xs font-medium text-gray-500 text-center">
                 {typesList.find(t => t.id === type)?.label} · {where} · {fmtDate(period.from)} – {fmtDate(period.to)}
               </span>
             </div>
-            <div className="flex items-center gap-1.5 text-xs text-gray-400">
-              <Sparkles size={14} className="text-amber-500" />
-              Grounded in Sentinel-2, SAR radar, weather & alerts
+            <div className="flex items-center justify-center gap-1.5 text-xs text-gray-500">
+              <Sparkles size={14} className="text-green-700" />
+              Built from your satellite images, weather and alerts
             </div>
           </div>
         </Card>
       )}
 
+      </aside>
+
+      {/* RIGHT: results */}
+      <section className="min-w-0 space-y-8">
+      {historyTab && (
+        <Card className="p-6 space-y-4 no-print">
+          <h3 className="text-lg font-bold text-gray-900">Past reports</h3>
+          {history.length === 0 ? <p className="text-sm text-gray-500">No reports yet. Create one with the settings on the left.</p> : (
+            <div className="divide-y divide-gray-100">
+              {history.map((h, i) => (
+                <div key={i} className="py-3.5 flex items-center justify-between gap-4">
+                  <div>
+                    <div className="font-semibold text-sm text-gray-900">{h.title || `${typesList.find(x => x.id === h.type)?.label || 'Report'}: ${h.where}`}</div>
+                    <div className="text-xs text-gray-500">{fmtDate(h.period?.from)} – {fmtDate(h.period?.to)} · created {h.created ? new Date(h.created).toLocaleString() : 'recently'}</div>
+                  </div>
+                  <button onClick={() => { setReport(h); setHistoryTab(false); }} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-green-50 text-green-800 border border-green-200 hover:bg-green-100">Open <ChevronRight size={14} /></button>
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
+      )}
       {/* Generated Report View */}
-      {report && (
+      {report && !historyTab && (
         <div id="fi-report" className="space-y-8 animate-fadeIn">
           {/* Title & Actions Bar */}
           <div className="flex flex-wrap items-end justify-between gap-4 border-b border-gray-200 pb-5">
             <div>
-              <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-green-100 text-green-800">
+              <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md text-xs font-semibold bg-green-100 text-green-800">
                 {typesList.find(t => t.id === report.type)?.label || 'Agronomic Report'}
               </div>
               <h3 className="text-2xl font-bold text-gray-900 mt-2">{subject}: {report.where}</h3>
               <div className="text-sm text-gray-500 mt-1 flex items-center gap-2">
                 <span>{fmtDate(report.period.from)} – {fmtDate(report.period.to)}</span>
                 {report.cmp && <span className="text-gray-400">· compared with {fmtDate(report.cmp.from)} – {fmtDate(report.cmp.to)}</span>}
-                <span className="text-gray-300">|</span>
-                <span className="text-xs text-green-700 font-medium">Confidence: High (Multi-Spectral)</span>
               </div>
             </div>
             <div className="no-print flex items-center gap-3">
@@ -645,7 +658,7 @@ export default function ReportBuilder({ plots, alerts, estates, tenant, orgName,
                 >
                   <div className="flex items-center justify-between">
                     <span
-                      className={`text-2xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${
+                      className={`text-[11px] font-semibold px-2 py-0.5 rounded-md ${
                         rec.priority.includes('Immediate')
                           ? 'bg-amber-100 text-amber-900'
                           : rec.priority.includes('Medium')
@@ -850,10 +863,21 @@ export default function ReportBuilder({ plots, alerts, estates, tenant, orgName,
       )}
 
       {!report && !historyTab && (
-        <div className="flex items-center gap-2 text-xs text-gray-500 py-4">
-          <Info size={15} /> Select your parameters above and click <strong>Generate Report & Decisions</strong> to create a report.
-        </div>
+        <Card className="p-10 no-print">
+          <div className="max-w-xl mx-auto text-center space-y-3">
+            <div className="w-12 h-12 mx-auto rounded-2xl bg-green-50 border border-green-100 flex items-center justify-center text-green-700"><FileText size={22} /></div>
+            <h3 className="text-lg font-semibold text-gray-900">Your report will appear here</h3>
+            <p className="text-sm text-gray-500">Pick the report, the area and the period on the left, then press Create report. It reads top to bottom:</p>
+          </div>
+          <ol className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-3 max-w-3xl mx-auto">
+            {['Summary in plain words', 'Status at a glance', 'Blocks needing action, with what to do', 'What changed against the comparison', 'Advice for your focus', 'Data used and limits'].map((s, i) => (
+              <li key={s} className="flex items-center gap-3 rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-700"><span className="w-6 h-6 rounded-full bg-gray-100 text-gray-600 text-xs font-semibold flex items-center justify-center">{i + 1}</span>{s}</li>
+            ))}
+          </ol>
+        </Card>
       )}
+      </section>
+      </div>
     </div>
   );
 }

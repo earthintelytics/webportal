@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  ArrowRight, Lock, Mail, Eye, EyeOff, ShieldCheck, Globe, Zap, CreditCard, 
-  Landmark, Coins, Satellite, Users, Layers, UserCheck, Grid,
-  Sprout, Wheat, Container, Leaf, Coffee, Activity, Droplets, Sparkles,
-  TrendingUp, BarChart3
+  ArrowRight, Lock, Mail, Eye, EyeOff, Grid
 } from 'lucide-react';
 import { login, fetchCropMonitoringConfig } from '../services/organizationMonitorApi';
 import { HERO_PLACEHOLDERS } from '../constants/heroPlaceholders';
@@ -20,16 +17,8 @@ const CROP_DESIGNS = {
     heroImage: '/crops/oil_palm.webp',
     title: <>Precision <span className="text-emerald-600 font-black">Oil Palm</span> Analytics</>,
     desc: 'Real-time satellite vegetation index, estate fresh fruit bunch yield modeling, and canopy health diagnostics.',
-    features: [
-      { icon: <Sprout size={20} />, title: 'Canopy Health & NDVI', desc: 'Real-time monitoring of frond vigor and nutrient status' },
-      { icon: <Satellite size={20} />, title: 'Yield & FFB Forecasting', desc: 'Predictive tonnage modeling across estate blocks' },
-      { icon: <ShieldCheck size={20} />, title: 'RSPO Compliance Ledger', desc: 'Deforestation verification and zero-burn audit trails' }
-    ],
-    stats: [
-      { label: 'Avg NDVI Index', value: '0.84 Peak' },
-      { label: 'Monitored Area', value: '68,500 Ha' },
-      { label: 'Est. Tonnage', value: '22.8 MT/Ha' }
-    ]
+    features: [],
+    stats: []
   },
   cashew: {
     key: 'cashew',
@@ -41,16 +30,8 @@ const CROP_DESIGNS = {
     heroImage: '/crops/cashew.webp',
     title: <>High-Precision <span className="text-amber-600 font-black">Cashew Orchard</span> Intel</>,
     desc: 'Tree count tracking, flowering stage canopy analysis, nut quality grading, and harvest scheduling.',
-    features: [
-      { icon: <Activity size={20} />, title: 'Canopy Gap Analysis', desc: 'Automated orchard tree counting and spacing density' },
-      { icon: <Sparkles size={20} />, title: 'Flowering Stage Alert', desc: 'Canopy thermal monitoring for early pest detection' },
-      { icon: <TrendingUp size={20} />, title: 'RCN Yield Prediction', desc: 'Outturn ratio forecasting and harvest planning' }
-    ],
-    stats: [
-      { label: 'Outturn Rate', value: '49-52 lbs' },
-      { label: 'Tree Density', value: '156 Trees/Ha' },
-      { label: 'Orchard Vigor', value: '94.2% Optimal' }
-    ]
+    features: [],
+    stats: []
   },
   sugarcane: {
     key: 'sugarcane',
@@ -62,16 +43,8 @@ const CROP_DESIGNS = {
     heroImage: '/crops/sugarcane.webp',
     title: <>Smart <span className="text-emerald-600 font-black">Sugarcane Field</span> Operations</>,
     desc: 'Biomass accumulation tracking, sucrose content estimation, and field productivity management.',
-    features: [
-      { icon: <Zap size={20} />, title: 'Biomass Estimation', desc: 'Satellite radar monitoring for sugar maturity tracking' },
-      { icon: <BarChart3 size={20} />, title: 'Field Productivity', desc: 'Comprehensive yield and crop health performance' },
-      { icon: <Leaf size={20} />, title: 'Ratoon Management', desc: 'Stubble vigor analysis across multi-cycle harvests' }
-    ],
-    stats: [
-      { label: 'Est. Sucrose', value: '14.2% Brix' },
-      { label: 'Field Biomass', value: '88 MT/Ha' },
-      { label: 'Active Blocks', value: '100% Monitored' }
-    ]
+    features: [],
+    stats: []
   },
   rice: {
     key: 'rice',
@@ -83,16 +56,8 @@ const CROP_DESIGNS = {
     heroImage: '/crops/rice.webp',
     title: <>Multispectral <span className="text-teal-600 font-black">Rice Paddy</span> Monitoring</>,
     desc: 'Water level sensing, paddy growth phase mapping, nutrient zoning, and yield estimation.',
-    features: [
-      { icon: <Leaf size={20} />, title: 'Paddy Inundation Sensing', desc: 'Radar water level and soil moisture monitoring' },
-      { icon: <Globe size={20} />, title: 'Growth Stage Tracker', desc: 'Tillering, panicle initiation & ripening stage detection' },
-      { icon: <Sparkles size={20} />, title: 'Precision Fertilizer Zone', desc: 'Variable rate nutrient zoning derived from satellite imagery' }
-    ],
-    stats: [
-      { label: 'Moisture Index', value: '89% Optimal' },
-      { label: 'Growth Stage', value: 'Panicle Init.' },
-      { label: 'Yield Est.', value: '6.4 MT/Ha' }
-    ]
+    features: [],
+    stats: []
   },
   cocoa: {
     key: 'cocoa',
@@ -104,16 +69,8 @@ const CROP_DESIGNS = {
     heroImage: '/crops/cocoa.webp',
     title: <>Sustainable <span className="text-amber-700 font-black">Cocoa Harvest</span> Origin</>,
     desc: 'Shade-canopy density mapping, EUDR deforestation compliance verification, and bean traceability.',
-    features: [
-      { icon: <Coffee size={20} />, title: 'EUDR Compliance Audit', desc: 'Automated forest boundary verification for international standards' },
-      { icon: <ShieldCheck size={20} />, title: 'Shade Canopy Index', desc: 'Agroforestry canopy density & carbon stock estimation' },
-      { icon: <Users size={20} />, title: 'Farmer Traceability', desc: 'First-mile bag tagging and digital cooperative receipts' }
-    ],
-    stats: [
-      { label: 'EUDR Verified', value: '100% Compliant' },
-      { label: 'Shade Cover', value: '42% Agroforest' },
-      { label: 'Bean Grade', value: 'Grade A Export' }
-    ]
+    features: [],
+    stats: []
   },
   rubber: {
     key: 'rubber',
@@ -125,16 +82,8 @@ const CROP_DESIGNS = {
     heroImage: '/crops/rubber.webp',
     title: <>High-Yield <span className="text-cyan-700 font-black">Rubber & Latex</span> Monitoring</>,
     desc: 'Latex dry rubber content analytics, tapping cycle optimization, and estate productivity logs.',
-    features: [
-      { icon: <Droplets size={20} />, title: 'Latex DRC Analytics', desc: 'Lab & field latex solids percentage tracking' },
-      { icon: <BarChart3 size={20} />, title: 'Wintering Defoliation Map', desc: 'Satellite tracking of leaf drop and tapping rest cycles' },
-      { icon: <UserCheck size={20} />, title: 'Tagger Productivity', desc: 'Daily cup collection logs and tree tapping assignments' }
-    ],
-    stats: [
-      { label: 'Dry Rubber %', value: '34.8% DRC' },
-      { label: 'Tapping Status', value: 'Active Cycle' },
-      { label: 'Daily Latex', value: '1,420 L/Block' }
-    ]
+    features: [],
+    stats: []
   },
   cassava: {
     key: 'cassava',
@@ -146,16 +95,8 @@ const CROP_DESIGNS = {
     heroImage: '/crops/cassava.webp',
     title: <>Advanced <span className="text-amber-600 font-black">Cassava Tuber</span> Analytics</>,
     desc: 'Underground tuber growth modeling, canopy stress detection, starch yield prediction, and harvest scheduling.',
-    features: [
-      { icon: <Container size={20} />, title: 'Tuber Growth Modeling', desc: 'Root biomass growth curves based on soil sensors' },
-      { icon: <Sparkles size={20} />, title: 'Canopy Stress Detection', desc: 'Multispectral leaf health & chlorosis mapping' },
-      { icon: <TrendingUp size={20} />, title: 'Processing Supply Chain', desc: 'Harvest age tracking for maximum starch content' }
-    ],
-    stats: [
-      { label: 'Starch Yield', value: '26.4% Content' },
-      { label: 'Tuber Weight', value: '28.5 MT/Ha' },
-      { label: 'Health Score', value: '98% Disease-Free' }
-    ]
+    features: [],
+    stats: []
   },
   maize: {
     key: 'maize',
@@ -167,16 +108,8 @@ const CROP_DESIGNS = {
     heroImage: '/crops/maize.webp',
     title: <>Precision <span className="text-yellow-600 font-black">Maize Crop</span> Intelligence</>,
     desc: 'Hybrid seed variety performance tracking, pest infestation mapping, moisture stress alerts, and yield forecasts.',
-    features: [
-      { icon: <Wheat size={20} />, title: 'Pest Risk Radar', desc: 'Early warning leaf damage alerts from spectral imagery' },
-      { icon: <Globe size={20} />, title: 'Variety Comparison', desc: 'Side-by-side vigor analysis for commercial maize hybrids' },
-      { icon: <Zap size={20} />, title: 'Grain Moisture Prediction', desc: 'Dry-down monitoring for optimal combine harvesting' }
-    ],
-    stats: [
-      { label: 'Grain Moisture', value: '14.1% Ideal' },
-      { label: 'Hybrid Vigor', value: 'High Index' },
-      { label: 'Est. Harvest', value: '9.2 MT/Ha' }
-    ]
+    features: [],
+    stats: []
   },
   organization: {
     key: 'organization',
@@ -188,16 +121,8 @@ const CROP_DESIGNS = {
     heroImage: '/crops/oil_palm.webp',
     title: <>Precision <span className="text-emerald-600 font-black">Agricultural Organization</span> Console</>,
     desc: 'Central command console for corporate agricultural organizations, managing multi-tenant farm portfolios, aggregated satellite coverage, and user roles.',
-    features: [
-      { icon: <Globe size={20} />, title: 'Multi-Tenant Farm Portfolio', desc: 'Unified monitoring across regional subsidiaries & estates' },
-      { icon: <ShieldCheck size={20} />, title: 'Role & License Management', desc: 'Fine-grained access control for agronomy & executive teams' },
-      { icon: <Layers size={20} />, title: 'Aggregated Analytics', desc: 'Cross-crop performance dashboards and sustainability reporting' }
-    ],
-    stats: [
-      { label: 'Active Farms', value: '142 Estates' },
-      { label: 'Total Area', value: '310,000 Ha' },
-      { label: 'Uptime SLA', value: '99.99% Enterprise' }
-    ]
+    features: [],
+    stats: []
   },
   finance: {
     key: 'finance',
@@ -209,16 +134,8 @@ const CROP_DESIGNS = {
     heroImage: '/crops/hero/finance.webp',
     title: <>Farm production and payments, <span className="text-emerald-500 font-black">one ledger</span></>,
     desc: 'Production signals per block next to the deliveries and payments recorded for each farmer.',
-    features: [
-      { icon: <Landmark size={20} />, title: 'Multi-Bank Settlement', desc: 'Instant automated worker & farmer payroll disbursements' },
-      { icon: <ShieldCheck size={20} />, title: 'Immutable Audit Ledger', desc: 'Verified transaction logs and balance sheets' },
-      { icon: <Coins size={20} />, title: 'Automated Reconciliation', desc: 'Real-time match between field logs & bank payouts' }
-    ],
-    stats: [
-      { label: 'Disbursed', value: '$4.2M MTD' },
-      { label: 'Settlement Speed', value: '< 2 Seconds' },
-      { label: 'Audit Accuracy', value: '100% Reconciled' }
-    ]
+    features: [],
+    stats: []
   },
   // ─── Sustainability, field advisory and finance services ───
   estate_carbon: {

@@ -1,3 +1,4 @@
+// UNUSED (2026-09-30): showed sample (invented) figures; no longer routed. Kept on purpose, not deleted — see docs/UNUSED_CODE.md before reusing or removing.
 import React, { useState, useMemo, useEffect } from 'react';
 import * as api from '../../services/organizationMonitorApi';
 import { 

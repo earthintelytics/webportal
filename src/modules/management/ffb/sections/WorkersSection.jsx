@@ -1,3 +1,4 @@
+// UNUSED (2026-09-30): showed sample (invented) figures; no longer routed. Kept on purpose, not deleted — see docs/UNUSED_CODE.md before reusing or removing.
 import React from 'react';
 import { Users } from 'lucide-react';
 import { SimpleCard, FilterBar, WorkerActivityTable } from '../../../../components/SharedComponents';
