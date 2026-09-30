@@ -96,6 +96,7 @@ import { fetchEstates } from '../../../services/estatesApi';
 import YourDataPage from '../../data/YourDataPage';
 import DataNeededDialog from '../../data/DataNeededDialog';
 import RegisterPage from '../../services/RegisterPage';
+import { CROP_CATALOG, ORGANISATION_PAGES, loadCropPages } from '../cropCatalog';
 import ReportBuilder from '../../reports/ReportBuilder';
 import VerificationPage from '../../reports/VerificationPage';
 import { CheckPage, LogPage, AdvicePage } from '../../services/ServicePages';
@@ -180,6 +181,17 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
   const [dataFocus, setDataFocus] = useState(null);
   // Reports tab: new report builder by default; the previous report view stays one click away
   const [legacyReports, setLegacyReports] = useState(false);
+  // Page set: a service's catalogue entry, or the crop's (backend catalogue,
+  // admin-editable; interim copy from docs/crops until it is deployed).
+  // Organisation dashboards get the organisation page set (farmer wording, no service pages).
+  const [cropPages, setCropPages] = useState(() => (service ? null : mode === 'organization' ? ORGANISATION_PAGES : CROP_CATALOG[cropType] || null));
+  useEffect(() => {
+    if (service || mode === 'organization') return undefined;
+    let active = true;
+    loadCropPages(cropType).then(pgs => { if (active && pgs) setCropPages(pgs); });
+    return () => { active = false; };
+  }, [cropType, service, mode]);
+  const pageSet = service || cropPages;
   const [activeTab, setActiveTab] = useState('monitor');
   const [activeAnalyticsSubpage, setActiveAnalyticsSubpage] = useState('overview');
 
@@ -435,6 +447,26 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
   // notes and legend classification for this crop's interpretation.
   const cropProfileEntries = useMemo(() => cropIndices?.indices || [], [cropIndices]);
   const cropPrimaryIndex = cropIndices?.primary_index || null;
+
+  // Block colours follow the admin's interpretation: the block's real value for
+  // that index, classified with the legend classes the superadmin set for this
+  // crop (Crop thresholds, served with the crop's indices). The fixed table is
+  // only a fallback when no admin legend exists. No value -> no colour (never
+  // a value borrowed from another index).
+  const blockValue = (plot, key) => {
+    const v = plot.indices?.[key] ?? (key === 'ndvi' ? plot.ndvi : key === 'ndmi' ? plot.ndmi : key === 'lswi' ? (plot.indices?.lswi ?? plot.ndmi) : null);
+    return v == null || Number.isNaN(Number(v)) ? null : Number(v);
+  };
+  const blockColour = (plot, key) => {
+    const v = blockValue(plot, key);
+    if (v == null) return null;
+    const legend = cropProfileEntries.find(e => e.key === key)?.legend;
+    if (Array.isArray(legend) && legend.length) {
+      const cls = legend.find(l => Array.isArray(l.range) && v >= l.range[0] && v <= l.range[1]);
+      if (cls?.color) return cls.color;
+    }
+    return getIndexFiveClasses(v, key.toUpperCase()).color;
+  };
 
   // Start on the crop's primary index once data is available (once only)
   const primaryAppliedRef = useRef(false);
@@ -1530,20 +1562,20 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
       fillColor = risk === 'High Risk' ? '#ef4444' : risk === 'Moderate Risk' ? '#f97316' : '#16a34a';
       fillOpacity = healthPestOpacity / 100;
     } else if (layer === 'water') {
-      fillColor = getIndexFiveClasses(plot.waterStress, 'NDMI').color;
+      fillColor = blockColour(plot, 'ndmi') || 'transparent';
       fillOpacity = healthWaterOpacity / 100;
     } else if (layer === 'chlorophyll') {
-      fillColor = getIndexFiveClasses(plot.chlorophyll, 'NDVI').color;
+      fillColor = blockColour(plot, 'reci') || 'transparent';
       fillOpacity = healthChlorophyllOpacity / 100;
     } else if (layer === 'ndvi') {
-      fillColor = getIndexFiveClasses(plot.ndvi, 'NDVI').color;
+      fillColor = blockColour(plot, 'ndvi') || 'transparent';
       fillOpacity = healthNdviOpacity / 100;
     } else if (layer === 'ndre') {
-      fillColor = getIndexFiveClasses(plot.ndvi * 0.85, 'NDVI').color;
+      fillColor = blockColour(plot, 'ndre') || 'transparent';
       fillOpacity = healthNdreOpacity / 100;
     } else if (layer === 'smi') {
-      const dbChange = plot.ndmi != null ? (plot.ndmi * 4) : 1.5;
-      fillColor = dbChange > 6 ? '#1E3A8A' : dbChange > 3 ? '#2563EB' : dbChange > 1 ? '#60A5FA' : dbChange > -1 ? '#86EFAC' : dbChange > -3 ? '#EAB308' : '#DC2626';
+      // Real soil-moisture value only (admin classes when set); nothing invented when missing
+      fillColor = blockColour(plot, 'smi') || 'transparent';
       fillOpacity = healthSmiOpacity / 100;
     }
     
@@ -1818,28 +1850,28 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
       fillColor = (plot.ndvi != null && plot.ndvi < 0.5) ? '#dc2626' : '#16a34a';
       fillOpacity = intelSuitabilityOpacity / 100;
     } else if (layer === 'vhi') {
-      fillColor = getIndexFiveClasses(plot.ndvi, 'NDVI').color;
+      fillColor = blockColour(plot, 'ndvi') || 'transparent';
       fillOpacity = intelVhiOpacity / 100;
     } else if (layer === 'lswi') {
-      fillColor = getIndexFiveClasses(plot.ndmi, 'LSWI').color;
+      fillColor = blockColour(plot, 'lswi') || 'transparent';
       fillOpacity = intelLswiOpacity / 100;
     } else if (layer === 'evi') {
-      fillColor = getIndexFiveClasses(plot.ndvi * 0.95, 'EVI').color;
+      fillColor = blockColour(plot, 'evi') || 'transparent';
       fillOpacity = intelEviOpacity / 100;
     } else if (layer === 'growth') {
       fillColor = (plot.ndvi ?? 0) > 0.7 ? '#15803d' : (plot.ndvi ?? 0) > 0.5 ? '#86efac' : '#fbbf24';
       fillOpacity = intelGrowthOpacity / 100;
     } else if (layer === 'cvi') {
-      fillColor = getIndexFiveClasses(plot.ndvi * 1.05, 'NDVI').color;
+      fillColor = blockColour(plot, 'cvi') || 'transparent';
       fillOpacity = intelCviOpacity / 100;
     } else if (layer === 'car') {
-      fillColor = getIndexFiveClasses(plot.ndvi * 0.9, 'NDVI').color;
+      fillColor = blockColour(plot, 'car') || 'transparent';
       fillOpacity = intelCarOpacity / 100;
     } else if (layer === 'ndre') {
-      fillColor = getIndexFiveClasses(plot.ndvi * 0.85, 'NDVI').color;
+      fillColor = blockColour(plot, 'ndre') || 'transparent';
       fillOpacity = intelNdreOpacity / 100;
     } else if (layer === 'wdi') {
-      fillColor = getIndexFiveClasses(plot.ndmi * 1.1, 'LSWI').color;
+      fillColor = blockColour(plot, 'wdi') || 'transparent';
       fillOpacity = intelWdiOpacity / 100;
     } else if (layer === 'dprvi') {
       const dprvi = plot.indices?.dprvi ?? plot.ndvi;
@@ -3151,15 +3183,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
     };
   }, [alerts]);
 
-  const getPolygonColor = (plot, indexName) => {
-    let val = 0.5;
-    if (indexName === 'NDVI') val = plot.ndvi;
-    else if (indexName === 'NDMI') val = plot.ndmi;
-    else if (indexName === 'NDWI') val = plot.ndmi - 0.05;
-    else if (indexName === 'EVI') val = plot.ndvi * 0.95;
-
-    return getIndexFiveClasses(val, indexName).color;
-  };
+  const getPolygonColor = (plot, indexName) => blockColour(plot, String(indexName).toLowerCase()) || 'transparent';
 
   // Static fallback (ESRI World Imagery) shown while a composite's own tiles
   // are still loading, so the basemap never goes blank mid-fetch.
@@ -3648,7 +3672,7 @@ Context: ${context}.`;
                   { id: 'alerts',              label: 'Alerts',              icon: <AlertTriangle size={17} />, badge: alerts.filter(a => a.status === 'Active').length },
                   // Service-only page kinds: pick() keeps them only when the service lists them
                   ...(service ? [{ id: 'register', label: 'Register', icon: <RegisterIcon size={17} /> }, { id: 'check', label: 'Check', icon: <CheckIcon size={17} /> }, { id: 'log', label: 'Log', icon: <LogIcon size={17} /> }, { id: 'advice', label: 'Advice', icon: <AdviceIcon size={17} /> }] : []),
-                ], service?.sidebar).map(item => (
+                ], pageSet?.sidebar).map(item => (
                   <button
                     key={item.id}
                     onClick={() => handleSidebarClick(item.id)}
@@ -3784,15 +3808,15 @@ Context: ${context}.`;
               { id: 'et-log', label: 'ET Historical Log', icon: <Clock size={15} /> },
               { id: 'water-management', label: 'Water Management', icon: <Waves size={15} /> },
               { id: 'soil-nutrients', label: 'Soil & Nutrients', icon: <Sun size={15} /> },
-            ], service?.analytics);
+            ], pageSet?.analytics);
             return (
               <div className="p-10 space-y-10">
                 {/* Page header */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                   <div>
-                    <h2 className="text-3xl font-bold text-gray-900 tracking-tight">{service?.overviewTitle || 'Agro Analytics Hub'}</h2>
+                    <h2 className="text-3xl font-bold text-gray-900 tracking-tight">{pageSet?.overviewTitle || 'Agro Analytics Hub'}</h2>
                     <p className="text-sm text-gray-500 font-medium mt-2 max-w-lg">
-                      {service?.overviewText || 'Direct analytical metrics derived from Sentinel-2 & Landsat-8 imagery pass dates.'}
+                      {pageSet?.overviewText || 'Direct analytical metrics derived from Sentinel-2 & Landsat-8 imagery pass dates.'}
                     </p>
                   </div>
                   <div className="bg-white px-5 py-3 rounded-2xl border border-gray-200 shadow-sm flex items-center gap-3 shrink-0">

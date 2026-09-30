@@ -4,16 +4,17 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import {
   Plus, Trash2, X, Building2, Layers, UploadCloud, RefreshCw,
-  Settings, Save, Sparkles, Eye, Map,
+  Settings, Save, Sparkles, Eye, Map, Sprout,
 } from 'lucide-react';
 import {
-  fetchFarms, createFarm, deleteFarm, uploadBoundary,
+  fetchFarms, createFarm, deleteFarm, uploadBoundary, updateFarm,
   generateFarmConfig, fetchPipelineConfigContent, savePipelineConfig, deletePipelineConfig,
   fetchMinioObjectContent,
 } from '../../services/adminApi';
 import { useConfirm } from '../components/ConfirmProvider';
 import ErrorBanner from '../components/ErrorBanner';
-import { SENSOR_OPTIONS, toggleInList, chipStyle } from '../components/formHelpers';
+import { SENSOR_OPTIONS, toggleInList, chipStyle, ALL_CROPS } from '../components/formHelpers';
+import { boundaryCheck } from '../components/validation';
 
 // Everything for viewing/managing the farms that belong to one organization —
 // list, add, delete, boundary upload/preview, per-farm pipeline config.
@@ -449,15 +450,66 @@ const BoundaryViewModal = ({ farm, onClose }) => {
   );
 };
 
+const CROP_NAMES = { ffb: 'Oil palm', oil_palm: 'Oil palm', maize: 'Maize', rice: 'Rice', cocoa: 'Cocoa', rubber: 'Rubber', cassava: 'Cassava', sugarcane: 'Sugarcane', cashew: 'Cashew' };
+
+// Estate details the platform reads to adapt pages, wording and alerts per
+// estate (dynamic system): crop, group, planting / season date, irrigated.
+const EstateDetailsModal = ({ farm, onClose, onSaved }) => {
+  const [form, setForm] = useState({ crop: farm.crop || '', group_name: farm.group_name || '', planting_date: farm.planting_date || '', is_irrigated: Boolean(farm.is_irrigated) });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const save = async () => {
+    if (form.planting_date && new Date(form.planting_date) > new Date()) return setError('The planting date cannot be in the future.');
+    setSaving(true); setError('');
+    try { const updated = await updateFarm(farm.farm_id, { ...form, planting_date: form.planting_date || null }); onSaved?.(updated || { ...farm, ...form }); onClose(); }
+    catch (e) { setError(e.message); } finally { setSaving(false); }
+  };
+  const inputCls = 'w-full px-3.5 py-2.5 rounded-xl border border-gray-300 bg-white text-sm text-gray-900';
+  return (
+    <div onClick={onClose} className="fixed inset-0 z-[1100] flex items-center justify-center bg-slate-900/30 p-4">
+      <div onClick={e => e.stopPropagation()} className="w-full max-w-md bg-white rounded-2xl border border-gray-200 shadow-xl p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <div><div className="text-base font-semibold text-gray-900">Estate details</div><div className="text-xs text-gray-500">{farm.farm_name}</div></div>
+          <button onClick={onClose} className="p-2 rounded-lg text-gray-400 hover:bg-gray-100" aria-label="Close"><X size={16} /></button>
+        </div>
+        <label className="block space-y-1.5"><span className="text-sm font-semibold text-gray-800">Crop grown here</span>
+          <select className={inputCls} value={form.crop} onChange={e => setForm(f => ({ ...f, crop: e.target.value }))}><option value="">Not set</option>{ALL_CROPS.map(c => <option key={c} value={c}>{CROP_NAMES[c] || c}</option>)}</select>
+        </label>
+        <label className="block space-y-1.5"><span className="text-sm font-semibold text-gray-800">Group or cooperative <span className="font-normal text-gray-500">(optional)</span></span>
+          <input className={inputCls} value={form.group_name} onChange={e => setForm(f => ({ ...f, group_name: e.target.value }))} placeholder="e.g. Ahafo cooperative 3" />
+        </label>
+        <label className="block space-y-1.5"><span className="text-sm font-semibold text-gray-800">Planting or season start date <span className="font-normal text-gray-500">(optional)</span></span>
+          <input type="date" className={inputCls} value={form.planting_date || ''} onChange={e => setForm(f => ({ ...f, planting_date: e.target.value }))} />
+          <span className="block text-xs text-gray-500">Lets alerts and wording follow the crop stage. Clients can also add dates per block in Your data.</span>
+        </label>
+        <label className="flex items-center gap-3 text-sm font-semibold text-gray-800"><input type="checkbox" className="w-4 h-4 accent-green-700" checked={form.is_irrigated} onChange={e => setForm(f => ({ ...f, is_irrigated: e.target.checked }))} />Irrigated</label>
+        {error && <div className="text-sm text-red-700">{error}</div>}
+        <div className="flex justify-end gap-3">
+          <button onClick={onClose} className="px-4 py-2.5 rounded-xl border border-gray-300 text-sm font-semibold text-gray-700">Cancel</button>
+          <button onClick={save} disabled={saving} className="px-5 py-2.5 rounded-xl bg-green-700 text-white text-sm font-semibold disabled:bg-gray-200 disabled:text-gray-500">{saving ? 'Saving…' : 'Save'}</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const FarmRow = ({ farm, onDelete, onReupload }) => {
   const fileRef = React.useRef(null);
   const [uploading, setUploading] = useState(false);
   const [configOpen, setConfigOpen] = useState(false);
   const [boundaryViewOpen, setBoundaryViewOpen] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [info, setInfo] = useState(farm);
+  const [fileError, setFileError] = useState('');
 
   const handleFile = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    // Same boundary checks as onboarding, before uploading
+    let parsed; try { parsed = JSON.parse(await file.text()); } catch { parsed = null; }
+    const check = boundaryCheck(parsed, file.size);
+    if (check.error) { setFileError(check.error); if (fileRef.current) fileRef.current.value = ''; return; }
+    setFileError('');
     setUploading(true);
     try { await onReupload(farm.farm_id, file); }
     finally { setUploading(false); if (fileRef.current) fileRef.current.value = ''; }
@@ -468,6 +520,8 @@ const FarmRow = ({ farm, onDelete, onReupload }) => {
       <div>
         <p style={{ color: '#0f172a', fontSize: '13px', fontWeight: 700, margin: 0 }}>{farm.farm_name}</p>
         <p style={{ color: '#64748b', fontSize: '11px', fontWeight: 600, margin: '2px 0 0', fontFamily: 'var(--font-mono)' }}>{farm.farm_id}</p>
+        <p className="text-[11px] text-gray-600 mt-0.5">{[info.crop && (CROP_NAMES[info.crop] || info.crop), info.group_name, info.planting_date && `planted ${info.planting_date}`, info.is_irrigated && 'irrigated'].filter(Boolean).join(' · ') || 'Estate details not set'}</p>
+        {fileError && <p className="text-[11px] text-red-700 mt-0.5">{fileError}</p>}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <span style={{
@@ -485,6 +539,10 @@ const FarmRow = ({ farm, onDelete, onReupload }) => {
             <Eye size={13} />
           </button>
         )}
+        <button onClick={() => setDetailsOpen(true)} title="Estate details" aria-label="Estate details"
+          style={{ background: 'rgba(22,163,74,0.06)', border: '1px solid rgba(22,163,74,0.2)', borderRadius: '7px', padding: '5px', cursor: 'pointer', color: '#16a34a', display: 'flex' }}>
+          <Sprout size={13} />
+        </button>
         <button onClick={() => setConfigOpen(true)}
           title="Edit pipeline config"
           style={{ background: 'rgba(22,163,74,0.06)', border: '1px solid rgba(22,163,74,0.2)', borderRadius: '7px', padding: '5px', cursor: 'pointer', color: '#16a34a', display: 'flex' }}>
@@ -502,6 +560,7 @@ const FarmRow = ({ farm, onDelete, onReupload }) => {
       </div>
       {configOpen && <FarmConfigModal farm={farm} onClose={() => setConfigOpen(false)} />}
       {boundaryViewOpen && <BoundaryViewModal farm={farm} onClose={() => setBoundaryViewOpen(false)} />}
+      {detailsOpen && <EstateDetailsModal farm={info} onClose={() => setDetailsOpen(false)} onSaved={setInfo} />}
     </div>
   );
 };
