@@ -451,6 +451,17 @@ const Login = ({ onLogin, moduleName, onBack, defaultEmail = '', defaultCode = '
         // Blurred ~0.5 KB preview shows instantly; the full photo fades in over it.
         style={{ backgroundImage: HERO_PLACEHOLDERS[currentDesign.heroImage] ? `url(${HERO_PLACEHOLDERS[currentDesign.heroImage]})` : undefined }}
       >
+        {/* Middle layer: the 640 px card photo (small, usually cached from the hub)
+            appears quickly and sharp; the 1200 px hero fades in over it when it arrives. */}
+        {currentDesign.heroImage.startsWith('/crops/hero/') && (
+          <img
+            src={currentDesign.heroImage.replace('/crops/hero/', '/crops/')}
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 w-full h-full object-cover object-center saturate-[0.85]"
+            fetchpriority="high"
+          />
+        )}
         <img
           src={currentDesign.heroImage}
           alt={currentDesign.name}
