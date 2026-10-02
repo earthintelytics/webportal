@@ -13,42 +13,61 @@ const MAP_LAYERS = [
 
 const SuitabilityMapView = ({ runResult, onSelectField }) => {
   const [activeLayer, setActiveLayer] = useState('overview');
-  const [selectedFieldId, setSelectedFieldId] = useState('BLOCK-A1');
+  const fields = runResult?.fields || [];
+  const [selectedFieldId, setSelectedFieldId] = useState(fields[0]?.field_id || null);
 
-  const fields = runResult?.fields || [
-    { field_id: 'BLOCK-A1', overall_class: 'S1', share: { S1: 85, S2: 15 }, limiting_factors: ['None'], summary: 'Highly suitable optimal soil & moisture' },
-    { field_id: 'BLOCK-B2', overall_class: 'S2', share: { S1: 40, S2: 60 }, limiting_factors: ['Dry season spell (3.4 mo)'], summary: 'Moderately suitable due to dry season spell' },
-    { field_id: 'BLOCK-C3', overall_class: 'S3', share: { S3: 80, N: 20 }, limiting_factors: ['Slope (avg 18°)'], summary: 'Marginally suitable; contour terracing required' },
-    { field_id: 'BLOCK-D4', overall_class: 'S1', share: { S1: 92, S2: 8 }, limiting_factors: ['None'], summary: 'Highly suitable optimal conditions' }
-  ];
-
-  const currentField = fields.find(f => f.field_id === selectedFieldId) || fields[0];
+  const currentField = fields.find(f => f.field_id === selectedFieldId) || fields[0] || null;
 
   const getFieldFillColor = (f, layer) => {
-    if (layer === 'rainfall') {
-      return '#3b82f6'; // Blue for rainfall
-    } else if (layer === 'soil') {
-      return '#a855f7'; // Purple for soil pH
-    } else if (layer === 'slope') {
-      return '#f97316'; // Orange for slope/terrain
-    } else if (layer === 'temp') {
-      return '#eab308'; // Amber for temp
-    } else if (layer === 'flood') {
-      return '#06b6d4'; // Cyan for radar flood
-    } else if (layer === 'exclusions') {
-      return '#10b981'; // Green for 100% compliant
-    }
+    if (!f) return '#16a34a';
+    if (layer === 'rainfall') return '#3b82f6';
+    if (layer === 'soil') return '#a855f7';
+    if (layer === 'slope') return '#f97316';
+    if (layer === 'temp') return '#eab308';
+    if (layer === 'flood') return '#06b6d4';
+    if (layer === 'exclusions') return '#10b981';
 
-    // Default: Overall Suitability Class
     switch (f.overall_class) {
-      case 'S1': return '#16a34a'; // Emerald
-      case 'S2': return '#84cc16'; // Lime
-      case 'S3': return '#f59e0b'; // Amber
+      case 'S1': return '#16a34a';
+      case 'S2': return '#84cc16';
+      case 'S3': return '#f59e0b';
       case 'N':
       case 'N1':
-      case 'N2': return '#e11d48'; // Rose
+      case 'N2': return '#e11d48';
       default: return '#16a34a';
     }
+  };
+
+  // Helper to layout N fields dynamically in SVG canvas (600x400)
+  const getDynamicFieldPoints = (index, total) => {
+    if (total === 1) {
+      return { points: '60,60 540,60 540,340 60,340', cx: 300, cy: 190 };
+    }
+    if (total === 2) {
+      if (index === 0) return { points: '40,50 280,45 285,345 45,350', cx: 160, cy: 190 };
+      return { points: '310,45 560,50 555,350 315,345', cx: 435, cy: 190 };
+    }
+    if (total === 3) {
+      if (index === 0) return { points: '40,40 280,30 285,185 45,190', cx: 160, cy: 110 };
+      if (index === 1) return { points: '310,30 560,40 555,190 315,185', cx: 435, cy: 110 };
+      return { points: '140,215 460,215 450,370 150,370', cx: 300, cy: 290 };
+    }
+    // 4 or more: 2x2 grid layout
+    const cols = total > 4 ? 3 : 2;
+    const rows = Math.ceil(total / cols);
+    const c = index % cols;
+    const r = Math.floor(index / cols);
+    const colW = 520 / cols;
+    const rowH = 310 / rows;
+    const x1 = 40 + c * colW + 8;
+    const y1 = 40 + r * rowH + 8;
+    const x2 = x1 + colW - 16;
+    const y2 = y1 + rowH - 16;
+    return {
+      points: `${x1},${y1} ${x2},${y1 + 4} ${x2 - 4},${y2} ${x1 + 4},${y2 - 4}`,
+      cx: (x1 + x2) / 2,
+      cy: (y1 + y2) / 2
+    };
   };
 
   return (
@@ -85,74 +104,62 @@ const SuitabilityMapView = ({ runResult, onSelectField }) => {
           style={{ backgroundImage: `url('/crops/suitability_palm.webp')` }}
         />
 
-        {/* Map Grid Polygons SVG Layer */}
-        <div className="relative z-10 w-full h-full p-8 flex items-center justify-center">
-          <svg className="w-full h-full max-w-xl max-h-[380px]" viewBox="0 0 600 400">
-            {/* Field 1: BLOCK-A1 */}
-            <g
-              onClick={() => { setSelectedFieldId('BLOCK-A1'); if (onSelectField) onSelectField('BLOCK-A1'); }}
-              className="cursor-pointer transition-all hover:opacity-90 group"
-            >
-              <polygon
-                points="40,40 280,30 290,180 30,190"
-                fill={getFieldFillColor(fields[0] || { overall_class: 'S1' }, activeLayer)}
-                fillOpacity={selectedFieldId === 'BLOCK-A1' ? '0.85' : '0.65'}
-                stroke={selectedFieldId === 'BLOCK-A1' ? '#ffffff' : '#ffffff44'}
-                strokeWidth={selectedFieldId === 'BLOCK-A1' ? '3.5' : '1.5'}
-              />
-              <text x="140" y="110" fill="#ffffff" fontSize="13" fontWeight="bold" textAnchor="middle">BLOCK-A1 (S1)</text>
-              <text x="140" y="130" fill="#a7f3d0" fontSize="11" textAnchor="middle">24.5 ha • Highly Suitable</text>
-            </g>
+        {/* Dynamic Polygons SVG Layer */}
+        {fields.length > 0 ? (
+          <div className="relative z-10 w-full h-full p-8 flex items-center justify-center">
+            <svg className="w-full h-full max-w-xl max-h-[380px]" viewBox="0 0 600 400">
+              {fields.map((field, idx) => {
+                const geom = getDynamicFieldPoints(idx, fields.length);
+                const isSelected = selectedFieldId === field.field_id || (!selectedFieldId && idx === 0);
+                const fillColor = getFieldFillColor(field, activeLayer);
 
-            {/* Field 2: BLOCK-B2 */}
-            <g
-              onClick={() => { setSelectedFieldId('BLOCK-B2'); if (onSelectField) onSelectField('BLOCK-B2'); }}
-              className="cursor-pointer transition-all hover:opacity-90 group"
-            >
-              <polygon
-                points="300,30 560,40 570,200 295,180"
-                fill={getFieldFillColor(fields[1] || { overall_class: 'S2' }, activeLayer)}
-                fillOpacity={selectedFieldId === 'BLOCK-B2' ? '0.85' : '0.65'}
-                stroke={selectedFieldId === 'BLOCK-B2' ? '#ffffff' : '#ffffff44'}
-                strokeWidth={selectedFieldId === 'BLOCK-B2' ? '3.5' : '1.5'}
-              />
-              <text x="430" y="110" fill="#ffffff" fontSize="13" fontWeight="bold" textAnchor="middle">BLOCK-B2 (S2)</text>
-              <text x="430" y="130" fill="#ecfccb" fontSize="11" textAnchor="middle">21.0 ha • Moderately Suitable</text>
-            </g>
-
-            {/* Field 3: BLOCK-C3 */}
-            <g
-              onClick={() => { setSelectedFieldId('BLOCK-C3'); if (onSelectField) onSelectField('BLOCK-C3'); }}
-              className="cursor-pointer transition-all hover:opacity-90 group"
-            >
-              <polygon
-                points="20,210 280,200 270,360 10,350"
-                fill={getFieldFillColor(fields[2] || { overall_class: 'S3' }, activeLayer)}
-                fillOpacity={selectedFieldId === 'BLOCK-C3' ? '0.85' : '0.65'}
-                stroke={selectedFieldId === 'BLOCK-C3' ? '#ffffff' : '#ffffff44'}
-                strokeWidth={selectedFieldId === 'BLOCK-C3' ? '3.5' : '1.5'}
-              />
-              <text x="140" y="280" fill="#ffffff" fontSize="13" fontWeight="bold" textAnchor="middle">BLOCK-C3 (S3)</text>
-              <text x="140" y="300" fill="#fef3c7" fontSize="11" textAnchor="middle">18.2 ha • Slope Limit (18°)</text>
-            </g>
-
-            {/* Field 4: BLOCK-D4 */}
-            <g
-              onClick={() => { setSelectedFieldId('BLOCK-D4'); if (onSelectField) onSelectField('BLOCK-D4'); }}
-              className="cursor-pointer transition-all hover:opacity-90 group"
-            >
-              <polygon
-                points="300,200 575,220 560,370 290,360"
-                fill={getFieldFillColor(fields[3] || { overall_class: 'S1' }, activeLayer)}
-                fillOpacity={selectedFieldId === 'BLOCK-D4' ? '0.85' : '0.65'}
-                stroke={selectedFieldId === 'BLOCK-D4' ? '#ffffff' : '#ffffff44'}
-                strokeWidth={selectedFieldId === 'BLOCK-D4' ? '3.5' : '1.5'}
-              />
-              <text x="430" y="280" fill="#ffffff" fontSize="13" fontWeight="bold" textAnchor="middle">BLOCK-D4 (S1)</text>
-              <text x="430" y="300" fill="#a7f3d0" fontSize="11" textAnchor="middle">22.7 ha • Highly Suitable</text>
-            </g>
-          </svg>
-        </div>
+                return (
+                  <g
+                    key={field.field_id || idx}
+                    onClick={() => {
+                      setSelectedFieldId(field.field_id);
+                      if (onSelectField) onSelectField(field.field_id);
+                    }}
+                    className="cursor-pointer transition-all hover:opacity-90 group"
+                  >
+                    <polygon
+                      points={geom.points}
+                      fill={fillColor}
+                      fillOpacity={isSelected ? '0.85' : '0.65'}
+                      stroke={isSelected ? '#ffffff' : '#ffffff44'}
+                      strokeWidth={isSelected ? '3.5' : '1.5'}
+                    />
+                    <text
+                      x={geom.cx}
+                      y={geom.cy - 6}
+                      fill="#ffffff"
+                      fontSize={fields.length > 4 ? '11' : '13'}
+                      fontWeight="bold"
+                      textAnchor="middle"
+                    >
+                      {field.field_id} ({field.overall_class || 'S1'})
+                    </text>
+                    <text
+                      x={geom.cx}
+                      y={geom.cy + 12}
+                      fill="#ecfdf5"
+                      fontSize={fields.length > 4 ? '9' : '11'}
+                      textAnchor="middle"
+                    >
+                      {field.area_ha ? `${field.area_ha.toFixed(1)} ha` : ''} • Class {field.overall_class || 'S1'}
+                    </text>
+                  </g>
+                );
+              })}
+            </svg>
+          </div>
+        ) : (
+          <div className="relative z-10 text-center text-slate-400 p-8 max-w-md">
+            <Layers size={40} className="mx-auto mb-3 text-slate-600 opacity-60" />
+            <p className="text-sm font-semibold text-slate-300">No evaluated field boundaries to render.</p>
+            <p className="text-xs text-slate-500 mt-1">Run an evaluation model to compute biophysical suitability layers.</p>
+          </div>
+        )}
 
         {/* Legend Box */}
         <div className="absolute bottom-4 left-4 bg-slate-900/90 backdrop-blur-md p-3 rounded-xl border border-slate-700/80 text-white text-[11px] space-y-1.5 shadow-lg z-20">
@@ -211,3 +218,4 @@ const SuitabilityMapView = ({ runResult, onSelectField }) => {
 };
 
 export default SuitabilityMapView;
+

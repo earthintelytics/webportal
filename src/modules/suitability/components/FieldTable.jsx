@@ -1,8 +1,9 @@
 import React from 'react';
 import { AlertCircle, CheckCircle2, ShieldAlert, ChevronRight } from 'lucide-react';
 
-const FieldTable = ({ fields, onSelectField }) => {
+const FieldTable = ({ fields = [], onSelectField }) => {
   const getActionRecommendation = (field) => {
+    if (!field || !field.limiting_factors) return 'Standard management';
     if (field.limiting_factors.some(f => f.toLowerCase().includes('slope'))) {
       return 'Implement contour terracing & vetiver grass strips before planting';
     }
@@ -14,6 +15,15 @@ const FieldTable = ({ fields, onSelectField }) => {
     }
     return 'Optimal conditions — proceed with standard planting density';
   };
+
+  if (!fields || fields.length === 0) {
+    return (
+      <div className="bg-white border border-slate-200 rounded-3xl p-8 text-center text-slate-500 shadow-xs">
+        <p className="text-sm font-semibold text-slate-700">No parcel breakdown records found.</p>
+        <p className="text-xs text-slate-400 mt-1">Execute an evaluation model to generate parcel-level limiting factor breakdowns.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-xs">
