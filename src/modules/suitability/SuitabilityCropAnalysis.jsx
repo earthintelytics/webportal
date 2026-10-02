@@ -6,13 +6,19 @@ import {
   Bot, 
   RefreshCw, 
   Play, 
+  Plus,
   Sparkles,
   Layers,
   Send,
   ShieldCheck as CheckIcon,
   CheckCircle2,
   Calendar,
-  User
+  User,
+  Upload,
+  Clock,
+  ArrowRight,
+  X,
+  SlidersHorizontal
 } from 'lucide-react';
 import SuitabilityMapView from './components/SuitabilityMapView';
 import FieldTable from './components/FieldTable';
@@ -37,7 +43,10 @@ const SuitabilityCropAnalysis = ({ cropId, companyId, initialRun, onBack, onOpen
   const [runs, setRuns] = useState([]);
   const [activeRun, setActiveRun] = useState(initialRun || null);
   const [activeTab, setActiveTab] = useState('monitor'); // 'monitor' | 'reports' | 'verification' | 'ai-assistant'
-  const [mode, setMode] = useState('view'); // 'view' | 'configure' | 'running'
+  
+  // New Run Modal & Progress State
+  const [showNewRunModal, setShowNewRunModal] = useState(false);
+  const [isRunning, setIsRunning] = useState(false);
   const [runProgress, setRunProgress] = useState(0);
 
   // Live plots & tenant intelligence
@@ -46,11 +55,13 @@ const SuitabilityCropAnalysis = ({ cropId, companyId, initialRun, onBack, onOpen
   const tenant = localStorage.getItem('fi_tenant') || companyId || 'okomu';
   const tenantDisplayName = localStorage.getItem('fi_display_name') || companyId.toUpperCase();
 
-  // Configure Form State
+  // New Analysis Form State
+  const [targetEstate, setTargetEstate] = useState('Main Estate');
   const [variant, setVariant] = useState(crop.variants?.[0] || 'Commercial Variant');
   const [strictness, setStrictness] = useState('estate');
   const [isIrrigated, setIsIrrigated] = useState(false);
   const [useSoilSamples, setUseSoilSamples] = useState(true);
+  const [uploadedBoundaryName, setUploadedBoundaryName] = useState(null);
 
   // Modals & Popups
   const [popupField, setPopupField] = useState(null);
@@ -76,9 +87,8 @@ const SuitabilityCropAnalysis = ({ cropId, companyId, initialRun, onBack, onOpen
 
       if (!activeRun && pastRuns.length > 0) {
         setActiveRun(pastRuns[0]);
-        setMode('view');
       } else if (!activeRun && pastRuns.length === 0) {
-        setMode('configure');
+        setShowNewRunModal(true);
       }
     }
     loadData();
@@ -102,7 +112,6 @@ const SuitabilityCropAnalysis = ({ cropId, companyId, initialRun, onBack, onOpen
         };
       });
     }
-    // If runs has fields, map them to plot data structures
     if (activeRun?.fields && activeRun.fields.length > 0) {
       return activeRun.fields.map(f => ({
         id: f.field_id,
@@ -119,7 +128,7 @@ const SuitabilityCropAnalysis = ({ cropId, companyId, initialRun, onBack, onOpen
 
   const handleRunSubmit = async (e) => {
     if (e) e.preventDefault();
-    setMode('running');
+    setIsRunning(true);
     setRunProgress(20);
 
     let currentP = 20;
@@ -145,7 +154,8 @@ const SuitabilityCropAnalysis = ({ cropId, companyId, initialRun, onBack, onOpen
       const updatedRuns = await fetchSuitabilityRuns(companyId, cropId);
       setRuns(updatedRuns);
       setActiveRun(updatedRuns[0] || res);
-      setMode('view');
+      setIsRunning(false);
+      setShowNewRunModal(false);
       setActiveTab('monitor');
     }, 400);
   };
@@ -202,11 +212,11 @@ const SuitabilityCropAnalysis = ({ cropId, companyId, initialRun, onBack, onOpen
                   {crop.name} Land Suitability
                 </h1>
                 <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-green-50 text-green-700 border border-green-200">
-                  {activeRun?.variant || 'Standard Assessment'}
+                  {activeRun?.variant || 'Commercial Evaluation'}
                 </span>
               </div>
               <p className="text-[11px] text-gray-500 font-medium">
-                {tenantDisplayName} • {activeRun?.total_area_ha ? `${activeRun.total_area_ha.toFixed(1)} ha total` : 'FAO Land Evaluation'}
+                {tenantDisplayName} • {activeRun?.total_area_ha ? `${activeRun.total_area_ha.toFixed(1)} ha evaluated` : 'FAO Land Evaluation'}
               </p>
             </div>
           </div>
@@ -216,9 +226,9 @@ const SuitabilityCropAnalysis = ({ cropId, companyId, initialRun, onBack, onOpen
             {HEADER_TABS.map(tab => (
               <button
                 key={tab.id}
-                onClick={() => { setActiveTab(tab.id); setMode('view'); }}
+                onClick={() => setActiveTab(tab.id)}
                 className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                  activeTab === tab.id && mode === 'view'
+                  activeTab === tab.id
                     ? 'bg-white text-gray-900 shadow-2xs'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
@@ -228,135 +238,131 @@ const SuitabilityCropAnalysis = ({ cropId, companyId, initialRun, onBack, onOpen
             ))}
           </div>
 
-          {/* Right: Actions */}
+          {/* Right: + Run New Analysis Action */}
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setMode('configure')}
-              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
-                mode === 'configure'
-                  ? 'bg-green-700 text-white shadow-xs'
-                  : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-              }`}
+              onClick={() => setShowNewRunModal(true)}
+              className="flex items-center gap-1.5 px-4 py-2 bg-green-700 hover:bg-green-800 text-white rounded-xl text-xs font-semibold transition-colors shadow-xs"
             >
-              <RefreshCw size={13} />
-              <span>Re-evaluate</span>
+              <Plus size={15} />
+              <span>Run New Analysis</span>
             </button>
           </div>
         </div>
       </header>
 
       {/* Main Body Layout */}
-      <main className="max-w-7xl mx-auto px-6 py-6 w-full flex-1">
-        {/* Mode 1: Running Progress */}
-        {mode === 'running' && (
-          <div className="max-w-2xl mx-auto py-12">
-            <RunProgress cropName={crop.name} progress={runProgress} />
-          </div>
-        )}
-
-        {/* Mode 2: Configure Form */}
-        {mode === 'configure' && (
-          <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-2xs max-w-2xl mx-auto">
-            <div className="mb-6 pb-4 border-b border-gray-100">
-              <h2 className="text-lg font-bold text-gray-900">Configure Land Evaluation</h2>
-              <p className="text-xs text-gray-500 mt-1">
-                Customize crop hybrid and management parameters. Environmental layers (SoilGrids, CHIRPS, DEM, Sentinel-1 SAR, EUDR) calibrate automatically.
-              </p>
+      <main className="max-w-7xl mx-auto px-6 py-6 w-full flex-1 space-y-6">
+        {/* Section 1: Historical Analysis Runs for THIS Specific Crop */}
+        {runs.length > 0 && (
+          <section className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-2xs">
+            <div className="px-6 py-3.5 border-b border-gray-100 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Clock size={15} className="text-gray-400" />
+                <h2 className="text-xs font-bold uppercase tracking-wider text-gray-700">
+                  {crop.name} Historical Analysis Runs
+                </h2>
+              </div>
+              <span className="text-xs font-semibold text-gray-500">
+                {runs.length} Evaluated {runs.length === 1 ? 'Run' : 'Runs'}
+              </span>
             </div>
 
-            <form onSubmit={handleRunSubmit} className="space-y-6 text-xs">
-              <div>
-                <label className="block font-bold text-gray-700 uppercase tracking-wider text-[11px] mb-2">
-                  1. Crop Hybrid / Variety
-                </label>
-                <select
-                  value={variant}
-                  onChange={(e) => setVariant(e.target.value)}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-xs font-semibold text-gray-800 focus:outline-none focus:border-green-500"
-                >
-                  {(crop.variants || ['Standard Commercial Hybrid']).map((v, idx) => (
-                    <option key={idx} value={v}>{v}</option>
-                  ))}
-                </select>
-              </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="bg-gray-50/80 border-b border-gray-200 text-gray-600 font-semibold uppercase tracking-wider text-[10px]">
+                    <th className="py-2.5 px-6">Evaluation Run</th>
+                    <th className="py-2.5 px-6">Estate / Target Area</th>
+                    <th className="py-2.5 px-6">Suitability Breakdown</th>
+                    <th className="py-2.5 px-6">Status</th>
+                    <th className="py-2.5 px-6 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 text-gray-700">
+                  {runs.map((run) => {
+                    const isCurrent = activeRun?.run_id === run.run_id;
+                    const s1Area = run.classes_area_ha?.S1 || 0;
+                    const s2Area = run.classes_area_ha?.S2 || 0;
+                    const s3Area = run.classes_area_ha?.S3 || 0;
+                    const nArea = run.classes_area_ha?.N || run.classes_area_ha?.N2 || 0;
+                    const tot = run.total_area_ha || (s1Area + s2Area + s3Area + nArea) || 1;
 
-              <div>
-                <label className="block font-bold text-gray-700 uppercase tracking-wider text-[11px] mb-2">
-                  2. Assessment Strictness
-                </label>
-                <div className="grid grid-cols-3 gap-3">
-                  {[
-                    { id: 'estate', label: 'Commercial Estate', desc: 'Strict S1 thresholds' },
-                    { id: 'smallholder', label: 'Smallholder', desc: 'Practical tolerance' },
-                    { id: 'standard', label: 'Standard FAO', desc: 'Default FAO bounds' },
-                  ].map((st) => (
-                    <button
-                      type="button"
-                      key={st.id}
-                      onClick={() => setStrictness(st.id)}
-                      className={`p-3 rounded-xl border text-left transition-all ${
-                        strictness === st.id
-                          ? 'bg-green-50 border-green-600 text-green-900 font-bold'
-                          : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
-                      }`}
-                    >
-                      <div className="font-bold">{st.label}</div>
-                      <div className="text-[10px] text-gray-400 font-normal mt-0.5">{st.desc}</div>
-                    </button>
-                  ))}
-                </div>
-              </div>
+                    const s1Pct = Math.round((s1Area / tot) * 100);
+                    const s2Pct = Math.round((s2Area / tot) * 100);
+                    const s3Pct = Math.round((s3Area / tot) * 100);
+                    const nPct = Math.round((nArea / tot) * 100);
 
-              <div className="bg-gray-50 rounded-xl p-4 border border-gray-200 flex items-center justify-between">
-                <div>
-                  <div className="font-bold text-gray-800">Irrigated Regime</div>
-                  <div className="text-[11px] text-gray-500">Enable if supplementary irrigation infrastructure is present</div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setIsIrrigated(!isIrrigated)}
-                  className={`w-11 h-6 rounded-full transition-colors relative p-1 ${isIrrigated ? 'bg-green-600' : 'bg-gray-300'}`}
-                >
-                  <div className={`w-4 h-4 rounded-full bg-white transition-transform ${isIrrigated ? 'translate-x-5' : 'translate-x-0'}`} />
-                </button>
-              </div>
+                    const runDate = new Date(run.created_at).toLocaleDateString('en-GB', {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric'
+                    });
 
-              <div className="bg-gray-50 rounded-xl p-4 border border-gray-200 flex items-center justify-between">
-                <div>
-                  <div className="font-bold text-gray-800">Ground Soil Sample Interpolation (IDW)</div>
-                  <div className="text-[11px] text-gray-500">Fuse GPS soil test points with SoilGrids 250m baseline</div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setUseSoilSamples(!useSoilSamples)}
-                  className={`w-11 h-6 rounded-full transition-colors relative p-1 ${useSoilSamples ? 'bg-green-600' : 'bg-gray-300'}`}
-                >
-                  <div className={`w-4 h-4 rounded-full bg-white transition-transform ${useSoilSamples ? 'translate-x-5' : 'translate-x-0'}`} />
-                </button>
-              </div>
-
-              <div className="flex items-center gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setMode('view')}
-                  className="w-1/3 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl text-xs transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="w-2/3 py-3 bg-green-700 hover:bg-green-800 text-white font-bold rounded-xl text-xs transition-colors shadow-xs flex items-center justify-center gap-2"
-                >
-                  <Play size={15} fill="currentColor" />
-                  <span>Run Analysis</span>
-                </button>
-              </div>
-            </form>
-          </div>
+                    return (
+                      <tr
+                        key={run.run_id}
+                        onClick={() => setActiveRun(run)}
+                        className={`cursor-pointer transition-colors ${isCurrent ? 'bg-green-50/50' : 'hover:bg-gray-50/80'}`}
+                      >
+                        <td className="py-3 px-6 font-medium text-gray-900">
+                          <div className="flex items-center gap-2">
+                            <span>{run.variant || 'Standard Assessment'}</span>
+                            {isCurrent && (
+                              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-green-100 text-green-800">
+                                Active
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-[11px] text-gray-400 font-normal">{runDate}</div>
+                        </td>
+                        <td className="py-3 px-6">
+                          <div className="font-semibold text-gray-800">{tenantDisplayName}</div>
+                          <div className="text-[11px] text-gray-500">{run.total_area_ha ? `${run.total_area_ha.toFixed(1)} ha` : 'Estate Boundary'}</div>
+                        </td>
+                        <td className="py-3 px-6 min-w-[200px]">
+                          <div className="flex items-center gap-2 mb-1 text-[11px]">
+                            <span className="text-green-700 font-bold">S1: {s1Pct}%</span>
+                            <span className="text-lime-700 font-bold">S2: {s2Pct}%</span>
+                            <span className="text-amber-700 font-bold">S3: {s3Pct}%</span>
+                            {nPct > 0 && <span className="text-rose-700 font-bold">N: {nPct}%</span>}
+                          </div>
+                          <div className="w-full h-2 rounded-full bg-gray-100 overflow-hidden flex">
+                            <div style={{ width: `${s1Pct}%` }} className="bg-green-600 h-full" title={`S1: ${s1Pct}%`} />
+                            <div style={{ width: `${s2Pct}%` }} className="bg-lime-500 h-full" title={`S2: ${s2Pct}%`} />
+                            <div style={{ width: `${s3Pct}%` }} className="bg-amber-500 h-full" title={`S3: ${s3Pct}%`} />
+                            <div style={{ width: `${nPct}%` }} className="bg-rose-500 h-full" title={`N: ${nPct}%`} />
+                          </div>
+                        </td>
+                        <td className="py-3 px-6">
+                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-green-700">
+                            <CheckCircle2 size={13} className="text-green-600" />
+                            <span>Completed</span>
+                          </span>
+                        </td>
+                        <td className="py-3 px-6 text-right">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setActiveRun(run); }}
+                            className={`text-xs font-semibold px-3 py-1 rounded-lg transition-all ${
+                              isCurrent
+                                ? 'bg-green-700 text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                          >
+                            {isCurrent ? 'Viewing' : 'Select'}
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </section>
         )}
 
-        {/* Mode 3: View Results by Tab */}
-        {mode === 'view' && activeRun && (
+        {/* Section 2: Active Run Results by Tab */}
+        {activeRun ? (
           <div>
             {/* Tab A: Monitor (Map & Field Table) */}
             {activeTab === 'monitor' && (
@@ -476,8 +482,167 @@ const SuitabilityCropAnalysis = ({ cropId, companyId, initialRun, onBack, onOpen
               </div>
             )}
           </div>
+        ) : (
+          <div className="bg-white border border-gray-200 rounded-2xl p-12 text-center text-gray-500 shadow-2xs">
+            <Layers size={40} className="mx-auto mb-3 text-gray-400" />
+            <h3 className="text-base font-bold text-gray-900">No Analysis Runs Found for {crop.name}</h3>
+            <p className="text-xs text-gray-500 mt-1 max-w-md mx-auto">
+              Launch your first evaluation run to compute biophysical suitability against CHIRPS, SoilGrids, DEM, and Sentinel-1.
+            </p>
+            <button
+              onClick={() => setShowNewRunModal(true)}
+              className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 bg-green-700 hover:bg-green-800 text-white rounded-xl font-bold text-xs shadow-xs"
+            >
+              <Plus size={16} />
+              <span>Launch First Evaluation</span>
+            </button>
+          </div>
         )}
       </main>
+
+      {/* In-situ Run New Analysis Modal */}
+      {showNewRunModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-2xl max-w-xl w-full space-y-5 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+              <div>
+                <h3 className="text-base font-bold text-gray-900">Run New {crop.name} Analysis</h3>
+                <p className="text-xs text-gray-500">Configure target boundary, variety hybrid, and physical criteria</p>
+              </div>
+              <button
+                onClick={() => setShowNewRunModal(false)}
+                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {isRunning ? (
+              <div className="py-8">
+                <RunProgress cropName={crop.name} progress={runProgress} />
+              </div>
+            ) : (
+              <form onSubmit={handleRunSubmit} className="space-y-4 text-xs">
+                <div>
+                  <label className="block font-bold text-gray-700 uppercase tracking-wider text-[10px] mb-1.5">
+                    1. Target Estate & Boundary Polygon
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={targetEstate}
+                      onChange={(e) => setTargetEstate(e.target.value)}
+                      placeholder="e.g. Okomu Main Estate / Block Section C"
+                      className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs font-medium focus:outline-none focus:border-green-500"
+                    />
+                    <label className="flex items-center gap-1.5 px-3 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl cursor-pointer font-semibold shrink-0">
+                      <Upload size={14} />
+                      <span>{uploadedBoundaryName || 'Upload Polygon'}</span>
+                      <input
+                        type="file"
+                        accept=".geojson,.kml,.json"
+                        className="hidden"
+                        onChange={(e) => {
+                          if (e.target.files?.[0]) {
+                            setUploadedBoundaryName(e.target.files[0].name);
+                          }
+                        }}
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-gray-700 uppercase tracking-wider text-[10px] mb-1.5">
+                    2. Crop Hybrid / Variety
+                  </label>
+                  <select
+                    value={variant}
+                    onChange={(e) => setVariant(e.target.value)}
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs font-medium focus:outline-none focus:border-green-500"
+                  >
+                    {(crop.variants || ['Standard Commercial Hybrid']).map((v, idx) => (
+                      <option key={idx} value={v}>{v}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-gray-700 uppercase tracking-wider text-[10px] mb-1.5">
+                    3. Assessment Strictness
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { id: 'estate', label: 'Commercial Estate', desc: 'Strict S1 thresholds' },
+                      { id: 'smallholder', label: 'Smallholder', desc: 'Practical tolerance' },
+                      { id: 'standard', label: 'Standard FAO', desc: 'Default FAO bounds' },
+                    ].map((st) => (
+                      <button
+                        type="button"
+                        key={st.id}
+                        onClick={() => setStrictness(st.id)}
+                        className={`p-2.5 rounded-xl border text-left transition-all ${
+                          strictness === st.id
+                            ? 'bg-green-50 border-green-600 text-green-900 font-bold'
+                            : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
+                        }`}
+                      >
+                        <div className="font-bold">{st.label}</div>
+                        <div className="text-[9px] text-gray-400 font-normal mt-0.5">{st.desc}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 rounded-xl p-3 border border-gray-200 flex items-center justify-between">
+                  <div>
+                    <div className="font-bold text-gray-800">Irrigated Regime</div>
+                    <div className="text-[10px] text-gray-500">Enable if irrigation infrastructure is present</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsIrrigated(!isIrrigated)}
+                    className={`w-10 h-5 rounded-full transition-colors relative p-0.5 ${isIrrigated ? 'bg-green-600' : 'bg-gray-300'}`}
+                  >
+                    <div className={`w-4 h-4 rounded-full bg-white transition-transform ${isIrrigated ? 'translate-x-5' : 'translate-x-0'}`} />
+                  </button>
+                </div>
+
+                <div className="bg-gray-50 rounded-xl p-3 border border-gray-200 flex items-center justify-between">
+                  <div>
+                    <div className="font-bold text-gray-800">Ground Soil Sample Fusion (IDW)</div>
+                    <div className="text-[10px] text-gray-500">Fuse GPS soil test points with SoilGrids 250m</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setUseSoilSamples(!useSoilSamples)}
+                    className={`w-10 h-5 rounded-full transition-colors relative p-0.5 ${useSoilSamples ? 'bg-green-600' : 'bg-gray-300'}`}
+                  >
+                    <div className={`w-4 h-4 rounded-full bg-white transition-transform ${useSoilSamples ? 'translate-x-5' : 'translate-x-0'}`} />
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowNewRunModal(false)}
+                    className="w-1/3 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl text-xs transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="w-2/3 py-2.5 bg-green-700 hover:bg-green-800 text-white font-bold rounded-xl text-xs transition-colors shadow-xs flex items-center justify-center gap-2"
+                  >
+                    <Play size={14} fill="currentColor" />
+                    <span>Execute Land Evaluation</span>
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Factor Detail Popup */}
       {popupField && (
