@@ -54,9 +54,9 @@ import PortalLayout from './layouts/PortalLayout';
 
 // === Sustainability, Field Advisory & Finance ===
 // One portal for all of them: the organisation monitoring layout with the
-// sub-pages each service defines in modules/services/serviceCatalog.js.
 const ServicePortal = lazyWithReload(() => import('./modules/services/ServicePortal'));
 const SuitabilityPortal = lazyWithReload(() => import('./modules/suitability/SuitabilityPortal'));
+const SmallholderPortal = lazyWithReload(() => import('./modules/smallholder/SmallholderPortal'));
 
 // === Specialized Monitoring Apps ===
 const RiceMonitoring = lazyWithReload(() => import('./modules/monitoring/rice/Monitoring'));
@@ -337,6 +337,11 @@ const PortalPage = () => {
     // Suitability Tool standalone portal
     if (moduleId === 'suitability-tool') {
       return <SuitabilityPortal onSignOut={handleSignOut} onBack={handleBackToHub} />;
+    }
+
+    // Smallholder Cooperative & Outgrower App Ecosystem
+    if (moduleId === 'group-monitoring' || moduleId === 'group-management') {
+      return <SmallholderPortal onSignOut={handleSignOut} onBack={handleBackToHub} />;
     }
 
     // Remote-sensing monitoring portals
