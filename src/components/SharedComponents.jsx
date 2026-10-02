@@ -114,13 +114,7 @@ export const GeospatialPreview = ({ title, status, points, full = false }) => (
     {/* Map Background Layer */}
     <div className="absolute inset-0 bg-[url('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}')] bg-cover opacity-80"></div>
     
-    {/* Overlay Layer for Plots (Floots) */}
-    <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-40">
-       <polygon points="100,100 250,80 300,200 120,220" fill="#16A34A" stroke="#16A34A" strokeWidth="2" />
-       <polygon points="400,150 550,130 600,250 420,270" fill="#D35400" stroke="#D35400" strokeWidth="2" />
-       <polygon points="200,300 350,280 400,400 220,420" fill="#16A34A" stroke="#16A34A" strokeWidth="2" />
-    </svg>
-
+    {/* Overlay Layer */}
     <div className="absolute inset-0 bg-black/5"></div>
     
     <div className="absolute top-6 left-6 z-10 flex flex-col gap-3">
