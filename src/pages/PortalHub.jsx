@@ -143,7 +143,7 @@ const PortalHub = ({ onSelectModule, onSignOut, onOpenAdmin }) => {
     {
       id: 'monitoring',
       title: 'Geospatial Intelligence',
-      description: 'Multispectral satellite imagery and drone-level field surveillance for high-precision monitoring.',
+      description: 'Multispectral satellite surveillance and vegetative index analytics for the 8 core commercial crops.',
       modules: filterModules([
         { id: 'rs-ffb',       title: 'Oil Palm',    crop: 'Oil Palm',    icon: <OilPalmIcon />,     active: true },
         { id: 'rs-maize',     title: 'Maize Hub',   crop: 'Maize',       icon: <MaizeIcon />,       active: true },
@@ -153,8 +153,6 @@ const PortalHub = ({ onSelectModule, onSignOut, onOpenAdmin }) => {
         { id: 'rs-sugarcane', title: 'SugarCane',   crop: 'SugarCane',   icon: <SugarcaneIcon />,   active: true },
         { id: 'rs-cashew',    title: 'Cashew',      crop: 'Cashew',      icon: <CashewIcon />,      active: true },
         { id: 'rs-rubber',    title: 'Rubber',      crop: 'Rubber',      icon: <RubberIcon />,      active: true },
-        { id: 'rs-drone',     title: 'Drone Intel', crop: 'Aerial',      icon: <DroneIcon />,       active: true },
-        { id: 'group-monitoring', title: 'Smallholder', crop: 'Fusion',  icon: <SmallholderIcon />, active: true },
       ])
     },
     {
@@ -176,11 +174,13 @@ const PortalHub = ({ onSelectModule, onSignOut, onOpenAdmin }) => {
     },
     {
       id: 'farm-advisor',
-      title: 'Farm Advisor',
-      description: 'Crop suitability analysis, weather and AI agronomy decision tools.',
+      title: 'Farm & Field Advisory',
+      description: 'Crop suitability evaluations, UAV drone analytics, smallholder outgrower management, and AI agronomy decision tools.',
       modules: filterModules([
-        { id: 'suitability-tool', title: 'Crop Suitability', crop: 'Planning & Evaluation', icon: <Target />, active: true },
-        { id: 'advisor',      title: 'Farm AI Advisor', crop: 'Agronomy', icon: <MessageSquare />, active: true  },
+        { id: 'suitability-tool', title: 'Crop Suitability',   crop: 'Planning & Evaluation', icon: <Target />,          active: true },
+        { id: 'rs-drone',         title: 'Drone Services',     crop: 'High-Res Aerial UAV',   icon: <DroneIcon />,       active: true },
+        { id: 'group-monitoring', title: 'Smallholder Hub',    crop: 'Outgrower OS',          icon: <SmallholderIcon />, active: true },
+        { id: 'advisor',          title: 'Farm AI Advisor',    crop: 'GAP Agronomy',          icon: <MessageSquare />,   active: true },
       ])
     },
     {
@@ -196,7 +196,7 @@ const PortalHub = ({ onSelectModule, onSignOut, onOpenAdmin }) => {
   const visibleTabs = [
     { id: 'monitoring', label: 'Crop monitoring' },
     { id: 'sustainability', label: 'Sustainability' },
-    { id: 'farm-advisor', label: 'Farm Advisor' },
+    { id: 'farm-advisor', label: 'Farm & Field Advisory' },
     { id: 'custom', label: 'Organisations' },
   ].filter(tab => (sections.find(s => s.id === tab.id)?.modules.length ?? 0) > 0);
   const currentTabId = visibleTabs.some(t => t.id === activeTab) ? activeTab : visibleTabs[0]?.id;
