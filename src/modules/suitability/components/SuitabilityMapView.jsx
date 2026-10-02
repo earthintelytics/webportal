@@ -52,8 +52,14 @@ const SuitabilityMapView = ({ runResult, onSelectField }) => {
       if (index === 1) return { points: '310,30 560,40 555,190 315,185', cx: 435, cy: 110 };
       return { points: '140,215 460,215 450,370 150,370', cx: 300, cy: 290 };
     }
-    // 4 or more: 2x2 grid layout
-    const cols = total > 4 ? 3 : 2;
+    if (total === 4) {
+      if (index === 0) return { points: '40,40 280,30 290,180 30,190', cx: 155, cy: 110 };
+      if (index === 1) return { points: '300,30 560,40 570,200 295,180', cx: 430, cy: 115 };
+      if (index === 2) return { points: '20,210 280,200 270,360 10,350', cx: 140, cy: 280 };
+      return { points: '300,200 575,220 560,370 290,360', cx: 430, cy: 285 };
+    }
+    // More than 4: dynamic grid layout
+    const cols = total > 6 ? 3 : 2;
     const rows = Math.ceil(total / cols);
     const c = index % cols;
     const r = Math.floor(index / cols);
