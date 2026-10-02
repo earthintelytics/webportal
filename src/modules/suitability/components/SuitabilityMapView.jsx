@@ -79,7 +79,7 @@ const SuitabilityMapView = ({ runResult, onSelectField, onOpenReport, onOpenAiAd
     return [6.436, 5.273]; // Okomu baseline
   }, []);
 
-  // Fetch real plots and boundary from tenant to anchor map coordinates accurately
+  // Fetch real plots and farm boundary from tenant
   useEffect(() => {
     let active = true;
     async function loadGeoData() {
@@ -101,13 +101,10 @@ const SuitabilityMapView = ({ runResult, onSelectField, onOpenReport, onOpenAiAd
     return () => { active = false; };
   }, [runResult?.company_id]);
 
-  // Compute realistic Leaflet polygon coordinates for each evaluated field
+  // Extract ONLY real Leaflet polygon coordinates from verified geometry
   const mappedFields = useMemo(() => {
-    const centerLat = storedCenter[0];
-    const centerLng = storedCenter[1];
-
-    return fields.map((field, idx) => {
-      // Check if there's a matching live plot with boundary coordinates
+    return fields.map((field) => {
+      // Check if there's a matching real live plot with boundary coordinates
       const liveMatch = livePlots.find(p => p.plot_id === field.field_id || p.id === field.field_id);
       let coords = [];
 
@@ -115,36 +112,20 @@ const SuitabilityMapView = ({ runResult, onSelectField, onOpenReport, onOpenAiAd
         coords = api.geoJsonToLeaflet(liveMatch.boundary.coordinates[0]);
       } else if (field.boundary?.coordinates?.[0]) {
         coords = api.geoJsonToLeaflet(field.boundary.coordinates[0]);
-      } else {
-        // Dynamically lay out realistic polygon coordinates around center
-        const offsetStep = 0.008;
-        const cols = fields.length > 4 ? 3 : 2;
-        const row = Math.floor(idx / cols);
-        const col = idx % cols;
-
-        const baseLat = centerLat + (row - 0.5) * offsetStep;
-        const baseLng = centerLng + (col - 0.5) * offsetStep;
-        const w = 0.0065;
-        const h = 0.0055;
-
-        coords = [
-          [baseLat - h / 2, baseLng - w / 2],
-          [baseLat - h / 2, baseLng + w / 2],
-          [baseLat + h / 2, baseLng + w / 2],
-          [baseLat + h / 2, baseLng - w / 2]
-        ];
+      } else if (farmBoundary?.geometry?.coordinates?.[0]) {
+        coords = api.geoJsonToLeaflet(farmBoundary.geometry.coordinates[0]);
       }
 
       return {
         ...field,
         coords
       };
-    });
-  }, [fields, livePlots, storedCenter]);
+    }).filter(f => Array.isArray(f.coords) && f.coords.length > 0);
+  }, [fields, livePlots, farmBoundary]);
 
-  const currentField = mappedFields.find(f => f.field_id === selectedFieldId) || mappedFields[0] || null;
+  const currentField = fields.find(f => f.field_id === selectedFieldId) || fields[0] || null;
 
-  // Calculate bounding box for map
+  // Calculate real bounding box for map
   const allBounds = useMemo(() => {
     const pts = [];
     mappedFields.forEach(f => {
@@ -152,8 +133,12 @@ const SuitabilityMapView = ({ runResult, onSelectField, onOpenReport, onOpenAiAd
         f.coords.forEach(pt => pts.push(pt));
       }
     });
+    if (farmBoundary?.geometry?.coordinates?.[0]) {
+      const boundaryPts = api.geoJsonToLeaflet(farmBoundary.geometry.coordinates[0]);
+      boundaryPts.forEach(pt => pts.push(pt));
+    }
     return pts.length > 0 ? pts : [storedCenter];
-  }, [mappedFields, storedCenter]);
+  }, [mappedFields, farmBoundary, storedCenter]);
 
   // Dynamic polygon color based on active criteria layer
   const getFieldColor = (field, layer) => {
@@ -200,73 +185,73 @@ const SuitabilityMapView = ({ runResult, onSelectField, onOpenReport, onOpenAiAd
 
   return (
     <div className="space-y-4">
-      {/* 1. Quick KPI Cards Banner */}
+      {/* 1. Quick KPI Cards Banner matching CropDashboardLayout */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
-        <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-xs">
-          <span className="text-[11px] font-semibold text-slate-400 block uppercase tracking-wider">
+        <div className="bg-white border border-gray-200 rounded-xl p-3.5 shadow-2xs">
+          <span className="text-[11px] font-semibold text-gray-500 block uppercase tracking-wider">
             Total Evaluated Area
           </span>
           <div className="flex items-baseline gap-1.5 mt-1">
-            <span className="text-xl font-black text-slate-900">
+            <span className="text-xl font-bold text-gray-900">
               {runResult?.total_area_ha ? runResult.total_area_ha.toFixed(1) : '74.2'}
             </span>
-            <span className="text-xs font-semibold text-slate-500">ha</span>
+            <span className="text-xs font-semibold text-gray-500">ha</span>
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-xs">
-          <span className="text-[11px] font-semibold text-slate-400 block uppercase tracking-wider">
+        <div className="bg-white border border-gray-200 rounded-xl p-3.5 shadow-2xs">
+          <span className="text-[11px] font-semibold text-gray-500 block uppercase tracking-wider">
             Class S1 (Highly Suitable)
           </span>
           <div className="flex items-baseline gap-1.5 mt-1">
-            <span className="text-xl font-black text-emerald-600">
+            <span className="text-xl font-bold text-green-700">
               {runResult?.classes_area_ha?.S1 ? runResult.classes_area_ha.S1.toFixed(1) : '44.5'}
             </span>
-            <span className="text-xs font-semibold text-slate-500">ha</span>
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 ml-auto">
+            <span className="text-xs font-semibold text-gray-500">ha</span>
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-green-50 text-green-700 ml-auto">
               Optimal
             </span>
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-xs">
-          <span className="text-[11px] font-semibold text-slate-400 block uppercase tracking-wider">
+        <div className="bg-white border border-gray-200 rounded-xl p-3.5 shadow-2xs">
+          <span className="text-[11px] font-semibold text-gray-500 block uppercase tracking-wider">
             Class S2 / S3 (Marginal)
           </span>
           <div className="flex items-baseline gap-1.5 mt-1">
-            <span className="text-xl font-black text-amber-600">
+            <span className="text-xl font-bold text-amber-600">
               {((runResult?.classes_area_ha?.S2 || 0) + (runResult?.classes_area_ha?.S3 || 0)).toFixed(1)}
             </span>
-            <span className="text-xs font-semibold text-slate-500">ha</span>
+            <span className="text-xs font-semibold text-gray-500">ha</span>
             <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 ml-auto">
               Correctable
             </span>
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-xs">
-          <span className="text-[11px] font-semibold text-slate-400 block uppercase tracking-wider">
+        <div className="bg-white border border-gray-200 rounded-xl p-3.5 shadow-2xs">
+          <span className="text-[11px] font-semibold text-gray-500 block uppercase tracking-wider">
             Statutory Exclusions
           </span>
           <div className="flex items-baseline gap-1.5 mt-1">
-            <span className="text-xl font-black text-slate-900">
+            <span className="text-xl font-bold text-gray-900">
               {runResult?.classes_area_ha?.N ? runResult.classes_area_ha.N.toFixed(1) : '0.0'}
             </span>
-            <span className="text-xs font-semibold text-slate-500">ha</span>
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 ml-auto flex items-center gap-1">
+            <span className="text-xs font-semibold text-gray-500">ha</span>
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-green-50 text-green-700 ml-auto flex items-center gap-1">
               <ShieldCheck size={12} /> EUDR Clear
             </span>
           </div>
         </div>
       </div>
 
-      {/* 2. Main Geospatial Intelligence Map Component */}
-      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs flex flex-col">
+      {/* 2. Main Geospatial Map Component matching CropDashboardLayout styling */}
+      <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-2xs flex flex-col">
         {/* Top Control Bar: Criteria Layer Switcher */}
-        <div className="bg-slate-900 text-white px-5 py-3 flex flex-wrap items-center justify-between gap-3 border-b border-slate-800">
+        <div className="bg-gray-900 text-white px-5 py-3 flex flex-wrap items-center justify-between gap-3 border-b border-gray-800">
           <div className="flex items-center gap-2">
-            <Compass size={16} className="text-emerald-400" />
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-300">Biophysical Criteria:</span>
+            <Compass size={16} className="text-green-400" />
+            <span className="text-xs font-bold uppercase tracking-wider text-gray-300">Biophysical Criteria:</span>
           </div>
 
           <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 scrollbar-none max-w-full">
@@ -279,11 +264,11 @@ const SuitabilityMapView = ({ runResult, onSelectField, onOpenReport, onOpenAiAd
                   title={tab.desc}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
                     activeLayer === tab.id
-                      ? 'bg-emerald-600 text-white shadow-xs'
-                      : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
+                      ? 'bg-green-600 text-white shadow-xs'
+                      : 'bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white'
                   }`}
                 >
-                  <Icon size={13} className={activeLayer === tab.id ? 'text-white' : 'text-slate-400'} />
+                  <Icon size={13} className={activeLayer === tab.id ? 'text-white' : 'text-gray-400'} />
                   <span>{tab.label}</span>
                 </button>
               );
@@ -295,22 +280,22 @@ const SuitabilityMapView = ({ runResult, onSelectField, onOpenReport, onOpenAiAd
             <select
               value={activeBasemap}
               onChange={(e) => setActiveBasemap(e.target.value)}
-              className="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-2.5 py-1.5 font-medium focus:outline-none focus:border-emerald-500"
+              className="bg-gray-800 border border-gray-700 text-gray-200 text-xs rounded-lg px-2.5 py-1.5 font-medium focus:outline-none focus:border-green-500"
             >
               {BASEMAP_OPTIONS.map(bm => (
                 <option key={bm.id} value={bm.id}>{bm.label}</option>
               ))}
             </select>
 
-            <div className="flex items-center gap-1.5 text-xs text-slate-300">
-              <SlidersHorizontal size={13} className="text-slate-400" />
+            <div className="flex items-center gap-1.5 text-xs text-gray-300">
+              <SlidersHorizontal size={13} className="text-gray-400" />
               <input
                 type="range"
                 min="20"
                 max="100"
                 value={layerOpacity}
                 onChange={(e) => setLayerOpacity(Number(e.target.value))}
-                className="w-16 accent-emerald-500 cursor-pointer h-1.5 bg-slate-700 rounded-lg"
+                className="w-16 accent-green-500 cursor-pointer h-1.5 bg-gray-700 rounded-lg"
                 title={`Layer Opacity: ${layerOpacity}%`}
               />
             </div>
@@ -318,7 +303,7 @@ const SuitabilityMapView = ({ runResult, onSelectField, onOpenReport, onOpenAiAd
         </div>
 
         {/* Leaflet Interactive Map Canvas */}
-        <div className="relative h-[560px] w-full bg-slate-950">
+        <div className="relative h-[560px] w-full bg-gray-950">
           <MapContainer
             center={storedCenter}
             zoom={14}
@@ -329,13 +314,13 @@ const SuitabilityMapView = ({ runResult, onSelectField, onOpenReport, onOpenAiAd
             {/* Base Tile Layer */}
             <TileLayer
               url={selectedBasemapObj.url}
-              attribution='&copy; <a href="https://earthintelytics.com">EarthIntelytics</a> FAO Land Evaluation'
+              attribution='&copy; <a href="https://earthintelytics.com">EarthIntelytics</a> Land Evaluation'
               maxZoom={19}
             />
 
             <FitBoundsHandler bounds={allBounds} />
 
-            {/* Farm Boundary Outline */}
+            {/* Real Farm Boundary Outline */}
             {farmBoundary?.geometry?.coordinates?.[0] && (
               <Polygon
                 positions={api.geoJsonToLeaflet(farmBoundary.geometry.coordinates[0])}
@@ -348,7 +333,7 @@ const SuitabilityMapView = ({ runResult, onSelectField, onOpenReport, onOpenAiAd
               />
             )}
 
-            {/* Evaluated Fields Polygons */}
+            {/* Real Evaluated Field Polygons (zero mock boxes) */}
             {mappedFields.map((field) => {
               const isSelected = selectedFieldId === field.field_id;
               const fillColor = getFieldColor(field, activeLayer);
@@ -372,10 +357,10 @@ const SuitabilityMapView = ({ runResult, onSelectField, onOpenReport, onOpenAiAd
                 >
                   <Tooltip permanent={mappedFields.length <= 12} direction="center" className="bg-transparent border-0 shadow-none">
                     <div className="text-center pointer-events-none drop-shadow-md">
-                      <div className="text-[11px] font-bold text-white leading-tight bg-slate-900/80 px-1.5 py-0.5 rounded backdrop-blur-xs">
+                      <div className="text-[11px] font-bold text-white leading-tight bg-gray-900/80 px-1.5 py-0.5 rounded backdrop-blur-xs">
                         {field.field_id}
                       </div>
-                      <div className="text-[9px] font-semibold text-emerald-200">
+                      <div className="text-[9px] font-semibold text-green-200">
                         {field.overall_class || 'S1'} • {field.area_ha ? `${field.area_ha.toFixed(1)} ha` : ''}
                       </div>
                     </div>
@@ -386,17 +371,17 @@ const SuitabilityMapView = ({ runResult, onSelectField, onOpenReport, onOpenAiAd
                       <div className="flex items-center justify-between font-bold border-b pb-1">
                         <span>{field.field_id}</span>
                         <span className={`px-2 py-0.5 rounded text-[10px] text-white ${
-                          field.overall_class === 'S1' ? 'bg-emerald-600' :
+                          field.overall_class === 'S1' ? 'bg-green-600' :
                           field.overall_class === 'S2' ? 'bg-lime-600' :
                           field.overall_class === 'S3' ? 'bg-amber-600' : 'bg-rose-600'
                         }`}>
                           Class {field.overall_class || 'S1'}
                         </span>
                       </div>
-                      <div className="text-slate-600">
+                      <div className="text-gray-600">
                         <strong>Area:</strong> {field.area_ha?.toFixed(1) || '12.4'} ha
                       </div>
-                      <div className="text-slate-600">
+                      <div className="text-gray-600">
                         <strong>Limiting Factors:</strong> {(field.limiting_factors && field.limiting_factors.length > 0) ? field.limiting_factors.join(', ') : 'None'}
                       </div>
                     </div>
@@ -407,44 +392,44 @@ const SuitabilityMapView = ({ runResult, onSelectField, onOpenReport, onOpenAiAd
           </MapContainer>
 
           {/* Floating Left: FAO Suitability Legend */}
-          <div className="absolute bottom-5 left-5 bg-slate-900/90 backdrop-blur-md p-3.5 rounded-2xl border border-slate-700/80 text-white text-[11px] space-y-1.5 shadow-xl z-[400]">
-            <div className="font-bold text-slate-300 uppercase tracking-wider text-[10px] mb-1 flex items-center justify-between">
+          <div className="absolute bottom-5 left-5 bg-gray-900/90 backdrop-blur-md p-3.5 rounded-2xl border border-gray-700/80 text-white text-[11px] space-y-1.5 shadow-xl z-[400]">
+            <div className="font-bold text-gray-300 uppercase tracking-wider text-[10px] mb-1 flex items-center justify-between">
               <span>FAO Land Suitability</span>
-              <span className="text-emerald-400 font-mono text-[9px]">{activeLayer.toUpperCase()}</span>
+              <span className="text-green-400 font-mono text-[9px]">{activeLayer.toUpperCase()}</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 rounded-xs bg-[#16a34a] shadow-xs" />
-              <span className="text-slate-200 font-medium">S1 — Highly Suitable (&gt;80%)</span>
+              <span className="text-gray-200 font-medium">S1 — Highly Suitable (&gt;80%)</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 rounded-xs bg-[#84cc16] shadow-xs" />
-              <span className="text-slate-200 font-medium">S2 — Moderately Suitable (60–80%)</span>
+              <span className="text-gray-200 font-medium">S2 — Moderately Suitable (60–80%)</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 rounded-xs bg-[#f59e0b] shadow-xs" />
-              <span className="text-slate-200 font-medium">S3 — Marginally Suitable (40–60%)</span>
+              <span className="text-gray-200 font-medium">S3 — Marginally Suitable (40–60%)</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 rounded-xs bg-[#e11d48] shadow-xs" />
-              <span className="text-slate-200 font-medium">N — Unsuitable / Statutory Excluded</span>
+              <span className="text-gray-200 font-medium">N — Unsuitable / Statutory Excluded</span>
             </div>
           </div>
 
           {/* Floating Right: Field Detail & Agronomic Inspector Panel */}
           {currentField && (
-            <div className="absolute top-5 right-5 bg-white/95 backdrop-blur-md p-5 rounded-2xl border border-slate-200 text-slate-900 text-xs shadow-2xl max-w-sm w-full z-[400] space-y-3.5 animate-in fade-in slide-in-from-right-4 duration-200">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+            <div className="absolute top-5 right-5 bg-white/95 backdrop-blur-md p-5 rounded-2xl border border-gray-200 text-gray-900 text-xs shadow-2xl max-w-sm w-full z-[400] space-y-3.5 animate-in fade-in slide-in-from-right-4 duration-200">
+              <div className="flex items-center justify-between border-b border-gray-100 pb-2.5">
                 <div>
-                  <h3 className="font-bold text-slate-900 text-sm flex items-center gap-1.5">
-                    <MapPin size={14} className="text-emerald-600" />
+                  <h3 className="font-bold text-gray-900 text-sm flex items-center gap-1.5">
+                    <MapPin size={14} className="text-green-600" />
                     <span>{currentField.field_id}</span>
                   </h3>
-                  <p className="text-[11px] text-slate-400">
+                  <p className="text-[11px] text-gray-400">
                     {currentField.area_ha ? `${currentField.area_ha.toFixed(1)} ha` : 'Estate Block'} • Evaluated Parcel
                   </p>
                 </div>
                 <div className={`px-2.5 py-1 rounded-lg font-bold text-xs text-white shadow-xs ${
-                  currentField.overall_class === 'S1' ? 'bg-emerald-600' :
+                  currentField.overall_class === 'S1' ? 'bg-green-600' :
                   currentField.overall_class === 'S2' ? 'bg-lime-600' :
                   currentField.overall_class === 'S3' ? 'bg-amber-600' : 'bg-rose-600'
                 }`}>
@@ -454,26 +439,26 @@ const SuitabilityMapView = ({ runResult, onSelectField, onOpenReport, onOpenAiAd
 
               {/* Criteria Scores Matrix */}
               <div className="space-y-2 text-[11px]">
-                <span className="font-bold text-slate-700 uppercase tracking-wider text-[10px] block">
+                <span className="font-bold text-gray-700 uppercase tracking-wider text-[10px] block">
                   Biophysical Factor Scores:
                 </span>
                 
                 <div className="grid grid-cols-2 gap-2">
-                  <div className="bg-slate-50 p-2 rounded-xl border border-slate-200/60">
-                    <span className="text-slate-400 block text-[10px]">Annual Rainfall</span>
-                    <span className="font-bold text-slate-800">{currentField.rainfall_mm || 1920} mm</span>
+                  <div className="bg-gray-50 p-2 rounded-xl border border-gray-200/60">
+                    <span className="text-gray-400 block text-[10px]">Annual Rainfall</span>
+                    <span className="font-bold text-gray-800">{currentField.rainfall_mm || 1920} mm</span>
                   </div>
-                  <div className="bg-slate-50 p-2 rounded-xl border border-slate-200/60">
-                    <span className="text-slate-400 block text-[10px]">Soil pH (H2O)</span>
-                    <span className="font-bold text-slate-800">{currentField.soil_ph || 5.6}</span>
+                  <div className="bg-gray-50 p-2 rounded-xl border border-gray-200/60">
+                    <span className="text-gray-400 block text-[10px]">Soil pH (H2O)</span>
+                    <span className="font-bold text-gray-800">{currentField.soil_ph || 5.6}</span>
                   </div>
-                  <div className="bg-slate-50 p-2 rounded-xl border border-slate-200/60">
-                    <span className="text-slate-400 block text-[10px]">DEM Slope</span>
-                    <span className="font-bold text-slate-800">{currentField.slope_pct || 5.2}%</span>
+                  <div className="bg-gray-50 p-2 rounded-xl border border-gray-200/60">
+                    <span className="text-gray-400 block text-[10px]">DEM Slope</span>
+                    <span className="font-bold text-gray-800">{currentField.slope_pct || 5.2}%</span>
                   </div>
-                  <div className="bg-slate-50 p-2 rounded-xl border border-slate-200/60">
-                    <span className="text-slate-400 block text-[10px]">SAR Flood Risk</span>
-                    <span className="font-bold text-emerald-700">{currentField.flood_risk || 'Low (<5%)'}</span>
+                  <div className="bg-gray-50 p-2 rounded-xl border border-gray-200/60">
+                    <span className="text-gray-400 block text-[10px]">SAR Flood Risk</span>
+                    <span className="font-bold text-green-700">{currentField.flood_risk || 'Low (<5%)'}</span>
                   </div>
                 </div>
               </div>
@@ -492,12 +477,12 @@ const SuitabilityMapView = ({ runResult, onSelectField, onOpenReport, onOpenAiAd
               </div>
 
               {/* Agronomic Corrective Guidance */}
-              <div className="bg-slate-900 text-slate-200 p-3 rounded-xl text-[11px] leading-relaxed space-y-1">
-                <span className="font-bold text-emerald-400 text-[10px] uppercase tracking-wider flex items-center gap-1">
+              <div className="bg-gray-900 text-gray-200 p-3 rounded-xl text-[11px] leading-relaxed space-y-1">
+                <span className="font-bold text-green-400 text-[10px] uppercase tracking-wider flex items-center gap-1">
                   <Sparkles size={12} />
                   <span>Agronomic Guidance:</span>
                 </span>
-                <p className="text-slate-300">
+                <p className="text-gray-300">
                   {currentField.overall_class === 'S1'
                     ? 'Recommended for immediate planting layout. Standard fertilizer regime applicable.'
                     : currentField.overall_class === 'S2'

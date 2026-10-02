@@ -52,6 +52,8 @@ const ClusterMapView = ({ members = [] }) => {
   const [selectedCluster, setSelectedCluster] = useState('alpha');
   const [selectedPlotId, setSelectedPlotId] = useState(members[0]?.id || null);
   const [layerOpacity, setLayerOpacity] = useState(85);
+  const [livePlots, setLivePlots] = useState([]);
+  const [farmBoundary, setFarmBoundary] = useState(null);
 
   const storedCenter = useMemo(() => {
     try {
@@ -66,37 +68,48 @@ const ClusterMapView = ({ members = [] }) => {
     return [6.436, 5.273];
   }, []);
 
-  // Map outgrower member parcels to realistic coordinates
+  // Fetch real plots and boundaries from backend
+  useEffect(() => {
+    let active = true;
+    async function loadPlots() {
+      try {
+        const tenant = localStorage.getItem('fi_tenant') || 'okomu';
+        const [plotsRes, boundaryRes] = await Promise.all([
+          api.fetchPlotsIntelligence(tenant).catch(() => []),
+          api.fetchFarmBoundary().catch(() => null)
+        ]);
+        if (active) {
+          if (Array.isArray(plotsRes)) setLivePlots(plotsRes);
+          if (boundaryRes?.geometry) setFarmBoundary(boundaryRes);
+        }
+      } catch (err) {
+        console.warn('Could not load outgrower plot geometries:', err);
+      }
+    }
+    loadPlots();
+    return () => { active = false; };
+  }, []);
+
+  // Map outgrower member parcels using ONLY real geometries
   const mappedMembers = useMemo(() => {
-    const centerLat = storedCenter[0];
-    const centerLng = storedCenter[1];
+    return members.map((member) => {
+      const liveMatch = livePlots.find(p => p.plot_id === member.id || p.id === member.id || p.name === member.name);
+      let coords = [];
 
-    return members.map((member, idx) => {
-      const offsetStep = 0.007;
-      const cols = 2;
-      const row = Math.floor(idx / cols);
-      const col = idx % cols;
-
-      const baseLat = centerLat + (row - 0.5) * offsetStep;
-      const baseLng = centerLng + (col - 0.5) * offsetStep;
-      const w = 0.0055;
-      const h = 0.0045;
-
-      const coords = [
-        [baseLat - h / 2, baseLng - w / 2],
-        [baseLat - h / 2, baseLng + w / 2],
-        [baseLat + h / 2, baseLng + w / 2],
-        [baseLat + h / 2, baseLng - w / 2]
-      ];
+      if (liveMatch?.boundary?.coordinates?.[0]) {
+        coords = api.geoJsonToLeaflet(liveMatch.boundary.coordinates[0]);
+      } else if (member.boundary?.coordinates?.[0]) {
+        coords = api.geoJsonToLeaflet(member.boundary.coordinates[0]);
+      }
 
       return {
         ...member,
         coords
       };
-    });
-  }, [members, storedCenter]);
+    }).filter(m => Array.isArray(m.coords) && m.coords.length > 0);
+  }, [members, livePlots]);
 
-  const selectedPlot = mappedMembers.find(m => m.id === selectedPlotId) || mappedMembers[0] || null;
+  const selectedPlot = members.find(m => m.id === selectedPlotId) || members[0] || null;
 
   const allBounds = useMemo(() => {
     const pts = [];
@@ -105,8 +118,12 @@ const ClusterMapView = ({ members = [] }) => {
         m.coords.forEach(pt => pts.push(pt));
       }
     });
+    if (farmBoundary?.geometry?.coordinates?.[0]) {
+      const boundaryPts = api.geoJsonToLeaflet(farmBoundary.geometry.coordinates[0]);
+      boundaryPts.forEach(pt => pts.push(pt));
+    }
     return pts.length > 0 ? pts : [storedCenter];
-  }, [mappedMembers, storedCenter]);
+  }, [mappedMembers, farmBoundary, storedCenter]);
 
   const getMemberFillColor = (m, layer) => {
     if (layer === 'sar_rvi') {
@@ -125,7 +142,7 @@ const ClusterMapView = ({ members = [] }) => {
 
   return (
     <div className="space-y-4">
-      {/* Cluster Summary Cards */}
+      {/* Cluster Summary Cards matching CropDashboardLayout style */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
         {CLUSTERS.map(cl => (
           <div
@@ -133,24 +150,24 @@ const ClusterMapView = ({ members = [] }) => {
             onClick={() => setSelectedCluster(cl.id)}
             className={`bg-white border rounded-2xl p-4 cursor-pointer transition-all ${
               selectedCluster === cl.id
-                ? 'border-emerald-600 shadow-md ring-1 ring-emerald-500/20'
-                : 'border-slate-200 hover:border-slate-300 shadow-xs'
+                ? 'border-green-600 shadow-sm ring-1 ring-green-500/20'
+                : 'border-gray-200 hover:border-gray-300 shadow-2xs'
             }`}
           >
             <div className="flex items-center justify-between mb-2">
-              <span className="font-bold text-slate-900 text-sm">{cl.name}</span>
-              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+              <span className="font-bold text-gray-900 text-sm">{cl.name}</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-green-100 text-green-800">
                 {cl.members} Plots
               </span>
             </div>
-            <div className="grid grid-cols-2 gap-2 text-xs text-slate-600">
+            <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
               <div>
-                <span className="text-slate-400 block text-[10px]">Total Area</span>
-                <span className="font-semibold text-slate-800">{cl.area} ha</span>
+                <span className="text-gray-400 block text-[10px]">Total Area</span>
+                <span className="font-semibold text-gray-800">{cl.area} ha</span>
               </div>
               <div>
-                <span className="text-slate-400 block text-[10px]">Canopy Vigor</span>
-                <span className="font-semibold text-emerald-700">{cl.avg_vigor}</span>
+                <span className="text-gray-400 block text-[10px]">Canopy Vigor</span>
+                <span className="font-semibold text-green-700">{cl.avg_vigor}</span>
               </div>
             </div>
           </div>
@@ -158,12 +175,12 @@ const ClusterMapView = ({ members = [] }) => {
       </div>
 
       {/* Geospatial Map Canvas */}
-      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs flex flex-col">
+      <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-2xs flex flex-col">
         {/* Layer Pill Bar */}
-        <div className="bg-slate-900 text-white px-5 py-3 flex flex-wrap items-center justify-between gap-3 border-b border-slate-800">
+        <div className="bg-gray-900 text-white px-5 py-3 flex flex-wrap items-center justify-between gap-3 border-b border-gray-800">
           <div className="flex items-center gap-2">
-            <Compass size={16} className="text-emerald-400" />
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-300">Outgrower Cluster Layers:</span>
+            <Compass size={16} className="text-green-400" />
+            <span className="text-xs font-bold uppercase tracking-wider text-gray-300">Outgrower Cluster Layers:</span>
           </div>
 
           <div className="flex items-center gap-2">
@@ -177,8 +194,8 @@ const ClusterMapView = ({ members = [] }) => {
                 onClick={() => setActiveLayer(tab.id)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
                   activeLayer === tab.id
-                    ? 'bg-emerald-600 text-white shadow-xs'
-                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
+                    ? 'bg-green-600 text-white shadow-xs'
+                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white'
                 }`}
               >
                 {tab.label}
@@ -191,7 +208,7 @@ const ClusterMapView = ({ members = [] }) => {
             <select
               value={activeBasemap}
               onChange={(e) => setActiveBasemap(e.target.value)}
-              className="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-2.5 py-1.5 font-medium focus:outline-none focus:border-emerald-500"
+              className="bg-gray-800 border border-gray-700 text-gray-200 text-xs rounded-lg px-2.5 py-1.5 font-medium focus:outline-none focus:border-green-500"
             >
               {BASEMAP_OPTIONS.map(bm => (
                 <option key={bm.id} value={bm.id}>{bm.label}</option>
@@ -201,7 +218,7 @@ const ClusterMapView = ({ members = [] }) => {
         </div>
 
         {/* Leaflet Map Canvas */}
-        <div className="relative h-[540px] w-full bg-slate-950">
+        <div className="relative h-[540px] w-full bg-gray-950">
           <MapContainer
             center={storedCenter}
             zoom={14}
@@ -216,6 +233,19 @@ const ClusterMapView = ({ members = [] }) => {
             />
 
             <FitBoundsHandler bounds={allBounds} />
+
+            {/* Farm Boundary Outline */}
+            {farmBoundary?.geometry?.coordinates?.[0] && (
+              <Polygon
+                positions={api.geoJsonToLeaflet(farmBoundary.geometry.coordinates[0])}
+                pathOptions={{
+                  color: '#ffffff',
+                  weight: 2,
+                  dashArray: '4, 4',
+                  fillOpacity: 0
+                }}
+              />
+            )}
 
             {mappedMembers.map(member => {
               const isSelected = selectedPlot?.id === member.id;
@@ -237,10 +267,10 @@ const ClusterMapView = ({ members = [] }) => {
                 >
                   <Tooltip permanent direction="center" className="bg-transparent border-0 shadow-none">
                     <div className="text-center pointer-events-none drop-shadow-md">
-                      <div className="text-[11px] font-bold text-white leading-tight bg-slate-900/80 px-1.5 py-0.5 rounded backdrop-blur-xs">
+                      <div className="text-[11px] font-bold text-white leading-tight bg-gray-900/80 px-1.5 py-0.5 rounded backdrop-blur-xs">
                         {member.name}
                       </div>
-                      <div className="text-[9px] font-semibold text-emerald-200">
+                      <div className="text-[9px] font-semibold text-green-200">
                         {member.area_ha} ha • {member.primary_crop}
                       </div>
                     </div>
@@ -248,9 +278,9 @@ const ClusterMapView = ({ members = [] }) => {
 
                   <Popup className="cluster-popup">
                     <div className="p-2 space-y-1 text-xs">
-                      <div className="font-bold text-slate-900">{member.name} ({member.id})</div>
-                      <div className="text-slate-600">Crop: {member.primary_crop} • Area: {member.area_ha} ha</div>
-                      <div className="text-slate-600">SAR RVI: {member.sar_rvi} • Status: {member.status}</div>
+                      <div className="font-bold text-gray-900">{member.name} ({member.id})</div>
+                      <div className="text-gray-600">Crop: {member.primary_crop} • Area: {member.area_ha} ha</div>
+                      <div className="text-gray-600">SAR RVI: {member.sar_rvi} • Status: {member.status}</div>
                     </div>
                   </Popup>
                 </Polygon>
@@ -260,45 +290,45 @@ const ClusterMapView = ({ members = [] }) => {
 
           {/* Selected Plot Detail Card */}
           {selectedPlot && (
-            <div className="absolute top-5 right-5 bg-white/95 backdrop-blur-md p-5 rounded-2xl border border-slate-200 text-slate-900 text-xs shadow-2xl max-w-sm w-full z-[400] space-y-3 animate-in fade-in slide-in-from-right-4 duration-200">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+            <div className="absolute top-5 right-5 bg-white/95 backdrop-blur-md p-5 rounded-2xl border border-gray-200 text-gray-900 text-xs shadow-2xl max-w-sm w-full z-[400] space-y-3 animate-in fade-in slide-in-from-right-4 duration-200">
+              <div className="flex items-center justify-between border-b border-gray-100 pb-2.5">
                 <div>
-                  <div className="font-bold text-slate-900 text-sm flex items-center gap-1.5">
-                    <User size={14} className="text-emerald-600" />
+                  <div className="font-bold text-gray-900 text-sm flex items-center gap-1.5">
+                    <User size={14} className="text-green-600" />
                     <span>{selectedPlot.name}</span>
                   </div>
-                  <div className="text-[10px] text-slate-400 font-mono mt-0.5">{selectedPlot.id}</div>
+                  <div className="text-[10px] text-gray-400 font-mono mt-0.5">{selectedPlot.id}</div>
                 </div>
-                <span className="px-2.5 py-1 rounded-lg font-bold text-[10px] bg-emerald-100 text-emerald-800 shadow-xs">
+                <span className="px-2.5 py-1 rounded-lg font-bold text-[10px] bg-green-100 text-green-800 shadow-xs">
                   {selectedPlot.primary_crop}
                 </span>
               </div>
 
               <div className="grid grid-cols-2 gap-2 text-[11px]">
-                <div className="bg-slate-50 p-2 rounded-xl border border-slate-200/60">
-                  <span className="text-slate-400 block text-[10px]">Registered Area</span>
-                  <span className="font-bold text-slate-800">{selectedPlot.area_ha} ha</span>
+                <div className="bg-gray-50 p-2 rounded-xl border border-gray-200/60">
+                  <span className="text-gray-400 block text-[10px]">Registered Area</span>
+                  <span className="font-bold text-gray-800">{selectedPlot.area_ha} ha</span>
                 </div>
-                <div className="bg-slate-50 p-2 rounded-xl border border-slate-200/60">
-                  <span className="text-slate-400 block text-[10px]">Vigor Percentile</span>
-                  <span className="font-bold text-emerald-700">Top {100 - selectedPlot.vigor_percentile}%</span>
+                <div className="bg-gray-50 p-2 rounded-xl border border-gray-200/60">
+                  <span className="text-gray-400 block text-[10px]">Vigor Percentile</span>
+                  <span className="font-bold text-green-700">Top {100 - selectedPlot.vigor_percentile}%</span>
                 </div>
-                <div className="bg-slate-50 p-2 rounded-xl border border-slate-200/60">
-                  <span className="text-slate-400 block text-[10px]">SAR Radar RVI</span>
+                <div className="bg-gray-50 p-2 rounded-xl border border-gray-200/60">
+                  <span className="text-gray-400 block text-[10px]">SAR Radar RVI</span>
                   <span className="font-bold text-sky-700">{selectedPlot.sar_rvi} (Cloud-Free)</span>
                 </div>
-                <div className="bg-slate-50 p-2 rounded-xl border border-slate-200/60">
-                  <span className="text-slate-400 block text-[10px]">Certification</span>
-                  <span className="font-bold text-slate-800">{selectedPlot.certification}</span>
+                <div className="bg-gray-50 p-2 rounded-xl border border-gray-200/60">
+                  <span className="text-gray-400 block text-[10px]">Certification</span>
+                  <span className="font-bold text-gray-800">{selectedPlot.certification}</span>
                 </div>
               </div>
 
-              <div className="bg-slate-900 text-slate-200 p-3 rounded-xl text-[11px] leading-relaxed space-y-1">
-                <span className="font-bold text-emerald-400 text-[10px] uppercase tracking-wider flex items-center gap-1">
+              <div className="bg-gray-900 text-gray-200 p-3 rounded-xl text-[11px] leading-relaxed space-y-1">
+                <span className="font-bold text-green-400 text-[10px] uppercase tracking-wider flex items-center gap-1">
                   <Sparkles size={12} />
                   <span>Agronomic Guidance:</span>
                 </span>
-                <p className="text-slate-300">
+                <p className="text-gray-300">
                   {selectedPlot.status === 'Needs Scouting'
                     ? 'Outlier distress detected. Dispatch extension agronomist to check for localized nutrient deficit or drainage blockage.'
                     : 'Canopy density optimal. Proceed with standard scheduled harvesting.'}
