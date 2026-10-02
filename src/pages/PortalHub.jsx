@@ -174,7 +174,7 @@ const PortalHub = ({ onSelectModule, onSignOut, onOpenAdmin }) => {
     },
     {
       id: 'farm-advisor',
-      title: 'Farm & Field Advisory',
+      title: 'Farm Advisory',
       description: 'Crop suitability evaluations, UAV drone analytics, smallholder outgrower management, and AI agronomy decision tools.',
       modules: filterModules([
         { id: 'suitability-tool', title: 'Crop Suitability',   crop: 'Planning & Evaluation', icon: <Target />,          active: true },
@@ -196,7 +196,7 @@ const PortalHub = ({ onSelectModule, onSignOut, onOpenAdmin }) => {
   const visibleTabs = [
     { id: 'monitoring', label: 'Crop monitoring' },
     { id: 'sustainability', label: 'Sustainability' },
-    { id: 'farm-advisor', label: 'Farm & Field Advisory' },
+    { id: 'farm-advisor', label: 'Farm Advisory' },
     { id: 'custom', label: 'Organisations' },
   ].filter(tab => (sections.find(s => s.id === tab.id)?.modules.length ?? 0) > 0);
   const currentTabId = visibleTabs.some(t => t.id === activeTab) ? activeTab : visibleTabs[0]?.id;
