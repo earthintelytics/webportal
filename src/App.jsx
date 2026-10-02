@@ -339,15 +339,9 @@ const PortalPage = () => {
       return <SuitabilityPortal onSignOut={handleSignOut} onBack={handleBackToHub} />;
     }
 
-    // Smallholder Cooperative & Outgrower App Ecosystem
-    if (moduleId === 'group-monitoring' || moduleId === 'group-management') {
-      return <SmallholderPortal onSignOut={handleSignOut} onBack={handleBackToHub} />;
-    }
-
-    // Remote-sensing monitoring portals
-    // Services (and Drone surveys / Smallholder monitoring) use the shared layout
-    if (isServiceModule(moduleId)) {
-      return <ServicePortal moduleId={moduleId} onSignOut={handleSignOut} onBack={handleBackToHub} />;
+    // Services (Sustainability, Field Advisory, Smallholder Monitoring, Carbon, Forestry, EUDR)
+    if (isServiceModule(moduleId) || moduleId === 'group-monitoring' || moduleId === 'group-management') {
+      return <ServicePortal moduleId={moduleId === 'group-management' ? 'group-monitoring' : moduleId} onSignOut={handleSignOut} onBack={handleBackToHub} />;
     }
     if (moduleId.startsWith('rs-')) {
       const rsApps = {
