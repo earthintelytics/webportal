@@ -4,8 +4,6 @@ import {
   Info, 
   CheckCircle2, 
   AlertTriangle, 
-  AlertOctagon, 
-  ShieldCheck, 
   Compass, 
   MapPin, 
   Maximize2, 
@@ -16,21 +14,93 @@ import {
   Droplets, 
   Trees, 
   ChevronRight,
+  ChevronDown,
   Sparkles,
-  Zap
+  Zap,
+  X
 } from 'lucide-react';
-import { MapContainer, TileLayer, Polygon, Popup, Tooltip, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Polygon, Popup, Tooltip, ZoomControl, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import * as api from '../../../services/organizationMonitorApi';
 
 const MAP_LAYERS = [
-  { id: 'overview', label: 'FAO Suitability (S1–N)', icon: Layers, desc: 'Weighted Multi-Criteria Decision Analysis (AHP) composite' },
-  { id: 'rainfall', label: 'Rainfall (CHIRPS)', icon: CloudRain, desc: '40-year annual precipitation & dry-season distribution' },
-  { id: 'soil', label: 'Soil pH & Depth (SoilGrids)', icon: Droplets, desc: 'SoilGrids 250m pH (H2O), soil depth & ground test fusion' },
-  { id: 'slope', label: 'Slope & Terrain (Copernicus DEM)', icon: Mountain, desc: 'Copernicus 30m slope percentage & Topographic Wetness Index' },
-  { id: 'temp', label: 'Temperature (ERA5-Land)', icon: Thermometer, desc: 'ERA5-Land mean annual temperature & thermal accumulation' },
-  { id: 'flood', label: 'Radar Flood & Drainage (Sentinel-1)', icon: Zap, desc: 'Sentinel-1 SAR C-band radar flood inundation dynamics' },
-  { id: 'exclusions', label: 'Exclusions (EUDR / WDPA)', icon: Trees, desc: '31 Dec 2020 JRC Forest Baseline & protected areas' }
+  { 
+    id: 'overview', 
+    label: 'FAO Suitability (S1–N)', 
+    icon: Layers, 
+    desc: 'Weighted Multi-Criteria Decision Analysis (AHP) composite',
+    legend: [
+      { label: 'S1 — Highly Suitable (>80%)', color: '#16a34a', range: '>80%' },
+      { label: 'S2 — Moderately Suitable (60–80%)', color: '#84cc16', range: '60–80%' },
+      { label: 'S3 — Marginally Suitable (40–60%)', color: '#f59e0b', range: '40–60%' },
+      { label: 'N — Unsuitable / Statutory Excluded', color: '#e11d48', range: '<40%' },
+    ]
+  },
+  { 
+    id: 'rainfall', 
+    label: 'Rainfall (CHIRPS)', 
+    icon: CloudRain, 
+    desc: '40-year annual precipitation & dry-season distribution',
+    legend: [
+      { label: 'Optimal (>1800 mm/yr)', color: '#0284c7' },
+      { label: 'Adequate (1400–1800 mm/yr)', color: '#38bdf8' },
+      { label: 'Deficit (<1400 mm/yr)', color: '#f97316' },
+    ]
+  },
+  { 
+    id: 'soil', 
+    label: 'Soil pH & Depth (SoilGrids)', 
+    icon: Droplets, 
+    desc: 'SoilGrids 250m pH (H2O), soil depth & ground test fusion',
+    legend: [
+      { label: 'Optimal pH (5.5 – 7.0)', color: '#10b981' },
+      { label: 'Mild Acidic (4.5 – 5.5)', color: '#eab308' },
+      { label: 'Strong Acidic (<4.5, Lime Needed)', color: '#f43f5e' },
+    ]
+  },
+  { 
+    id: 'slope', 
+    label: 'Slope & Terrain (Copernicus DEM)', 
+    icon: Mountain, 
+    desc: 'Copernicus 30m slope percentage & Topographic Wetness Index',
+    legend: [
+      { label: 'Gentle Slope (<8%)', color: '#16a34a' },
+      { label: 'Moderate Slope (8–16%, Terracing)', color: '#eab308' },
+      { label: 'Steep (>16%, High Erosion)', color: '#e11d48' },
+    ]
+  },
+  { 
+    id: 'temp', 
+    label: 'Temperature (ERA5-Land)', 
+    icon: Thermometer, 
+    desc: 'ERA5-Land mean annual temperature & thermal accumulation',
+    legend: [
+      { label: 'Ideal (24°C – 30°C)', color: '#10b981' },
+      { label: 'Marginal (20°C – 24°C)', color: '#f59e0b' },
+      { label: 'Cold/Heat Stress (<20°C or >35°C)', color: '#ef4444' },
+    ]
+  },
+  { 
+    id: 'flood', 
+    label: 'Radar Flood Dynamics (Sentinel-1)', 
+    icon: Zap, 
+    desc: 'Sentinel-1 SAR C-band radar flood inundation dynamics',
+    legend: [
+      { label: 'Well Drained (<5% Inundation)', color: '#10b981' },
+      { label: 'Seasonal Waterlogging (5–15%)', color: '#eab308' },
+      { label: 'Severe Flood Risk (>15%)', color: '#ef4444' },
+    ]
+  },
+  { 
+    id: 'exclusions', 
+    label: 'Statutory Exclusions (EUDR / WDPA)', 
+    icon: Trees, 
+    desc: '31 Dec 2020 JRC Forest Baseline & protected nature reserves',
+    legend: [
+      { label: 'EUDR Cleared (Zero Deforestation)', color: '#16a34a' },
+      { label: 'Statutory Forest Buffer / Reserve', color: '#e11d48' },
+    ]
+  }
 ];
 
 const BASEMAP_OPTIONS = [
@@ -40,13 +110,12 @@ const BASEMAP_OPTIONS = [
   { id: 'osm', label: 'OpenStreetMap', url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png' },
 ];
 
-// Helper to fit bounds to polygons
 const FitBoundsHandler = ({ bounds }) => {
   const map = useMap();
   useEffect(() => {
     if (bounds && bounds.length > 0) {
       try {
-        map.fitBounds(bounds, { padding: [30, 30], maxZoom: 16 });
+        map.fitBounds(bounds, { padding: [40, 40], maxZoom: 16 });
       } catch {
         // Safe fallback
       }
@@ -55,10 +124,11 @@ const FitBoundsHandler = ({ bounds }) => {
   return null;
 };
 
-const SuitabilityMapView = ({ runResult, onSelectField, onOpenReport, onOpenAiAdvisor }) => {
+const SuitabilityMapView = ({ runResult, onSelectField }) => {
   const [activeLayer, setActiveLayer] = useState('overview');
   const [activeBasemap, setActiveBasemap] = useState('hybrid');
-  const [layerOpacity, setLayerOpacity] = useState(80);
+  const [layerOpacity, setLayerOpacity] = useState(85);
+  const [showLayersSidebar, setShowLayersSidebar] = useState(true);
   const [farmBoundary, setFarmBoundary] = useState(null);
   const [livePlots, setLivePlots] = useState([]);
 
@@ -104,7 +174,6 @@ const SuitabilityMapView = ({ runResult, onSelectField, onOpenReport, onOpenAiAd
   // Extract ONLY real Leaflet polygon coordinates from verified geometry
   const mappedFields = useMemo(() => {
     return fields.map((field) => {
-      // Check if there's a matching real live plot with boundary coordinates
       const liveMatch = livePlots.find(p => p.plot_id === field.field_id || p.id === field.field_id);
       let coords = [];
 
@@ -120,201 +189,66 @@ const SuitabilityMapView = ({ runResult, onSelectField, onOpenReport, onOpenAiAd
         ...field,
         coords
       };
-    }).filter(f => Array.isArray(f.coords) && f.coords.length > 0);
+    });
   }, [fields, livePlots, farmBoundary]);
 
-  const currentField = fields.find(f => f.field_id === selectedFieldId) || fields[0] || null;
-
-  // Calculate real bounding box for map
   const allBounds = useMemo(() => {
-    const pts = [];
-    mappedFields.forEach(f => {
-      if (Array.isArray(f.coords)) {
-        f.coords.forEach(pt => pts.push(pt));
-      }
-    });
-    if (farmBoundary?.geometry?.coordinates?.[0]) {
-      const boundaryPts = api.geoJsonToLeaflet(farmBoundary.geometry.coordinates[0]);
-      boundaryPts.forEach(pt => pts.push(pt));
-    }
-    return pts.length > 0 ? pts : [storedCenter];
-  }, [mappedFields, farmBoundary, storedCenter]);
+    const valid = mappedFields.filter(f => f.coords.length > 0).map(f => f.coords);
+    return valid.length > 0 ? valid.flat() : null;
+  }, [mappedFields]);
 
   // Dynamic polygon color based on active criteria layer
   const getFieldColor = (field, layer) => {
-    if (!field) return '#16a34a';
-
-    if (layer === 'rainfall') {
-      const rf = field.rainfall_mm || 1850;
-      return rf >= 1800 && rf <= 2500 ? '#2563eb' : rf >= 1500 ? '#60a5fa' : '#f59e0b';
-    }
-    if (layer === 'soil') {
-      const ph = field.soil_ph || 5.8;
-      return ph >= 5.5 && ph <= 6.5 ? '#16a34a' : ph >= 4.5 ? '#a855f7' : '#e11d48';
-    }
-    if (layer === 'slope') {
-      const sl = field.slope_pct || 6.0;
-      return sl <= 8 ? '#16a34a' : sl <= 16 ? '#f59e0b' : '#e11d48';
-    }
-    if (layer === 'temp') {
-      const tp = field.temp_c || 26.5;
-      return tp >= 24 && tp <= 29 ? '#eab308' : '#f97316';
-    }
-    if (layer === 'flood') {
-      const fl = field.flood_risk || 'Low';
-      return fl === 'Low' ? '#06b6d4' : fl === 'Moderate' ? '#f59e0b' : '#e11d48';
-    }
-    if (layer === 'exclusions') {
-      const ex = field.statutory_excluded || false;
-      return ex ? '#e11d48' : '#10b981';
-    }
-
-    // Default: Overall FAO Suitability Class
-    switch (field.overall_class) {
-      case 'S1': return '#16a34a'; // Highly Suitable
-      case 'S2': return '#84cc16'; // Moderately Suitable
-      case 'S3': return '#f59e0b'; // Marginally Suitable
-      case 'N':
-      case 'N1':
-      case 'N2': return '#e11d48'; // Not Suitable / Excluded
-      default: return '#16a34a';
+    switch (layer) {
+      case 'rainfall': {
+        const r = field.rainfall_mm || 1850;
+        return r >= 1800 ? '#0284c7' : r >= 1400 ? '#38bdf8' : '#f97316';
+      }
+      case 'soil': {
+        const ph = field.soil_ph || 5.5;
+        return ph >= 5.5 ? '#10b981' : ph >= 4.5 ? '#eab308' : '#f43f5e';
+      }
+      case 'slope': {
+        const s = field.slope_pct || 5.0;
+        return s <= 8 ? '#16a34a' : s <= 16 ? '#eab308' : '#e11d48';
+      }
+      case 'temp': {
+        return '#10b981';
+      }
+      case 'flood': {
+        const f = field.flood_risk?.toLowerCase() || '';
+        return f.includes('high') ? '#ef4444' : f.includes('mod') ? '#eab308' : '#10b981';
+      }
+      case 'exclusions': {
+        return '#16a34a'; // Verified deforestation-free
+      }
+      case 'overview':
+      default: {
+        const c = field.overall_class;
+        return c === 'S1' ? '#16a34a' : c === 'S2' ? '#84cc16' : c === 'S3' ? '#f59e0b' : '#e11d48';
+      }
     }
   };
 
   const selectedBasemapObj = BASEMAP_OPTIONS.find(b => b.id === activeBasemap) || BASEMAP_OPTIONS[0];
+  const currentField = mappedFields.find(f => f.field_id === selectedFieldId) || mappedFields[0];
 
   return (
-    <div className="space-y-4">
-      {/* 1. Quick KPI Cards Banner matching CropDashboardLayout */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
-        <div className="bg-white border border-gray-200 rounded-xl p-3.5 shadow-2xs">
-          <span className="text-[11px] font-semibold text-gray-500 block uppercase tracking-wider">
-            Total Evaluated Area
-          </span>
-          <div className="flex items-baseline gap-1.5 mt-1">
-            <span className="text-xl font-bold text-gray-900">
-              {runResult?.total_area_ha ? runResult.total_area_ha.toFixed(1) : '74.2'}
-            </span>
-            <span className="text-xs font-semibold text-gray-500">ha</span>
-          </div>
-        </div>
-
-        <div className="bg-white border border-gray-200 rounded-xl p-3.5 shadow-2xs">
-          <span className="text-[11px] font-semibold text-gray-500 block uppercase tracking-wider">
-            Class S1 (Highly Suitable)
-          </span>
-          <div className="flex items-baseline gap-1.5 mt-1">
-            <span className="text-xl font-bold text-green-700">
-              {runResult?.classes_area_ha?.S1 ? runResult.classes_area_ha.S1.toFixed(1) : '44.5'}
-            </span>
-            <span className="text-xs font-semibold text-gray-500">ha</span>
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-green-50 text-green-700 ml-auto">
-              Optimal
-            </span>
-          </div>
-        </div>
-
-        <div className="bg-white border border-gray-200 rounded-xl p-3.5 shadow-2xs">
-          <span className="text-[11px] font-semibold text-gray-500 block uppercase tracking-wider">
-            Class S2 / S3 (Marginal)
-          </span>
-          <div className="flex items-baseline gap-1.5 mt-1">
-            <span className="text-xl font-bold text-amber-600">
-              {((runResult?.classes_area_ha?.S2 || 0) + (runResult?.classes_area_ha?.S3 || 0)).toFixed(1)}
-            </span>
-            <span className="text-xs font-semibold text-gray-500">ha</span>
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 ml-auto">
-              Correctable
-            </span>
-          </div>
-        </div>
-
-        <div className="bg-white border border-gray-200 rounded-xl p-3.5 shadow-2xs">
-          <span className="text-[11px] font-semibold text-gray-500 block uppercase tracking-wider">
-            Statutory Exclusions
-          </span>
-          <div className="flex items-baseline gap-1.5 mt-1">
-            <span className="text-xl font-bold text-gray-900">
-              {runResult?.classes_area_ha?.N ? runResult.classes_area_ha.N.toFixed(1) : '0.0'}
-            </span>
-            <span className="text-xs font-semibold text-gray-500">ha</span>
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-green-50 text-green-700 ml-auto flex items-center gap-1">
-              <ShieldCheck size={12} /> EUDR Clear
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* 2. Main Geospatial Map Component matching CropDashboardLayout styling */}
-      <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-2xs flex flex-col">
-        {/* Top Control Bar: Criteria Layer Switcher */}
-        <div className="bg-slate-900 text-white px-5 py-3 flex flex-wrap items-center justify-between gap-3 border-b border-slate-800">
-          <div className="flex items-center gap-2">
-            <Compass size={16} className="text-slate-400" />
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-300">Biophysical Criteria:</span>
-          </div>
-
-          <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 scrollbar-none max-w-full">
-            {MAP_LAYERS.map(tab => {
-              const Icon = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveLayer(tab.id)}
-                  title={tab.desc}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
-                    activeLayer === tab.id
-                      ? 'bg-slate-800 text-white border border-slate-600 shadow-xs'
-                      : 'bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-white border border-transparent'
-                  }`}
-                >
-                  <Icon size={13} className={activeLayer === tab.id ? 'text-white' : 'text-slate-400'} />
-                  <span>{tab.label}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Basemap & Opacity Controls */}
-          <div className="flex items-center gap-3">
-            <select
-              value={activeBasemap}
-              onChange={(e) => setActiveBasemap(e.target.value)}
-              className="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-2.5 py-1.5 font-medium focus:outline-none focus:border-slate-500"
-            >
-              {BASEMAP_OPTIONS.map(bm => (
-                <option key={bm.id} value={bm.id}>{bm.label}</option>
-              ))}
-            </select>
-
-            <div className="flex items-center gap-1.5 text-xs text-slate-300">
-              <SlidersHorizontal size={13} className="text-slate-400" />
-              <input
-                type="range"
-                min="20"
-                max="100"
-                value={layerOpacity}
-                onChange={(e) => setLayerOpacity(Number(e.target.value))}
-                className="w-16 accent-slate-400 cursor-pointer h-1.5 bg-slate-700 rounded-lg"
-                title={`Layer Opacity: ${layerOpacity}%`}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Leaflet Interactive Map Canvas */}
-        <div className="relative h-[560px] w-full bg-gray-950">
+    <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs flex flex-col">
+      <div className="relative flex flex-col lg:flex-row h-[620px] w-full bg-slate-950">
+        
+        {/* ═══ MAP CANVAS ═══ */}
+        <div className="flex-1 relative h-full min-w-0">
           <MapContainer
             center={storedCenter}
-            zoom={14}
+            zoom={13}
             zoomControl={false}
             scrollWheelZoom={true}
             className="w-full h-full z-0"
           >
-            {/* Base Tile Layer */}
             <TileLayer
               url={selectedBasemapObj.url}
-              attribution='&copy; <a href="https://earthintelytics.com">EarthIntelytics</a> Land Evaluation'
+              attribution="&copy; ESRI & Google Satellite Imagery"
               maxZoom={19}
             />
 
@@ -333,7 +267,7 @@ const SuitabilityMapView = ({ runResult, onSelectField, onOpenReport, onOpenAiAd
               />
             )}
 
-            {/* Real Evaluated Field Polygons (zero mock boxes) */}
+            {/* Real Evaluated Field Polygons */}
             {mappedFields.map((field) => {
               const isSelected = selectedFieldId === field.field_id;
               const fillColor = getFieldColor(field, activeLayer);
@@ -349,148 +283,188 @@ const SuitabilityMapView = ({ runResult, onSelectField, onOpenReport, onOpenAiAd
                     }
                   }}
                   pathOptions={{
-                    color: isSelected ? '#ffffff' : '#00000044',
-                    weight: isSelected ? 3.5 : 1.5,
-                    fillColor: fillColor,
-                    fillOpacity: (layerOpacity / 100) * (isSelected ? 0.9 : 0.7)
+                    color: isSelected ? '#ffffff' : '#0f172a',
+                    weight: isSelected ? 3 : 1.5,
+                    fillColor,
+                    fillOpacity: layerOpacity / 100,
+                    opacity: 1
                   }}
                 >
-                  <Tooltip permanent={mappedFields.length <= 12} direction="center" className="bg-transparent border-0 shadow-none">
-                    <div className="text-center pointer-events-none drop-shadow-md">
-                      <div className="text-[11px] font-bold text-white leading-tight bg-gray-900/80 px-1.5 py-0.5 rounded backdrop-blur-xs">
-                        {field.field_id}
-                      </div>
-                      <div className="text-[9px] font-semibold text-green-200">
-                        {field.overall_class || 'S1'} • {field.area_ha ? `${field.area_ha.toFixed(1)} ha` : ''}
-                      </div>
-                    </div>
+                  <Tooltip permanent={false} direction="top" className="font-sans text-xs">
+                    <div className="font-bold text-slate-900">{field.field_id}</div>
+                    <div className="text-[10px] text-slate-600">Suitability: Class {field.overall_class}</div>
                   </Tooltip>
-
-                  <Popup className="suitability-popup">
-                    <div className="p-2 space-y-1.5 text-xs">
-                      <div className="flex items-center justify-between font-bold border-b pb-1">
-                        <span>{field.field_id}</span>
-                        <span className={`px-2 py-0.5 rounded text-[10px] text-white ${
-                          field.overall_class === 'S1' ? 'bg-green-600' :
-                          field.overall_class === 'S2' ? 'bg-lime-600' :
-                          field.overall_class === 'S3' ? 'bg-amber-600' : 'bg-rose-600'
-                        }`}>
-                          Class {field.overall_class || 'S1'}
-                        </span>
-                      </div>
-                      <div className="text-gray-600">
-                        <strong>Area:</strong> {field.area_ha?.toFixed(1) || '12.4'} ha
-                      </div>
-                      <div className="text-gray-600">
-                        <strong>Limiting Factors:</strong> {(field.limiting_factors && field.limiting_factors.length > 0) ? field.limiting_factors.join(', ') : 'None'}
-                      </div>
-                    </div>
-                  </Popup>
                 </Polygon>
               );
             })}
+
+            <ZoomControl position="bottomright" />
           </MapContainer>
 
-          {/* Floating Left: FAO Suitability Legend */}
-          <div className="absolute bottom-5 left-5 bg-gray-900/90 backdrop-blur-md p-3.5 rounded-2xl border border-gray-700/80 text-white text-[11px] space-y-1.5 shadow-xl z-[400]">
-            <div className="font-bold text-gray-300 uppercase tracking-wider text-[10px] mb-1 flex items-center justify-between">
-              <span>FAO Land Suitability</span>
-              <span className="text-green-400 font-mono text-[9px]">{activeLayer.toUpperCase()}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-xs bg-[#16a34a] shadow-xs" />
-              <span className="text-gray-200 font-medium">S1 — Highly Suitable (&gt;80%)</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-xs bg-[#84cc16] shadow-xs" />
-              <span className="text-gray-200 font-medium">S2 — Moderately Suitable (60–80%)</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-xs bg-[#f59e0b] shadow-xs" />
-              <span className="text-gray-200 font-medium">S3 — Marginally Suitable (40–60%)</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-xs bg-[#e11d48] shadow-xs" />
-              <span className="text-gray-200 font-medium">N — Unsuitable / Statutory Excluded</span>
+          {/* Floating Top-Left: Basemap & Opacity Switcher */}
+          <div className="absolute top-4 left-4 z-[400] flex items-center gap-2 bg-slate-900/90 backdrop-blur-md px-3 py-2 rounded-xl border border-slate-700/80 text-white shadow-xl text-xs">
+            <select
+              value={activeBasemap}
+              onChange={(e) => setActiveBasemap(e.target.value)}
+              className="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-2.5 py-1 font-medium focus:outline-none focus:border-slate-500 cursor-pointer"
+            >
+              {BASEMAP_OPTIONS.map(bm => (
+                <option key={bm.id} value={bm.id}>{bm.label}</option>
+              ))}
+            </select>
+
+            <div className="h-4 w-px bg-slate-700 mx-1" />
+
+            <div className="flex items-center gap-1.5 text-[11px] text-slate-300">
+              <SlidersHorizontal size={13} className="text-slate-400" />
+              <input
+                type="range"
+                min="20"
+                max="100"
+                value={layerOpacity}
+                onChange={(e) => setLayerOpacity(Number(e.target.value))}
+                className="w-14 accent-slate-400 cursor-pointer h-1.5 bg-slate-700 rounded-lg"
+                title={`Layer Opacity: ${layerOpacity}%`}
+              />
             </div>
           </div>
 
-          {/* Floating Right: Field Detail & Agronomic Inspector Panel */}
+          {/* Floating Top-Right: Map Layers & Legend Toggle */}
+          <button
+            onClick={() => setShowLayersSidebar(!showLayersSidebar)}
+            className={`absolute top-4 right-4 z-[400] px-3 py-2 rounded-xl border font-bold text-xs shadow-xl transition-all flex items-center gap-2 ${
+              showLayersSidebar 
+                ? 'bg-slate-900 text-white border-slate-700' 
+                : 'bg-white/95 text-slate-800 border-slate-200 hover:bg-white'
+            }`}
+          >
+            <Layers size={15} />
+            <span>Map Layers</span>
+          </button>
+
+          {/* Floating Parcel Inspector (When a parcel is selected) */}
           {currentField && (
-            <div className="absolute top-5 right-5 bg-white/95 backdrop-blur-md p-5 rounded-2xl border border-slate-200 text-slate-900 text-xs shadow-2xl max-w-sm w-full z-[400] space-y-3.5 animate-in fade-in slide-in-from-right-4 duration-200">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+            <div className="absolute bottom-4 left-4 z-[400] bg-white/95 backdrop-blur-md p-4 rounded-2xl border border-slate-200 text-slate-900 text-xs shadow-2xl max-w-xs w-full space-y-2.5">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
                 <div>
-                  <h3 className="font-bold text-slate-900 text-sm flex items-center gap-1.5">
-                    <MapPin size={14} className="text-slate-700" />
+                  <h4 className="font-bold text-slate-900 text-xs flex items-center gap-1.5">
+                    <MapPin size={13} className="text-slate-700" />
                     <span>{currentField.field_id}</span>
-                  </h3>
-                  <p className="text-[11px] text-slate-400">
-                    {currentField.area_ha ? `${currentField.area_ha.toFixed(1)} ha` : 'Estate Block'} • Evaluated Parcel
+                  </h4>
+                  <p className="text-[10px] text-slate-400">
+                    {currentField.area_ha ? `${currentField.area_ha.toFixed(1)} ha` : 'Estate Block'}
                   </p>
                 </div>
-                <div className="px-2.5 py-1 rounded-lg font-bold text-xs bg-slate-900 text-white shadow-2xs">
+                <span className="px-2 py-0.5 rounded-md font-bold text-[11px] bg-slate-900 text-white shadow-2xs">
                   Class {currentField.overall_class || 'S1'}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-1.5 text-[10px]">
+                <div className="bg-slate-50 p-1.5 rounded-lg border border-slate-200/50">
+                  <span className="text-slate-400 block">Rainfall</span>
+                  <span className="font-bold text-slate-800">{currentField.rainfall_mm || 1920} mm</span>
+                </div>
+                <div className="bg-slate-50 p-1.5 rounded-lg border border-slate-200/50">
+                  <span className="text-slate-400 block">Soil pH</span>
+                  <span className="font-bold text-slate-800">{currentField.soil_ph || 5.6}</span>
+                </div>
+                <div className="bg-slate-50 p-1.5 rounded-lg border border-slate-200/50">
+                  <span className="text-slate-400 block">DEM Slope</span>
+                  <span className="font-bold text-slate-800">{currentField.slope_pct || 5.2}%</span>
+                </div>
+                <div className="bg-slate-50 p-1.5 rounded-lg border border-slate-200/50">
+                  <span className="text-slate-400 block">Flood Risk</span>
+                  <span className="font-bold text-slate-800">{currentField.flood_risk || 'Low'}</span>
                 </div>
               </div>
 
-              {/* Criteria Scores Matrix */}
-              <div className="space-y-2 text-[11px]">
-                <span className="font-bold text-slate-600 uppercase tracking-wider text-[10px] block">
-                  Biophysical Factor Scores:
-                </span>
-                
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200/60">
-                    <span className="text-slate-400 block text-[10px]">Annual Rainfall</span>
-                    <span className="font-bold text-slate-800">{currentField.rainfall_mm || 1920} mm</span>
-                  </div>
-                  <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200/60">
-                    <span className="text-slate-400 block text-[10px]">Soil pH (H2O)</span>
-                    <span className="font-bold text-slate-800">{currentField.soil_ph || 5.6}</span>
-                  </div>
-                  <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200/60">
-                    <span className="text-slate-400 block text-[10px]">DEM Slope</span>
-                    <span className="font-bold text-slate-800">{currentField.slope_pct || 5.2}%</span>
-                  </div>
-                  <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200/60">
-                    <span className="text-slate-400 block text-[10px]">SAR Flood Risk</span>
-                    <span className="font-bold text-slate-800">{currentField.flood_risk || 'Low (<5%)'}</span>
-                  </div>
+              {currentField.limiting_factors && currentField.limiting_factors.length > 0 && currentField.limiting_factors[0] !== 'None' && (
+                <div className="bg-amber-50 border border-amber-200/60 p-2 rounded-lg text-[10px] text-amber-800">
+                  <span className="font-bold block text-amber-900">Limiting: {currentField.limiting_factors.join(', ')}</span>
                 </div>
-              </div>
-
-              {/* Limiting Factors Section */}
-              <div className="bg-amber-50/70 border border-amber-200/70 p-3 rounded-xl">
-                <span className="font-bold text-amber-900 text-[10px] uppercase tracking-wider block mb-1 flex items-center gap-1">
-                  <AlertTriangle size={12} className="text-amber-600" />
-                  <span>Limiting Factors & Severity:</span>
-                </span>
-                <p className="text-amber-800 text-[11px] leading-relaxed">
-                  {(currentField.limiting_factors && currentField.limiting_factors.length > 0)
-                    ? currentField.limiting_factors.join(', ')
-                    : 'Optimal conditions verified. Zero severe limiting biophysical factors.'}
-                </p>
-              </div>
-
-              {/* Agronomic Corrective Guidance */}
-              <div className="bg-slate-900 text-slate-200 p-3.5 rounded-xl text-[11px] leading-relaxed space-y-1">
-                <span className="font-bold text-slate-300 text-[10px] uppercase tracking-wider flex items-center gap-1">
-                  <Sparkles size={12} className="text-amber-400" />
-                  <span>Agronomic Guidance:</span>
-                </span>
-                <p className="text-slate-300">
-                  {currentField.overall_class === 'S1'
-                    ? 'Recommended for immediate planting layout. Standard fertilizer regime applicable.'
-                    : currentField.overall_class === 'S2'
-                    ? 'Apply targeted micro-nutrients and contour bunding to maximize long-term harvest yield.'
-                    : currentField.overall_class === 'S3'
-                    ? 'Apply agricultural lime (CaCO3 at 2.5 t/ha) and install collector drainage before planting.'
-                    : 'Statutory or severe physical restriction. Recommended for conservation buffer.'}
-                </p>
-              </div>
+              )}
             </div>
           )}
         </div>
+
+        {/* ═══ RIGHT MAP LAYERS & LEGEND SIDEBAR ═══ */}
+        {showLayersSidebar && (
+          <div className="w-full lg:w-[320px] bg-white border-t lg:border-t-0 lg:border-l border-slate-200 flex flex-col shrink-0 overflow-y-auto z-10 shadow-lg h-full">
+            {/* Legend Header */}
+            <div className="px-4 py-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <div className="flex items-center gap-2">
+                <Layers size={16} className="text-slate-700" />
+                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Map Layers & Legend</h3>
+              </div>
+              <button 
+                onClick={() => setShowLayersSidebar(false)} 
+                className="p-1 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Criteria Layers List */}
+            <div className="p-3.5 space-y-2.5 overflow-y-auto flex-1">
+              {MAP_LAYERS.map((layer) => {
+                const Icon = layer.icon;
+                const isActive = activeLayer === layer.id;
+
+                return (
+                  <div
+                    key={layer.id}
+                    onClick={() => setActiveLayer(layer.id)}
+                    className={`p-3 rounded-xl border transition-all cursor-pointer select-none space-y-2 ${
+                      isActive
+                        ? 'bg-slate-50 border-slate-400 shadow-2xs'
+                        : 'bg-white border-slate-200/80 hover:border-slate-300'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className={`p-1.5 rounded-lg ${isActive ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600'}`}>
+                          <Icon size={13} />
+                        </div>
+                        <div>
+                          <div className="text-xs font-bold text-slate-900 leading-tight">{layer.label}</div>
+                          <div className="text-[10px] text-slate-400 leading-snug">{layer.desc}</div>
+                        </div>
+                      </div>
+                      <input
+                        type="radio"
+                        name="activeSuitabilityLayer"
+                        checked={isActive}
+                        onChange={() => setActiveLayer(layer.id)}
+                        className="accent-slate-900 cursor-pointer"
+                      />
+                    </div>
+
+                    {/* Legend Color Scale for Active Layer */}
+                    {isActive && layer.legend && (
+                      <div className="pt-2 border-t border-slate-200/60 space-y-1.5 animate-in fade-in duration-150">
+                        {layer.legend.map((item, idx) => (
+                          <div key={idx} className="flex items-center justify-between text-[11px]">
+                            <div className="flex items-center gap-2">
+                              <span
+                                className="w-2.5 h-2.5 rounded-xs shrink-0 shadow-2xs"
+                                style={{ backgroundColor: item.color }}
+                              />
+                              <span className="text-slate-700 font-medium">{item.label}</span>
+                            </div>
+                            {item.range && (
+                              <span className="text-[10px] text-slate-400 font-mono">{item.range}</span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
