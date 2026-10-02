@@ -13,10 +13,123 @@ const PROVIDERS = [
   { id: 'openai', label: 'OpenAI', hint: 'Key from platform.openai.com' },
   { id: 'anthropic', label: 'Anthropic Claude', hint: 'Key from console.anthropic.com' },
 ];
+
+export const PREDEFINED_MODELS = {
+  gemini: [
+    // ── Gemini 3.x series (current standard, 2026) ──────────────────────────
+    { value: 'gemini-3.8-flash', label: 'Gemini 3.8 Flash ★ (Latest / Recommended)' },
+    { value: 'gemini-3.7-flash', label: 'Gemini 3.7 Flash' },
+    { value: 'gemini-3.6-flash', label: 'Gemini 3.6 Flash' },
+    { value: 'gemini-3.5-flash', label: 'Gemini 3.5 Flash' },
+    { value: 'gemini-3.5-flash-lite', label: 'Gemini 3.5 Flash Lite (Low Cost)' },
+    { value: 'gemini-3.1-pro', label: 'Gemini 3.1 Pro (High Capability)' },
+    { value: 'gemini-3.1-flash-lite', label: 'Gemini 3.1 Flash Lite' },
+    // ── Gemini 2.5 series (legacy, still supported) ─────────────────────────
+    { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro (Legacy)' },
+    { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash (Legacy)' },
+    { value: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash Lite (Legacy)' },
+    { value: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash (Legacy)' },
+    { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro (Legacy)' },
+    { value: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash (Legacy)' },
+  ],
+  openai: [
+    // ── GPT-6 series (current flagship, Sep 2026) ────────────────────────────
+    { value: 'gpt-6-astra', label: 'GPT-6 Astra ★ (Flagship — Complex Reasoning & Agents)' },
+    { value: 'gpt-6.1-sol', label: 'GPT-6.1 Sol (Balanced Intelligence + Cost)' },
+    { value: 'gpt-6-sol', label: 'GPT-6 Sol (Balanced)' },
+    { value: 'gpt-6-luna', label: 'GPT-6 Luna (Cost-Optimised, High Volume)' },
+    // ── GPT-5.6 series (previous frontier, Jul 2026) ─────────────────────────
+    { value: 'gpt-5.6-sol', label: 'GPT-5.6 Sol (Previous Frontier)' },
+    { value: 'gpt-5.6-terra', label: 'GPT-5.6 Terra (All-Rounder)' },
+    { value: 'gpt-5.6-luna', label: 'GPT-5.6 Luna (Efficient)' },
+    // ── Legacy ───────────────────────────────────────────────────────────────
+    { value: 'gpt-4o', label: 'GPT-4o (Legacy Multimodal)' },
+    { value: 'gpt-4o-mini', label: 'GPT-4o Mini (Legacy)' },
+    { value: 'o3-mini', label: 'o3-mini (Legacy Reasoning)' },
+    { value: 'gpt-4-turbo', label: 'GPT-4 Turbo (Legacy)' },
+  ],
+  anthropic: [
+    // ── Claude 5.x / Fable series (current, 2026) ────────────────────────────
+    { value: 'claude-fable-5-1', label: 'Claude Fable 5.1 ★ (Frontier — Long-Horizon Agents)' },
+    { value: 'claude-opus-5-5', label: 'Claude Opus 5.5 (Complex Coding & Knowledge Work)' },
+    { value: 'claude-sonnet-5-5', label: 'Claude Sonnet 5.5 (Best Speed / Intelligence Balance)' },
+    { value: 'claude-haiku-4-5-20251001', label: 'Claude Haiku 4.5 (Fast & Low Cost)' },
+    // ── Legacy ───────────────────────────────────────────────────────────────
+    { value: 'claude-3-7-sonnet-20250219', label: 'Claude 3.7 Sonnet (Legacy)' },
+    { value: 'claude-3-5-sonnet-20241022', label: 'Claude 3.5 Sonnet (Legacy)' },
+    { value: 'claude-3-5-haiku-20241022', label: 'Claude 3.5 Haiku (Legacy)' },
+    { value: 'claude-3-opus-20240229', label: 'Claude 3 Opus (Legacy)' },
+  ],
+};
+
+function ModelSelector({ provider, value, serverModels = [], onChange, className = inputCls }) {
+  const [isCustom, setIsCustom] = useState(false);
+  const known = PREDEFINED_MODELS[provider] || [];
+  const knownValues = useMemo(() => new Set(known.map(m => m.value)), [known]);
+
+  const serverOptions = useMemo(() => (serverModels || []).filter(m => m && !knownValues.has(m)).map(m => ({ value: m, label: m })), [serverModels, knownValues]);
+  const customValueOption = useMemo(() => (value && !knownValues.has(value) && !serverOptions.some(m => m.value === value))
+    ? [{ value, label: `${value} (Custom)` }]
+    : [], [value, knownValues, serverOptions]);
+
+  const allOptions = useMemo(() => [...known, ...serverOptions, ...customValueOption], [known, serverOptions, customValueOption]);
+  const currentValueInOptions = useMemo(() => allOptions.some(o => o.value === value), [allOptions, value]);
+
+  useEffect(() => {
+    if (value && !currentValueInOptions && value !== '') {
+      setIsCustom(true);
+    }
+  }, [value, currentValueInOptions]);
+
+  if (isCustom) {
+    return (
+      <div className="flex gap-2">
+        <input
+          type="text"
+          className={className}
+          value={value || ''}
+          onChange={e => onChange(e.target.value)}
+          placeholder="Type custom model name..."
+        />
+        <button
+          type="button"
+          onClick={() => setIsCustom(false)}
+          className="px-3 py-2 text-xs font-semibold rounded-xl border border-gray-300 text-gray-700 bg-gray-50 hover:bg-gray-100 shrink-0"
+        >
+          List
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <select
+      className={className}
+      value={value || ''}
+      onChange={e => {
+        if (e.target.value === '__custom__') {
+          setIsCustom(true);
+          onChange('');
+        } else {
+          onChange(e.target.value);
+        }
+      }}
+    >
+      <option value="">Select a model...</option>
+      {allOptions.map(opt => (
+        <option key={opt.value} value={opt.value}>
+          {opt.label}
+        </option>
+      ))}
+      <option value="__custom__">+ Custom model name...</option>
+    </select>
+  );
+}
+
 const FEATURES = [
   { id: 'assistant', label: 'Assistant (questions and scenarios)' },
   { id: 'reports', label: 'Report summaries and advice' },
-  { id: 'advisor', label: 'Farm advisor wording' },
+  { id: 'advisor', label: 'Farm AI Advisor wording' },
 ];
 const inputCls = 'w-full px-3.5 py-2.5 rounded-xl border border-gray-300 bg-white text-sm text-gray-900 outline-none focus:border-green-600';
 const Card = ({ className = '', children }) => <div className={`bg-white rounded-2xl border border-gray-200 ${className}`}>{children}</div>;
@@ -67,9 +180,8 @@ function ProvidersTab({ settings, setSettings, connected }) {
               <label className="block space-y-1.5"><span className="text-xs font-semibold text-gray-700">{s.configured ? 'Replace key' : 'API key'}</span>
                 <input type="password" autoComplete="off" className={inputCls} value={keys[p.id] || ''} onChange={e => setKeys(k => ({ ...k, [p.id]: e.target.value }))} placeholder={p.hint} />
               </label>
-              <label className="block space-y-1.5"><span className="text-xs font-semibold text-gray-700">Model</span>
-                {s.models?.length ? <select className={inputCls} value={s.default_model} onChange={e => updateProv(p.id, { default_model: e.target.value })}>{s.models.map(m => <option key={m}>{m}</option>)}</select>
-                  : <input className={inputCls} value={s.default_model || ''} onChange={e => updateProv(p.id, { default_model: e.target.value })} placeholder="Model name" />}
+              <label className="block space-y-1.5"><span className="text-xs font-semibold text-gray-700">Default Model</span>
+                <ModelSelector provider={p.id} value={s.default_model || ''} serverModels={s.models} onChange={val => updateProv(p.id, { default_model: val })} />
               </label>
               <label className="flex items-center gap-2 text-sm text-gray-800"><input type="checkbox" className="w-4 h-4 accent-green-700" checked={Boolean(s.enabled)} onChange={e => updateProv(p.id, { enabled: e.target.checked })} />Allowed</label>
               <div className="flex gap-2">
@@ -119,7 +231,7 @@ function PricesCard({ settings, setSettings, connected }) {
           {prices.map((p, i) => (
             <tr key={i}>
               <td className="py-2 pr-2"><select className={inputCls} value={p.provider} onChange={e => set(i, { provider: e.target.value })}>{PROVIDERS.map(x => <option key={x.id} value={x.id}>{x.label}</option>)}</select></td>
-              <td className="py-2 pr-2"><input className={inputCls} value={p.model} onChange={e => set(i, { model: e.target.value })} /></td>
+              <td className="py-2 pr-2"><ModelSelector provider={p.provider || 'gemini'} value={p.model || ''} onChange={val => set(i, { model: val })} /></td>
               <td className="py-2 pr-2"><input type="number" min="0" step="0.01" className={inputCls} value={p.input_per_1m} onChange={e => set(i, { input_per_1m: Number(e.target.value) })} /></td>
               <td className="py-2 pr-2"><input type="number" min="0" step="0.01" className={inputCls} value={p.output_per_1m} onChange={e => set(i, { output_per_1m: Number(e.target.value) })} /></td>
               <td className="py-2"><input className={inputCls} value={p.currency || 'USD'} onChange={e => set(i, { currency: e.target.value.toUpperCase().slice(0, 3) })} /></td>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, Mail, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { Lock, Mail, Eye, EyeOff, ArrowRight, Key } from 'lucide-react';
 import { adminLogin } from '../services/adminApi';
 
 // Also used as the gate for the internal platform hub (`/`): pass onSuccess
@@ -54,7 +54,16 @@ const AdminLogin = ({ onSuccess = null, context = 'admin' }) => {
             <div className="mt-6 p-3.5 rounded-[10px] border border-red-200 bg-red-50 text-sm text-red-800">{error}</div>
           )}
 
-          <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+          {/* Demo autofill — fills credentials in one click for demos */}
+          <button
+            type="button"
+            onClick={() => { setEmail('superadmin@farmintelytics.com'); setCode('Farmintelytics@2026!'); }}
+            className="mt-6 w-full flex items-center justify-center gap-2 rounded-[10px] border border-dashed border-slate-300 bg-slate-50 hover:bg-slate-100 py-2.5 text-xs font-semibold text-slate-500 hover:text-slate-700 transition-colors"
+          >
+            <Key size={14} className="text-slate-400" /> Fill demo credentials
+          </button>
+
+          <form onSubmit={handleSubmit} className="mt-4 space-y-5">
             <div>
               <label className="block text-sm font-medium mb-1.5">Email</label>
               <div className="relative">
@@ -68,7 +77,7 @@ const AdminLogin = ({ onSuccess = null, context = 'admin' }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1.5">Access code</label>
+              <label className="block text-sm font-medium mb-1.5">Password</label>
               <div className="relative">
                 <Lock size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
@@ -78,7 +87,7 @@ const AdminLogin = ({ onSuccess = null, context = 'admin' }) => {
                   className="w-full rounded-[10px] border border-slate-200 bg-white py-3 pl-11 pr-11 text-sm outline-none transition-colors placeholder:text-slate-400 focus:border-[var(--brand-primary)] focus:ring-1 focus:ring-[var(--brand-primary)]"
                 />
                 <button type="button" onClick={() => setShowCode(!showCode)}
-                  aria-label={showCode ? 'Hide access code' : 'Show access code'}
+                  aria-label={showCode ? 'Hide password' : 'Show password'}
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition-colors">
                   {showCode ? <EyeOff size={17} /> : <Eye size={17} />}
                 </button>

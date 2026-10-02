@@ -96,7 +96,7 @@ import YourDataPage from '../../data/YourDataPage';
 import DataNeededDialog from '../../data/DataNeededDialog';
 import RegisterPage from '../../services/RegisterPage';
 import { CROP_CATALOG, ORGANISATION_PAGES, loadCropPages } from '../cropCatalog';
-import CropGlossary, { ViewGlossary } from './CropGlossary';
+import CropGlossary from './CropGlossary';
 import ReportBuilder from '../../reports/ReportBuilder';
 import VerificationPage from '../../reports/VerificationPage';
 import { CheckPage, LogPage, AdvicePage } from '../../services/ServicePages';
@@ -125,6 +125,7 @@ ChartJS.register(
 
 const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSummary, cropBlocks, cropIndices, cropLoading, cropError, mapCenter, onBack, onSignOut }) => {
   const isOrg = mode === 'organization' || Boolean(service);
+  const isAiOnly = service?.id === 'advisor' || Boolean(service?.isAiOnly);
   // Service portals (sustainability, field advisory, finance) reuse this
   // exact layout; the service config only picks and names the sub-pages.
   // pick(defaults, list): keep the service's entries, in its order, with
@@ -193,8 +194,15 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
   // Glossary entry to open (links from farmer words on screen)
   const [glossaryFocus, setGlossaryFocus] = useState(null);
   const openGlossary = (key) => { setGlossaryFocus(key); setActiveTab('monitor'); setActiveSidebarItem('help'); };
-  const [activeTab, setActiveTab] = useState('monitor');
+  const [activeTab, setActiveTab] = useState(() => isAiOnly ? 'ai-assistant' : 'monitor');
   const [activeAnalyticsSubpage, setActiveAnalyticsSubpage] = useState('overview');
+
+  useEffect(() => {
+    if (isAiOnly) {
+      setActiveTab('ai-assistant');
+      setActiveSidebarItem('analytics');
+    }
+  }, [isAiOnly, service?.id]);
 
   const handleTopNavTabClick = (tabId) => {
     setActiveTab(tabId);
@@ -1008,13 +1016,13 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
 
   const renderFloatingBasemapSelector = () => {
     const BASEMAPS = [
-      { id: 'terrain',       label: 'Terrain',         sub: 'Default Basemap',    emoji: '⛰️' },
-      { id: 'google-hybrid', label: 'Google Satellite', sub: 'High-Res Basemap',   emoji: '🗺️' },
+      { id: 'terrain',       label: 'Terrain',         sub: 'Default Basemap',    emoji: '' },
+      { id: 'google-hybrid', label: 'Google Satellite', sub: 'High-Res Basemap',   emoji: '' },
       // Live composites rendered from this tenant's own archive — move with
       // the time slider, unlike the static sources above.
-      { id: 'true-color',    label: 'True Colour',     sub: 'Red-Green-Blue · Live',      emoji: '🎨' },
-      { id: 'false-color',   label: 'False Colour',    sub: 'NIR-Red-Green · Live',       emoji: '🌿' },
-      { id: 'sar-rgb',       label: 'SAR RGB',         sub: 'Sentinel-1 VV-VH · Live',    emoji: '📡' },
+      { id: 'true-color',    label: 'True Colour',     sub: 'Red-Green-Blue · Live',      emoji: '' },
+      { id: 'false-color',   label: 'False Colour',    sub: 'NIR-Red-Green · Live',       emoji: '' },
+      { id: 'sar-rgb',       label: 'SAR RGB',         sub: 'Sentinel-1 VV-VH · Live',    emoji: '' },
     ];
     const activeBasemapObj = BASEMAPS.find(b => b.id === selectedBasemap) || BASEMAPS[0];
 
@@ -1468,22 +1476,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
             dropdown — SAR indices always come from Sentinel-1 (handled by
             isSarIndex/effectiveSensor), so this only matters for optical
             indices, which can come from either Sentinel-2 or Landsat. */}
-        {!allSar && (
-          <div className="flex items-center justify-between px-0.5 pb-1">
-            <span className="text-[11px] font-bold text-gray-600">Satellite</span>
-            <div className="flex rounded-full border border-gray-200 overflow-hidden">
-              {['sentinel-2', 'landsat'].map(s => (
-                <button
-                  key={s}
-                  onClick={() => setSelectedSensor(s)}
-                  className={`text-[11px] font-bold px-2.5 py-1 transition-colors ${selectedSensor === s ? 'bg-green-600 text-white' : 'bg-white text-gray-500 hover:bg-gray-50'}`}
-                >
-                  {s === 'sentinel-2' ? 'Sentinel-2' : 'Landsat'}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+
         {groupNames.map(name => {
           const entries = legendGroups[name];
           const isOpen = openGroups.includes(name);
@@ -2809,21 +2802,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
           {/* Vertical key for what each calendar dot color means — the
               calendar itself only shows colored dots per day, with nothing
               nearby explaining which satellite each color is. */}
-          {!hideCalendarAndSlider && showCalendarTool && (
-            <div className="py-3 px-2.5 shrink-0 w-[76px] bg-white flex flex-col gap-2.5">
-              <span className="text-[11px] font-semibold text-gray-600">Satellite</span>
-              {[
-                { s: 'sentinel-2', label: 'Sentinel-2' },
-                { s: 'landsat', label: 'Landsat' },
-                { s: 'sentinel-1', label: 'Sentinel-1' },
-              ].map(({ s, label }) => (
-                <div key={s} className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: SENSOR_DOT_COLOR[s] }} />
-                  <span className="text-[11px] font-semibold text-gray-600 leading-tight">{label}</span>
-                </div>
-              ))}
-            </div>
-          )}
+
 
           {centerContent ? centerContent : (
             <div className="bg-white p-4 flex items-start overflow-hidden border-l border-r border-gray-100">
@@ -2881,30 +2860,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
                 {/* Real coverage for the month currently open in the
                     calendar — replaces a static "Best Imagery Active"
                     caption that never changed. */}
-                {(() => {
-                  const monthPrefix = `${calendarYear}-${String(calendarMonth + 1).padStart(2, '0')}`;
-                  const monthCoverage = calendarDates.filter(d => d.date.startsWith(monthPrefix));
-                  const bySensor = { 'sentinel-2': 0, 'landsat': 0, 'sentinel-1': 0 };
-                  monthCoverage.forEach(d => d.sensors.forEach(s => { bySensor[s] = (bySensor[s] || 0) + 1; }));
-                  const parts = [
-                    bySensor['sentinel-2'] > 0 && `${bySensor['sentinel-2']} Sentinel-2`,
-                    bySensor['landsat'] > 0 && `${bySensor['landsat']} Landsat`,
-                    bySensor['sentinel-1'] > 0 && `${bySensor['sentinel-1']} Sentinel-1`,
-                  ].filter(Boolean);
-                  return (
-                    <div className="flex items-start gap-1.5">
-                      <CalendarIcon size={11} className="text-gray-600 shrink-0 mt-0.5" />
-                      <div className="flex flex-col">
-                        <span className="text-[11px] font-bold text-gray-700 leading-none mb-0.5">
-                          {monthCoverage.length} {monthCoverage.length === 1 ? 'Pass' : 'Passes'} This Month
-                        </span>
-                        <span className="text-[11px] text-gray-500 font-medium leading-normal">
-                          {parts.length > 0 ? parts.join(' · ') : 'No acquisitions recorded for this month yet.'}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })()}
+
 
                 {/* Recent passes — the calendar already has every real
                     acquisition date; surfacing the last few here lets you
@@ -3510,7 +3466,7 @@ Context: ${context}.`;
                   : <>{cropLabel} {brandingMode === 'AM' ? 'Monitoring' : 'Farm Tools'}</>}
               </h1>
               <p className={`text-[11px] font-semibold mt-1 leading-none ${brandingMode === 'AM' ? 'text-green-600' : 'text-green-600'}`}>
-                {service ? service.subtitle : brandingMode === 'AM' ? 'Enterprise Satellite Node' : 'Agricultural Operations Hub'}
+                {service ? service.subtitle : brandingMode === 'AM' ? 'Farm Intelligences' : 'Agricultural Operations Hub'}
               </p>
             </div>
           </div>
@@ -3649,7 +3605,7 @@ Context: ${context}.`;
       <div className="flex-1 flex overflow-hidden">
 
         {/* ── LEFT SIDEBAR ── */}
-        {activeTab === 'monitor' && (
+        {!isAiOnly && activeTab === 'monitor' && (
           <aside style={{ width: `${sidebarWidth}px` }} className="bg-white border-r border-gray-100 flex flex-col z-50 shadow-sm shrink-0 relative">
             {/* Draggable vertical divider */}
             <div 
@@ -3663,7 +3619,6 @@ Context: ${context}.`;
                 <div className="text-[11px] font-bold text-gray-600 px-3 mb-3">Main</div>
                 {pick([
                   { id: 'analytics',           label: 'Analytics Hub',       icon: <LayoutDashboard size={17} /> },
-                  { id: 'intelligence-layers', label: 'Intelligence Layers', icon: <MapIcon size={17} /> },
                   { id: 'crop-health',         label: 'Crop Health',         icon: <Activity size={17} /> },
                   { id: 'crop-yield',          label: 'Crop Yield',          icon: <TrendingUp size={17} /> },
                   { id: 'moisture-content',    label: 'Moisture Content',    icon: <Droplets size={17} /> },
@@ -6269,7 +6224,7 @@ Context: ${context}.`;
             <VerificationPage plots={plotsData} serviceId={service?.id} onOpenData={(id) => { setDataFocus(id); setActiveTab('monitor'); setActiveSidebarItem('your-data'); }} />
           )}
 
-          {activeSidebarItem === 'analytics' && activeTab === 'reports' && (
+          {((isAiOnly && activeTab === 'reports') || (activeSidebarItem === 'analytics' && activeTab === 'reports')) && (
             <ReportBuilder
               plots={plotsData}
               alerts={alerts}
@@ -6282,24 +6237,35 @@ Context: ${context}.`;
           )}
 
           {/* ══════════════════════════════════════════════════════════════
-              REPORTS
-          ══════════════════════════════════════════════════════════════ */}
-{/* ══════════════════════════════════════════════════════════════
               AI ASSISTANT
           ══════════════════════════════════════════════════════════════ */}
-          {activeSidebarItem === 'analytics' && activeTab === 'ai-assistant' && (
+          {((isAiOnly && activeTab === 'ai-assistant') || (activeSidebarItem === 'analytics' && activeTab === 'ai-assistant')) && (
             <div className="flex flex-col flex-1 h-full bg-white overflow-hidden">
               
-              {/* Header (Only shown if chat has started) */}
-              {chatMessages.length > 1 && (
-                <div className="px-8 py-4 border-b border-gray-100 flex items-center justify-between shrink-0">
-                  <div className="flex items-center gap-2.5">
-                    <Sparkles className="text-green-600" size={16} />
-                    <span className="text-sm font-bold text-gray-800">Your advisor</span>
-                    <span className="w-1.5 h-1.5 rounded-full bg-status-live animate-pulse" />
+              {/* Header */}
+              <div className="px-8 py-3.5 border-b border-gray-100 flex items-center justify-between shrink-0 bg-white shadow-2xs">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-green-50 border border-green-200 flex items-center justify-center text-green-700">
+                    <Sparkles size={16} />
+                  </div>
+                  <div>
+                    <span className="text-sm font-bold text-gray-900">Farm AI Advisor</span>
                   </div>
                 </div>
-              )}
+
+                {chatMessages.length > 1 && (
+                  <button
+                    onClick={() => setChatMessages([{
+                      sender: 'assistant',
+                      text: "Hello! I am your Farm AI Agronomic Advisor. Ask any question about your crop condition, soil moisture, disease risks, or choose a what-if scenario to simulate."
+                    }])}
+                    className="px-3.5 py-1.5 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 text-xs font-bold text-gray-700 transition-colors shadow-xs flex items-center gap-1.5"
+                  >
+                    <Sliders size={13} className="text-green-700" />
+                    <span>Back to Scenario Modeller</span>
+                  </button>
+                )}
+              </div>
 
               {/* Main Content Area */}
               <div className="flex-1 overflow-y-auto flex flex-col min-h-0 bg-gray-50/20">
@@ -6403,23 +6369,7 @@ Context: ${context}.`;
             <YourDataPage key={dataFocus || 'data'} cropType={isOrg ? null : cropType} serviceId={service?.id} plots={plots} initialDataset={dataFocus} />
           )}
 
-          {activeTab === 'monitor' && !['help', 'your-data', 'register', 'check', 'log', 'advice'].includes(activeSidebarItem) && (
-            <ViewGlossary
-              entries={cropProfileEntries}
-              view={activeSidebarItem}
-              viewKeys={(() => {
-                const groups = {
-                  'crop-health': ['Vegetation Health', 'Nutrient & Chlorophyll'],
-                  'crop-yield': ['Vegetation Health'],
-                  'moisture-content': ['Vegetation Moisture', 'Ground Moisture'],
-                }[activeSidebarItem];
-                if (activeSidebarItem === 'analytics') return ['ndvi', 'ndmi', 'evi', 'lst', 'rvi'];
-                if (activeSidebarItem === 'climate' || activeSidebarItem === 'alerts') return [];
-                return legendEntries.filter(e => !groups || groups.includes(e.group)).map(e => e.key);
-              })()}
-              onOpenFull={() => setActiveSidebarItem('help')}
-            />
-          )}
+
 
           {activeSidebarItem === 'help' && (
             <CropGlossary entries={cropProfileEntries} extra={pageSet?.glossary} cropName={service ? service.title : isOrg ? '' : cropLabel} focusKey={glossaryFocus} />

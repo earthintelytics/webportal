@@ -3,6 +3,7 @@ import {
   ArrowRight, Lock, Mail, Eye, EyeOff, Grid
 } from 'lucide-react';
 import { login, fetchCropMonitoringConfig } from '../services/organizationMonitorApi';
+import ForgotPasswordModal from '../components/ForgotPasswordModal';
 import { HERO_PLACEHOLDERS } from '../constants/heroPlaceholders';
 
 // ─── Crop & Subapp Design System Registry (Clean Light Theme) ────────────────
@@ -118,7 +119,7 @@ const CROP_DESIGNS = {
     accentColor: '#16A34A', // Emerald Green
     lightBg: '#F0FDF4',
     badge: 'Organization Command Console',
-    heroImage: '/crops/oil_palm.webp',
+    heroImage: '/crops/organization.webp',
     title: <>Precision <span className="text-emerald-600 font-black">Agricultural Organization</span> Console</>,
     desc: 'Central command console for corporate agricultural organizations, managing multi-tenant farm portfolios, aggregated satellite coverage, and user roles.',
     features: [],
@@ -231,11 +232,11 @@ const CROP_DESIGNS = {
   },
   advisor: {
     key: 'advisor',
-    name: 'Farm Advisor',
-    branding: 'Farm Advisor',
+    name: 'Farm AI Advisor',
+    branding: 'Farm AI Advisor',
     accentColor: '#16A34A',
     lightBg: '#F0FDF4',
-    badge: 'Field advisory · Farm advisor',
+    badge: 'Field advisory · Farm AI Advisor',
     heroImage: '/crops/hero/advisor.webp',
     title: <>Advice for <span className="text-emerald-500 font-black">every field</span></>,
     desc: 'Crop condition, water and weather turned into plain advice for each field.',
@@ -309,6 +310,7 @@ const Login = ({ onLogin, moduleName, onBack, defaultEmail = '', defaultCode = '
   const [accessCode, setAccessCode] = useState(defaultCode);
   const [error, setError] = useState('');
   const [heroLoaded, setHeroLoaded] = useState(false);
+  const [forgotModalOpen, setForgotModalOpen] = useState(false);
 
   const currentDesign = resolveCropDesign(moduleName);
 
@@ -361,15 +363,11 @@ const Login = ({ onLogin, moduleName, onBack, defaultEmail = '', defaultCode = '
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-white text-[var(--text-main)] font-sans">
-
       {/* ── Left: crop photograph, full height, caption on a soft gradient ── */}
       <aside
         className="relative lg:w-1/2 min-h-[260px] lg:min-h-screen overflow-hidden bg-slate-100 bg-cover bg-center"
-        // Blurred ~0.5 KB preview shows instantly; the full photo fades in over it.
         style={{ backgroundImage: HERO_PLACEHOLDERS[currentDesign.heroImage] ? `url(${HERO_PLACEHOLDERS[currentDesign.heroImage]})` : undefined }}
       >
-        {/* Middle layer: the 640 px card photo (small, usually cached from the hub)
-            appears quickly and sharp; the 1200 px hero fades in over it when it arrives. */}
         {currentDesign.heroImage.startsWith('/crops/hero/') && (
           <img
             src={currentDesign.heroImage.replace('/crops/hero/', '/crops/')}
@@ -451,7 +449,16 @@ const Login = ({ onLogin, moduleName, onBack, defaultEmail = '', defaultCode = '
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1.5">Access code</label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-sm font-medium">Password</label>
+                  <button
+                    type="button"
+                    onClick={() => setForgotModalOpen(true)}
+                    className="text-xs font-semibold text-[var(--brand-primary)] hover:underline"
+                  >
+                    Forgot password?
+                  </button>
+                </div>
                 <div className="relative">
                   <Lock size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                   <input
@@ -466,7 +473,7 @@ const Login = ({ onLogin, moduleName, onBack, defaultEmail = '', defaultCode = '
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition-colors"
-                    aria-label={showPassword ? 'Hide access code' : 'Show access code'}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                   </button>
@@ -497,6 +504,16 @@ const Login = ({ onLogin, moduleName, onBack, defaultEmail = '', defaultCode = '
           </div>
         </div>
 
+        <ForgotPasswordModal
+          isOpen={forgotModalOpen}
+          onClose={() => setForgotModalOpen(false)}
+          initialEmail={email}
+          onSuccess={(em, pw) => {
+            setEmail(em);
+            setAccessCode(pw);
+          }}
+        />
+
         <footer className="text-xs text-slate-400">© {new Date().getFullYear()} FarmIntelytics</footer>
       </main>
     </div>
@@ -504,4 +521,6 @@ const Login = ({ onLogin, moduleName, onBack, defaultEmail = '', defaultCode = '
 };
 
 export default Login;
+
+
 

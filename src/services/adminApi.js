@@ -253,6 +253,19 @@ export async function resetCropThreshold(cropType, indexKey, companyId = '') {
   return adminFetch(`/crop-thresholds?${p}`, { method: 'DELETE' });
 }
 
+export async function fetchSuitabilityThresholds(cropType, companyId = '') {
+  const p = new URLSearchParams({ crop_type: cropType });
+  if (companyId) p.set('company_id', companyId);
+  return adminFetch(`/suitability-thresholds?${p}`);
+}
+
+export async function saveSuitabilityThreshold(data) {
+  return adminFetch('/suitability-thresholds', {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+}
+
 // ─── Logs ─────────────────────────────────────────────────────────────────────
 
 export async function fetchLogs({ status, sensor, search, page = 1, pageSize = 50 } = {}) {

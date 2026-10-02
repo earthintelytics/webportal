@@ -56,6 +56,7 @@ import PortalLayout from './layouts/PortalLayout';
 // One portal for all of them: the organisation monitoring layout with the
 // sub-pages each service defines in modules/services/serviceCatalog.js.
 const ServicePortal = lazyWithReload(() => import('./modules/services/ServicePortal'));
+const SuitabilityPortal = lazyWithReload(() => import('./modules/suitability/SuitabilityPortal'));
 
 // === Specialized Monitoring Apps ===
 const RiceMonitoring = lazyWithReload(() => import('./modules/monitoring/rice/Monitoring'));
@@ -124,8 +125,8 @@ const MODULE_NAMES = {
   'management-maize':     'Maize Management',
   'group-management':     'Groups Management',
   'group-monitoring':     'Group Monitoring',
-  'activity-ffb':         'Field Logs',
-  'advisor':              'Farm Advisor',
+  'advisor':              'Farm AI Advisor',
+  'suitability-tool':     'Crop Suitability Analysis',
   'custom-agromonitor':   'Agro Monitoring',
   'custom-agromonitor-olam': 'Olam Agro Monitoring',
   'custom-agromonitor-okomu': 'Okomu Agro Monitoring',
@@ -140,10 +141,11 @@ const RESTRICTED_MODULE = import.meta.env.VITE_RESTRICT_TO_MODULE || null;
 const AGROMONITOR_PATH = '/farmintelytics-engine/agromonitoring';
 
 
+import TenantHub from './pages/TenantHub';
+
 // ─── Hub page ────────────────────────────────────────────────────────────────
 // The hub is the FarmIntelytics team's own screen (every crop and organisation
-// service). Clients never see it: they get a direct link to their service's
-// login — /login?tenant=<org> or /login?module=<module-id>.
+// service) or an authenticated tenant's personalized multi-service launchpad.
 const hasValidTeamSession = () => {
   try {
     const token = localStorage.getItem('fi_admin_token');
@@ -155,24 +157,57 @@ const hasValidTeamSession = () => {
   }
 };
 
+const hasTenantSession = () => {
+  try {
+    const token = localStorage.getItem('fi_token');
+    const tenant = localStorage.getItem('fi_tenant');
+    return Boolean(token && tenant);
+  } catch {
+    return false;
+  }
+};
+
 const HubPage = () => {
   const navigate = useNavigate();
-  const [signedIn, setSignedIn] = useState(hasValidTeamSession);
-
-  if (!signedIn) return <AdminLogin context="hub" onSuccess={() => setSignedIn(true)} />;
+  const [teamSignedIn, setTeamSignedIn] = useState(hasValidTeamSession);
+  const [tenantSignedIn, setTenantSignedIn] = useState(hasTenantSession);
 
   const handleSelectModule = (moduleId) => {
     sessionStorage.setItem('fi_module', moduleId);
-    sessionStorage.setItem('fi_from_hub', '1'); // keeps "Back to hub" on the sign-in even if the team token expires
-    navigate(`/login?module=${encodeURIComponent(moduleId)}`);
-  };
-  const handleSignOut = () => {
-    localStorage.removeItem('fi_admin_token');
-    localStorage.removeItem('fi_admin_email');
-    setSignedIn(false);
+    sessionStorage.setItem('fi_from_hub', '1');
+    if (moduleId.startsWith('custom-agromonitor')) {
+      navigate(AGROMONITOR_PATH);
+    } else {
+      navigate(`/portal/${encodeURIComponent(moduleId)}`);
+    }
   };
 
-  return <PortalHub onSelectModule={handleSelectModule} onSignOut={handleSignOut} onOpenAdmin={() => navigate('/admin/organizations')} />;
+  const handleTeamSignOut = () => {
+    localStorage.removeItem('fi_admin_token');
+    localStorage.removeItem('fi_admin_email');
+    setTeamSignedIn(false);
+  };
+
+  const handleTenantSignOut = () => {
+    ['fi_token', 'fi_email', 'fi_tenant', 'fi_role', 'fi_full_name',
+     'fi_display_name', 'fi_allowed_modules', 'fi_allowed_crops', 'fi_map_center', 'fi_logo_url']
+      .forEach(key => localStorage.removeItem(key));
+    setTenantSignedIn(false);
+    navigate('/login');
+  };
+
+  // If authenticated as tenant operator/enterprise user, show their custom Tenant Hub
+  if (tenantSignedIn) {
+    return <TenantHub onSelectModule={handleSelectModule} onSignOut={handleTenantSignOut} />;
+  }
+
+  // If authenticated as super-admin team member, show the complete platform hub
+  if (teamSignedIn) {
+    return <PortalHub onSelectModule={handleSelectModule} onSignOut={handleTeamSignOut} onOpenAdmin={() => navigate('/admin/organizations')} />;
+  }
+
+  // Otherwise prompt admin login or redirect to login
+  return <AdminLogin context="hub" onSuccess={() => setTeamSignedIn(true)} />;
 };
 
 
@@ -181,8 +216,6 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Direct client links: ?tenant=<org> (organisation services) or
-  // ?module=<module-id> (e.g. rs-ffb for oil palm crop monitoring).
   const searchParams = new URLSearchParams(location.search);
   const directTenant = searchParams.get('tenant') || searchParams.get('org') || null;
   const directModule = searchParams.get('module') || null;
@@ -196,13 +229,11 @@ const LoginPage = () => {
     }
   }, [directTenant, directModule]);
 
-  // In restricted mode the module is fixed; otherwise read from the link or sessionStorage
   const moduleId = RESTRICTED_MODULE
     || (directTenant ? `custom-agromonitor-${directTenant}` : null)
     || directModule
     || sessionStorage.getItem('fi_module');
   
-  // Dynamically onboarded organizations get a friendly title derived from their slug
   const prettyDynamicName = (id) => {
     if (!id?.startsWith('custom-agromonitor-')) return id;
     const words = id.replace('custom-agromonitor-', '').split(/[_-]+/).filter(Boolean);
@@ -211,16 +242,22 @@ const LoginPage = () => {
   };
   const moduleName = MODULE_NAMES[moduleId] || prettyDynamicName(moduleId);
 
-  // Where does the portal land after login?
-  const portalPath = (moduleId && (moduleId.startsWith('custom-agromonitor') || directTenant))
-    ? AGROMONITOR_PATH
-    : moduleId ? `/portal/${encodeURIComponent(moduleId)}` : '/';
+  const handleLogin = () => {
+    if (directModule) {
+      navigate(`/portal/${encodeURIComponent(directModule)}`);
+    } else if (directTenant || localStorage.getItem('fi_tenant')) {
+      navigate('/tenant/hub');
+    } else if (moduleId && moduleId.startsWith('custom-agromonitor')) {
+      navigate(AGROMONITOR_PATH);
+    } else if (moduleId) {
+      navigate(`/portal/${encodeURIComponent(moduleId)}`);
+    } else {
+      navigate('/tenant/hub');
+    }
+  };
 
-  const handleLogin = () => navigate(portalPath);
-  // Clients arriving by direct link never see a way back to the internal hub;
-  // the FarmIntelytics team (signed in to the hub) always does.
-  const cameFromHub = hasValidTeamSession() || sessionStorage.getItem('fi_from_hub') === '1';
-  const handleBack  = (RESTRICTED_MODULE || ((directTenant || directModule) && !cameFromHub)) ? null : () => navigate('/');
+  const cameFromHub = hasValidTeamSession() || hasTenantSession() || sessionStorage.getItem('fi_from_hub') === '1';
+  const handleBack = (RESTRICTED_MODULE || ((directTenant || directModule) && !cameFromHub)) ? null : () => navigate('/tenant/hub');
 
   return (
     <Login
@@ -238,24 +275,25 @@ const PortalPage = () => {
   const [activeSection, setActiveSection] = useState('dashboard');
   const [currentCrop, setCurrentCrop]     = useState(crops[0]);
 
-  // The module is part of the URL (/portal/<module-id>) so a refresh or a
-  // shared link opens the same service; /portal alone falls back to the
-  // module chosen before sign-in.
   const { moduleId: moduleFromUrl } = useParams();
   const moduleId = moduleFromUrl || sessionStorage.getItem('fi_module');
   useEffect(() => { if (moduleFromUrl) sessionStorage.setItem('fi_module', moduleFromUrl); }, [moduleFromUrl]);
 
-  const handleSignOut   = () => {
-    // These used to be left in localStorage — a signed-out session could
-    // resume via back-button or direct navigation, since nothing here
-    // actually cleared it (unlike the admin portal's logout).
+  const handleSignOut = () => {
     ['fi_token', 'fi_email', 'fi_tenant', 'fi_role', 'fi_full_name',
-     'fi_display_name', 'fi_allowed_modules', 'fi_allowed_crops', 'fi_map_center']
+     'fi_display_name', 'fi_allowed_modules', 'fi_allowed_crops', 'fi_map_center', 'fi_logo_url']
       .forEach(key => localStorage.removeItem(key));
     navigate(`/login?module=${encodeURIComponent(moduleId || '')}`);
     setActiveSection('dashboard');
   };
-  const handleBackToHub = () => { navigate('/');     setActiveSection('dashboard'); };
+  const handleBackToHub = () => { 
+    if (hasTenantSession()) {
+      navigate('/tenant/hub');
+    } else {
+      navigate('/');
+    }
+    setActiveSection('dashboard'); 
+  };
 
   if (!moduleId) return <Navigate to="/" replace />;
   if (!moduleFromUrl) return <Navigate to={`/portal/${encodeURIComponent(moduleId)}`} replace />;
@@ -296,6 +334,11 @@ const PortalPage = () => {
 
   // ── resolve the component for this module ──
   const getContent = () => {
+    // Suitability Tool standalone portal
+    if (moduleId === 'suitability-tool') {
+      return <SuitabilityPortal onSignOut={handleSignOut} onBack={handleBackToHub} />;
+    }
+
     // Remote-sensing monitoring portals
     // Services (and Drone surveys / Smallholder monitoring) use the shared layout
     if (isServiceModule(moduleId)) {
@@ -333,6 +376,7 @@ const PortalPage = () => {
 
 
       'group-management': <ComingSoon title="Not in the current plan" description="Group management is parked. It showed sample figures, which have been removed." />,
+      'suitability-tool': <SuitabilityPortal />,
     };
 
     // Sustainability, field advisory and finance services
@@ -348,7 +392,7 @@ const PortalPage = () => {
   const content = getContent();
 
   // Standalone modules (full-screen, no PortalLayout sidebar)
-  const standaloneModules = ['rs-', 'group-monitoring', 'carbon-', 'forestry-', 'advisor'];
+  const standaloneModules = ['rs-', 'group-monitoring', 'carbon-', 'forestry-', 'advisor', 'suitability-tool'];
   const isStandalone = isServiceModule(moduleId) || standaloneModules.some(m => moduleId.startsWith(m) || moduleId === m);
 
   if (isStandalone || moduleId === 'group-management') {
@@ -411,6 +455,8 @@ const App = () => {
     <React.Suspense fallback={<RouteLoading />}>
       <Routes>
         <Route path="/"                       element={<HubPage />} />
+        <Route path="/hub"                    element={<HubPage />} />
+        <Route path="/tenant/hub"             element={<HubPage />} />
         <Route path="/login"                  element={<LoginPage />} />
         <Route path="/portal"                 element={<PortalPage />} />
         <Route path="/portal/:moduleId"       element={<PortalPage />} />

@@ -13,8 +13,8 @@ import { parseCsv, suggestMapping, applyMapping, checkRows, templateCsv, buildFi
  */
 
 const STATUS = {
-  missing: { label: 'Not provided yet', cls: 'bg-amber-50 text-amber-800 border-amber-200' },
-  due: { label: 'Update due', cls: 'bg-amber-50 text-amber-800 border-amber-200' },
+  missing: { label: 'Not provided yet', cls: 'bg-slate-50 text-slate-700 border-slate-200' },
+  due: { label: 'Update due', cls: 'bg-sky-50 text-sky-700 border-sky-200' },
   ok: { label: 'Up to date', cls: 'bg-green-50 text-green-700 border-green-200' },
 };
 const DUE_TEXT = { once: 'Once, update when it changes', season: 'Every season', monthly: 'Every month' };
@@ -73,12 +73,12 @@ function CheckResult({ result, total }) {
         ))}
       </div>
       {result.unknownIds.length > 0 && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-4">
-          <div className="text-sm font-semibold text-amber-900">These blocks are not registered for your organisation</div>
-          <p className="text-xs text-amber-900/80 mt-1">Check the spelling, or the estate column if you have several estates. Blocks are registered with your boundary at onboarding.</p>
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <div className="text-sm font-semibold text-slate-900">These blocks are not registered for your organisation</div>
+          <p className="text-xs text-slate-600 mt-1">Check the spelling, or the estate column if you have several estates. Blocks are registered with your boundary at onboarding.</p>
           <div className="flex flex-wrap gap-1.5 mt-3">
-            {result.unknownIds.slice(0, 40).map(id => <span key={id} className="text-xs font-mono px-2 py-0.5 rounded bg-white border border-amber-200">{id}</span>)}
-            {result.unknownIds.length > 40 && <span className="text-xs text-amber-900">+{result.unknownIds.length - 40} more</span>}
+            {result.unknownIds.slice(0, 40).map(id => <span key={id} className="text-xs font-mono px-2 py-0.5 rounded bg-white border border-slate-200 text-slate-800">{id}</span>)}
+            {result.unknownIds.length > 40 && <span className="text-xs text-slate-600">+{result.unknownIds.length - 40} more</span>}
           </div>
         </div>
       )}

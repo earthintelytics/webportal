@@ -9,7 +9,7 @@ export const SERVICE_PHOTOS = {
   'carbon-ffb': '/crops/estate_carbon.webp', 'carbon-groups': '/crops/group_carbon.webp',
   'forestry-intel': '/crops/forestry.webp', 'carbon-estimator': '/crops/estimator.webp',
   'land-restoration': '/crops/restoration.webp', 'eudr-check': '/crops/eudr.webp',
-  'activity-ffb': '/crops/field_logs.webp', advisor: '/crops/advisor.webp',
+  advisor: '/crops/advisor.webp',
 };
 
 // Services an organisation can be given at onboarding, grouped as on the hub.
@@ -23,13 +23,12 @@ export const SERVICE_GROUPS = [
     { id: 'eudr-check', label: 'EUDR check', desc: 'Deforestation-free evidence for EU buyers' },
   ] },
   { id: 'field-advisory', label: 'Field advisory', services: [
-    { id: 'activity-ffb', label: 'Field logs', desc: 'Field operations and scouting' },
-    { id: 'advisor', label: 'Farm advisor', desc: 'Weather and advice per field' },
+    { id: 'advisor', label: 'Farm AI Advisor', desc: 'Weather and advice per field' },
   ] },
 ];
 
 // Packages: one click grants a set of services (e.g. Sustainable Land Management).
 export const SERVICE_PACKAGES = [
-  { id: 'slm', label: 'SLM programme', desc: 'Sustainable Land Management: restoration, advisor, field logs', services: ['land-restoration', 'advisor', 'activity-ffb'] },
-  { id: 'eudr-supply', label: 'EUDR supply chain', desc: 'EUDR check with field logs for evidence', services: ['eudr-check', 'activity-ffb'] },
+  { id: 'slm', label: 'SLM programme', desc: 'Sustainable Land Management: restoration and advisor', services: ['land-restoration', 'advisor'] },
+  { id: 'eudr-supply', label: 'EUDR supply chain', desc: 'EUDR check and compliance verification', services: ['eudr-check'] },
 ];

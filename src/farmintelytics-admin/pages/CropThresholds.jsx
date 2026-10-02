@@ -1,6 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { SlidersHorizontal, RotateCcw, Check, AlertCircle, X, Info, FlaskConical } from 'lucide-react';
-import { fetchCropThresholds, saveCropThreshold, resetCropThreshold, fetchOrganizations } from '../../services/adminApi';
+import { SlidersHorizontal, RotateCcw, Check, AlertCircle, X, Info, FlaskConical, Target, ShieldCheck, Save } from 'lucide-react';
+import { 
+  fetchCropThresholds, 
+  saveCropThreshold, 
+  resetCropThreshold, 
+  fetchOrganizations,
+  fetchSuitabilityThresholds,
+  saveSuitabilityThreshold
+} from '../../services/adminApi';
 import { useConfirm } from '../components/ConfirmProvider';
 import ErrorBanner from '../components/ErrorBanner';
 
@@ -59,9 +66,6 @@ const IndexCard = ({ item, cropType, companyId, onSaved, onError }) => {
       onError('Every class needs a numeric from/to value.');
       return;
     }
-    // These ranges drive live raster pixel classification on the map — an
-    // inverted range (from > to) saved here would silently break the
-    // legend and tile coloring for this index with no server-side check.
     const inverted = clean.find(c => c.range[0] > c.range[1]);
     if (inverted) {
       onError(`"${inverted.label}" has a from value greater than its to value (${inverted.range[0]} > ${inverted.range[1]}).`);
@@ -104,7 +108,6 @@ const IndexCard = ({ item, cropType, companyId, onSaved, onError }) => {
           {item.formula && (
             <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '3px', fontFamily: 'var(--font-mono)' }}>{item.formula}</div>
           )}
-          {/* Live legend preview: exactly how the map legend and tiles will read, updated as classes are edited */}
           {classes.length > 0 && (
             <div className="mt-3">
               <div className="flex h-3 rounded-full overflow-hidden border border-gray-200">
@@ -172,7 +175,160 @@ const IndexCard = ({ item, cropType, companyId, onSaved, onError }) => {
   );
 };
 
+const SuitabilityCard = ({ cropType, companyId, onSaved, onError }) => {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [savedFlash, setSavedFlash] = useState(false);
+
+  useEffect(() => {
+    async function loadSuitability() {
+      setLoading(true);
+      try {
+        const res = await fetchSuitabilityThresholds(cropType, companyId);
+        setData(res);
+      } catch (err) {
+        onError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadSuitability();
+  }, [cropType, companyId, onError]);
+
+  const updateFactor = (index, field, value) => {
+    setData(prev => {
+      const updatedFactors = [...prev.factors];
+      updatedFactors[index] = { ...updatedFactors[index], [field]: value };
+      return { ...prev, factors: updatedFactors };
+    });
+  };
+
+  const updateAction = (factorKey, value) => {
+    setData(prev => ({
+      ...prev,
+      farmer_actions: {
+        ...prev.farmer_actions,
+        [factorKey]: value
+      }
+    }));
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await saveSuitabilityThreshold({
+        crop_type: cropType,
+        company_id: companyId,
+        relevance: data.relevance,
+        variants: data.variants,
+        factors: data.factors,
+        farmer_actions: data.farmer_actions,
+        exclusions: data.exclusions
+      });
+      setSavedFlash(true);
+      setTimeout(() => setSavedFlash(false), 2000);
+      onSaved();
+    } catch (e) {
+      onError(e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) return <div style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>Loading suitability thresholds…</div>;
+  if (!data) return null;
+
+  return (
+    <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyBetween: 'space-between', borderBottom: '1px solid #f1f5f9', pb: '12px' }}>
+        <div>
+          <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#0f172a', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Target size={18} color="#16a34a" /> FAO Land Suitability & Farmer Language Settings
+          </h3>
+          <p style={{ fontSize: '11px', color: '#64748b', margin: '2px 0 0' }}>
+            Configure factor evaluation bounds, farmer-understandable limiting interpretations, and practical field actions.
+          </p>
+        </div>
+
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          style={{
+            display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', border: 'none', borderRadius: '8px',
+            fontSize: '12px', fontWeight: 700, cursor: 'pointer', background: savedFlash ? '#16a34a' : '#15803d', color: 'white'
+          }}
+        >
+          <Save size={14} />
+          {savedFlash ? 'Saved to DB' : saving ? 'Saving…' : 'Save Suitability Config'}
+        </button>
+      </div>
+
+      {/* Factors Table */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div style={{ fontSize: '12px', fontWeight: 700, color: '#334155' }}>1. Factor Evaluation Bounds & Thresholds</div>
+        
+        <div style={{ display: 'grid', gridTemplateColumns: '120px 70px 1fr 1fr 1fr 1fr', gap: '8px', alignItems: 'center' }}>
+          <span style={labelStyle}>Factor</span>
+          <span style={labelStyle}>Unit</span>
+          <span style={labelStyle}>S1 Optimal</span>
+          <span style={labelStyle}>S2 Suitable</span>
+          <span style={labelStyle}>S3 Marginal</span>
+          <span style={labelStyle}>N Unsuitable</span>
+
+          {data.factors?.map((f, idx) => (
+            <React.Fragment key={idx}>
+              <span style={{ fontSize: '12px', fontWeight: 600, color: '#1e293b' }}>{f.name}</span>
+              <span style={{ fontSize: '11px', color: '#64748b', fontFamily: 'var(--font-mono)' }}>{f.unit}</span>
+              <input style={inputStyle} value={f.optimal || ''} onChange={e => updateFactor(idx, 'optimal', e.target.value)} />
+              <input style={inputStyle} value={f.suitable || ''} onChange={e => updateFactor(idx, 'suitable', e.target.value)} />
+              <input style={inputStyle} value={f.marginal || ''} onChange={e => updateFactor(idx, 'marginal', e.target.value)} />
+              <input style={inputStyle} value={f.unsuitable || ''} onChange={e => updateFactor(idx, 'unsuitable', e.target.value)} />
+            </React.Fragment>
+          ))}
+        </div>
+      </div>
+
+      {/* Farmer Language Actions */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '12px', pt: '12px', borderTop: '1px solid #f1f5f9' }}>
+        <div style={{ fontSize: '12px', fontWeight: 700, color: '#334155' }}>2. Farmer-Understandable Language Interventions</div>
+        <p style={{ fontSize: '11px', color: '#64748b', margin: 0 }}>
+          These descriptions explain recommendations directly to farmers when a factor becomes limiting in their field table.
+        </p>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div>
+            <label style={labelStyle}>Slope / Terrain Action:</label>
+            <input
+              style={inputStyle}
+              value={data.farmer_actions?.slope || 'Implement contour terracing & vetiver grass strips before planting'}
+              onChange={e => updateAction('slope', e.target.value)}
+            />
+          </div>
+          <div>
+            <label style={labelStyle}>Rainfall / Dry Season Action:</label>
+            <input
+              style={inputStyle}
+              value={data.farmer_actions?.rainfall || 'Install drip / supplementary irrigation; plant drought-resilient clone'}
+              onChange={e => updateAction('rainfall', e.target.value)}
+            />
+          </div>
+          <div>
+            <label style={labelStyle}>Soil pH / Texture Action:</label>
+            <input
+              style={inputStyle}
+              value={data.farmer_actions?.soil_ph || 'Apply agricultural lime (2.5 t/ha) to raise pH above 5.0'}
+              onChange={e => updateAction('soil_ph', e.target.value)}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const CropThresholds = () => {
+  const [tabMode, setTabMode] = useState('index'); // 'index' | 'suitability'
   const [crop, setCrop] = useState('ffb');
   const [companyId, setCompanyId] = useState('');
   const [orgs, setOrgs] = useState([]);
@@ -182,17 +338,16 @@ const CropThresholds = () => {
   const [error, setError] = useState('');
 
   const load = useCallback(async () => {
+    if (tabMode !== 'index') return;
     setLoading(true);
     try {
       const data = await fetchCropThresholds(crop, companyId);
       const loaded = data.indices || [];
       setItems(loaded);
-      // Keep the current selection if it still exists in the new list
-      // (e.g. after a save/reset); otherwise default to the first index.
       setSelectedIndex(prev => (loaded.some(i => i.index_key === prev) ? prev : loaded[0]?.index_key || null));
     } catch (e) { setError(e.message); }
     finally { setLoading(false); }
-  }, [crop, companyId]);
+  }, [crop, companyId, tabMode]);
 
   useEffect(() => { load(); }, [load]);
   useEffect(() => { fetchOrganizations().then(setOrgs).catch(() => {}); }, []);
@@ -203,23 +358,35 @@ const CropThresholds = () => {
     <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '18px', overflowY: 'auto', height: '100%', boxSizing: 'border-box' }}>
       <div>
         <h2 style={{ color: '#0f172a', fontSize: '20px', fontWeight: 600, margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <SlidersHorizontal size={20} color="#16a34a" /> Crop Index Thresholds
+          <SlidersHorizontal size={20} color="#16a34a" /> Crop & Suitability Thresholds
         </h2>
         <p style={{ color: '#64748b', fontSize: '12px', fontWeight: 600, margin: '4px 0 0' }}>
-          Calibrate the legend class boundaries for each crop against your ground truth.
+          Configure remote sensing index legend boundaries and land evaluation suitability factor thresholds for all crops.
         </p>
       </div>
 
-      {/* Scientific-basis disclosure */}
-      <div style={{ display: 'flex', gap: '10px', padding: '13px 15px', background: 'rgba(234,179,8,0.06)', border: '1px solid rgba(234,179,8,0.25)', borderRadius: '12px', maxWidth: '900px' }}>
-        <FlaskConical size={16} color="#a16207" style={{ flexShrink: 0, marginTop: '1px' }} />
-        <div style={{ fontSize: '12px', color: '#713f12', lineHeight: 1.6 }}>
-          <strong>About these defaults.</strong> The index chosen for each crop follows established remote-sensing
-          agronomy (e.g. NDWI for paddy flooding, red-edge indices for maize nitrogen, SAR for oil-palm stem structure),
-          and the formulas are the standard published ones. The <strong>numeric class boundaries, however, are reasoned
-          defaults — not field-validated</strong> for your varieties, soils or agro-ecological zone. Calibrate them here
-          against yield records and field scouting. Saved values drive both the legend cards and the raster colouring.
-        </div>
+      {/* Mode Switcher Tabs */}
+      <div style={{ display: 'flex', gap: '8px', borderBottom: '1px solid #e2e8f0', paddingBottom: '10px' }}>
+        <button
+          onClick={() => setTabMode('index')}
+          style={{
+            padding: '8px 16px', borderRadius: '10px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', border: 'none',
+            background: tabMode === 'index' ? '#15803d' : '#f1f5f9',
+            color: tabMode === 'index' ? 'white' : '#475569'
+          }}
+        >
+          Crop Index Thresholds (NDVI / NDMI)
+        </button>
+        <button
+          onClick={() => setTabMode('suitability')}
+          style={{
+            padding: '8px 16px', borderRadius: '10px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', border: 'none',
+            background: tabMode === 'suitability' ? '#15803d' : '#f1f5f9',
+            color: tabMode === 'suitability' ? 'white' : '#475569'
+          }}
+        >
+          Crop Suitability & Farmer Language Config
+        </button>
       </div>
 
       <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
@@ -238,54 +405,64 @@ const CropThresholds = () => {
         </div>
       </div>
 
-      {!loading && items.length > 0 && (
-        <div>
-          <label style={labelStyle}>Index</label>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', maxWidth: '900px' }}>
-            {items.map(item => {
-              const active = item.index_key === selectedIndex;
-              return (
-                <button
-                  key={item.index_key}
-                  onClick={() => setSelectedIndex(item.index_key)}
-                  style={{
-                    padding: '7px 13px', borderRadius: '9px', cursor: 'pointer', fontSize: '12px', fontWeight: 700,
-                    background: active ? '#15803d' : '#ffffff',
-                    border: active ? '1px solid #15803d' : '1px solid #cbd5e1',
-                    color: active ? '#ffffff' : '#334155',
-                    display: 'flex', alignItems: 'center', gap: '6px',
-                  }}
-                >
-                  {item.label}
-                  {item.calibrated && (
-                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: active ? '#bbf7d0' : '#16a34a' }} title="Calibrated" />
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
       <div style={{ maxWidth: '900px' }}><ErrorBanner message={error} onDismiss={() => setError('')} onRetry={load} /></div>
 
-      {loading ? (
-        <div style={{ textAlign: 'center', padding: '60px', color: '#64748b' }}>Loading…</div>
+      {tabMode === 'index' ? (
+        <>
+          {!loading && items.length > 0 && (
+            <div>
+              <label style={labelStyle}>Index</label>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', maxWidth: '900px' }}>
+                {items.map(item => {
+                  const active = item.index_key === selectedIndex;
+                  return (
+                    <button
+                      key={item.index_key}
+                      onClick={() => setSelectedIndex(item.index_key)}
+                      style={{
+                        padding: '7px 13px', borderRadius: '9px', cursor: 'pointer', fontSize: '12px', fontWeight: 700,
+                        background: active ? '#15803d' : '#ffffff',
+                        border: active ? '1px solid #15803d' : '1px solid #cbd5e1',
+                        color: active ? '#ffffff' : '#334155',
+                        display: 'flex', alignItems: 'center', gap: '6px',
+                      }}
+                    >
+                      {item.label}
+                      {item.calibrated && (
+                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: active ? '#bbf7d0' : '#16a34a' }} title="Calibrated" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '60px', color: '#64748b' }}>Loading…</div>
+          ) : (
+            <div style={{ maxWidth: '900px' }}>
+              {selectedItem && (
+                <IndexCard
+                  key={selectedItem.index_key}
+                  item={selectedItem}
+                  cropType={crop}
+                  companyId={companyId}
+                  onSaved={load}
+                  onError={setError}
+                />
+              )}
+            </div>
+          )}
+        </>
       ) : (
         <div style={{ maxWidth: '900px' }}>
-          {items.length === 0 && (
-            <div style={{ textAlign: 'center', padding: '50px', color: '#64748b' }}>No indices in this crop's profile.</div>
-          )}
-          {selectedItem && (
-            <IndexCard
-              key={selectedItem.index_key}
-              item={selectedItem}
-              cropType={crop}
-              companyId={companyId}
-              onSaved={load}
-              onError={setError}
-            />
-          )}
+          <SuitabilityCard
+            cropType={crop}
+            companyId={companyId}
+            onSaved={() => {}}
+            onError={setError}
+          />
         </div>
       )}
     </div>

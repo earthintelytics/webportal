@@ -141,7 +141,7 @@ export const DATASET_DEFINITIONS = [
     ],
   },
   {
-    id: 'field-operations', name: 'Field operations', applies_to: ['service:activity-ffb', 'service:advisor'],
+    id: 'field-operations', name: 'Field operations', applies_to: ['service:advisor'],
     why: 'What was done in each block, so it can be checked against what the satellite shows.',
     unlocks: ['Operations log', 'Blocks not visited', 'Spraying-before-rain check'], due: 'monthly', grain: 'per field and date',
     columns: [FIELD_ID, ESTATE,

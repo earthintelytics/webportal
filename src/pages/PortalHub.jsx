@@ -8,7 +8,8 @@ import {
   MessageSquare, 
   Leaf, 
   Satellite,
-  Trees
+  Trees,
+  Target
 } from 'lucide-react';
 import { 
   OilPalmIcon, 
@@ -41,7 +42,8 @@ const CARD_PHOTOS = {
   'carbon-ffb': '/crops/estate_carbon.webp', 'carbon-groups': '/crops/group_carbon.webp',
   'forestry-intel': '/crops/forestry.webp', 'carbon-estimator': '/crops/estimator.webp',
   'land-restoration': '/crops/restoration.webp', 'eudr-check': '/crops/eudr.webp',
-  'finance-hub': '/crops/finance.webp', 'activity-ffb': '/crops/field_logs.webp', 'advisor': '/crops/advisor.webp',
+  'suitability-tool': '/crops/suitability.webp',
+  'finance-hub': '/crops/finance.webp', 'advisor': '/crops/advisor.webp',
 };
 const photoFor = (id) => CARD_PHOTOS[id] || (id?.startsWith('custom-agromonitor') ? '/crops/organization.webp' : null);
 
@@ -173,20 +175,12 @@ const PortalHub = ({ onSelectModule, onSignOut, onOpenAdmin }) => {
       ])
     },
     {
-      id: 'payments',
-      title: 'Finance & Ledger',
-      description: 'Farm production and payment records across crops.',
+      id: 'farm-advisor',
+      title: 'Farm Advisor',
+      description: 'Crop suitability analysis, weather and AI agronomy decision tools.',
       modules: filterModules([
-        { id: 'finance-hub', title: 'Central ledger', crop: 'Multi-crop', icon: <CreditCard />, active: true  },
-      ])
-    },
-    {
-      id: 'field-advisory',
-      title: 'Field Advisory',
-      description: 'Field operation logs, weather and advice for each field.',
-      modules: filterModules([
-        { id: 'activity-ffb', title: 'Field logs',    crop: 'Operations', icon: <ClipboardList />, active: true  },
-        { id: 'advisor',      title: 'Farm advisor',  crop: 'Agronomy',   icon: <MessageSquare />, active: true  },
+        { id: 'suitability-tool', title: 'Crop Suitability', crop: 'Planning & Evaluation', icon: <Target />, active: true },
+        { id: 'advisor',      title: 'Farm AI Advisor', crop: 'Agronomy', icon: <MessageSquare />, active: true  },
       ])
     },
     {
@@ -202,7 +196,7 @@ const PortalHub = ({ onSelectModule, onSignOut, onOpenAdmin }) => {
   const visibleTabs = [
     { id: 'monitoring', label: 'Crop monitoring' },
     { id: 'sustainability', label: 'Sustainability' },
-    { id: 'field-advisory', label: 'Field advisory' },
+    { id: 'farm-advisor', label: 'Farm Advisor' },
     { id: 'custom', label: 'Organisations' },
   ].filter(tab => (sections.find(s => s.id === tab.id)?.modules.length ?? 0) > 0);
   const currentTabId = visibleTabs.some(t => t.id === activeTab) ? activeTab : visibleTabs[0]?.id;
