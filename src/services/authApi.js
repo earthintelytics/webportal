@@ -1,4 +1,4 @@
-const API_BASE = (import.meta.env?.VITE_API_URL || '').replace(/\/+$/, '');
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '/farmintelytics-engine/agromonitoring';
 
 export const getAuthToken = () => localStorage.getItem('fi_token') || localStorage.getItem('token') || '';
 
@@ -24,35 +24,35 @@ async function apiFetch(path, options = {}) {
 }
 
 export async function login({ email, access_code }) {
-  return apiFetch('/api/auth/login', {
+  return apiFetch('/auth/login', {
     method: 'POST',
     body: JSON.stringify({ email, access_code }),
   });
 }
 
 export async function verifyToken(token) {
-  return apiFetch('/api/auth/verify', {
+  return apiFetch('/auth/verify', {
     method: 'POST',
     body: JSON.stringify({ token }),
   });
 }
 
 export async function changePassword({ current_password, new_password }) {
-  return apiFetch('/api/auth/change-password', {
+  return apiFetch('/auth/change-password', {
     method: 'POST',
     body: JSON.stringify({ current_password, new_password }),
   });
 }
 
 export async function forgotPassword(email) {
-  return apiFetch('/api/auth/forgot-password', {
+  return apiFetch('/auth/forgot-password', {
     method: 'POST',
     body: JSON.stringify({ email }),
   });
 }
 
 export async function resetPassword({ email, token, new_password }) {
-  return apiFetch('/api/auth/reset-password', {
+  return apiFetch('/auth/reset-password', {
     method: 'POST',
     body: JSON.stringify({ email, token, new_password }),
   });
