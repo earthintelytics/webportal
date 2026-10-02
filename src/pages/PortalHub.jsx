@@ -175,12 +175,19 @@ const PortalHub = ({ onSelectModule, onSignOut, onOpenAdmin }) => {
     {
       id: 'farm-advisor',
       title: 'Farm Advisory',
-      description: 'Crop suitability evaluations, UAV drone analytics, smallholder outgrower management, and AI agronomy decision tools.',
+      description: 'Crop suitability evaluations, smallholder outgrower management, and AI agronomy decision tools.',
       modules: filterModules([
         { id: 'suitability-tool', title: 'Crop Suitability',   crop: 'Planning & Evaluation', icon: <Target />,          active: true },
-        { id: 'rs-drone',         title: 'Drone Services',     crop: 'High-Res Aerial UAV',   icon: <DroneIcon />,       active: true },
         { id: 'group-monitoring', title: 'Smallholder Hub',    crop: 'Outgrower OS',          icon: <SmallholderIcon />, active: true },
         { id: 'advisor',          title: 'Farm AI Advisor',    crop: 'GAP Agronomy',          icon: <MessageSquare />,   active: true },
+      ])
+    },
+    {
+      id: 'engine',
+      title: 'Engine',
+      description: 'Specialized UAV photogrammetry, high-resolution aerial orthomosaics, and flight mission processing engines.',
+      modules: filterModules([
+        { id: 'rs-drone',         title: 'Drone Services',     crop: 'High-Res Aerial UAV',   icon: <DroneIcon />,       active: true },
       ])
     },
     {
@@ -197,6 +204,7 @@ const PortalHub = ({ onSelectModule, onSignOut, onOpenAdmin }) => {
     { id: 'monitoring', label: 'Crop monitoring' },
     { id: 'sustainability', label: 'Sustainability' },
     { id: 'farm-advisor', label: 'Farm Advisory' },
+    { id: 'engine', label: 'Engine' },
     { id: 'custom', label: 'Organisations' },
   ].filter(tab => (sections.find(s => s.id === tab.id)?.modules.length ?? 0) > 0);
   const currentTabId = visibleTabs.some(t => t.id === activeTab) ? activeTab : visibleTabs[0]?.id;
