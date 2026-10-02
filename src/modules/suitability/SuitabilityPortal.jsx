@@ -115,7 +115,7 @@ const SuitabilityPortal = ({ onBack, onSignOut }) => {
               Select any crop to view its dedicated analysis workspace, historical runs, or launch a new evaluation
             </p>
           </div>
-          <span className="text-xs font-semibold px-3 py-1 rounded-full bg-green-50 text-green-700 border border-green-200">
+          <span className="text-xs font-semibold text-slate-500">
             {SUITABILITY_CROPS.length} Supported Crop Engines
           </span>
         </div>
@@ -128,7 +128,7 @@ const SuitabilityPortal = ({ onBack, onSignOut }) => {
               crop={crop}
               lastRun={runsMap[crop.id]}
               onClick={() => {
-                setSelectedRun(runsMap[crop.id] || null);
+                setSelectedRun(null);
                 setActiveCropId(crop.id);
               }}
             />
