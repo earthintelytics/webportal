@@ -248,10 +248,10 @@ const SuitabilityMapView = ({ runResult, onSelectField, onOpenReport, onOpenAiAd
       {/* 2. Main Geospatial Map Component matching CropDashboardLayout styling */}
       <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-2xs flex flex-col">
         {/* Top Control Bar: Criteria Layer Switcher */}
-        <div className="bg-gray-900 text-white px-5 py-3 flex flex-wrap items-center justify-between gap-3 border-b border-gray-800">
+        <div className="bg-slate-900 text-white px-5 py-3 flex flex-wrap items-center justify-between gap-3 border-b border-slate-800">
           <div className="flex items-center gap-2">
-            <Compass size={16} className="text-green-400" />
-            <span className="text-xs font-bold uppercase tracking-wider text-gray-300">Biophysical Criteria:</span>
+            <Compass size={16} className="text-slate-400" />
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-300">Biophysical Criteria:</span>
           </div>
 
           <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 scrollbar-none max-w-full">
@@ -264,11 +264,11 @@ const SuitabilityMapView = ({ runResult, onSelectField, onOpenReport, onOpenAiAd
                   title={tab.desc}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
                     activeLayer === tab.id
-                      ? 'bg-green-600 text-white shadow-xs'
-                      : 'bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white'
+                      ? 'bg-slate-800 text-white border border-slate-600 shadow-xs'
+                      : 'bg-slate-900 text-slate-400 hover:bg-slate-800 hover:text-white border border-transparent'
                   }`}
                 >
-                  <Icon size={13} className={activeLayer === tab.id ? 'text-white' : 'text-gray-400'} />
+                  <Icon size={13} className={activeLayer === tab.id ? 'text-white' : 'text-slate-400'} />
                   <span>{tab.label}</span>
                 </button>
               );
@@ -280,22 +280,22 @@ const SuitabilityMapView = ({ runResult, onSelectField, onOpenReport, onOpenAiAd
             <select
               value={activeBasemap}
               onChange={(e) => setActiveBasemap(e.target.value)}
-              className="bg-gray-800 border border-gray-700 text-gray-200 text-xs rounded-lg px-2.5 py-1.5 font-medium focus:outline-none focus:border-green-500"
+              className="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-2.5 py-1.5 font-medium focus:outline-none focus:border-slate-500"
             >
               {BASEMAP_OPTIONS.map(bm => (
                 <option key={bm.id} value={bm.id}>{bm.label}</option>
               ))}
             </select>
 
-            <div className="flex items-center gap-1.5 text-xs text-gray-300">
-              <SlidersHorizontal size={13} className="text-gray-400" />
+            <div className="flex items-center gap-1.5 text-xs text-slate-300">
+              <SlidersHorizontal size={13} className="text-slate-400" />
               <input
                 type="range"
                 min="20"
                 max="100"
                 value={layerOpacity}
                 onChange={(e) => setLayerOpacity(Number(e.target.value))}
-                className="w-16 accent-green-500 cursor-pointer h-1.5 bg-gray-700 rounded-lg"
+                className="w-16 accent-slate-400 cursor-pointer h-1.5 bg-slate-700 rounded-lg"
                 title={`Layer Opacity: ${layerOpacity}%`}
               />
             </div>
@@ -417,48 +417,44 @@ const SuitabilityMapView = ({ runResult, onSelectField, onOpenReport, onOpenAiAd
 
           {/* Floating Right: Field Detail & Agronomic Inspector Panel */}
           {currentField && (
-            <div className="absolute top-5 right-5 bg-white/95 backdrop-blur-md p-5 rounded-2xl border border-gray-200 text-gray-900 text-xs shadow-2xl max-w-sm w-full z-[400] space-y-3.5 animate-in fade-in slide-in-from-right-4 duration-200">
-              <div className="flex items-center justify-between border-b border-gray-100 pb-2.5">
+            <div className="absolute top-5 right-5 bg-white/95 backdrop-blur-md p-5 rounded-2xl border border-slate-200 text-slate-900 text-xs shadow-2xl max-w-sm w-full z-[400] space-y-3.5 animate-in fade-in slide-in-from-right-4 duration-200">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
                 <div>
-                  <h3 className="font-bold text-gray-900 text-sm flex items-center gap-1.5">
-                    <MapPin size={14} className="text-green-600" />
+                  <h3 className="font-bold text-slate-900 text-sm flex items-center gap-1.5">
+                    <MapPin size={14} className="text-slate-700" />
                     <span>{currentField.field_id}</span>
                   </h3>
-                  <p className="text-[11px] text-gray-400">
+                  <p className="text-[11px] text-slate-400">
                     {currentField.area_ha ? `${currentField.area_ha.toFixed(1)} ha` : 'Estate Block'} • Evaluated Parcel
                   </p>
                 </div>
-                <div className={`px-2.5 py-1 rounded-lg font-bold text-xs text-white shadow-xs ${
-                  currentField.overall_class === 'S1' ? 'bg-green-600' :
-                  currentField.overall_class === 'S2' ? 'bg-lime-600' :
-                  currentField.overall_class === 'S3' ? 'bg-amber-600' : 'bg-rose-600'
-                }`}>
+                <div className="px-2.5 py-1 rounded-lg font-bold text-xs bg-slate-900 text-white shadow-2xs">
                   Class {currentField.overall_class || 'S1'}
                 </div>
               </div>
 
               {/* Criteria Scores Matrix */}
               <div className="space-y-2 text-[11px]">
-                <span className="font-bold text-gray-700 uppercase tracking-wider text-[10px] block">
+                <span className="font-bold text-slate-600 uppercase tracking-wider text-[10px] block">
                   Biophysical Factor Scores:
                 </span>
                 
                 <div className="grid grid-cols-2 gap-2">
-                  <div className="bg-gray-50 p-2 rounded-xl border border-gray-200/60">
-                    <span className="text-gray-400 block text-[10px]">Annual Rainfall</span>
-                    <span className="font-bold text-gray-800">{currentField.rainfall_mm || 1920} mm</span>
+                  <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200/60">
+                    <span className="text-slate-400 block text-[10px]">Annual Rainfall</span>
+                    <span className="font-bold text-slate-800">{currentField.rainfall_mm || 1920} mm</span>
                   </div>
-                  <div className="bg-gray-50 p-2 rounded-xl border border-gray-200/60">
-                    <span className="text-gray-400 block text-[10px]">Soil pH (H2O)</span>
-                    <span className="font-bold text-gray-800">{currentField.soil_ph || 5.6}</span>
+                  <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200/60">
+                    <span className="text-slate-400 block text-[10px]">Soil pH (H2O)</span>
+                    <span className="font-bold text-slate-800">{currentField.soil_ph || 5.6}</span>
                   </div>
-                  <div className="bg-gray-50 p-2 rounded-xl border border-gray-200/60">
-                    <span className="text-gray-400 block text-[10px]">DEM Slope</span>
-                    <span className="font-bold text-gray-800">{currentField.slope_pct || 5.2}%</span>
+                  <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200/60">
+                    <span className="text-slate-400 block text-[10px]">DEM Slope</span>
+                    <span className="font-bold text-slate-800">{currentField.slope_pct || 5.2}%</span>
                   </div>
-                  <div className="bg-gray-50 p-2 rounded-xl border border-gray-200/60">
-                    <span className="text-gray-400 block text-[10px]">SAR Flood Risk</span>
-                    <span className="font-bold text-green-700">{currentField.flood_risk || 'Low (<5%)'}</span>
+                  <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200/60">
+                    <span className="text-slate-400 block text-[10px]">SAR Flood Risk</span>
+                    <span className="font-bold text-slate-800">{currentField.flood_risk || 'Low (<5%)'}</span>
                   </div>
                 </div>
               </div>
@@ -477,12 +473,12 @@ const SuitabilityMapView = ({ runResult, onSelectField, onOpenReport, onOpenAiAd
               </div>
 
               {/* Agronomic Corrective Guidance */}
-              <div className="bg-gray-900 text-gray-200 p-3 rounded-xl text-[11px] leading-relaxed space-y-1">
-                <span className="font-bold text-green-400 text-[10px] uppercase tracking-wider flex items-center gap-1">
-                  <Sparkles size={12} />
+              <div className="bg-slate-900 text-slate-200 p-3.5 rounded-xl text-[11px] leading-relaxed space-y-1">
+                <span className="font-bold text-slate-300 text-[10px] uppercase tracking-wider flex items-center gap-1">
+                  <Sparkles size={12} className="text-amber-400" />
                   <span>Agronomic Guidance:</span>
                 </span>
-                <p className="text-gray-300">
+                <p className="text-slate-300">
                   {currentField.overall_class === 'S1'
                     ? 'Recommended for immediate planting layout. Standard fertilizer regime applicable.'
                     : currentField.overall_class === 'S2'
