@@ -188,320 +188,38 @@ const SuitabilityCropAnalysis = ({ cropId, companyId, initialRun, onBack, onOpen
   };
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // VIEW A: RUNS TABLE LANDING VIEW (User sees ONLY the table, no map)
+  // COMBINED VIEW: HISTORICAL RUNS TABLE + DETAILED MAP VIEW ON SAME PAGE
   // ═══════════════════════════════════════════════════════════════════════════
-  if (!selectedRun) {
-    return (
-      <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] font-sans flex flex-col">
-        {/* Clean Header */}
-        <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-2xs">
-          <div className="max-w-7xl mx-auto px-6 py-3.5 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={onBack}
-                className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
-                title="Back to Suitability Models"
-              >
-                <ArrowLeft size={16} />
-              </button>
-
-              <div>
-                <h1 className="text-base font-bold text-slate-900 leading-tight">
-                  {crop.name} Land Suitability
-                </h1>
-                <p className="text-xs text-slate-500 font-medium mt-0.5">
-                  {tenantDisplayName} • Historical Evaluation Runs
-                </p>
-              </div>
-            </div>
-
-            <button
-              onClick={() => setShowNewRunModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold transition-colors shadow-xs"
-            >
-              <Plus size={15} />
-              <span>+ Run New Analysis</span>
-            </button>
-          </div>
-        </header>
-
-        {/* Table Body */}
-        <main className="max-w-7xl mx-auto px-6 py-8 w-full flex-1 space-y-6">
-          <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Clock size={16} className="text-slate-400" />
-                <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                  {crop.name} Historical Analysis Runs
-                </h2>
-              </div>
-              <span className="text-xs font-semibold text-slate-500">
-                {runs.length} Evaluated {runs.length === 1 ? 'Run' : 'Runs'}
-              </span>
-            </div>
-
-            {runs.length === 0 ? (
-              <div className="p-12 text-center">
-                <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-500 flex items-center justify-center mx-auto mb-3">
-                  <Clock size={22} />
-                </div>
-                <h3 className="text-sm font-bold text-slate-900 mb-1">No Evaluation Runs Found</h3>
-                <p className="text-xs text-slate-500 max-w-sm mx-auto mb-4">
-                  Run a new multi-criteria suitability evaluation for {crop.name} across your estate boundaries.
-                </p>
-                <button
-                  onClick={() => setShowNewRunModal(true)}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold shadow-xs transition-all"
-                >
-                  <Plus size={14} />
-                  <span>Run New Analysis</span>
-                </button>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead>
-                    <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider text-[10px]">
-                      <th className="py-3 px-6">Evaluation Run</th>
-                      <th className="py-3 px-6">Estate / Target Area</th>
-                      <th className="py-3 px-6">Suitability Breakdown</th>
-                      <th className="py-3 px-6">Status</th>
-                      <th className="py-3 px-6 text-right">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 text-slate-700">
-                    {runs.map((run) => {
-                      const s1Area = run.classes_area_ha?.S1 || 0;
-                      const s2Area = run.classes_area_ha?.S2 || 0;
-                      const s3Area = run.classes_area_ha?.S3 || 0;
-                      const nArea = run.classes_area_ha?.N || run.classes_area_ha?.N2 || 0;
-                      const tot = run.total_area_ha || (s1Area + s2Area + s3Area + nArea) || 1;
-
-                      const s1Pct = Math.round((s1Area / tot) * 100);
-                      const s2Pct = Math.round((s2Area / tot) * 100);
-                      const s3Pct = Math.round((s3Area / tot) * 100);
-                      const nPct = Math.round((nArea / tot) * 100);
-
-                      const runDate = new Date(run.created_at).toLocaleDateString('en-GB', {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric'
-                      });
-
-                      return (
-                        <tr
-                          key={run.run_id}
-                          onClick={() => { setSelectedRun(run); setActiveTab('monitor'); }}
-                          className="hover:bg-slate-50/80 transition-colors cursor-pointer"
-                        >
-                          <td className="py-4 px-6 font-semibold text-slate-900">
-                            <div>{run.variant || `${crop.name} Commercial`}</div>
-                            <div className="text-[11px] text-slate-400 font-normal">{runDate}</div>
-                          </td>
-                          <td className="py-4 px-6">
-                            <div className="font-semibold text-slate-800">{tenantDisplayName}</div>
-                            <div className="text-[11px] text-slate-500">
-                              {run.total_area_ha ? `${run.total_area_ha.toFixed(1)} ha` : 'Estate Boundary'}
-                            </div>
-                          </td>
-                          <td className="py-4 px-6 min-w-[200px]">
-                            <div className="flex items-center gap-2 mb-1 text-[11px]">
-                              <span className="text-emerald-700 font-bold">S1: {s1Pct}%</span>
-                              <span className="text-lime-700 font-bold">S2: {s2Pct}%</span>
-                              <span className="text-amber-700 font-bold">S3: {s3Pct}%</span>
-                              {nPct > 0 && <span className="text-rose-700 font-bold">N: {nPct}%</span>}
-                            </div>
-                            <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden flex">
-                              <div style={{ width: `${s1Pct}%` }} className="bg-emerald-600 h-full" title={`S1: ${s1Pct}%`} />
-                              <div style={{ width: `${s2Pct}%` }} className="bg-lime-500 h-full" title={`S2: ${s2Pct}%`} />
-                              <div style={{ width: `${s3Pct}%` }} className="bg-amber-500 h-full" title={`S3: ${s3Pct}%`} />
-                              <div style={{ width: `${nPct}%` }} className="bg-rose-500 h-full" title={`N: ${nPct}%`} />
-                            </div>
-                          </td>
-                          <td className="py-4 px-6">
-                            <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-slate-700">
-                              <CheckCircle2 size={13} className="text-emerald-600" />
-                              <span>Completed</span>
-                            </span>
-                          </td>
-                          <td className="py-4 px-6 text-right">
-                            <button
-                              onClick={(e) => { e.stopPropagation(); setSelectedRun(run); setActiveTab('monitor'); }}
-                              className="inline-flex items-center gap-1 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold shadow-2xs transition-colors"
-                            >
-                              <span>Open Analysis</span>
-                              <ChevronRight size={13} />
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </main>
-
-        {/* New Run Modal */}
-        {showNewRunModal && (
-          <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
-            <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-xl w-full p-6 space-y-5 animate-in fade-in zoom-in-95 duration-150">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center font-bold text-slate-800">
-                    <Play size={15} />
-                  </div>
-                  <div>
-                    <h3 className="text-base font-bold text-slate-900">Run New {crop.name} Suitability</h3>
-                    <p className="text-xs text-slate-500">Configure parameters for automated biophysical MCDA evaluation</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setShowNewRunModal(false)}
-                  className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100"
-                >
-                  <X size={16} />
-                </button>
-              </div>
-
-              {isRunning ? (
-                <div className="py-8 space-y-4 text-center">
-                  <div className="w-12 h-12 rounded-full border-3 border-slate-200 border-t-slate-900 animate-spin mx-auto" />
-                  <div className="font-bold text-sm text-slate-900">Evaluating Biophysical Criteria...</div>
-                  <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                    Synthesizing CHIRPS precipitation, SoilGrids pH, Copernicus DEM terrain, and Sentinel-1 flood indices.
-                  </p>
-                  <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden max-w-xs mx-auto">
-                    <div style={{ width: `${runProgress}%` }} className="bg-slate-900 h-full transition-all duration-300" />
-                  </div>
-                </div>
-              ) : (
-                <form onSubmit={handleRunSubmit} className="space-y-4 text-xs">
-                  <div>
-                    <label className="font-semibold text-slate-700 block mb-1">Target Estate / Farm</label>
-                    <input
-                      type="text"
-                      value={targetEstate}
-                      onChange={(e) => setTargetEstate(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-slate-800 focus:outline-none focus:border-slate-800 font-medium"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="font-semibold text-slate-700 block mb-1">Crop Variety / Cultivar</label>
-                    <select
-                      value={variant}
-                      onChange={(e) => setVariant(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-slate-800 focus:outline-none focus:border-slate-800 font-medium"
-                    >
-                      {crop.variants?.map(v => (
-                        <option key={v} value={v}>{v}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3 pt-1">
-                    <label className="flex items-center gap-2 p-3 bg-slate-50 rounded-xl border border-slate-200 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={isIrrigated}
-                        onChange={(e) => setIsIrrigated(e.target.checked)}
-                        className="rounded accent-slate-900"
-                      />
-                      <span className="font-semibold text-slate-700">Irrigated Regime</span>
-                    </label>
-
-                    <label className="flex items-center gap-2 p-3 bg-slate-50 rounded-xl border border-slate-200 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={useSoilSamples}
-                        onChange={(e) => setUseSoilSamples(e.target.checked)}
-                        className="rounded accent-slate-900"
-                      />
-                      <span className="font-semibold text-slate-700">Fuse Soil Samples</span>
-                    </label>
-                  </div>
-
-                  <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
-                    <button
-                      type="button"
-                      onClick={() => setShowNewRunModal(false)}
-                      className="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 font-semibold"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold shadow-xs transition-all"
-                    >
-                      Start Evaluation
-                    </button>
-                  </div>
-                </form>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // VIEW B: SINGLE RUN DETAILED WORKSPACE (Map, Tabs, Inspector, Breakdown)
-  // ═══════════════════════════════════════════════════════════════════════════
-  const s1Area = selectedRun.classes_area_ha?.S1 || 0;
-  const s2Area = selectedRun.classes_area_ha?.S2 || 0;
-  const s3Area = selectedRun.classes_area_ha?.S3 || 0;
+  const s1Area = selectedRun?.classes_area_ha?.S1 || 0;
+  const s2Area = selectedRun?.classes_area_ha?.S2 || 0;
+  const s3Area = selectedRun?.classes_area_ha?.S3 || 0;
   const s23Area = s2Area + s3Area;
-  const exclArea = selectedRun.classes_area_ha?.N || selectedRun.classes_area_ha?.N2 || 0;
-  const totalArea = selectedRun.total_area_ha || (s1Area + s23Area + exclArea) || 0;
+  const exclArea = selectedRun?.classes_area_ha?.N || selectedRun?.classes_area_ha?.N2 || 0;
+  const totalArea = selectedRun?.total_area_ha || (s1Area + s23Area + exclArea) || 0;
 
   return (
     <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] font-sans flex flex-col">
       {/* Detail Workspace Top Header */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-2xs">
-        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between gap-4">
-          {/* Left: Back to Runs & Title */}
+        <div className="max-w-7xl mx-auto px-6 py-3.5 flex items-center justify-between gap-4">
+          {/* Left: Back to Crop Models & Title */}
           <div className="flex items-center gap-3">
             <button
-              onClick={() => setSelectedRun(null)}
+              onClick={onBack}
               className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors flex items-center gap-1.5"
-              title="Back to Runs Table"
+              title="Back to Crop Models"
             >
               <ArrowLeft size={16} />
             </button>
 
             <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-base font-bold text-slate-900 leading-tight">
-                  {crop.name} Land Suitability
-                </h1>
-                <span className="text-xs font-semibold text-slate-600">
-                  — {selectedRun.variant || 'Standard Assessment'}
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 font-medium">
-                {tenantDisplayName} • {totalArea.toFixed(1)} ha evaluated
+              <h1 className="text-base font-bold text-slate-900 leading-tight">
+                {crop.name} Land Suitability
+              </h1>
+              <p className="text-xs text-slate-500 font-medium mt-0.5">
+                {tenantDisplayName} • Historical Evaluation Runs & Spatial Intelligence
               </p>
             </div>
-          </div>
-
-          {/* Center: Top Bar Tabs (Monitor | Reports | Verification | Assistant) */}
-          <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
-            {HEADER_TABS.map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                  activeTab === tab.id
-                    ? 'bg-white text-slate-900 shadow-2xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
           </div>
 
           {/* Right: + Run New Analysis */}
@@ -511,149 +229,315 @@ const SuitabilityCropAnalysis = ({ cropId, companyId, initialRun, onBack, onOpen
               className="flex items-center gap-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold transition-colors shadow-xs"
             >
               <Plus size={15} />
-              <span>Run New Analysis</span>
+              <span>+ Run New Analysis</span>
             </button>
           </div>
         </div>
       </header>
 
-      {/* Main Detail Content Body */}
-      <main className="max-w-7xl mx-auto px-6 py-6 w-full flex-1 space-y-6">
-        {/* Top Metric Cards for Selected Run */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Total Evaluated Area</span>
-            <div className="text-2xl font-black text-slate-900 mt-1">
-              {totalArea.toFixed(1)} <span className="text-sm font-semibold text-slate-500">ha</span>
+      {/* Main Content Area */}
+      <main className="max-w-7xl mx-auto px-6 py-8 w-full flex-1 space-y-8">
+        {/* Section 1: Historical Runs Table */}
+        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
+          <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Clock size={16} className="text-slate-400" />
+              <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                {crop.name} Historical Analysis Runs
+              </h2>
             </div>
-            <div className="text-[11px] text-slate-500 mt-1 font-medium">Full estate polygon boundary</div>
+            <span className="text-xs font-semibold text-slate-500">
+              {runs.length} Evaluated {runs.length === 1 ? 'Run' : 'Runs'}
+            </span>
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Class S1 (Highly Suitable)</span>
+          {runs.length === 0 ? (
+            <div className="p-12 text-center">
+              <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-500 flex items-center justify-center mx-auto mb-3">
+                <Clock size={22} />
+              </div>
+              <h3 className="text-sm font-bold text-slate-900 mb-1">No Evaluation Runs Found</h3>
+              <p className="text-xs text-slate-500 max-w-sm mx-auto mb-4">
+                Run a new multi-criteria suitability evaluation for {crop.name} across your estate boundaries.
+              </p>
+              <button
+                onClick={() => setShowNewRunModal(true)}
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold shadow-xs transition-all"
+              >
+                <Plus size={14} />
+                <span>Run New Analysis</span>
+              </button>
             </div>
-            <div className="text-2xl font-black text-slate-900 mt-1">
-              {s1Area.toFixed(1)} <span className="text-sm font-semibold text-slate-500">ha</span>
-            </div>
-            <div className="text-[11px] text-slate-600 mt-1 font-medium">Optimal conditions for planting</div>
-          </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider text-[10px]">
+                    <th className="py-3 px-6">Evaluation Run</th>
+                    <th className="py-3 px-6">Estate / Target Area</th>
+                    <th className="py-3 px-6">Suitability Breakdown</th>
+                    <th className="py-3 px-6">Status</th>
+                    <th className="py-3 px-6 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-slate-700">
+                  {runs.map((run) => {
+                    const isSelected = selectedRun?.run_id === run.run_id;
+                    const rS1 = run.classes_area_ha?.S1 || 0;
+                    const rS2 = run.classes_area_ha?.S2 || 0;
+                    const rS3 = run.classes_area_ha?.S3 || 0;
+                    const rN = run.classes_area_ha?.N || run.classes_area_ha?.N2 || 0;
+                    const tot = run.total_area_ha || (rS1 + rS2 + rS3 + rN) || 1;
 
-          <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Class S2 / S3 (Marginal)</span>
-            </div>
-            <div className="text-2xl font-black text-slate-900 mt-1">
-              {s23Area.toFixed(1)} <span className="text-sm font-semibold text-slate-500">ha</span>
-            </div>
-            <div className="text-[11px] text-slate-600 mt-1 font-medium">Correctable via lime / terracing</div>
-          </div>
+                    const s1Pct = Math.round((rS1 / tot) * 100);
+                    const s2Pct = Math.round((rS2 / tot) * 100);
+                    const s3Pct = Math.round((rS3 / tot) * 100);
+                    const nPct = Math.round((rN / tot) * 100);
 
-          <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Statutory Exclusions</span>
+                    const runDate = new Date(run.created_at).toLocaleDateString('en-GB', {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric'
+                    });
+
+                    return (
+                      <tr
+                        key={run.run_id}
+                        onClick={() => { setSelectedRun(run); setActiveTab('monitor'); }}
+                        className={`transition-colors cursor-pointer ${
+                          isSelected ? 'bg-slate-100/90 font-medium' : 'hover:bg-slate-50/80'
+                        }`}
+                      >
+                        <td className="py-4 px-6 font-semibold text-slate-900">
+                          <div className="flex items-center gap-2">
+                            {isSelected && <span className="w-2 h-2 rounded-full bg-slate-900 shrink-0" />}
+                            <span>{run.variant || `${crop.name} Commercial`}</span>
+                          </div>
+                          <div className="text-[11px] text-slate-400 font-normal mt-0.5">{runDate}</div>
+                        </td>
+                        <td className="py-4 px-6">
+                          <div className="font-semibold text-slate-800">{tenantDisplayName}</div>
+                          <div className="text-[11px] text-slate-500">
+                            {run.total_area_ha ? `${run.total_area_ha.toFixed(1)} ha` : 'Estate Boundary'}
+                          </div>
+                        </td>
+                        <td className="py-4 px-6 min-w-[200px]">
+                          <div className="flex items-center gap-2 mb-1 text-[11px]">
+                            <span className="text-emerald-700 font-bold">S1: {s1Pct}%</span>
+                            <span className="text-lime-700 font-bold">S2: {s2Pct}%</span>
+                            <span className="text-amber-700 font-bold">S3: {s3Pct}%</span>
+                            {nPct > 0 && <span className="text-rose-700 font-bold">N: {nPct}%</span>}
+                          </div>
+                          <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden flex">
+                            <div style={{ width: `${s1Pct}%` }} className="bg-emerald-600 h-full" title={`S1: ${s1Pct}%`} />
+                            <div style={{ width: `${s2Pct}%` }} className="bg-lime-500 h-full" title={`S2: ${s2Pct}%`} />
+                            <div style={{ width: `${s3Pct}%` }} className="bg-amber-500 h-full" title={`S3: ${s3Pct}%`} />
+                            <div style={{ width: `${nPct}%` }} className="bg-rose-500 h-full" title={`N: ${nPct}%`} />
+                          </div>
+                        </td>
+                        <td className="py-4 px-6">
+                          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-slate-700">
+                            <CheckCircle2 size={13} className="text-emerald-600" />
+                            <span>Completed</span>
+                          </span>
+                        </td>
+                        <td className="py-4 px-6 text-right">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setSelectedRun(run); setActiveTab('monitor'); }}
+                            className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold shadow-2xs transition-colors ${
+                              isSelected
+                                ? 'bg-slate-900 text-white'
+                                : 'bg-slate-100 hover:bg-slate-200 text-slate-800'
+                            }`}
+                          >
+                            <span>{isSelected ? 'Viewing Map' : 'Open Analysis'}</span>
+                            <ChevronRight size={13} />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
-            <div className="text-2xl font-black text-slate-900 mt-1">
-              {exclArea.toFixed(1)} <span className="text-sm font-semibold text-slate-500">ha</span>
-            </div>
-            <div className="text-[11px] text-slate-600 mt-1 font-medium">31 Dec 2020 EUDR cut-off baseline</div>
-          </div>
+          )}
         </div>
 
-        {/* Tab A: Monitor View (Suitability Map Canvas + Per-Field Breakdown Table) */}
-        {activeTab === 'monitor' && (
-          <div className="space-y-6">
-            <SuitabilityMapView
-              runResult={selectedRun}
-              onSelectField={handleSelectFieldOnMap}
-            />
-
-            <FieldTable
-              fields={selectedRun.fields}
-              onSelectField={handleSelectFieldOnMap}
-            />
-          </div>
-        )}
-
-        {/* Tab B: Reports View (Standard ReportBuilder) */}
-        {activeTab === 'reports' && (
-          <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
-            <ReportBuilder
-              plots={plotsData}
-              alerts={[]}
-              estates={[companyId]}
-              tenant={tenant}
-              orgName={tenantDisplayName}
-              subject={`${crop.name} Suitability Assessment`}
-              cropType={cropId}
-            />
-          </div>
-        )}
-
-        {/* Tab C: Verification Page */}
-        {activeTab === 'verification' && (
-          <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
-            <VerificationPage
-              plots={plotsData}
-              serviceId="suitability-tool"
-              onOpenData={() => {}}
-            />
-          </div>
-        )}
-
-        {/* Tab D: Assistant View (Farm AI Advisor & ScenarioBuilder) */}
-        {activeTab === 'ai-assistant' && (
-          <div className="space-y-6">
-            <div className="bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden flex flex-col h-[520px]">
-              <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center font-bold">
-                    <Sparkles size={16} />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-slate-900 text-sm">Farm AI Advisor • Agronomic Engine</h3>
-                    <p className="text-xs text-slate-500">Grounded in {crop.name} suitability and Sentinel telemetry for {tenantDisplayName}</p>
-                  </div>
+        {/* Section 2: Selected Run Map & Detailed Analysis View on SAME Page */}
+        {selectedRun ? (
+          <div className="space-y-6 pt-2 border-t border-slate-200 animate-in fade-in slide-in-from-top-4 duration-200">
+            {/* Run Header & Tab Switcher */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Analysis Perspective:</span>
+                  <h3 className="text-base font-bold text-slate-900">
+                    {selectedRun.variant || `${crop.name} Assessment`}
+                  </h3>
                 </div>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  {tenantDisplayName} • {totalArea.toFixed(1)} ha evaluated across 8 biophysical factors
+                </p>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                {chatMessages.map((msg, idx) => (
-                  <div
-                    key={idx}
-                    className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div
-                      className={`max-w-2xl rounded-2xl px-5 py-3.5 text-xs leading-relaxed ${
-                        msg.sender === 'user'
-                          ? 'bg-slate-900 text-white font-medium shadow-xs'
-                          : 'bg-slate-100 text-slate-800 font-normal'
+              <div className="flex items-center gap-3 self-stretch sm:self-auto justify-between">
+                <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+                  {HEADER_TABS.map(tab => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                        activeTab === tab.id
+                          ? 'bg-white text-slate-900 shadow-2xs'
+                          : 'text-slate-600 hover:text-slate-900'
                       }`}
                     >
-                      {msg.text}
-                    </div>
-                  </div>
-                ))}
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => setSelectedRun(null)}
+                  className="px-3 py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors"
+                >
+                  Close View
+                </button>
+              </div>
+            </div>
+
+            {/* Metric Overview Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Total Evaluated Area</span>
+                <div className="text-2xl font-black text-slate-900 mt-1">
+                  {totalArea.toFixed(1)} <span className="text-sm font-semibold text-slate-500">ha</span>
+                </div>
+                <div className="text-[11px] text-slate-500 mt-1 font-medium">Full estate polygon boundary</div>
               </div>
 
-              <form onSubmit={handleSendMessage} className="p-4 border-t border-slate-100 flex items-center gap-3 bg-white">
-                <input
-                  type="text"
-                  value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
-                  placeholder="Ask about limiting factors, corrective agronomy, or flood risks..."
-                  className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-slate-800"
-                />
-                <button
-                  type="submit"
-                  disabled={chatLoading}
-                  className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold text-xs transition-colors flex items-center gap-1.5 shadow-xs"
-                >
-                  <Send size={14} />
-                  <span>Ask Advisor</span>
-                </button>
-              </form>
+              <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Class S1 (Highly Suitable)</span>
+                <div className="text-2xl font-black text-slate-900 mt-1">
+                  {s1Area.toFixed(1)} <span className="text-sm font-semibold text-slate-500">ha</span>
+                </div>
+                <div className="text-[11px] text-slate-600 mt-1 font-medium">Optimal conditions for planting</div>
+              </div>
+
+              <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Class S2 / S3 (Marginal)</span>
+                <div className="text-2xl font-black text-slate-900 mt-1">
+                  {s23Area.toFixed(1)} <span className="text-sm font-semibold text-slate-500">ha</span>
+                </div>
+                <div className="text-[11px] text-slate-600 mt-1 font-medium">Correctable via lime / terracing</div>
+              </div>
+
+              <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Statutory Exclusions</span>
+                <div className="text-2xl font-black text-slate-900 mt-1">
+                  {exclArea.toFixed(1)} <span className="text-sm font-semibold text-slate-500">ha</span>
+                </div>
+                <div className="text-[11px] text-slate-600 mt-1 font-medium">31 Dec 2020 EUDR cut-off baseline</div>
+              </div>
             </div>
+
+            {/* Tab Contents: Monitor | Reports | Verification | Assistant */}
+            {activeTab === 'monitor' && (
+              <div className="space-y-6">
+                <SuitabilityMapView
+                  runResult={selectedRun}
+                  onSelectField={handleSelectFieldOnMap}
+                />
+
+                <FieldTable
+                  fields={selectedRun.fields}
+                  onSelectField={handleSelectFieldOnMap}
+                />
+              </div>
+            )}
+
+            {activeTab === 'reports' && (
+              <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
+                <ReportBuilder
+                  plots={plotsData}
+                  alerts={[]}
+                  estates={[companyId]}
+                  tenant={tenant}
+                  orgName={tenantDisplayName}
+                  subject={`${crop.name} Suitability Assessment`}
+                  cropType={cropId}
+                />
+              </div>
+            )}
+
+            {activeTab === 'verification' && (
+              <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
+                <VerificationPage
+                  plots={plotsData}
+                  serviceId="suitability-tool"
+                  onOpenData={() => {}}
+                />
+              </div>
+            )}
+
+            {activeTab === 'ai-assistant' && (
+              <div className="space-y-6">
+                <div className="bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden flex flex-col h-[520px]">
+                  <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center font-bold">
+                        <Sparkles size={16} />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-slate-900 text-sm">Farm AI Advisor • Agronomic Engine</h3>
+                        <p className="text-xs text-slate-500">Grounded in {crop.name} suitability and Sentinel telemetry for {tenantDisplayName}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                    {chatMessages.map((msg, idx) => (
+                      <div
+                        key={idx}
+                        className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                      >
+                        <div
+                          className={`max-w-2xl rounded-2xl px-5 py-3.5 text-xs leading-relaxed ${
+                            msg.sender === 'user'
+                              ? 'bg-slate-900 text-white font-medium shadow-xs'
+                              : 'bg-slate-100 text-slate-800 font-normal'
+                          }`}
+                        >
+                          {msg.text}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <form onSubmit={handleSendMessage} className="p-4 border-t border-slate-100 flex items-center gap-3 bg-white">
+                    <input
+                      type="text"
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value)}
+                      placeholder="Ask about limiting factors, corrective agronomy, or flood risks..."
+                      className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-slate-800"
+                    />
+                    <button
+                      type="submit"
+                      disabled={chatLoading}
+                      className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold text-xs transition-colors flex items-center gap-1.5 shadow-xs"
+                    >
+                      <Send size={14} />
+                      <span>Ask Advisor</span>
+                    </button>
+                  </form>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-8 text-center text-slate-500 shadow-2xs">
+            <p className="text-xs font-semibold text-slate-600">Click on any historical evaluation run above to open its spatial suitability map and criteria breakdown.</p>
           </div>
         )}
       </main>
