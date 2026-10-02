@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Bot, 
   Sparkles, 
@@ -11,8 +11,11 @@ import {
   Clock, 
   Send,
   Plus,
-  ShieldCheck
+  ShieldCheck,
+  ClipboardList
 } from 'lucide-react';
+import * as api from '../../../services/organizationMonitorApi';
+import * as scoutingService from '../../../services/scoutingService';
 
 const SmallholderAdvisorView = ({ selectedMember, onSelectMember }) => {
   const [chatMessages, setChatMessages] = useState([
@@ -20,52 +23,78 @@ const SmallholderAdvisorView = ({ selectedMember, onSelectMember }) => {
       role: 'assistant',
       text: selectedMember 
         ? `Hello! I am the Smallholder Farm AI Advisor for ${selectedMember.name} (${selectedMember.primary_crop}, ${selectedMember.cluster}). How can I assist with pest identification, spray windows, or GAP compliance today?`
-        : `Hello! I am the Smallholder Farm AI Advisor. Select a member plot or ask any question regarding good agricultural practices, weather windows, or pest triage.`
+        : `Hello! I am the Smallholder Farm AI Advisor. Select an outgrower member or ask any question regarding good agricultural practices, weather windows, or pest triage.`
     }
   ]);
   const [chatInput, setChatInput] = useState('');
-  const [scoutingNotes, setScoutingNotes] = useState([
-    { date: '28 Sep 2026', officer: 'Jude Egharevba', farmer: 'Emmanuel Osagie', plot: 'MEM-OK-0142', action: 'Recommended ring weeding and potassium application before dry season.', status: 'Completed' },
-    { date: '21 Sep 2026', officer: 'Blessing Okon', farmer: 'Festus Igbinedion', plot: 'MEM-OK-0144', action: 'Investigated tapping panel dryness. Advised 2-week rest from tapping.', status: 'In Progress' }
-  ]);
+  const [scoutingNotes, setScoutingNotes] = useState([]);
   const [newNote, setNewNote] = useState('');
+  const [isSending, setIsSending] = useState(false);
 
-  const handleSendMessage = (e) => {
+  useEffect(() => {
+    async function loadScouting() {
+      try {
+        const res = await scoutingService.fetchScoutingObservations(selectedMember?.id);
+        if (res && Array.isArray(res.observations)) {
+          setScoutingNotes(res.observations);
+        }
+      } catch (err) {
+        console.warn('Scouting fetch fallback:', err);
+      }
+    }
+    loadScouting();
+  }, [selectedMember]);
+
+  const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!chatInput.trim()) return;
+    if (!chatInput.trim() || isSending) return;
 
     const userMsg = chatInput.trim();
     const newMsgs = [...chatMessages, { role: 'user', text: userMsg }];
     setChatMessages(newMsgs);
     setChatInput('');
+    setIsSending(true);
 
-    setTimeout(() => {
-      let reply = '';
-      if (userMsg.toLowerCase().includes('spray') || userMsg.toLowerCase().includes('weather') || userMsg.toLowerCase().includes('rain')) {
-        reply = `🌦️ Spraying Window Advisory: Current 48h forecast indicates 20% rain chance tomorrow morning between 07:00 and 11:00. This is an OPTIMAL window for foliar feeding and bio-fungicide application. Ensure 4 hours rain-fast period before afternoon showers.`;
-      } else if (userMsg.toLowerCase().includes('disease') || userMsg.toLowerCase().includes('pod') || userMsg.toLowerCase().includes('black')) {
-        reply = `🍂 Visual Diagnostic Triage: Early signs of Cocoa Black Pod (Phytophthora) require immediate sanitary pruning of infected pods. Bury affected pods 30cm below soil. Do not apply synthetic fungicides within 14 days of harvest (Pre-Harvest Interval adherence).`;
-      } else if (userMsg.toLowerCase().includes('fertilizer') || userMsg.toLowerCase().includes('potassium') || userMsg.toLowerCase().includes('yield')) {
-        reply = `🌱 GAP Nutrition Advice: For mature Oil Palm outgrower plots, broadcast 1.5 kg MOP (Muriate of Potash) per palm along the weeded clean weeded circle. Split into two rounds before peak dry season.`;
-      } else {
-        reply = `Grounded agronomic guidance for ${selectedMember ? selectedMember.name : 'Smallholder Cooperative'}: Follow the digital GAP seasonal timetable. Next scheduled extension visit is set for next Tuesday.`;
+    try {
+      // Call backend AI chat assistant if available
+      const replyData = await api.askAiAssistant({
+        message: userMsg,
+        scenario: selectedMember ? `${selectedMember.primary_crop} Outgrower GAP` : 'Climate-Smart Agriculture'
+      }).catch(() => null);
+      
+      let replyText = replyData?.response || replyData?.reply || replyData?.message;
+      if (!replyText) {
+        // Contextual rule-based agronomic guidance
+        if (userMsg.toLowerCase().includes('spray') || userMsg.toLowerCase().includes('weather') || userMsg.toLowerCase().includes('rain')) {
+          replyText = `🌦️ Spraying Window Advisory: Low wind speed (< 6 km/h) and minimal rain probability in the morning window (07:00 - 11:30). Suitable for foliar feeding and bio-fungicide application. Ensure 4 hours rain-fast period.`;
+        } else if (userMsg.toLowerCase().includes('disease') || userMsg.toLowerCase().includes('pod') || userMsg.toLowerCase().includes('leaf')) {
+          replyText = `🍂 Diagnostic Triage: Early disease symptoms require immediate sanitary pruning of affected tissue. Maintain 30cm burial and adhere to standard Pre-Harvest Intervals.`;
+        } else if (userMsg.toLowerCase().includes('fertilizer') || userMsg.toLowerCase().includes('nutrient')) {
+          replyText = `🌱 GAP Nutrition Advice: For outgrower plots, broadcast recommended NPK/MOP in the clean weeded ring. Ensure split application before peak dry season.`;
+        } else {
+          replyText = `Grounded agronomic guidance for ${selectedMember ? selectedMember.name : 'Outgrower Cooperative'}: Adhere to digital GAP calendar schedules and log field observations for extension officer follow-up.`;
+        }
       }
-      setChatMessages([...newMsgs, { role: 'assistant', text: reply }]);
-    }, 600);
+      setChatMessages([...newMsgs, { role: 'assistant', text: replyText }]);
+    } catch {
+      setChatMessages([...newMsgs, { role: 'assistant', text: 'Advisor service active. Log field observations or specify agronomic criteria for detailed guidance.' }]);
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const handleAddScoutingNote = (e) => {
     e.preventDefault();
     if (!newNote.trim()) return;
     const item = {
-      date: 'Today',
+      date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
       officer: 'Extension Supervisor',
-      farmer: selectedMember ? selectedMember.name : 'Cluster Outgrower',
-      plot: selectedMember ? selectedMember.id : 'Cluster Plot',
+      farmer: selectedMember ? selectedMember.name : 'Outgrower Farmer',
+      plot: selectedMember ? selectedMember.id : 'Member Plot',
       action: newNote.trim(),
       status: 'In Progress'
     };
-    setScoutingNotes([item, ...scoutingNotes]);
+    setScoutingNotes(prev => [item, ...prev]);
     setNewNote('');
   };
 
@@ -98,29 +127,37 @@ const SmallholderAdvisorView = ({ selectedMember, onSelectMember }) => {
           <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
             <div className="flex items-center gap-2">
               <Bot size={16} className="text-emerald-600" />
-              <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider">
-                Smallholder Farm AI Copilot
-              </h4>
+              <h4 className="text-xs font-bold text-slate-900">GAP Digital Agronomist Chat</h4>
             </div>
-            <span className="text-[11px] text-slate-400">Zero Technical Acronyms • Farmer Language</span>
+            {selectedMember && (
+              <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full">
+                Context: {selectedMember.name} ({selectedMember.primary_crop})
+              </span>
+            )}
           </div>
 
           <div className="flex-1 p-4 overflow-y-auto space-y-3">
-            {chatMessages.map((msg, idx) => (
+            {chatMessages.map((msg, i) => (
               <div
-                key={idx}
-                className={`flex gap-2.5 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                key={i}
+                className={`flex gap-2.5 max-w-[85%] ${
+                  msg.role === 'user' ? 'ml-auto flex-row-reverse' : ''
+                }`}
               >
-                {msg.role === 'assistant' && (
-                  <div className="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 mt-1">
-                    <Sparkles size={12} />
-                  </div>
-                )}
                 <div
-                  className={`p-3 rounded-2xl max-w-lg text-xs leading-relaxed ${
+                  className={`w-7 h-7 rounded-xl shrink-0 flex items-center justify-center text-xs font-bold ${
                     msg.role === 'user'
-                      ? 'bg-emerald-700 text-white rounded-br-none'
-                      : 'bg-slate-100 text-slate-800 rounded-bl-none'
+                      ? 'bg-emerald-700 text-white'
+                      : 'bg-emerald-100 text-emerald-800'
+                  }`}
+                >
+                  {msg.role === 'user' ? 'U' : <Bot size={14} />}
+                </div>
+                <div
+                  className={`p-3 rounded-2xl text-xs leading-relaxed ${
+                    msg.role === 'user'
+                      ? 'bg-emerald-700 text-white rounded-tr-none'
+                      : 'bg-slate-50 text-slate-800 border border-slate-200/60 rounded-tl-none'
                   }`}
                 >
                   {msg.text}
@@ -129,17 +166,18 @@ const SmallholderAdvisorView = ({ selectedMember, onSelectMember }) => {
             ))}
           </div>
 
-          <form onSubmit={handleSendMessage} className="p-3 border-t border-slate-100 flex items-center gap-2 bg-slate-50/50">
+          <form onSubmit={handleSendMessage} className="p-3 border-t border-slate-100 bg-slate-50/50 flex gap-2">
             <input
               type="text"
-              placeholder="Ask advice on pests, spray windows, or fertilizer timing..."
+              placeholder="Ask about pest symptoms, fertilizer dosage, or GAP compliance..."
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
-              className="flex-1 bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-800 focus:outline-none focus:border-emerald-500"
+              className="flex-1 bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500"
             />
             <button
               type="submit"
-              className="p-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl transition-colors shadow-xs"
+              disabled={isSending}
+              className="p-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl transition-colors shadow-2xs disabled:opacity-50"
             >
               <Send size={14} />
             </button>
@@ -147,72 +185,56 @@ const SmallholderAdvisorView = ({ selectedMember, onSelectMember }) => {
         </div>
       </div>
 
-      {/* Right Col: Extension Scouting Logs & GAP Timetable */}
-      <div className="space-y-6">
-        {/* GAP Timetable Card */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
-          <div className="flex items-center gap-2 mb-3">
-            <Calendar size={16} className="text-emerald-600" />
-            <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider">
-              Digital GAP Seasonal Calendar
-            </h4>
-          </div>
-
-          <div className="space-y-2.5 text-xs">
-            <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-              <div className="font-bold text-slate-900">Current Phase: Post-Rainfall Maintenance</div>
-              <div className="text-[11px] text-slate-500 mt-0.5">Circle slashing, frond pruning & potassium boost.</div>
-            </div>
-            <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-              <div className="font-bold text-slate-900">Upcoming: Dry Season Preparation</div>
-              <div className="text-[11px] text-slate-500 mt-0.5">Mulching around weeded circles; firebreak establishment.</div>
-            </div>
+      {/* Right Col: Extension Scouting Logs */}
+      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs flex flex-col h-[484px]">
+        <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+          <div className="flex items-center gap-2">
+            <ClipboardList size={16} className="text-emerald-600" />
+            <h4 className="text-xs font-bold text-slate-900">Extension Field Scouting Logs</h4>
           </div>
         </div>
 
-        {/* Extension Scouting Visit Logger */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <FileText size={16} className="text-emerald-600" />
-              <h4 className="font-bold text-slate-900 text-xs uppercase tracking-wider">
-                Extension Scouting Logs
-              </h4>
+        <div className="flex-1 p-4 overflow-y-auto space-y-3">
+          {scoutingNotes.length === 0 ? (
+            <div className="p-8 text-center text-slate-400">
+              <ClipboardList size={24} className="mx-auto mb-2 opacity-50" />
+              <p className="text-xs font-semibold text-slate-600">No field observations recorded</p>
+              <p className="text-[11px] text-slate-400 mt-1">Log extension visit findings and corrective recommendations below.</p>
             </div>
-            <span className="text-[10px] font-bold text-slate-400">{scoutingNotes.length} Visits</span>
-          </div>
-
-          <form onSubmit={handleAddScoutingNote} className="mb-3">
-            <div className="flex gap-2">
-              <input
-                type="text"
-                placeholder="Log field visit note & action item..."
-                value={newNote}
-                onChange={(e) => setNewNote(e.target.value)}
-                className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-emerald-500"
-              />
-              <button
-                type="submit"
-                className="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-semibold"
-              >
-                Log
-              </button>
-            </div>
-          </form>
-
-          <div className="space-y-2 overflow-y-auto max-h-48">
-            {scoutingNotes.map((note, idx) => (
-              <div key={idx} className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs">
-                <div className="flex items-center justify-between text-[10px] text-slate-400 mb-1">
-                  <span>{note.date} • {note.officer}</span>
-                  <span className="font-bold text-emerald-700">{note.status}</span>
+          ) : (
+            scoutingNotes.map((note, idx) => (
+              <div key={idx} className="p-3 bg-slate-50 rounded-xl border border-slate-200/70 space-y-1.5">
+                <div className="flex items-center justify-between text-[10px] text-slate-400 font-medium">
+                  <span>{note.date}</span>
+                  <span className="font-semibold text-slate-600">{note.officer}</span>
                 </div>
-                <div className="font-medium text-slate-800">{note.action}</div>
-                <div className="text-[10px] text-slate-500 mt-0.5">Farmer: {note.farmer} ({note.plot})</div>
+                <div className="text-xs font-bold text-slate-900">{note.farmer} ({note.plot})</div>
+                <p className="text-xs text-slate-600 leading-snug">{note.action || note.notes}</p>
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                    {note.status || 'Verified'}
+                  </span>
+                </div>
               </div>
-            ))}
-          </div>
+            ))
+          )}
         </div>
+
+        <form onSubmit={handleAddScoutingNote} className="p-3 border-t border-slate-100 bg-slate-50/50 flex gap-2">
+          <input
+            type="text"
+            placeholder="Log agronomic scout note..."
+            value={newNote}
+            onChange={(e) => setNewNote(e.target.value)}
+            className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500"
+          />
+          <button
+            type="submit"
+            className="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-semibold shadow-2xs transition-colors"
+          >
+            Add Note
+          </button>
+        </form>
       </div>
     </div>
   );
