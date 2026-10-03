@@ -12,6 +12,11 @@ import proj4 from 'proj4';
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/farmintelytics-engine/agromonitoring';
 
 function handleTenantAuthFailure() {
+  const isAdmin = Boolean(localStorage.getItem('fi_admin_token'));
+  if (isAdmin) {
+    // Do not wipe admin sessions or redirect if an auxiliary tenant data call fails
+    return;
+  }
   localStorage.removeItem('fi_token');
   localStorage.removeItem('fi_user');
   localStorage.removeItem('fi_tenant');
@@ -23,7 +28,7 @@ function handleTenantAuthFailure() {
 /** Generic fetch helper with JSON parsing and error handling */
 async function apiFetch(path, options = {}) {
   const url = `${API_BASE}${path}`;
-  const token = localStorage.getItem('fi_token');
+  const token = localStorage.getItem('fi_token') || localStorage.getItem('fi_admin_token');
   const headers = {
     'Content-Type': 'application/json',
     ...options.headers,
@@ -574,6 +579,71 @@ export async function clearCache() {
  */
 export async function rebuildCache() {
   return apiFetch('/cache/rebuild', { method: 'POST' });
+}
+
+// ─── Specialized ESG & Sustainability Services ──────────────────────────────
+
+/**
+ * GET /services/carbon-footprint
+ * Retrieves IPCC biomass and net greenhouse gas emissions balance summary.
+ */
+export async function fetchCarbonFootprintSummary(tenant) {
+  const params = tenant ? `?tenant_slug=${encodeURIComponent(tenant)}` : '';
+  return apiFetch(`/services/carbon-footprint${params}`);
+}
+
+/**
+ * GET /services/atmospheric-carbon
+ * Retrieves Sentinel-3 / Sentinel-5P atmospheric air quality and AOD summary.
+ */
+export async function fetchAtmosphericCarbonSummary(tenant) {
+  const params = tenant ? `?tenant_slug=${encodeURIComponent(tenant)}` : '';
+  return apiFetch(`/services/atmospheric-carbon${params}`);
+}
+
+/**
+ * GET /services/forest-change
+ * Retrieves EUDR forest baseline and canopy loss analysis.
+ */
+export async function fetchForestChangeSummary(tenant) {
+  const params = tenant ? `?tenant_slug=${encodeURIComponent(tenant)}` : '';
+  return apiFetch(`/services/forest-change${params}`);
+}
+
+/**
+ * GET /services/protected-areas
+ * Retrieves World Database on Protected Areas (WDPA) intersection summary.
+ */
+export async function fetchProtectedAreasSummary(tenant) {
+  const params = tenant ? `?tenant_slug=${encodeURIComponent(tenant)}` : '';
+  return apiFetch(`/services/protected-areas${params}`);
+}
+
+/**
+ * GET /services/water-buffer
+ * Retrieves permanent water proximity and 50m riparian buffer compliance.
+ */
+export async function fetchWaterBufferSummary(tenant) {
+  const params = tenant ? `?tenant_slug=${encodeURIComponent(tenant)}` : '';
+  return apiFetch(`/services/water-buffer${params}`);
+}
+
+/**
+ * GET /services/restoration
+ * Retrieves land restoration and canopy recovery telemetry.
+ */
+export async function fetchRestorationSummary(tenant) {
+  const params = tenant ? `?tenant_slug=${encodeURIComponent(tenant)}` : '';
+  return apiFetch(`/services/restoration${params}`);
+}
+
+/**
+ * GET /services/summary
+ * Retrieves unified portfolio summary across all active ESG & sustainability services.
+ */
+export async function fetchServicesSummary(tenant) {
+  const params = tenant ? `?tenant_slug=${encodeURIComponent(tenant)}` : '';
+  return apiFetch(`/services/summary${params}`);
 }
 
 
