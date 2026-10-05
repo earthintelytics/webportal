@@ -1,10 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { Key, Plus, Trash2, Copy, Check, X, RefreshCw, AlertCircle, Shield } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Key, Plus, Trash2, Copy, Check, RefreshCw, Shield } from 'lucide-react';
 import { fetchCredentials, createCredential, deleteCredential, rotateCredential, fetchOrganizations } from '../../services/adminApi';
 import { useConfirm } from '../components/ConfirmProvider';
 import ErrorBanner from '../components/ErrorBanner';
-import { emailError, accessCodeError, slugError } from '../components/validation';
+import { emailError, accessCodeError } from '../components/validation';
+import { inputCls } from '../components/formHelpers';
+import { Page, Card, Button, IconButton, Field, Pill, Modal, Empty, Loading } from '../components/ui';
 
+const ROLES = [
+  { id: 'admin', label: 'Admin', text: 'Everything the organisation is licensed for' },
+  { id: 'analyst', label: 'Analyst', text: 'Monitoring and reports' },
+  { id: 'viewer', label: 'Viewer', text: 'Read only' },
+];
+const EMPTY = { company_id: '', email: '', access_code: '', label: 'Primary', full_name: '', role: 'admin' };
+
+/**
+ * Sign-in details for client organisations (email + access code). Codes are
+ * hashed at rest: the backend returns a code only right after it is created
+ * or reissued, so it is shown once, for this session.
+ */
 const Credentials = () => {
   const confirm = useConfirm();
   const [creds, setCreds] = useState([]);
@@ -12,211 +26,142 @@ const Credentials = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState('');
-  const [form, setForm] = useState({ company_id: '', email: '', access_code: '', label: 'Primary', full_name: '', role: 'admin' });
-  const [saving, setSaving] = useState(false);
-  const [showForm, setShowForm] = useState(false);
-  const [rotatingId, setRotatingId] = useState(null);
-  // Access codes are hashed at rest — the backend only ever returns the
-  // real code in the response right after it's created/rotated. Keep
-  // those here, keyed by credential id, so they stay visible for this
-  // session only; a reload (or another admin's view) shows them masked.
+  const [adding, setAdding] = useState(false);
+  const [busyId, setBusyId] = useState(null);
   const [revealed, setRevealed] = useState({});
 
   const load = async () => {
     try {
       const [c, o] = await Promise.all([fetchCredentials(), fetchOrganizations()]);
-      setCreds(c); setOrgs(o);
+      setCreds(c); setOrgs(Array.isArray(o) ? o : o?.items || []);
     } catch (e) { setError(e.message); } finally { setLoading(false); }
   };
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/set-state-in-effect
 
   const copy = async (text, id) => {
-    await navigator.clipboard.writeText(text);
-    setCopied(id);
-    setTimeout(() => setCopied(''), 2000);
+    try { await navigator.clipboard.writeText(text); setCopied(id); setTimeout(() => setCopied(''), 2000); } catch { setError('Copy failed: select the text and copy it.'); }
   };
 
-  const handleCreate = async () => {
-    if (!form.company_id || !form.email) return;
-    const invalid = emailError(form.email) || accessCodeError(form.access_code.trim());
-    if (invalid) { setError(invalid); return; }
-    setSaving(true);
-    try {
-      const cred = await createCredential({ ...form, access_code: form.access_code.trim() || '' });
-      setForm({ company_id: '', email: '', access_code: '', label: 'Primary', full_name: '', role: 'admin' });
-      setShowForm(false);
-      await load();
-      if (cred?.access_code) setRevealed(r => ({ ...r, [cred.id]: cred.access_code }));
-    } catch (e) { setError(e.message); } finally { setSaving(false); }
-  };
-
-  const handleRotate = async (id) => {
+  const rotate = async (id) => {
     if (!(await confirm('Issue a new access code? The current one stops working immediately.'))) return;
-    setRotatingId(id);
-    try {
-      const cred = await rotateCredential(id);
-      if (cred?.access_code) setRevealed(r => ({ ...r, [id]: cred.access_code }));
-      await load();
-    } catch (e) { setError(e.message); } finally { setRotatingId(null); }
+    setBusyId(id);
+    try { const cred = await rotateCredential(id); if (cred?.access_code) setRevealed((r) => ({ ...r, [id]: cred.access_code })); await load(); } catch (e) { setError(e.message); } finally { setBusyId(null); }
+  };
+  const remove = async (cred) => {
+    if (!(await confirm(`Delete the sign-in for ${cred.email}? They can no longer sign in.`))) return;
+    try { await deleteCredential(cred.id); await load(); } catch (e) { setError(e.message); }
   };
 
-  const handleDelete = async (id) => {
-    if (!(await confirm('Delete this credential?'))) return;
-    try { await deleteCredential(id); await load(); }
-    catch (e) { setError(e.message); }
-  };
-
-  const inputStyle = { width: '100%', padding: '10px 12px', background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '10px', color: '#1e293b', fontSize: '13px', fontWeight: 500, outline: 'none', boxSizing: 'border-box', fontFamily: "var(--font-sans)" };
-  const labelStyle = { display: 'block', fontSize: '11px', fontWeight: 600, color: '#64748b', letterSpacing: '0', marginBottom: '6px' };
-
-  // Group by company_id
-  const grouped = creds.reduce((acc, c) => {
-    if (!acc[c.company_id]) acc[c.company_id] = [];
-    acc[c.company_id].push(c);
-    return acc;
-  }, {});
+  const grouped = useMemo(() => creds.reduce((acc, c) => { (acc[c.company_id] ||= []).push(c); return acc; }, {}), [creds]);
+  const link = (companyId) => `${window.location.origin}/login?tenant=${companyId}`;
 
   return (
-    <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div>
-          <h2 style={{ color: '#0f172a', fontSize: '20px', fontWeight: 600, margin: 0 }}>Credentials</h2>
-          <p style={{ color: '#64748b', fontSize: '12px', fontWeight: 600, margin: '4px 0 0' }}>Manage tenant login email / access-code pairs</p>
-        </div>
-        <button onClick={() => setShowForm(!showForm)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px', background: '#15803d', border: 'none', borderRadius: '10px', color: 'white', fontSize: '13px', fontWeight: 700, cursor: 'pointer', boxShadow: 'none' }}>
-          <Plus size={16} />{showForm ? 'Cancel' : 'New Credential'}
-        </button>
-      </div>
-
+    <Page
+      eyebrow="Access"
+      title="Sign-in details"
+      text="The email and access code each organisation signs in with, and the direct link to its own sign-in page."
+      actions={<Button onClick={() => setAdding(true)}><Plus size={16} />New sign-in</Button>}
+    >
       <ErrorBanner message={error} onDismiss={() => setError('')} onRetry={load} />
 
-      {/* Create form */}
-      {showForm && (
-        <div style={{ background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '16px', padding: '20px' }}>
-          <p style={{ color: '#1e293b', fontSize: '14px', fontWeight: 700, margin: '0 0 16px' }}>New credential</p>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
-            <div>
-              <label style={labelStyle}>Organization *</label>
-              <select style={{ ...inputStyle, cursor: 'pointer' }} value={form.company_id} onChange={e => setForm(f => ({ ...f, company_id: e.target.value }))}>
-                <option value="">Select org…</option>
-                {orgs.map(o => <option key={o.schema_name} value={o.schema_name}>{o.display_name}</option>)}
-              </select>
-            </div>
-            <div>
-              <label style={labelStyle}>Label</label>
-              <input style={inputStyle} placeholder="Primary, Manager, etc." value={form.label} onChange={e => setForm(f => ({ ...f, label: e.target.value }))} />
-            </div>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
-            <div>
-              <label style={labelStyle}>Account holder name</label>
-              <input style={inputStyle} placeholder="Full name" value={form.full_name} onChange={e => setForm(f => ({ ...f, full_name: e.target.value }))} />
-            </div>
-            <div>
-              <label style={labelStyle}>Account role</label>
-              <select style={{ ...inputStyle, cursor: 'pointer' }} value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))}>
-                <option value="admin">Admin — full organization access</option>
-                <option value="analyst">Analyst — monitoring & reports</option>
-                <option value="viewer">Viewer — read-only</option>
-              </select>
-            </div>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
-            <div>
-              <label style={labelStyle}>Email *</label>
-              <input type="email" style={inputStyle} placeholder="Login email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
-            </div>
-            <div>
-              <label style={labelStyle}>Access Code (password) <span style={{ color: '#475569', fontWeight: 600 }}>(blank = auto-generate)</span></label>
-              <input style={inputStyle} placeholder="Auto-generated if blank" value={form.access_code} onChange={e => setForm(f => ({ ...f, access_code: e.target.value }))} />
-            </div>
-          </div>
-          <button onClick={handleCreate} disabled={saving || !form.company_id || !form.email} style={{ padding: '12px 24px', background: '#15803d', border: 'none', borderRadius: '10px', color: 'white', fontSize: '13px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', opacity: saving ? 0.6 : 1 }}>
-            {saving ? <div style={{ width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} /> : <><Check size={15} />Generate credential</>}
-          </button>
-        </div>
-      )}
-
-      {/* Credentials list */}
-      {loading ? (
-        <div style={{ textAlign: 'center', padding: '60px', color: '#64748b' }}>Loading…</div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {Object.keys(grouped).length === 0 && (
-            <div style={{ textAlign: 'center', padding: '60px', color: '#475569' }}>No credentials yet.</div>
-          )}
-          {Object.entries(grouped).map(([companyId, credList]) => {
-            const org = orgs.find(o => o.schema_name === companyId);
-            return (
-              <div key={companyId} style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '14px', overflow: 'hidden' }}>
-                <div style={{ padding: '12px 20px', borderBottom: '1px solid #f1f5f9', background: '#f8fafc', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                  <Shield size={15} color="#16a34a" />
-                  <span style={{ color: '#0f172a', fontSize: '14px', fontWeight: 600 }}>{org?.display_name || companyId}</span>
-                  <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>({credList.length} credentials)</span>
-                  <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <code style={{ fontSize: '11px', color: '#475569', background: '#ffffff', border: '1px solid #e2e8f0', padding: '3px 8px', borderRadius: '6px' }}>
-                      {`${window.location.origin}/login?tenant=${companyId}`}
-                    </code>
-                    <button
-                      onClick={() => copy(`${window.location.origin}/login?tenant=${companyId}`, `link-${companyId}`)}
-                      title="Copy Direct Tenant Access Link"
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px',
-                        background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '6px',
-                        color: copied === `link-${companyId}` ? '#16a34a' : '#334155', fontSize: '11px', fontWeight: 700, cursor: 'pointer',
-                      }}
-                    >
-                      {copied === `link-${companyId}` ? <Check size={12} color="#16a34a" /> : <Copy size={12} />}
-                      {copied === `link-${companyId}` ? 'Link Copied!' : 'Copy Direct Link'}
-                    </button>
-                  </div>
+      {loading ? <Loading>Loading sign-in details…</Loading> : Object.keys(grouped).length === 0 ? (
+        <Empty>No sign-in details yet. Onboarding creates the first one for each organisation, or add one with “New sign-in”.</Empty>
+      ) : Object.entries(grouped).map(([companyId, list]) => {
+        const org = orgs.find((o) => o.schema_name === companyId);
+        return (
+          <Card key={companyId} className="overflow-hidden">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 px-6 py-4 bg-gray-50 border-b border-gray-100">
+              <div className="flex items-center gap-3">
+                <span className="w-9 h-9 rounded-xl bg-green-50 border border-green-200 text-green-700 flex items-center justify-center"><Shield size={16} /></span>
+                <div>
+                  <p className="font-semibold text-gray-900">{org?.display_name || companyId}</p>
+                  <p className="text-xs text-gray-500">{list.length} sign-in{list.length === 1 ? '' : 's'}</p>
                 </div>
-                {credList.map(cred => (
-                  <div key={cred.id} style={{ display: 'flex', alignItems: 'center', padding: '14px 20px', borderBottom: '1px solid rgba(255,255,255,0.03)', gap: '16px' }}>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                        <span style={{ color: '#1e293b', fontSize: '13px', fontWeight: 600 }}>{cred.full_name ? `${cred.full_name} — ` : ''}{cred.email}</span>
-                        <span style={{ fontSize: '11px', fontWeight: 700, padding: '1px 7px', borderRadius: '5px', background: 'rgba(59,130,246,0.1)', color: '#60a5fa', border: '1px solid rgba(59,130,246,0.15)', letterSpacing: '0' }}>{cred.label}</span>
-                        <span style={{ fontSize: '11px', fontWeight: 700, padding: '1px 7px', borderRadius: '5px', background: 'rgba(22,163,74,0.08)', color: '#16a34a', border: '1px solid rgba(22,163,74,0.15)', letterSpacing: '0' }}>{cred.role || 'admin'}</span>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        {revealed[cred.id] ? (
-                          <>
-                            <code style={{ fontSize: '12px', color: '#15803d', fontFamily: 'var(--font-mono)', background: 'rgba(22,163,74,0.08)', padding: '2px 8px', borderRadius: '6px', fontWeight: 700 }}>{revealed[cred.id]}</code>
-                            <span style={{ fontSize: '11px', color: '#ef4444', fontWeight: 600 }}>Copy now — won't be shown again</span>
-                          </>
-                        ) : (
-                          <code style={{ fontSize: '12px', color: '#94a3b8', fontFamily: 'var(--font-mono)', background: '#ffffff', padding: '2px 8px', borderRadius: '6px', letterSpacing: '2px' }}>••••••••••</code>
-                        )}
-                        <span style={{ fontSize: '11px', color: '#475569' }}>Created {new Date(cred.created_at).toLocaleDateString()}</span>
-                      </div>
+              </div>
+              <div className="flex items-center gap-2 min-w-0">
+                <code className="text-xs text-gray-600 bg-white border border-gray-200 px-2.5 py-1.5 rounded-lg truncate">{link(companyId)}</code>
+                <Button variant="secondary" className="!px-3 !py-1.5 text-xs" onClick={() => copy(link(companyId), `link-${companyId}`)}>
+                  {copied === `link-${companyId}` ? <><Check size={13} />Copied</> : <><Copy size={13} />Copy link</>}
+                </Button>
+              </div>
+            </div>
+            <ul className="divide-y divide-gray-100">
+              {list.map((cred) => (
+                <li key={cred.id} className="flex flex-col md:flex-row md:items-center gap-3 px-6 py-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-semibold text-gray-900">{cred.full_name || cred.email}</span>
+                      {cred.full_name && <span className="text-sm text-gray-500">{cred.email}</span>}
+                      <Pill>{cred.label}</Pill>
+                      <Pill tone="good">{ROLES.find((r) => r.id === cred.role)?.label || cred.role || 'Admin'}</Pill>
                     </div>
-                    <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
-                      <button onClick={() => copy(cred.email, `email-${cred.id}`)} title="Copy email" style={{ padding: '7px', background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '8px', cursor: 'pointer', color: copied === `email-${cred.id}` ? '#16a34a' : '#6b7280', display: 'flex' }}>
-                        {copied === `email-${cred.id}` ? <Check size={13} /> : <Copy size={13} />}
-                      </button>
-                      {revealed[cred.id] && (
-                        <button onClick={() => copy(revealed[cred.id], `code-${cred.id}`)} title="Copy code" style={{ padding: '7px', background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '8px', cursor: 'pointer', color: copied === `code-${cred.id}` ? '#16a34a' : '#6b7280', display: 'flex' }}>
-                          {copied === `code-${cred.id}` ? <Check size={13} /> : <Key size={13} />}
-                        </button>
-                      )}
-                      <button onClick={() => handleRotate(cred.id)} disabled={rotatingId === cred.id} title="Issue a new access code" style={{ padding: '7px', background: '#ffffff', border: '1px solid #cbd5e1', borderRadius: '8px', cursor: 'pointer', color: '#6b7280', display: 'flex', opacity: rotatingId === cred.id ? 0.5 : 1 }}>
-                        <RefreshCw size={13} />
-                      </button>
-                      <button onClick={() => handleDelete(cred.id)} style={{ padding: '7px', background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.1)', borderRadius: '8px', cursor: 'pointer', color: '#ef4444', display: 'flex' }}>
-                        <Trash2 size={13} />
-                      </button>
+                    <div className="flex flex-wrap items-center gap-2 mt-1.5 text-xs text-gray-500">
+                      {revealed[cred.id] ? (
+                        <><code className="font-mono text-sm text-green-800 bg-green-50 border border-green-200 px-2 py-0.5 rounded-md">{revealed[cred.id]}</code><span className="text-red-700 font-medium">Copy it now: it is not shown again</span></>
+                      ) : <code className="font-mono text-gray-400 tracking-widest">••••••••••</code>}
+                      <span>Created {new Date(cred.created_at).toLocaleDateString()}</span>
                     </div>
                   </div>
-                ))}
-              </div>
-            );
-          })}
-        </div>
-      )}
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-    </div>
+                  <div className="flex gap-1 shrink-0">
+                    <IconButton label="Copy email" onClick={() => copy(cred.email, `email-${cred.id}`)}>{copied === `email-${cred.id}` ? <Check size={15} /> : <Copy size={15} />}</IconButton>
+                    {revealed[cred.id] && <IconButton label="Copy access code" onClick={() => copy(revealed[cred.id], `code-${cred.id}`)}>{copied === `code-${cred.id}` ? <Check size={15} /> : <Key size={15} />}</IconButton>}
+                    <IconButton label="Issue a new access code" disabled={busyId === cred.id} onClick={() => rotate(cred.id)}><RefreshCw size={15} /></IconButton>
+                    <IconButton label="Delete" danger onClick={() => remove(cred)}><Trash2 size={15} /></IconButton>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        );
+      })}
+
+      {adding && <NewCredential orgs={orgs} onClose={() => setAdding(false)} onSaved={async (cred) => { setAdding(false); await load(); if (cred?.access_code) setRevealed((r) => ({ ...r, [cred.id]: cred.access_code })); }} />}
+    </Page>
   );
 };
+
+function NewCredential({ orgs, onClose, onSaved }) {
+  const [form, setForm] = useState(EMPTY);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+  const errors = { email: form.email ? emailError(form.email) : null, access_code: accessCodeError(form.access_code.trim()) };
+  const valid = form.company_id && form.email && !errors.email && !errors.access_code;
+
+  const save = async () => {
+    setSaving(true); setError('');
+    try { onSaved(await createCredential({ ...form, access_code: form.access_code.trim() })); } catch (e) { setError(e.message); setSaving(false); }
+  };
+
+  return (
+    <Modal title="New sign-in" text="The person signs in with this email and access code on the organisation's own sign-in page." onClose={onClose}
+      footer={<><Button variant="secondary" onClick={onClose}>Cancel</Button><Button onClick={save} disabled={!valid || saving}>{saving ? 'Creating…' : 'Create sign-in'}</Button></>}>
+      {error && <p className="text-sm text-red-800 bg-red-50 border border-red-200 rounded-xl px-4 py-3">{error}</p>}
+      <Field label="Organisation">
+        <select className={inputCls} value={form.company_id} onChange={set('company_id')}>
+          <option value="">Choose an organisation</option>
+          {orgs.map((o) => <option key={o.schema_name} value={o.schema_name}>{o.display_name}</option>)}
+        </select>
+      </Field>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Field label="Name"><input className={inputCls} value={form.full_name} onChange={set('full_name')} /></Field>
+        <Field label="Label" hint="e.g. Primary, Estate manager"><input className={inputCls} value={form.label} onChange={set('label')} /></Field>
+      </div>
+      <Field label="Email" error={errors.email}><input type="email" className={inputCls} value={form.email} onChange={set('email')} /></Field>
+      <Field label="Access code" hint="Leave blank to generate one." error={errors.access_code}><input className={`${inputCls} font-mono`} value={form.access_code} onChange={set('access_code')} /></Field>
+      <Field label="Role">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          {ROLES.map((r) => (
+            <button key={r.id} type="button" onClick={() => setForm((f) => ({ ...f, role: r.id }))}
+              className={`text-left px-3 py-2.5 rounded-xl border ${form.role === r.id ? 'border-green-600 bg-green-50' : 'border-gray-300 bg-white hover:border-gray-400'}`}>
+              <span className="block text-sm font-semibold text-gray-900">{r.label}</span>
+              <span className="block text-xs text-gray-500">{r.text}</span>
+            </button>
+          ))}
+        </div>
+      </Field>
+    </Modal>
+  );
+}
 
 export default Credentials;

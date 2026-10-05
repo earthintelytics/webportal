@@ -21,3 +21,6 @@ export const chipStyle = (active, color = '#15803d', size = 'md') => ({
   transition: 'all 0.15s ease',
   fontFamily: "'Inter', sans-serif",
 });
+
+// Text inputs and selects in the admin console (same look as Scheduler and AI settings).
+export const inputCls = 'w-full px-3.5 py-2.5 rounded-xl border border-gray-300 bg-white text-sm text-gray-900 outline-none focus:border-green-600 disabled:bg-gray-50';

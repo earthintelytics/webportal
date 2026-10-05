@@ -1,351 +1,207 @@
-import React, { useState, useEffect, useRef } from 'react';
-import {
-  Users, Plus, Trash2, RefreshCw, X, Check,
-  Search, Shield, KeyRound, UserCheck, UserX, Copy,
-  ChevronDown, Eye, EyeOff, Edit2, Lock
-} from 'lucide-react';
-import {
-  fetchUsers, createUser, updateUser,
-  toggleUserActive, resetUserPassword, deleteUser
-} from '../../services/adminApi';
+import { useEffect, useRef, useState } from 'react';
+import { Plus, Trash2, RefreshCw, Search, UserCheck, UserX, Copy, Check, Eye, EyeOff, Pencil, Lock } from 'lucide-react';
+import { fetchUsers, createUser, updateUser, toggleUserActive, resetUserPassword, deleteUser } from '../../services/adminApi';
 import { useConfirm } from '../components/ConfirmProvider';
 import ErrorBanner from '../components/ErrorBanner';
-import { emailError, accessCodeError, slugError } from '../components/validation';
+import { emailError } from '../components/validation';
+import { inputCls } from '../components/formHelpers';
+import { Page, Button, IconButton, Field, Pill, Modal, Table, Td, Empty, Loading, Note } from '../components/ui';
 
 const ACCOUNT_TYPES = [
-  { value: '',                     label: 'All Types' },
-  { value: 'platform_admin',       label: 'Platform Admin' },
-  { value: 'organization_owner',   label: 'Org Owner' },
-  { value: 'organization_member',  label: 'Org Member' },
-  { value: 'personal',             label: 'Personal' },
+  { value: 'platform_admin', label: 'Platform admin', tone: 'info' },
+  { value: 'organization_owner', label: 'Organisation owner', tone: 'good' },
+  { value: 'organization_member', label: 'Organisation member', tone: 'neutral' },
+  { value: 'personal', label: 'Personal', tone: 'neutral' },
 ];
+const typeOf = (v) => ACCOUNT_TYPES.find((t) => t.value === v) || ACCOUNT_TYPES[3];
+const EMPTY = { email: '', first_name: '', last_name: '', phone_number: '', account_type: 'personal', password: '', is_staff: false };
+const PAGE_SIZE = 50;
 
-const TYPE_CFG = {
-  platform_admin:       { color: '#7c3aed', bg: 'rgba(124,58,237,0.1)',  label: 'Platform Admin' },
-  organization_owner:   { color: '#0284c7', bg: 'rgba(2,132,199,0.1)',   label: 'Org Owner' },
-  organization_member:  { color: '#0f766e', bg: 'rgba(15,118,110,0.1)',  label: 'Org Member' },
-  personal:             { color: '#64748b', bg: 'rgba(100,116,139,0.1)', label: 'Personal' },
-};
-
-const TypeBadge = ({ type }) => {
-  const cfg = TYPE_CFG[type] || TYPE_CFG.personal;
-  return (
-    <span style={{
-      fontSize: '11px', fontWeight: 600, padding: '2px 10px',
-      borderRadius: '20px', letterSpacing: '0',
-      color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.color}33`,
-    }}>{cfg.label}</span>
-  );
-};
-
-const EMPTY_FORM = {
-  email: '', first_name: '', last_name: '', phone_number: '',
-  account_type: 'personal', password: '', is_staff: false,
-};
-
+/** Platform user accounts (Django users): create, edit, disable, reset passwords. */
 const UsersPage = () => {
   const confirm = useConfirm();
   const [users, setUsers] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [notice, setNotice] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
-  const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState(EMPTY_FORM);
-  const [saving, setSaving] = useState(false);
-  const [showPass, setShowPass] = useState(false);
-  const [resetResult, setResetResult] = useState(null);
-  const [editUser, setEditUser] = useState(null);
-  const [copied, setCopied] = useState('');
-  const searchRef = useRef(null);
-  const debounceRef = useRef(null);
+  const [editing, setEditing] = useState(null); // null | 'new' | user
+  const [newPassword, setNewPassword] = useState(null);
+  const [copied, setCopied] = useState(false);
+  const debounce = useRef(null);
 
   const load = async () => {
     setLoading(true);
     try {
       const data = await fetchUsers({ accountType: typeFilter || undefined, search: search || undefined, page });
-      setUsers(data.items || []);
-      setTotal(data.total || 0);
-    } catch (e) { setError(e.message); }
-    finally { setLoading(false); }
+      setUsers(data.items || []); setTotal(data.total || 0);
+    } catch (e) { setError(e.message); } finally { setLoading(false); }
   };
-
   useEffect(() => {
-    clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(load, 350);
-  }, [typeFilter, search, page]);
+    clearTimeout(debounce.current);
+    debounce.current = setTimeout(load, 350);
+    return () => clearTimeout(debounce.current);
+  }, [typeFilter, search, page]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const showSuccess = (msg) => { setSuccess(msg); setTimeout(() => setSuccess(''), 4000); };
+  const flash = (msg) => { setNotice(msg); setTimeout(() => setNotice(''), 4000); };
+  const copy = async (text) => { try { await navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch { setError('Copy failed: select the password and copy it.'); } };
 
-  const copy = async (text, key) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopied(key);
-      setTimeout(() => setCopied(''), 2000);
-    } catch (e) {
-      setError('Could not copy to clipboard — your browser may be blocking clipboard access.');
-    }
+  const toggle = async (user) => {
+    try { const res = await toggleUserActive(user.id); flash(`${res.email} is now ${res.is_active ? 'enabled' : 'disabled'}.`); await load(); } catch (e) { setError(e.message); }
+  };
+  const resetPw = async (user) => {
+    if (!(await confirm(`Reset the password for ${user.email}? The current password stops working immediately.`))) return;
+    try { setNewPassword(await resetUserPassword(user.id)); } catch (e) { setError(e.message); }
+  };
+  const remove = async (user) => {
+    if (!(await confirm(`Delete ${user.email} permanently? This cannot be undone.`))) return;
+    try { await deleteUser(user.id); flash(`${user.email} deleted.`); await load(); } catch (e) { setError(e.message); }
   };
 
-  const handleCreate = async () => {
-    if (!form.email) return;
-    const invalid = emailError(form.email) || (form.password && form.password.length < 8 ? 'Use a password of at least 8 characters, or leave it blank to generate one.' : null);
-    if (invalid) { setError(invalid); return; }
-    setSaving(true);
+  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+  return (
+    <Page
+      eyebrow="Access"
+      title="User accounts"
+      text="Everyone with an account on the platform: create accounts, change their type, disable them or reset a password."
+      actions={<><Button variant="secondary" onClick={load}><RefreshCw size={15} />Refresh</Button><Button onClick={() => setEditing('new')}><Plus size={16} />New user</Button></>}
+    >
+      <ErrorBanner message={error} onDismiss={() => setError('')} onRetry={load} />
+      {notice && <Note tone="good">{notice}</Note>}
+      {newPassword && (
+        <Note tone="warning">
+          <div className="flex flex-wrap items-center gap-3">
+            <span>New password for <strong>{newPassword.email}</strong>. Share it securely; it is not shown again.</span>
+            <code className="font-mono text-sm bg-white border border-amber-200 px-2.5 py-1 rounded-lg">{newPassword.new_password}</code>
+            <Button variant="secondary" className="!px-3 !py-1.5 text-xs" onClick={() => copy(newPassword.new_password)}>{copied ? <><Check size={13} />Copied</> : <><Copy size={13} />Copy</>}</Button>
+            <button type="button" onClick={() => setNewPassword(null)} className="text-xs underline">Dismiss</button>
+          </div>
+        </Note>
+      )}
+
+      <div className="flex flex-wrap items-center gap-3">
+        <label className="relative flex-1 min-w-[220px] max-w-sm">
+          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input className={`${inputCls} pl-10`} value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="Search by email" />
+        </label>
+        <select className={`${inputCls} w-auto`} value={typeFilter} onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }}>
+          <option value="">All account types</option>
+          {ACCOUNT_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+        </select>
+        <span className="ml-auto text-sm text-gray-500">{total.toLocaleString()} users</span>
+      </div>
+
+      {loading ? <Loading>Loading users…</Loading> : users.length === 0 ? <Empty>No users match.</Empty> : (
+        <Table columns={[{ label: 'User' }, { label: 'Account type' }, { label: 'Signs in with' }, { label: 'Status' }, { label: 'Joined' }, { label: '', className: 'w-40' }]}>
+          {users.map((u) => {
+            const t = typeOf(u.account_type);
+            const name = `${u.first_name || ''} ${u.last_name || ''}`.trim();
+            const joined = u.date_joined || u.created_at;
+            return (
+              <tr key={u.id} className={u.is_active ? '' : 'bg-gray-50/60'}>
+                <Td>
+                  <p className="font-semibold text-gray-900">{name || u.email}</p>
+                  {name && <p className="text-xs text-gray-500">{u.email}</p>}
+                  {u.is_staff && <p className="text-xs text-sky-700 mt-0.5">Django admin access</p>}
+                </Td>
+                <Td><Pill tone={t.tone}>{t.label}</Pill></Td>
+                <Td className="text-gray-600 capitalize">{u.auth_provider || 'email'}</Td>
+                <Td><Pill tone={u.is_active ? 'good' : 'critical'}>{u.is_active ? 'Active' : 'Disabled'}</Pill></Td>
+                <Td className="text-gray-600">{joined ? new Date(joined).toLocaleDateString() : '—'}</Td>
+                <Td>
+                  <div className="flex justify-end gap-1">
+                    <IconButton label="Edit" onClick={() => setEditing({ ...u })}><Pencil size={15} /></IconButton>
+                    <IconButton label={u.is_active ? 'Disable' : 'Enable'} onClick={() => toggle(u)}>{u.is_active ? <UserX size={15} /> : <UserCheck size={15} />}</IconButton>
+                    <IconButton label="Reset password" onClick={() => resetPw(u)}><Lock size={15} /></IconButton>
+                    <IconButton label="Delete" danger onClick={() => remove(u)}><Trash2 size={15} /></IconButton>
+                  </div>
+                </Td>
+              </tr>
+            );
+          })}
+        </Table>
+      )}
+
+      {pages > 1 && (
+        <div className="flex items-center justify-end gap-3 text-sm text-gray-600">
+          <Button variant="secondary" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>Previous</Button>
+          <span>Page {page} of {pages}</span>
+          <Button variant="secondary" disabled={page >= pages} onClick={() => setPage((p) => p + 1)}>Next</Button>
+        </div>
+      )}
+
+      {editing && (
+        <UserModal
+          user={editing === 'new' ? null : editing}
+          onClose={() => setEditing(null)}
+          onSaved={async (result, created) => {
+            setEditing(null);
+            if (created && result?.generated_password) setNewPassword({ email: result.email, new_password: result.generated_password });
+            flash(created ? `User ${result.email} created.` : 'User updated.');
+            await load();
+          }}
+        />
+      )}
+    </Page>
+  );
+};
+
+function UserModal({ user, onClose, onSaved }) {
+  const isNew = !user;
+  const [form, setForm] = useState(user || EMPTY);
+  const [showPass, setShowPass] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }));
+  const errors = {
+    email: isNew && form.email ? emailError(form.email) : null,
+    password: isNew && form.password && form.password.length < 8 ? 'At least 8 characters, or leave blank to generate one.' : null,
+  };
+  const valid = (!isNew || form.email) && !errors.email && !errors.password;
+
+  const save = async () => {
+    setSaving(true); setError('');
     try {
-      const result = await createUser(form);
-      if (result.generated_password && !form.password) {
-        setResetResult({ email: result.email, new_password: result.generated_password });
+      if (isNew) onSaved(await createUser(form), true);
+      else {
+        await updateUser(user.id, { first_name: form.first_name, last_name: form.last_name, phone_number: form.phone_number, account_type: form.account_type, is_staff: form.is_staff });
+        onSaved(null, false);
       }
-      setForm(EMPTY_FORM);
-      setShowForm(false);
-      showSuccess(`User ${result.email} created.`);
-      await load();
-    } catch (e) { setError(e.message); }
-    finally { setSaving(false); }
-  };
-
-  const handleUpdate = async () => {
-    if (!editUser) return;
-    setSaving(true);
-    try {
-      await updateUser(editUser.id, {
-        first_name: editUser.first_name,
-        last_name: editUser.last_name,
-        phone_number: editUser.phone_number,
-        account_type: editUser.account_type,
-        is_staff: editUser.is_staff,
-      });
-      setEditUser(null);
-      showSuccess('User updated.');
-      await load();
-    } catch (e) { setError(e.message); }
-    finally { setSaving(false); }
-  };
-
-  const handleToggle = async (user) => {
-    try {
-      const res = await toggleUserActive(user.id);
-      showSuccess(`${res.email} is now ${res.is_active ? 'enabled' : 'disabled'}.`);
-      await load();
-    } catch (e) { setError(e.message); }
-  };
-
-  const handleResetPw = async (user) => {
-    if (!(await confirm(`Reset the password for ${user.email}? Their current password will stop working immediately.`))) return;
-    try {
-      const res = await resetUserPassword(user.id);
-      setResetResult(res);
-    } catch (e) { setError(e.message); }
-  };
-
-  const handleDelete = async (user) => {
-    if (!(await confirm(`Permanently delete ${user.email}? This cannot be undone.`))) return;
-    try {
-      await deleteUser(user.id);
-      showSuccess(`${user.email} deleted.`);
-      await load();
-    } catch (e) { setError(e.message); }
-  };
-
-  const inp = {
-    width: '100%', padding: '9px 12px', background: '#fff',
-    border: '1px solid #cbd5e1', borderRadius: '10px',
-    color: '#1e293b', fontSize: '13px', outline: 'none', boxSizing: 'border-box',
-  };
-  const lbl = {
-    display: 'block', fontSize: '11px', fontWeight: 600, color: '#64748b',
-    letterSpacing: '0', marginBottom: '5px',
+    } catch (e) { setError(e.message); setSaving(false); }
   };
 
   return (
-    <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div>
-          <h2 style={{ color: '#0f172a', fontSize: '20px', fontWeight: 600, margin: 0 }}>User accounts</h2>
-          <p style={{ color: '#64748b', fontSize: '12px', fontWeight: 600, margin: '4px 0 0' }}>
-            Create, manage and control all platform user accounts from here
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button onClick={load} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '9px 14px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', color: '#475569', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>
-            <RefreshCw size={13} /> Refresh
-          </button>
-          <button onClick={() => { setShowForm(true); setEditUser(null); }} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '9px 18px', background: '#15803d', border: 'none', borderRadius: '10px', color: 'white', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>
-            <Plus size={15} /> New User
-          </button>
-        </div>
+    <Modal title={isNew ? 'New user' : `Edit ${user.email}`} onClose={onClose}
+      footer={<><Button variant="secondary" onClick={onClose}>Cancel</Button><Button onClick={save} disabled={!valid || saving}>{saving ? 'Saving…' : isNew ? 'Create user' : 'Save changes'}</Button></>}>
+      {error && <p className="text-sm text-red-800 bg-red-50 border border-red-200 rounded-xl px-4 py-3">{error}</p>}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Field label="First name"><input className={inputCls} value={form.first_name || ''} onChange={set('first_name')} /></Field>
+        <Field label="Last name"><input className={inputCls} value={form.last_name || ''} onChange={set('last_name')} /></Field>
       </div>
-
-      {/* Alerts */}
-      <ErrorBanner message={error} onDismiss={() => setError('')} onRetry={load} />
-      {success && (
-        <div style={{ padding: '12px 16px', background: 'rgba(22,163,74,0.08)', border: '1px solid rgba(22,163,74,0.2)', borderRadius: '10px', color: '#16a34a', fontSize: '13px', display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <Check size={14} />{success}
-        </div>
-      )}
-
-      {/* Password Reset Result */}
-      {resetResult && (
-        <div style={{ padding: '16px 20px', background: '#fefce8', border: '1px solid #fde047', borderRadius: '12px' }}>
-          <div style={{ fontSize: '12px', fontWeight: 600, color: '#854d0e', letterSpacing: '0', marginBottom: '8px' }}>
-            🔑 New Password Generated — Share Securely
-          </div>
-          <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
-            <div><span style={{ fontSize: '11px', color: '#713f12' }}>Email: </span><code style={{ fontSize: '12px', fontWeight: 700 }}>{resetResult.email}</code></div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '11px', color: '#713f12' }}>Password: </span>
-              <code style={{ fontSize: '14px', fontWeight: 600, letterSpacing: '0', padding: '3px 10px', background: '#fff', border: '1px solid #fde047', borderRadius: '6px' }}>{resetResult.new_password}</code>
-              <button onClick={() => copy(resetResult.new_password, 'pw')} style={{ padding: '5px', background: 'none', border: '1px solid #fde047', borderRadius: '6px', cursor: 'pointer', color: copied === 'pw' ? '#16a34a' : '#713f12', display: 'flex' }}>
-                {copied === 'pw' ? <Check size={13} /> : <Copy size={13} />}
-              </button>
-            </div>
-          </div>
-          <button onClick={() => setResetResult(null)} style={{ marginTop: '10px', fontSize: '11px', color: '#713f12', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>Dismiss</button>
-        </div>
-      )}
-
-      {/* Create Form */}
-      {showForm && (
-        <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-            <p style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: '#0f172a' }}>Create new user account</p>
-            <button onClick={() => setShowForm(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}><X size={16} /></button>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
-            <div><label style={lbl}>First name</label><input style={inp} value={form.first_name} onChange={e => setForm(f => ({ ...f, first_name: e.target.value }))} placeholder="First name" /></div>
-            <div><label style={lbl}>Last name</label><input style={inp} value={form.last_name} onChange={e => setForm(f => ({ ...f, last_name: e.target.value }))} placeholder="Last name" /></div>
-            <div><label style={lbl}>Email *</label><input type="email" style={inp} value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="Account email" /></div>
-            <div><label style={lbl}>Phone number</label><input style={inp} value={form.phone_number} onChange={e => setForm(f => ({ ...f, phone_number: e.target.value }))} placeholder="+234..." /></div>
-            <div>
-              <label style={lbl}>Account type</label>
-              <select style={{ ...inp, cursor: 'pointer' }} value={form.account_type} onChange={e => setForm(f => ({ ...f, account_type: e.target.value }))}>
-                {ACCOUNT_TYPES.slice(1).map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-              </select>
-            </div>
-            <div>
-              <label style={lbl}>Password <span style={{ color: '#94a3b8', fontWeight: 600, textTransform: 'none' }}>(blank = auto-generate)</span></label>
-              <div style={{ position: 'relative' }}>
-                <input type={showPass ? 'text' : 'password'} style={{ ...inp, paddingRight: '38px' }} value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} placeholder="Auto-generated if blank" />
-                <button onClick={() => setShowPass(s => !s)} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', display: 'flex', padding: 0 }}>
-                  {showPass ? <EyeOff size={14} /> : <Eye size={14} />}
-                </button>
-              </div>
-            </div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-            <input type="checkbox" id="is_staff" checked={form.is_staff} onChange={e => setForm(f => ({ ...f, is_staff: e.target.checked }))} style={{ accentColor: '#0f172a' }} />
-            <label htmlFor="is_staff" style={{ fontSize: '12px', fontWeight: 600, color: '#475569', cursor: 'pointer' }}>Django Staff access (Django Admin panel)</label>
-          </div>
-          <button onClick={handleCreate} disabled={saving || !form.email} style={{ padding: '11px 24px', background: '#15803d', border: 'none', borderRadius: '10px', color: 'white', fontSize: '13px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', opacity: saving ? 0.6 : 1 }}>
-            {saving ? <div style={{ width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} /> : <><Shield size={14} />Create account</>}
-          </button>
-        </div>
-      )}
-
-      {/* Edit User Drawer */}
-      {editUser && (
-        <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-            <p style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: '#0f172a' }}>Edit — {editUser.email}</p>
-            <button onClick={() => setEditUser(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}><X size={16} /></button>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
-            <div><label style={lbl}>First name</label><input style={inp} value={editUser.first_name} onChange={e => setEditUser(u => ({ ...u, first_name: e.target.value }))} /></div>
-            <div><label style={lbl}>Last name</label><input style={inp} value={editUser.last_name} onChange={e => setEditUser(u => ({ ...u, last_name: e.target.value }))} /></div>
-            <div><label style={lbl}>Phone</label><input style={inp} value={editUser.phone_number || ''} onChange={e => setEditUser(u => ({ ...u, phone_number: e.target.value }))} /></div>
-            <div>
-              <label style={lbl}>Account type</label>
-              <select style={{ ...inp, cursor: 'pointer' }} value={editUser.account_type} onChange={e => setEditUser(u => ({ ...u, account_type: e.target.value }))}>
-                {ACCOUNT_TYPES.slice(1).map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-              </select>
-            </div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-            <input type="checkbox" id="edit_staff" checked={!!editUser.is_staff} onChange={e => setEditUser(u => ({ ...u, is_staff: e.target.checked }))} style={{ accentColor: '#0f172a' }} />
-            <label htmlFor="edit_staff" style={{ fontSize: '12px', fontWeight: 600, color: '#475569', cursor: 'pointer' }}>Django Staff access</label>
-          </div>
-          <button onClick={handleUpdate} disabled={saving} style={{ padding: '11px 24px', background: '#15803d', border: 'none', borderRadius: '10px', color: 'white', fontSize: '13px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', opacity: saving ? 0.6 : 1 }}>
-            {saving ? <div style={{ width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} /> : <><Check size={14} />Save changes</>}
-          </button>
-        </div>
-      )}
-
-      {/* Filters */}
-      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
-        <div style={{ position: 'relative', flex: 1, minWidth: '200px', maxWidth: '340px' }}>
-          <Search size={13} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-          <input ref={searchRef} value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} placeholder="Search by email…" style={{ ...inp, paddingLeft: '34px' }} />
-        </div>
-        <select value={typeFilter} onChange={e => { setTypeFilter(e.target.value); setPage(1); }} style={{ ...inp, width: 'auto', cursor: 'pointer', paddingRight: '28px' }}>
-          {ACCOUNT_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-        </select>
-        <span style={{ color: '#94a3b8', fontSize: '12px', fontWeight: 600, marginLeft: 'auto' }}>{total.toLocaleString()} users</span>
+      {isNew && <Field label="Email" error={errors.email}><input type="email" className={inputCls} value={form.email} onChange={set('email')} /></Field>}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Field label="Phone"><input className={inputCls} value={form.phone_number || ''} onChange={set('phone_number')} /></Field>
+        <Field label="Account type">
+          <select className={inputCls} value={form.account_type} onChange={set('account_type')}>
+            {ACCOUNT_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+          </select>
+        </Field>
       </div>
-
-      {/* Users Table */}
-      <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '14px', overflow: 'hidden' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 140px 130px 80px 140px 120px', padding: '10px 16px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-          {['User', 'Account Type', 'Auth', 'Status', 'Joined', 'Actions'].map(h => (
-            <span key={h} style={{ fontSize: '11px', fontWeight: 600, color: '#64748b', letterSpacing: '0' }}>{h}</span>
-          ))}
-        </div>
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>Loading users…</div>
-        ) : users.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8' }}>No users found</div>
-        ) : (
-          <div style={{ overflowY: 'auto', maxHeight: '500px' }}>
-            {users.map(user => (
-              <div key={user.id} style={{ display: 'grid', gridTemplateColumns: '1fr 140px 130px 80px 140px 120px', padding: '13px 16px', borderBottom: '1px solid #f1f5f9', alignItems: 'center', transition: 'background 0.1s' }}
-                onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'}
-                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-              >
-                {/* User info */}
-                <div>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#0f172a' }}>{user.first_name || user.last_name ? `${user.first_name} ${user.last_name}`.trim() : '—'}</div>
-                  <div style={{ fontSize: '11px', color: '#64748b', marginTop: '1px' }}>{user.email}</div>
-                  {user.is_staff && <span style={{ fontSize: '11px', fontWeight: 600, color: '#7c3aed', letterSpacing: '0' }}>Django staff</span>}
-                </div>
-                <TypeBadge type={user.account_type} />
-                <span style={{ fontSize: '11px', color: '#64748b', fontFamily: 'var(--font-mono)', textTransform: 'capitalize' }}>{user.auth_provider || 'email'}</span>
-                <span style={{ fontSize: '11px', color: user.is_active ? '#16a34a' : '#dc2626', fontWeight: 700 }}>{user.is_active ? 'Active' : 'Disabled'}</span>
-                <span style={{ fontSize: '11px', color: '#64748b' }}>{user.date_joined ? new Date(user.date_joined).toLocaleDateString() : user.created_at ? new Date(user.created_at).toLocaleDateString() : '—'}</span>
-                <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
-                  <button onClick={() => { setEditUser({ ...user }); setShowForm(false); }} title="Edit" style={{ padding: '6px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '7px', cursor: 'pointer', color: '#475569', display: 'flex' }}>
-                    <Edit2 size={12} />
-                  </button>
-                  <button onClick={() => handleToggle(user)} title={user.is_active ? 'Disable' : 'Enable'} style={{ padding: '6px', background: user.is_active ? 'rgba(220,38,38,0.06)' : 'rgba(22,163,74,0.06)', border: `1px solid ${user.is_active ? 'rgba(220,38,38,0.2)' : 'rgba(22,163,74,0.2)'}`, borderRadius: '7px', cursor: 'pointer', color: user.is_active ? '#dc2626' : '#16a34a', display: 'flex' }}>
-                    {user.is_active ? <UserX size={12} /> : <UserCheck size={12} />}
-                  </button>
-                  <button onClick={() => handleResetPw(user)} title="Reset Password" style={{ padding: '6px', background: 'rgba(124,58,237,0.06)', border: '1px solid rgba(124,58,237,0.2)', borderRadius: '7px', cursor: 'pointer', color: '#7c3aed', display: 'flex' }}>
-                    <Lock size={12} />
-                  </button>
-                  <button onClick={() => handleDelete(user)} title="Delete" style={{ padding: '6px', background: 'rgba(220,38,38,0.06)', border: '1px solid rgba(220,38,38,0.15)', borderRadius: '7px', cursor: 'pointer', color: '#dc2626', display: 'flex' }}>
-                    <Trash2 size={12} />
-                  </button>
-                </div>
-              </div>
-            ))}
+      {isNew && (
+        <Field label="Password" hint="Leave blank to generate one." error={errors.password}>
+          <div className="relative">
+            <input type={showPass ? 'text' : 'password'} className={`${inputCls} pr-10`} value={form.password} onChange={set('password')} />
+            <button type="button" aria-label={showPass ? 'Hide password' : 'Show password'} onClick={() => setShowPass((s) => !s)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">{showPass ? <EyeOff size={15} /> : <Eye size={15} />}</button>
           </div>
-        )}
-      </div>
-
-      {/* Pagination */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-end' }}>
-        <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1} style={{ padding: '6px 14px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', color: '#475569', cursor: page <= 1 ? 'not-allowed' : 'pointer', fontSize: '12px', fontWeight: 700, opacity: page <= 1 ? 0.4 : 1 }}>← Prev</button>
-        <span style={{ color: '#475569', fontSize: '12px', fontWeight: 600 }}>Page {page} of {Math.ceil(total / 50) || 1}</span>
-        <button onClick={() => setPage(p => p + 1)} disabled={users.length < 50} style={{ padding: '6px 14px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', color: '#475569', cursor: users.length < 50 ? 'not-allowed' : 'pointer', fontSize: '12px', fontWeight: 700, opacity: users.length < 50 ? 0.4 : 1 }}>Next →</button>
-      </div>
-
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-    </div>
+        </Field>
+      )}
+      <label className="flex items-center gap-2 text-sm text-gray-800"><input type="checkbox" checked={!!form.is_staff} onChange={set('is_staff')} />Access to the Django admin</label>
+    </Modal>
   );
-};
+}
 
 export default UsersPage;
