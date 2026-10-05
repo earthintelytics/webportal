@@ -1100,7 +1100,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
 
   // Chat state
   const [chatMessages, setChatMessages] = useState([
-    { sender: 'assistant', text: "Hello! I am your Agro Monitoring Assistant. Ask me anything about crop indices, spatial variations, or time-series moisture anomalies." }
+    { sender: 'assistant', text: "Ask about your fields: crop condition, water, weather or alerts. Answers use your own monitoring data." }
   ]);
   const [chatInput, setChatInput] = useState('');
   const chatEndRef = useRef(null);
@@ -6257,7 +6257,7 @@ Context: ${context}.`;
                   <button
                     onClick={() => setChatMessages([{
                       sender: 'assistant',
-                      text: "Hello! I am your Farm AI Agronomic Advisor. Ask any question about your crop condition, soil moisture, disease risks, or choose a what-if scenario to simulate."
+                      text: "Ask about your crop condition, water or weather, or choose a what-if scenario. Answers use your own monitoring data."
                     }])}
                     className="px-3.5 py-1.5 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 text-xs font-bold text-gray-700 transition-colors shadow-xs flex items-center gap-1.5"
                   >

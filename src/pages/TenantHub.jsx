@@ -46,6 +46,8 @@ import {
 } from '../components/CropIcons';
 import { uploadOrganizationLogo } from '../services/adminApi';
 import { changePassword } from '../services/authApi';
+import { fetchTeam, addTeamMember, updateTeamMember, removeTeamMember } from '../services/teamApi';
+import { NotConnectedError } from '../services/datasetsApi';
 
 const CARD_PHOTOS = {
   'rs-ffb': '/crops/oil_palm.webp', 'management-ffb': '/crops/oil_palm.webp',
@@ -107,11 +109,10 @@ const TenantHub = ({ onSelectModule, onSignOut }) => {
     logoUrl: ''
   });
 
-  // Local state for team members
-  const [teamMembers, setTeamMembers] = useState([
-    { id: 1, email: 'agronomy@okomu.com', name: 'Agronomy Lead', role: 'Lead Agronomist', services: ['rs-ffb', 'rs-rubber', 'advisor'] },
-    { id: 2, email: 'sustainability@okomu.com', name: 'Sustainability Officer', role: 'Compliance Manager', services: ['eudr-check', 'carbon-ffb', 'forestry-intel'] },
-  ]);
+  // Team members come from the backend (G35); nothing is seeded or kept only here.
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [teamState, setTeamState] = useState('loading'); // loading | ready | not_connected | error
+  const [teamError, setTeamError] = useState('');
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [newUserForm, setNewUserForm] = useState({
     email: '',
@@ -165,6 +166,12 @@ const TenantHub = ({ onSelectModule, onSignOut }) => {
     }
   }, []);
 
+  useEffect(() => {
+    fetchTeam()
+      .then((rows) => { setTeamMembers(Array.isArray(rows) ? rows : []); setTeamState('ready'); })
+      .catch((e) => { setTeamState(e instanceof NotConnectedError ? 'not_connected' : 'error'); setTeamError(e.message); });
+  }, []);
+
   const handleLogoUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -173,42 +180,57 @@ const TenantHub = ({ onSelectModule, onSignOut }) => {
       const tenantSlug = tenantInfo.tenant;
       if (!tenantSlug) throw new Error('No organisation in this session');
       const res = await uploadOrganizationLogo(tenantSlug, file);
-      const newUrl = res?.logo_url || URL.createObjectURL(file);
-      setTenantInfo(prev => ({ ...prev, logoUrl: newUrl }));
-      localStorage.setItem('fi_logo_url', newUrl);
+      if (!res?.logo_url) throw new Error('The logo was not saved');
+      setTenantInfo(prev => ({ ...prev, logoUrl: res.logo_url }));
+      localStorage.setItem('fi_logo_url', res.logo_url);
     } catch (err) {
-      const localUrl = URL.createObjectURL(file);
-      setTenantInfo(prev => ({ ...prev, logoUrl: localUrl }));
-      localStorage.setItem('fi_logo_url', localUrl);
+      setTeamError(`Logo not saved: ${err.message}`);
     } finally {
       setLogoUploading(false);
     }
   };
 
-  const handleAddTeamMember = (e) => {
+  const handleAddTeamMember = async (e) => {
     e.preventDefault();
     if (!newUserForm.email) return;
-    const member = {
-      id: Date.now(),
-      email: newUserForm.email,
-      name: newUserForm.name || newUserForm.email.split('@')[0],
-      role: newUserForm.role,
-      services: newUserForm.assignedServices.length > 0 ? newUserForm.assignedServices : tenantInfo.allowedModules
-    };
-    setTeamMembers(prev => [...prev, member]);
-    setShowAddUserModal(false);
-    setNewUserForm({ email: '', name: '', role: 'Field Operator', password: '', assignedServices: [] });
+    setTeamError('');
+    try {
+      const member = await addTeamMember({
+        email: newUserForm.email,
+        name: newUserForm.name,
+        role: newUserForm.role,
+        password: newUserForm.password,
+        services: newUserForm.assignedServices,
+      });
+      setTeamMembers(prev => [...prev, member]);
+      setShowAddUserModal(false);
+      setNewUserForm({ email: '', name: '', role: 'Field Operator', password: '', assignedServices: [] });
+    } catch (err) {
+      setTeamError(err.message);
+    }
   };
 
-  const handleSaveEditMember = (e) => {
+  const handleSaveEditMember = async (e) => {
     e.preventDefault();
     if (!editingMember) return;
-    setTeamMembers(prev => prev.map(m => m.id === editingMember.id ? editingMember : m));
-    setEditingMember(null);
+    setTeamError('');
+    try {
+      const saved = await updateTeamMember(editingMember.id, editingMember);
+      setTeamMembers(prev => prev.map(m => m.id === editingMember.id ? saved : m));
+      setEditingMember(null);
+    } catch (err) {
+      setTeamError(err.message);
+    }
   };
 
-  const handleDeleteMember = (id) => {
-    setTeamMembers(prev => prev.filter(m => m.id !== id));
+  const handleDeleteMember = async (id) => {
+    setTeamError('');
+    try {
+      await removeTeamMember(id);
+      setTeamMembers(prev => prev.filter(m => m.id !== id));
+    } catch (err) {
+      setTeamError(err.message);
+    }
   };
 
   const handlePasswordSubmit = async (e) => {
@@ -510,13 +532,13 @@ const TenantHub = ({ onSelectModule, onSignOut }) => {
                 <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl">
                   <p className="text-xs text-slate-500 font-medium">Active Services</p>
                   <p className="text-xl font-bold text-slate-900 mt-1">{allTiles.length}</p>
-                  <p className="text-xs text-slate-500 mt-2">Full access to monitoring, EUDR & AI Advisor</p>
+                  
                 </div>
 
                 <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl">
                   <p className="text-xs text-slate-500 font-medium">Registered Team Users</p>
                   <p className="text-xl font-bold text-slate-900 mt-1">{teamMembers.length + 1}</p>
-                  <p className="text-xs text-slate-500 mt-2">Multi-seat team management active</p>
+                  
                 </div>
               </div>
             </div>
@@ -530,6 +552,7 @@ const TenantHub = ({ onSelectModule, onSignOut }) => {
                 </div>
                 <button
                   type="button"
+                  disabled={teamState !== 'ready'}
                   onClick={() => setShowAddUserModal(true)}
                   className="px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold flex items-center gap-2 transition-colors shadow-xs"
                 >
@@ -537,6 +560,13 @@ const TenantHub = ({ onSelectModule, onSignOut }) => {
                   <span>Add Team Member</span>
                 </button>
               </div>
+
+              {teamState === 'not_connected' && (
+                <p className="mt-4 text-sm text-sky-900 bg-sky-50 border border-sky-200 rounded-xl px-4 py-3">Team management is not connected yet. Your own account is shown below; other users are added by FarmIntelytics until then.</p>
+              )}
+              {teamError && teamState !== 'not_connected' && (
+                <p className="mt-4 text-sm text-red-800 bg-red-50 border border-red-200 rounded-xl px-4 py-3">{teamError}</p>
+              )}
 
               <div className="divide-y divide-slate-100 mt-4">
                 {/* Current Admin Account */}
@@ -560,14 +590,14 @@ const TenantHub = ({ onSelectModule, onSignOut }) => {
                   <div key={member.id} className="py-4 flex items-center justify-between">
                     <div className="flex items-center gap-3.5">
                       <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700 font-bold text-xs">
-                        {member.name.substring(0, 2).toUpperCase()}
+                        {(member.name || member.email || '?').substring(0, 2).toUpperCase()}
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
                           <p className="text-sm font-bold text-slate-900">{member.name}</p>
                           <span className="text-xs text-slate-400 font-mono">({member.email})</span>
                         </div>
-                        <p className="text-xs text-slate-500">Role: <strong className="text-slate-700">{member.role}</strong> &middot; {member.services.length} Services Assigned</p>
+                        <p className="text-xs text-slate-500">Role: <strong className="text-slate-700">{member.role}</strong> &middot; {(member.services || []).length} services</p>
                       </div>
                     </div>
 

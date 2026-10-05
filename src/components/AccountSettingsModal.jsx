@@ -15,7 +15,7 @@ const AccountSettingsModal = ({ isOpen, onClose, userInfo, onSignOut }) => {
 
   if (!isOpen) return null;
 
-  const email = userInfo?.email || localStorage.getItem('fi_email') || 'user@example.com';
+  const email = userInfo?.email || localStorage.getItem('fi_email') || '';
   const tenant = userInfo?.tenant || localStorage.getItem('fi_tenant') || 'organization';
   const role = userInfo?.role || localStorage.getItem('fi_role') || 'Admin';
   const fullName = userInfo?.full_name || localStorage.getItem('fi_full_name') || '';
