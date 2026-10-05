@@ -180,7 +180,7 @@ function ProvidersTab({ settings, setSettings, connected }) {
               <label className="block space-y-1.5"><span className="text-xs font-semibold text-gray-700">{s.configured ? 'Replace key' : 'API key'}</span>
                 <input type="password" autoComplete="off" className={inputCls} value={keys[p.id] || ''} onChange={e => setKeys(k => ({ ...k, [p.id]: e.target.value }))} placeholder={p.hint} />
               </label>
-              <label className="block space-y-1.5"><span className="text-xs font-semibold text-gray-700">Default Model</span>
+              <label className="block space-y-1.5"><span className="text-xs font-semibold text-gray-700">Default model</span>
                 <ModelSelector provider={p.id} value={s.default_model || ''} serverModels={s.models} onChange={val => updateProv(p.id, { default_model: val })} />
               </label>
               <label className="flex items-center gap-2 text-sm text-gray-800"><input type="checkbox" className="w-4 h-4 accent-green-700" checked={Boolean(s.enabled)} onChange={e => updateProv(p.id, { enabled: e.target.checked })} />Allowed</label>

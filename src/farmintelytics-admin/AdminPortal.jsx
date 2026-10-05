@@ -22,16 +22,16 @@ const NAV_GROUPS = [
   { label: 'Setup', items: [
     { id: 'onboarding',    label: 'Onboard organisation', icon: Rocket,    path: '/admin/onboarding' },
     { id: 'organizations', label: 'Organisations',        icon: Building2, path: '/admin/organizations' },
-    { id: 'credentials',   label: 'Credentials',          icon: Key,       path: '/admin/credentials' },
+    { id: 'credentials',   label: 'Sign-in details',      icon: Key,       path: '/admin/credentials' },
     { id: 'users',         label: 'User accounts',        icon: Users,     path: '/admin/users' },
   ]},
   { label: 'Operations', items: [
-    { id: 'scheduler',     label: 'Scheduler',            icon: Clock,     path: '/admin/scheduler' },
-    { id: 'inventory',     label: 'Data & storage',       icon: Database,  path: '/admin/inventory' },
+    { id: 'scheduler',     label: 'Monitoring schedule',  icon: Clock,     path: '/admin/scheduler' },
+    { id: 'inventory',     label: 'Storage',              icon: Database,  path: '/admin/inventory' },
     { id: 'logs',          label: 'Logs',                 icon: Activity,  path: '/admin/logs' },
   ]},
   { label: 'Configuration', items: [
-    { id: 'thresholds',    label: 'Crop thresholds',      icon: SlidersHorizontal, path: '/admin/thresholds' },
+    { id: 'thresholds',    label: 'Map classes',          icon: SlidersHorizontal, path: '/admin/thresholds' },
     { id: 'ai',            label: 'AI settings',          icon: Sparkles,  path: '/admin/ai' },
   ]},
 ];
