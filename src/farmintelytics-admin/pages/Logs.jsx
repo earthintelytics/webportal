@@ -5,10 +5,10 @@ import { fetchLogs, fetchPipelineLogs } from '../../services/adminApi';
 import ErrorBanner from '../components/ErrorBanner';
 import { inputCls } from '../components/formHelpers';
 import { Page, Button, Chip, Pill, Tabs, Stat, Loading, Empty } from '../components/ui';
-import JobsTable from './logs/JobsTable';
-import RunLogModal from './logs/RunLogModal';
-import ErrorBox from './logs/ErrorBox';
-import { statusOf, logStatus, fmtTime } from './logs/logHelpers';
+import JobsTable from './runlogs/JobsTable';
+import RunLogModal from './runlogs/RunLogModal';
+import ErrorBox from './runlogs/ErrorBox';
+import { statusOf, logStatus, fmtTime } from './runlogs/logHelpers';
 
 const JOB_PAGE = 50;
 const RUN_PAGE = 25;
