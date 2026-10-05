@@ -41,7 +41,7 @@ const CARD_PHOTOS = {
   'forestry-intel': '/crops/forestry.webp', 'carbon-estimator': '/crops/estimator.webp',
   'land-restoration': '/crops/restoration.webp', 'eudr-check': '/crops/eudr.webp',
   'suitability-tool': '/crops/suitability.webp',
-  'advisor': '/crops/advisor.webp', 'activity-ffb': '/crops/field_logs.webp',
+  'advisor': '/crops/advisor.webp',
 };
 const photoFor = (id) => CARD_PHOTOS[id] || (id?.startsWith('custom-agromonitor') ? '/crops/organization.webp' : null);
 
@@ -133,7 +133,14 @@ const PortalHub = ({ onSelectModule, onSignOut, onOpenAdmin }) => {
         { id: 'rs-rice',      title: 'Rice',       crop: 'Crop monitoring', icon: <RiceIcon /> },
         { id: 'rs-cassava',   title: 'Cassava',    crop: 'Crop monitoring', icon: <CassavaIcon /> },
         { id: 'rs-sugarcane', title: 'Sugarcane',  crop: 'Crop monitoring', icon: <SugarcaneIcon /> },
-        { id: 'rs-drone',     title: 'Drone surveys', crop: 'Drone imagery', icon: <DroneIcon /> },
+      ]),
+    },
+    {
+      id: 'engine',
+      title: 'Engine',
+      description: 'Processing services that turn your own imagery into maps and counts.',
+      modules: filterModules([
+        { id: 'rs-drone', title: 'Drone surveys', crop: 'Drone imagery', icon: <DroneIcon /> },
       ]),
     },
     {
@@ -155,7 +162,6 @@ const PortalHub = ({ onSelectModule, onSignOut, onOpenAdmin }) => {
       modules: filterModules([
         { id: 'smallholder-hub',  title: 'Smallholder',      crop: 'Co-operatives and outgrowers', icon: <SmallholderIcon /> },
         { id: 'advisor',          title: 'Farm AI advisor',  crop: 'Advice per field',             icon: <MessageSquare /> },
-        { id: 'activity-ffb',     title: 'Field logs',       crop: 'Operations and scouting',      icon: <Activity /> },
         { id: 'suitability-tool', title: 'Crop suitability', crop: 'FarmIntelytics team only',     icon: <Target /> },
       ]),
     },
@@ -173,6 +179,7 @@ const PortalHub = ({ onSelectModule, onSignOut, onOpenAdmin }) => {
     { id: 'monitoring', label: 'Crop monitoring' },
     { id: 'sustainability', label: 'Sustainability' },
     { id: 'field-advisory', label: 'Field advisory' },
+    { id: 'engine', label: 'Engine' },
     { id: 'custom', label: 'Organisations' },
   ].filter(tab => (sections.find(s => s.id === tab.id)?.modules.length ?? 0) > 0);
   const currentTabId = visibleTabs.some(t => t.id === activeTab) ? activeTab : visibleTabs[0]?.id;

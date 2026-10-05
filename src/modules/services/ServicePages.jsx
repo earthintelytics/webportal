@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ShieldCheck, ClipboardList, Lightbulb, ArrowRight, Info } from 'lucide-react';
+import { ShieldCheck, Lightbulb, ArrowRight, Info } from 'lucide-react';
 import { NotConnectedError } from '../../services/datasetsApi';
 
 /**
@@ -95,39 +95,6 @@ export function CheckPage({ page, plots, onOpenData }) {
   );
 }
 
-// Log: dated field operations from the client's records
-export function LogPage({ page, onOpenData }) {
-  const [records, setRecords] = useState(null);
-  const [connected, setConnected] = useState(true);
-  const [type, setType] = useState('All');
-  useEffect(() => {
-    let active = true;
-    getJson(`/datasets/${page.dataset}/records`).then(r => { if (active) setRecords(Array.isArray(r) ? r : r?.records || []); }).catch(() => { if (active) { setConnected(false); setRecords([]); } });
-    return () => { active = false; };
-  }, [page.dataset]);
-  const types = ['All', ...(page.types || [])];
-  const rows = (records || []).filter(r => type === 'All' || (r.values?.operation || r.operation) === type)
-    .sort((a, b) => String(b.values?.date || b.date).localeCompare(String(a.values?.date || a.date)));
-  const v = (r, k) => r.values?.[k] ?? r[k] ?? '—';
-
-  return (
-    <div className="p-10 space-y-8">
-      <Header title={page.title} text={page.text} icon={<ClipboardList size={20} />} />
-      {!connected && <Note>Operations come from your field records. You can already prepare and check them in <button onClick={onOpenData} className="font-semibold underline">Your data</button>; they appear here once saving is connected.</Note>}
-      <div className="flex flex-wrap gap-2">{types.map(t => <button key={t} onClick={() => setType(t)} className={`px-3 py-1.5 rounded-lg text-xs font-semibold border ${type === t ? 'bg-green-50 border-green-600 text-green-800' : 'bg-white border-gray-300 text-gray-600'}`}>{t}</button>)}</div>
-      <Card className="overflow-hidden">
-        {rows.length === 0 ? <div className="p-10 text-center text-sm text-gray-600">No operations recorded yet.</div> : (
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-left text-xs font-semibold text-gray-600"><tr><th className="px-5 py-3">Date</th><th className="px-5 py-3">Block</th><th className="px-5 py-3">Estate</th><th className="px-5 py-3">Operation</th><th className="px-5 py-3">Done by</th><th className="px-5 py-3">Notes</th></tr></thead>
-            <tbody className="divide-y divide-gray-100">{rows.map((r, i) => <tr key={i}><td className="px-5 py-3">{v(r, 'date')}</td><td className="px-5 py-3 font-semibold text-gray-900">{v(r, 'field_id')}</td><td className="px-5 py-3">{v(r, 'estate')}</td><td className="px-5 py-3">{v(r, 'operation')}</td><td className="px-5 py-3">{v(r, 'done_by')}</td><td className="px-5 py-3 text-gray-600">{v(r, 'notes')}</td></tr>)}</tbody>
-          </table>
-        )}
-      </Card>
-    </div>
-  );
-}
-
-// Advice: this week's actions per field, from real alerts
 const SEV = { Critical: ['Act now', 'bg-red-50 text-red-700 border-red-200'], Warning: ['This week', 'bg-amber-50 text-amber-800 border-amber-200'] };
 export function AdvicePage({ page, alerts, onAsk }) {
   const active = (alerts || []).filter(a => a.status === 'Active' || !a.status);

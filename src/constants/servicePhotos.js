@@ -9,7 +9,7 @@ export const SERVICE_PHOTOS = {
   'carbon-ffb': '/crops/estate_carbon.webp', 'carbon-groups': '/crops/group_carbon.webp',
   'forestry-intel': '/crops/forestry.webp', 'carbon-estimator': '/crops/estimator.webp',
   'land-restoration': '/crops/restoration.webp', 'eudr-check': '/crops/eudr.webp',
-  advisor: '/crops/advisor.webp', 'activity-ffb': '/crops/field_logs.webp',
+  advisor: '/crops/advisor.webp',
   'smallholder-members': '/crops/smallholder.webp', 'smallholder-forms': '/crops/field_logs.webp',
   'group-monitoring': '/crops/advisor.webp', 'smallholder-eudr': '/crops/eudr.webp',
   'rs-drone': '/crops/drone.webp',
@@ -27,7 +27,8 @@ export const SERVICE_GROUPS = [
   ] },
   { id: 'field-advisory', label: 'Field advisory', services: [
     { id: 'advisor', label: 'Farm AI advisor', desc: 'Weather and advice per field' },
-    { id: 'activity-ffb', label: 'Field logs', desc: 'Field operations and scouting' },
+  ] },
+  { id: 'engine', label: 'Engine', services: [
     { id: 'rs-drone', label: 'Drone surveys', desc: 'Drone imagery with satellite context' },
   ] },
   { id: 'smallholder', label: 'Smallholder', services: [

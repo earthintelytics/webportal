@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ClipboardList, ArrowRight, X } from 'lucide-react';
-import { fetchNeededDatasets } from '../../services/datasetsApi';
-import { DATASET_DEFINITIONS, scopeKeys, datasetsForScope } from './datasetDefinitions';
+import { fetchDatasets } from '../../services/datasetsApi';
+import { DATASET_DEFINITIONS, scopeKeys, datasetsForScope, scopedDatasets } from './datasetDefinitions';
 
 /**
  * "Data needed" — opens after sign-in when datasets this portal depends on
@@ -10,17 +10,6 @@ import { DATASET_DEFINITIONS, scopeKeys, datasetsForScope } from './datasetDefin
  * Spec: docs/services/00-shared-principles.md, section 3 (reminders).
  */
 const SNOOZE_KEY = 'fi_data_needed_snoozed';
-
-// Before the data service exists, only the FarmIntelytics team sees a
-// preview of the dialog; clients are not asked for data they cannot save yet.
-const isTeamSession = () => {
-  try {
-    const t = localStorage.getItem('fi_admin_token');
-    if (!t) return false;
-    const p = JSON.parse(atob(t.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-    return p.role === 'superadmin' && (!p.exp || p.exp * 1000 > Date.now());
-  } catch { return false; }
-};
 
 const DUE_TEXT = { missing: 'Not provided yet', due: 'Update due' };
 
@@ -33,13 +22,17 @@ const DataNeededDialog = ({ cropType, serviceId, onFill }) => {
     if (sessionStorage.getItem(SNOOZE_KEY)) return;
     let active = true;
     const keys = scopeKeys({ cropType, serviceId });
-    fetchNeededDatasets()
+    // Everything this portal needs that is missing or due, from our
+    // definitions merged with the backend's status for each.
+    fetchDatasets()
       .then(list => {
-        const scoped = datasetsForScope(list, keys);
+        const scoped = scopedDatasets(list, keys).filter(d => d.status === 'missing' || d.status === 'due');
         if (active && scoped.length) { setItems(scoped); setOpen(true); }
       })
       .catch(() => {
-        if (!active || !isTeamSession()) return;
+        // Backend unreachable: still ask for what this portal needs; the
+        // Your data page says when saving is not connected.
+        if (!active) return;
         const scoped = datasetsForScope(DATASET_DEFINITIONS, keys).map(d => ({ ...d, status: 'missing' }));
         if (scoped.length) { setItems(scoped); setPreview(true); setOpen(true); }
       });
@@ -67,7 +60,7 @@ const DataNeededDialog = ({ cropType, serviceId, onFill }) => {
           <div className="w-11 h-11 rounded-xl bg-green-50 border border-green-100 flex items-center justify-center text-green-700"><ClipboardList size={20} /></div>
           <h2 id="data-needed-title" className="text-xl font-bold text-gray-900 tracking-tight mt-4">A few facts will make your dashboard fit your farms</h2>
           <p className="text-sm text-gray-600 mt-1.5">Add them now, or close this and carry on; we will remind you next time. You can also add them any time from Settings → Your data.</p>
-          {preview && <p className="text-xs text-sky-800 mt-2">Team preview: clients see this once saving is connected.</p>}
+          {preview && <p className="text-xs text-sky-800 mt-2">Saving is not connected right now; you can still prepare the files.</p>}
         </div>
         <ul className="divide-y divide-gray-100 border-y border-gray-100 max-h-[45vh] overflow-y-auto">
           {items.map(d => (

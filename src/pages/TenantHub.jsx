@@ -63,7 +63,7 @@ const CARD_PHOTOS = {
   'carbon-ffb': '/crops/estate_carbon.webp', 'carbon-groups': '/crops/group_carbon.webp',
   'forestry-intel': '/crops/forestry.webp', 'carbon-estimator': '/crops/estimator.webp',
   'land-restoration': '/crops/restoration.webp', 'eudr-check': '/crops/eudr.webp',
-  'advisor': '/crops/advisor.webp', 'activity-ffb': '/crops/field_logs.webp',
+  'advisor': '/crops/advisor.webp',
 };
 
 const photoFor = (id) => CARD_PHOTOS[id] || '/crops/oil_palm.webp';
@@ -79,7 +79,7 @@ const ALL_SERVICE_CATALOG = [
   { id: 'rs-cassava', title: 'Cassava', group: 'crops', crop: 'Crop monitoring', description: 'Crop condition, stress and time to harvest.', icon: <CassavaIcon /> },
   { id: 'rs-sugarcane', title: 'Sugarcane', group: 'crops', crop: 'Crop monitoring', description: 'Growth, water shortage and ripening per field.', icon: <SugarcaneIcon /> },
   { id: 'rs-cashew', title: 'Cashew', group: 'crops', crop: 'Crop monitoring', description: 'Orchard condition, flowering weather and new growth.', icon: <CashewIcon /> },
-  { id: 'rs-drone', title: 'Drone surveys', group: 'crops', crop: 'Drone imagery', description: 'Detailed drone surveys next to the latest satellite view.', icon: <DroneIcon /> },
+  { id: 'rs-drone', title: 'Drone surveys', group: 'engine', crop: 'Drone imagery', description: 'Detailed drone surveys next to the latest satellite view.', icon: <DroneIcon /> },
 
   { id: 'eudr-check', title: 'EUDR check', group: 'sustainability', crop: 'Sustainability', description: 'Where each plot is and whether forest was cleared after 2020.', icon: <Globe /> },
   { id: 'carbon-ffb', title: 'Estate carbon', group: 'sustainability', crop: 'Sustainability', description: 'Carbon held by the estate and land-use change since the baseline.', icon: <Leaf /> },
@@ -89,7 +89,6 @@ const ALL_SERVICE_CATALOG = [
 
   { id: 'smallholder-hub', title: 'Smallholder', group: 'advisory', crop: 'Co-operatives and outgrowers', description: 'Members and parcels, forms for farmers, field monitoring, group carbon and EUDR evidence.', icon: <SmallholderIcon /> },
   { id: 'advisor', title: 'Farm AI advisor', group: 'advisory', crop: 'Field advisory', description: 'Advice for each field from your own monitoring data and the weather.', icon: <MessageSquare /> },
-  { id: 'activity-ffb', title: 'Field logs', group: 'advisory', crop: 'Field advisory', description: 'Operations and scouting recorded for each block.', icon: <Activity /> },
 ];
 
 const TenantHub = ({ onSelectModule, onSignOut }) => {
@@ -291,6 +290,7 @@ const TenantHub = ({ onSelectModule, onSignOut }) => {
     { id: 'crops', label: 'Crop monitoring', count: allTiles.filter(t => t.group === 'crops').length },
     { id: 'sustainability', label: 'Sustainability', count: allTiles.filter(t => t.group === 'sustainability').length },
     { id: 'advisory', label: 'Field advisory', count: allTiles.filter(t => t.group === 'advisory').length },
+    { id: 'engine', label: 'Engine', count: allTiles.filter(t => t.group === 'engine').length },
   ].filter(t => t.id === 'all' || t.count > 0);
 
   const displayedTiles = activeTab === 'all' 

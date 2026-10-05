@@ -53,7 +53,7 @@ export const DATASET_DEFINITIONS = [
     ],
   },
   {
-    id: 'planting-dates', name: 'Planting dates and irrigation', applies_to: ['crop:maize', 'crop:rice', 'crop:cassava'],
+    id: 'planting-dates', name: 'Planting dates and irrigation', applies_to: ['crop:maize', 'crop:rice', 'crop:cassava', 'service:group-monitoring'],
     why: 'Planting dates tell each field’s stage, so alerts fire at the right time (top-dressing, tasselling, early flooding).',
     unlocks: ['Stage tracker', 'Stage-aware alerts', 'Irrigation page for irrigated fields'], due: 'season', grain: 'per field and season',
     columns: [FIELD_ID, ESTATE,
@@ -74,7 +74,7 @@ export const DATASET_DEFINITIONS = [
     ],
   },
   {
-    id: 'cocoa-farm-type', name: 'Farm type and group', applies_to: ['crop:cocoa', 'service:carbon-groups'],
+    id: 'cocoa-farm-type', name: 'Farm type and group', applies_to: ['crop:cocoa', 'service:carbon-groups', 'service:smallholder-members', 'service:group-monitoring'],
     why: 'Estates and smallholder groups are reported differently; this groups your farms correctly.',
     unlocks: ['Report grouping', 'Group pages'], due: 'once', grain: 'per field',
     columns: [FIELD_ID, ESTATE,
@@ -108,7 +108,7 @@ export const DATASET_DEFINITIONS = [
     ],
   },
   {
-    id: 'eudr-plot-register', name: 'EUDR plot register', applies_to: ['service:eudr-check', 'crop:oil_palm', 'crop:cocoa', 'crop:rubber'],
+    id: 'eudr-plot-register', name: 'EUDR plot register', applies_to: ['service:eudr-check', 'service:smallholder-eudr', 'crop:oil_palm', 'crop:cocoa', 'crop:rubber'],
     why: 'Tells us which plots supply which commodity and producer, so the deforestation check and export cover the right plots.',
     unlocks: ['EUDR check scope', 'Due-diligence export'], due: 'once', grain: 'per field',
     columns: [FIELD_ID, ESTATE,
@@ -177,3 +177,24 @@ export function scopeKeys({ cropType, serviceId }) {
 }
 
 export const datasetsForScope = (all, keys) => all.filter(d => (d.applies_to || []).some(k => keys.includes(k)));
+
+/**
+ * The datasets a portal asks for: our definitions for this crop or service
+ * (names, reasons, columns in plain words), with the backend's record for
+ * each one (status, last upload, columns it validates against) laid on top.
+ * Backend datasets we do not define are added only when the backend says
+ * which crops or services they belong to (applies_to). A definition the
+ * backend does not know yet stays listed as "Not provided yet".
+ */
+export function scopedDatasets(backendList, keys) {
+  const list = Array.isArray(backendList) ? backendList : [];
+  const byId = new Map(list.map((d) => [d.id, d]));
+  const ours = datasetsForScope(DATASET_DEFINITIONS, keys).map((def) => {
+    const b = byId.get(def.id);
+    if (!b) return { ...def, status: 'missing', backend: false };
+    return { ...def, status: b.status || 'missing', last_upload_at: b.last_upload_at || null, columns: b.columns?.length ? b.columns : def.columns, backend: true };
+  });
+  const known = new Set(DATASET_DEFINITIONS.map((d) => d.id));
+  const extra = datasetsForScope(list.filter((d) => !known.has(d.id)), keys).map((d) => ({ ...d, backend: true }));
+  return [...ours, ...extra];
+}

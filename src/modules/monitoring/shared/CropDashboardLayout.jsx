@@ -99,8 +99,8 @@ import { CROP_CATALOG, ORGANISATION_PAGES, loadCropPages } from '../cropCatalog'
 import CropGlossary from './CropGlossary';
 import ReportBuilder from '../../reports/ReportBuilder';
 import VerificationPage from '../../reports/VerificationPage';
-import { CheckPage, LogPage, AdvicePage } from '../../services/ServicePages';
-import { ShieldCheck as CheckIcon, ClipboardList as LogIcon, Lightbulb as AdviceIcon } from 'lucide-react';
+import { CheckPage, AdvicePage } from '../../services/ServicePages';
+import { ShieldCheck as CheckIcon, Lightbulb as AdviceIcon } from 'lucide-react';
 import { Table2 as RegisterIcon, Users as MembersIcon, FileText as FormsIcon, Inbox as AnswersIcon, Leaf as CarbonIcon, BadgeCheck as PassportIcon } from 'lucide-react';
 import MembersPage from '../../smallholder/pages/MembersPage';
 import GroupCarbonPage from '../../smallholder/pages/GroupCarbonPage';
@@ -3639,7 +3639,7 @@ Context: ${context}.`;
                   { id: 'land-restoration',    label: 'Land Restoration',    icon: <Leaf size={17} /> },
                   { id: 'alerts',              label: 'Alerts',              icon: <AlertTriangle size={17} />, badge: alerts.filter(a => a.status === 'Active').length },
                   // Service-only page kinds: pick() keeps them only when the service lists them
-                  ...(service ? [{ id: 'register', label: 'Register', icon: <RegisterIcon size={17} /> }, { id: 'check', label: 'Check', icon: <CheckIcon size={17} /> }, { id: 'log', label: 'Log', icon: <LogIcon size={17} /> }, { id: 'advice', label: 'Advice', icon: <AdviceIcon size={17} /> },
+                  ...(service ? [{ id: 'register', label: 'Register', icon: <RegisterIcon size={17} /> }, { id: 'check', label: 'Check', icon: <CheckIcon size={17} /> }, { id: 'advice', label: 'Advice', icon: <AdviceIcon size={17} /> },
                     { id: 'members', label: 'Members', icon: <MembersIcon size={17} /> }, { id: 'forms', label: 'Forms', icon: <FormsIcon size={17} /> }, { id: 'submissions', label: 'Answers', icon: <AnswersIcon size={17} /> },
                     { id: 'group-carbon', label: 'Group carbon', icon: <CarbonIcon size={17} /> }, { id: 'eudr-passport', label: 'EUDR passport', icon: <PassportIcon size={17} /> }] : []),
                 ], pageSet?.sidebar).map(item => (
@@ -6368,9 +6368,6 @@ Context: ${context}.`;
 
           {activeSidebarItem === 'check' && service?.check && (
             <CheckPage page={service.check} plots={plotsData} onOpenData={() => setActiveSidebarItem('your-data')} />
-          )}
-          {activeSidebarItem === 'log' && service?.log && (
-            <LogPage page={service.log} onOpenData={() => { setDataFocus(service.log.dataset); setActiveSidebarItem('your-data'); }} />
           )}
           {activeSidebarItem === 'advice' && service?.advice && (
             <AdvicePage page={service.advice} alerts={alerts} onAsk={(q) => { setActiveSidebarItem('analytics'); setActiveTab('ai-assistant'); handleChatSubmit(q); }} />

@@ -9,7 +9,7 @@
  *
  *   sidebar    left sidebar pages: analytics, crop-health, crop-yield,
  *              moisture-content, climate, land-restoration, alerts, and the
- *              service page kinds register, check, log, advice, members,
+ *              service page kinds register, check, advice, members,
  *              forms, submissions, group-carbon, eudr-passport
  *   analytics  sub-tabs of the Overview page (overview, vigor-health,
  *              moisture-et, et-log, water-management, soil-nutrients)
@@ -162,29 +162,6 @@ export const SERVICE_CATALOG = {
     ],
     topTabs: HEADER_TABS,
   },
-  'activity-ffb': {
-    title: 'Field logs',
-    subtitle: 'Field operations and scouting',
-    overviewTitle: 'Field operations',
-    overviewText: 'Field condition from satellite, next to the operations and scouting recorded for each block.',
-    log: {
-      title: 'Operations log', dataset: 'field-operations',
-      text: 'What was done in each block, when and by whom: harvesting, spraying, pruning, fertiliser and scouting.',
-      types: ['Harvest', 'Spray', 'Prune', 'Fertilise', 'Weed', 'Scout'],
-    },
-    sidebar: [
-      { id: 'analytics', label: 'Overview' },
-      { id: 'log', label: 'Operations log' },
-      { id: 'crop-health', label: 'Field condition' },
-      { id: 'climate', label: 'Weather' },
-      { id: 'alerts', label: 'Field alerts' },
-    ],
-    analytics: [
-      { id: 'overview', label: 'Overview' },
-      { id: 'vigor-health', label: 'Growth' },
-    ],
-    topTabs: HEADER_TABS,
-  },
 
   // ── Smallholder (opened from the Smallholder hub) ─────────────────────────
   'smallholder-members': {
@@ -261,7 +238,7 @@ export const SERVICE_CATALOG = {
     topTabs: HEADER_TABS,
   },
 
-  // ── Crop monitoring extras ────────────────────────────────────────────────
+  // ── Engine ────────────────────────────────────────────────────────────────
   'rs-drone': {
     title: 'Drone surveys',
     subtitle: 'Drone imagery with satellite context',

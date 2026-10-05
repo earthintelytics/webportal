@@ -218,16 +218,16 @@ const CROP_DESIGNS = {
     features: [],
     stats: []
   },
-  field_logs: {
-    key: 'field_logs',
-    name: 'Field Logs',
-    branding: 'Field Logs',
+  forms: {
+    key: 'forms',
+    name: 'Forms',
+    branding: 'Forms',
     accentColor: '#16A34A',
     lightBg: '#F0FDF4',
-    badge: 'Field advisory · Field logs',
+    badge: 'Smallholder · Forms',
     heroImage: '/crops/hero/field_logs.webp',
-    title: <>Every field <span className="text-emerald-500 font-black">operation</span>, on the map</>,
-    desc: 'Field condition from satellite next to the harvesting, planting, spraying and scouting recorded for each block.',
+    title: <>Your own <span className="text-emerald-500 font-black">forms</span>, filled in the field</>,
+    desc: 'Design the forms your farmers fill in, with photos and locations, and approve what comes back.',
     features: [],
     stats: []
   },
@@ -284,7 +284,7 @@ function resolveCropDesign(moduleName) {
   if (lower.includes('carbon estimator')) return CROP_DESIGNS.estimator;
   if (lower.includes('restoration')) return CROP_DESIGNS.restoration;
   if (lower.includes('eudr')) return CROP_DESIGNS.eudr;
-  if (lower.includes('field logs')) return CROP_DESIGNS.field_logs;
+  if (lower === 'forms') return CROP_DESIGNS.forms;
   if (lower.includes('advisor')) return CROP_DESIGNS.advisor;
   if (lower.includes('ledger') || lower.includes('finance')) return CROP_DESIGNS.finance;
   if (lower.includes('oil palm') || lower.includes('ffb') || lower.includes('rs-ffb')) return CROP_DESIGNS.oil_palm;

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Upload, FileSpreadsheet, PencilLine, BookOpen, CheckCircle2, AlertTriangle, Download, ArrowRight, Plus, Trash2, Info } from 'lucide-react';
 import { fetchDatasets, validateRows, commitRows, saveMapping, NotConnectedError } from '../../services/datasetsApi';
-import { DATASET_DEFINITIONS, scopeKeys, datasetsForScope } from './datasetDefinitions';
+import { DATASET_DEFINITIONS, scopeKeys, datasetsForScope, scopedDatasets } from './datasetDefinitions';
 import { parseCsv, suggestMapping, applyMapping, checkRows, templateCsv, buildFieldIndex } from './tabular';
 
 /**
@@ -347,7 +347,7 @@ const YourDataPage = ({ cropType, serviceId, plots, initialDataset }) => {
     let active = true;
     const keys = scopeKeys({ cropType, serviceId });
     fetchDatasets()
-      .then(list => { if (active) { setConnected(true); setDatasets(datasetsForScope(list, keys)); } })
+      .then(list => { if (active) { setConnected(true); setDatasets(scopedDatasets(list, keys)); } })
       .catch(() => { if (active) { setConnected(false); setDatasets(datasetsForScope(DATASET_DEFINITIONS, keys).map(d => ({ ...d, status: 'missing' }))); } });
     return () => { active = false; };
   }, [cropType, serviceId]);
