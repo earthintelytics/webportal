@@ -97,25 +97,20 @@ const SuitabilityPortal = ({ onBack, onSignOut }) => {
           </div>
 
           <div className="flex items-center gap-4">
-            <CompanySelector
-              companies={companies}
-              selectedCompanyId={selectedCompanyId}
-              onSelectCompany={handleSelectCompany}
-            />
           </div>
         </div>
       </header>
 
       {/* Main Content Area: 8-Crop Evaluation Models Grid */}
       <main className="max-w-7xl mx-auto px-6 py-8 w-full flex-1 space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
-            <h2 className="text-lg font-bold text-gray-900">Crop Land Evaluation Models</h2>
-            <p className="text-xs text-gray-500 mt-0.5">
-              Select any crop to view its dedicated analysis workspace, historical runs, or launch a new evaluation
+            <h2 className="text-xl font-bold text-gray-900">Crop Land Evaluation Models</h2>
+            <p className="text-xs text-gray-600 mt-1 max-w-3xl leading-relaxed font-medium">
+              Multi-criteria FAO biophysical assessment across soil, climate, radar flood dynamics, terrain, and statutory gates.
             </p>
           </div>
-          <span className="text-xs font-semibold text-slate-500">
+          <span className="text-xs font-semibold text-slate-500 self-start sm:self-auto">
             {SUITABILITY_CROPS.length} Supported Crop Engines
           </span>
         </div>

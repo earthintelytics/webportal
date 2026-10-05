@@ -21,6 +21,11 @@ const AdminLogin = ({ onSuccess = null, context = 'admin' }) => {
     try {
       const res = await adminLogin(email, code);
       if (res.status === 'success' && res.token) {
+        // Clear any previous tenant session data for complete isolation
+        ['fi_token', 'fi_email', 'fi_tenant', 'fi_role', 'fi_full_name',
+         'fi_display_name', 'fi_allowed_modules', 'fi_allowed_crops', 'fi_map_center', 'fi_logo_url']
+          .forEach(k => localStorage.removeItem(k));
+
         localStorage.setItem('fi_admin_token', res.token);
         localStorage.setItem('fi_admin_email', res.email);
         if (onSuccess) onSuccess(); else navigate('/admin/organizations');

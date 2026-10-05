@@ -326,6 +326,11 @@ const Login = ({ onLogin, moduleName, onBack, defaultEmail = '', defaultCode = '
     try {
       const response = await login(email, accessCode);
       if (response.status === 'success' && response.token && response.tenant) {
+        // Explicitly clear any previous session data for 100% portal isolation
+        ['fi_token', 'fi_email', 'fi_tenant', 'fi_role', 'fi_full_name',
+         'fi_display_name', 'fi_allowed_modules', 'fi_allowed_crops', 'fi_map_center', 'fi_logo_url',
+         'fi_admin_token', 'fi_admin_email'].forEach(k => localStorage.removeItem(k));
+
         localStorage.setItem('fi_token', response.token);
         localStorage.setItem('fi_email', response.email);
         localStorage.setItem('fi_tenant', response.tenant);

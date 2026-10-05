@@ -6,9 +6,16 @@
 
 const BASE_URL = '/farmintelytics-engine/agromonitoring/suitability';
 
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('fi_admin_token') || localStorage.getItem('fi_token');
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  return headers;
+};
+
 export const fetchCompanies = async () => {
   try {
-    const res = await fetch(`${BASE_URL}/companies`);
+    const res = await fetch(`${BASE_URL}/companies`, { headers: getAuthHeaders() });
     if (res.ok) {
       const data = await res.json();
       return Array.isArray(data) ? data : [];
@@ -23,7 +30,7 @@ export const onboardCompany = async (payload) => {
   try {
     const res = await fetch(`${BASE_URL}/companies`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(payload),
     });
     if (res.ok) return await res.json();
@@ -35,7 +42,10 @@ export const onboardCompany = async (payload) => {
 
 export const triggerDataPrefetch = async (companyId) => {
   try {
-    const res = await fetch(`${BASE_URL}/companies/${encodeURIComponent(companyId)}/fetch`, { method: 'POST' });
+    const res = await fetch(`${BASE_URL}/companies/${encodeURIComponent(companyId)}/fetch`, {
+      method: 'POST',
+      headers: getAuthHeaders()
+    });
     if (res.ok) return await res.json();
   } catch (err) {
     console.error('Error triggering data prefetch:', err);
@@ -45,7 +55,9 @@ export const triggerDataPrefetch = async (companyId) => {
 
 export const fetchPrefetchProgress = async (companyId, jobId) => {
   try {
-    const res = await fetch(`${BASE_URL}/companies/${encodeURIComponent(companyId)}/fetch/${encodeURIComponent(jobId)}`);
+    const res = await fetch(`${BASE_URL}/companies/${encodeURIComponent(companyId)}/fetch/${encodeURIComponent(jobId)}`, {
+      headers: getAuthHeaders()
+    });
     if (res.ok) return await res.json();
   } catch (err) {
     console.error('Error fetching prefetch progress:', err);
@@ -69,7 +81,9 @@ export const fetchPrefetchProgress = async (companyId, jobId) => {
 
 export const fetchCompanyDataSummary = async (companyId) => {
   try {
-    const res = await fetch(`${BASE_URL}/companies/${encodeURIComponent(companyId)}/summary`);
+    const res = await fetch(`${BASE_URL}/companies/${encodeURIComponent(companyId)}/summary`, {
+      headers: getAuthHeaders()
+    });
     if (res.ok) return await res.json();
   } catch (err) {
     console.error('Error fetching company data summary:', err);
@@ -86,7 +100,7 @@ export const fetchSuitabilityRuns = async (companyId, cropId = null) => {
   try {
     let url = `${BASE_URL}/runs?company_id=${encodeURIComponent(companyId)}`;
     if (cropId) url += `&crop=${encodeURIComponent(cropId)}`;
-    const res = await fetch(url);
+    const res = await fetch(url, { headers: getAuthHeaders() });
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data)) return data;
@@ -101,7 +115,7 @@ export const submitSuitabilityRun = async (payload) => {
   try {
     const res = await fetch(`${BASE_URL}/runs`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(),
       body: JSON.stringify(payload)
     });
     if (res.ok) return await res.json();
@@ -113,7 +127,9 @@ export const submitSuitabilityRun = async (payload) => {
 
 export const fetchSuitabilityReport = async (runId) => {
   try {
-    const res = await fetch(`${BASE_URL}/runs/${encodeURIComponent(runId)}/report`);
+    const res = await fetch(`${BASE_URL}/runs/${encodeURIComponent(runId)}/report`, {
+      headers: getAuthHeaders()
+    });
     if (res.ok) return await res.json();
   } catch (err) {
     console.error('Error fetching suitability report:', err);
@@ -123,7 +139,10 @@ export const fetchSuitabilityReport = async (runId) => {
 
 export const generateReportPdf = async (runId) => {
   try {
-    const res = await fetch(`${BASE_URL}/runs/${encodeURIComponent(runId)}/report/pdf`, { method: 'POST' });
+    const res = await fetch(`${BASE_URL}/runs/${encodeURIComponent(runId)}/report/pdf`, {
+      method: 'POST',
+      headers: getAuthHeaders()
+    });
     if (res.ok) return await res.json();
   } catch (err) {
     console.error('Error generating PDF report:', err);

@@ -11,6 +11,10 @@
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/farmintelytics-engine/agromonitoring';
 
 function handleTenantAuthFailure() {
+  const isAdmin = Boolean(localStorage.getItem('fi_admin_token'));
+  if (isAdmin) {
+    return;
+  }
   localStorage.removeItem('fi_token');
   localStorage.removeItem('fi_user');
   localStorage.removeItem('fi_tenant');
@@ -21,7 +25,7 @@ function handleTenantAuthFailure() {
 
 async function apiFetch(path, options = {}) {
   const url = `${API_BASE}${path}`;
-  const token = localStorage.getItem('fi_token');
+  const token = localStorage.getItem('fi_token') || localStorage.getItem('fi_admin_token');
   const headers = { 'Content-Type': 'application/json', ...options.headers };
   if (token) headers['Authorization'] = `Bearer ${token}`;
   const res = await fetch(url, { ...options, headers });

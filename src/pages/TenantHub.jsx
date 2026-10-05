@@ -77,12 +77,11 @@ const ALL_SERVICE_CATALOG = [
   { id: 'rs-sugarcane', title: 'Sugarcane Monitoring', group: 'crops', crop: 'Sugarcane', description: 'Biomass accumulation, moisture deficit and ripening indicators.', icon: <SugarcaneIcon /> },
   { id: 'rs-cashew', title: 'Cashew Monitoring', group: 'crops', crop: 'Cashew', description: 'Orchard canopy health, vegetative flush and yield indicators.', icon: <CashewIcon /> },
   { id: 'rs-drone', title: 'Drone Inspection', group: 'crops', crop: 'Aerial Recon', description: 'Ultra-high-resolution aerial surveys and orthomosaic anomalies.', icon: <DroneIcon /> },
-  { id: 'group-monitoring', title: 'Smallholder Group Monitoring', group: 'crops', crop: 'Cooperative', description: 'Aggregated outgrower cluster analysis and cooperative field scoring.', icon: <SmallholderIcon /> },
+  { id: 'group-monitoring', title: 'Smallholder Cooperative Hub', group: 'crops', crop: 'Cooperative OS', description: 'Integrated outgrower OS: member onboarding, geospatial cluster map, GAP advisor, group carbon & EUDR passports.', icon: <SmallholderIcon /> },
 
   // Sustainability & Compliance
   { id: 'eudr-check', title: 'EUDR Deforestation Check', group: 'sustainability', crop: 'Compliance', description: 'Post-2020 forest loss screening, boundary verification and audit packs.', icon: <Globe />, badge: 'EU Compliance' },
   { id: 'carbon-ffb', title: 'Estate Carbon Accounting', group: 'sustainability', crop: 'Carbon', description: 'Aboveground biomass stocks, IPCC Tier-1 carbon flux and trend lines.', icon: <Leaf />, badge: 'Carbon Suite' },
-  { id: 'carbon-groups', title: 'Smallholder Group Carbon', group: 'sustainability', crop: 'Carbon', description: 'Aggregated carbon accounting for smallholder cooperative clusters.', icon: <Globe />, badge: 'Group Carbon' },
   { id: 'forestry-intel', title: 'Forestry Intelligence', group: 'sustainability', crop: 'Forests', description: 'Canopy density mapping, high-conservation area protection and tree cover.', icon: <Trees /> },
   { id: 'carbon-estimator', title: 'Carbon Potential Estimator', group: 'sustainability', crop: 'Carbon', description: 'Scenario modeling for afforestation, agroforestry and carbon sequestration.', icon: <Activity /> },
   { id: 'land-restoration', title: 'Land Restoration & Soil', group: 'sustainability', crop: 'Restoration', description: 'Degraded land rehabilitation monitoring and vegetation recovery.', icon: <Leaf /> },

@@ -307,7 +307,7 @@ const PortalPage = () => {
     const raw = localStorage.getItem('fi_allowed_modules');
     if (raw) allowedModules = JSON.parse(raw);
   } catch { allowedModules = null; }
-  if (Array.isArray(allowedModules) && allowedModules.length > 0 && !allowedModules.includes(moduleId)) {
+  if (!hasValidTeamSession() && moduleId !== 'suitability-tool' && Array.isArray(allowedModules) && allowedModules.length > 0 && !allowedModules.includes(moduleId)) {
     return (
       <div className="flex flex-col items-center justify-center h-screen p-20 text-center bg-white">
         <div className="w-20 h-20 rounded-[2.5rem] bg-white border border-[var(--border-light)] flex items-center justify-center mx-auto mb-8 shadow-premium">
@@ -339,9 +339,14 @@ const PortalPage = () => {
       return <SuitabilityPortal onSignOut={handleSignOut} onBack={handleBackToHub} />;
     }
 
-    // Services (Sustainability, Field Advisory, Smallholder Monitoring, Carbon, Forestry, EUDR)
-    if (isServiceModule(moduleId) || moduleId === 'group-monitoring' || moduleId === 'group-management') {
-      return <ServicePortal moduleId={moduleId === 'group-management' ? 'group-monitoring' : moduleId} onSignOut={handleSignOut} onBack={handleBackToHub} />;
+    // Smallholder Cooperative OS Hub
+    if (moduleId === 'group-monitoring' || moduleId === 'group-management' || moduleId === 'smallholder-hub' || moduleId === 'carbon-groups') {
+      return <SmallholderPortal onSignOut={handleSignOut} onBack={handleBackToHub} />;
+    }
+
+    // Services (Sustainability, Field Advisory, Carbon, Forestry, EUDR)
+    if (isServiceModule(moduleId)) {
+      return <ServicePortal moduleId={moduleId} onSignOut={handleSignOut} onBack={handleBackToHub} />;
     }
     if (moduleId.startsWith('rs-')) {
       const rsApps = {

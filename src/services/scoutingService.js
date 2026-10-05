@@ -9,6 +9,10 @@ const OFFLINE_QUEUE_KEY = 'fi_scouting_offline_queue';
 const OFFLINE_OBSERVATIONS_KEY = 'fi_scouting_local_cache';
 
 function handleTenantAuthFailure() {
+  const isAdmin = Boolean(localStorage.getItem('fi_admin_token'));
+  if (isAdmin) {
+    return;
+  }
   localStorage.removeItem('fi_token');
   localStorage.removeItem('fi_user');
   localStorage.removeItem('fi_tenant');
@@ -19,7 +23,7 @@ function handleTenantAuthFailure() {
 
 async function apiFetch(path, options = {}) {
   const url = `${API_BASE}${path}`;
-  const token = localStorage.getItem('fi_token');
+  const token = localStorage.getItem('fi_token') || localStorage.getItem('fi_admin_token');
   const headers = { 'Content-Type': 'application/json', ...options.headers };
   if (token) headers['Authorization'] = `Bearer ${token}`;
   
