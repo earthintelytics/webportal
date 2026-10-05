@@ -103,6 +103,8 @@ import { CheckPage, AdvicePage } from '../../services/ServicePages';
 import { ShieldCheck as CheckIcon, Lightbulb as AdviceIcon } from 'lucide-react';
 import { Table2 as RegisterIcon, Users as MembersIcon, FileText as FormsIcon, Inbox as AnswersIcon, Leaf as CarbonIcon, BadgeCheck as PassportIcon } from 'lucide-react';
 import MembersPage from '../../smallholder/pages/MembersPage';
+import KpiCards from './dashboard/KpiCards';
+import { UNIT_LABEL } from './dashboard/kpiCatalog';
 import GroupCarbonPage from '../../smallholder/pages/GroupCarbonPage';
 import EudrPassportPage from '../../smallholder/pages/EudrPassportPage';
 import FormsPage from '../../forms/FormsPage';
@@ -759,7 +761,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
         const ndmiVal = p.indices?.ndmi ?? 0;
         const healthVal = ndviVal > 0.7 ? 'Optimal' : ndviVal > 0.55 ? 'Good' : 'Stressed';
         const colorVal = healthVal === 'Optimal' ? '#15803d' : healthVal === 'Good' ? '#84cc16' : '#dc2626';
-        return { id: p.plot_id, name: p.name || p.plot_id, area: `${p.area_ha || 10.0} HA`, health: healthVal, ndvi: ndviVal, ndmi: ndmiVal, color: colorVal, coords, indices: p.indices, subfarm: p.subfarm || p.division || null, division: p.division || null, blocId: p.bloc_id || null, filters: p.filters || {}, farmId: p.farm_id || null };
+        return { id: p.plot_id, name: p.name || p.plot_id, area: p.area_ha != null ? `${p.area_ha} HA` : null, health: healthVal, ndvi: ndviVal, ndmi: ndmiVal, color: colorVal, coords, indices: p.indices, subfarm: p.subfarm || p.division || null, division: p.division || null, blocId: p.bloc_id || null, filters: p.filters || {}, farmId: p.farm_id || null };
       });
     }
     return [];
@@ -778,7 +780,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
         const ndmiVal = p.indices?.ndmi ?? 0;
         const healthVal = ndviVal > 0.7 ? 'Optimal' : ndviVal > 0.55 ? 'Good' : 'Stressed';
         const colorVal = healthVal === 'Optimal' ? '#15803d' : healthVal === 'Good' ? '#84cc16' : '#dc2626';
-        return { id: p.plot_id, name: p.name || p.plot_id, area: `${p.area_ha || 10.0} HA`, health: healthVal, ndvi: ndviVal, ndmi: ndmiVal, color: colorVal, coords, indices: p.indices, subfarm: p.subfarm || p.division || null, division: p.division || null, blocId: p.bloc_id || null, filters: p.filters || {}, farmId: p.farm_id || null };
+        return { id: p.plot_id, name: p.name || p.plot_id, area: p.area_ha != null ? `${p.area_ha} HA` : null, health: healthVal, ndvi: ndviVal, ndmi: ndmiVal, color: colorVal, coords, indices: p.indices, subfarm: p.subfarm || p.division || null, division: p.division || null, blocId: p.bloc_id || null, filters: p.filters || {}, farmId: p.farm_id || null };
       });
     }
     return [];
@@ -2930,6 +2932,32 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
     };
   }, [stats, plots]);
 
+  // Inputs for the Overview KPI cards. Condition classes come from the
+  // admin's map classes for the index: best = highest class, worst = lowest.
+  const kpiContext = useMemo(() => {
+    const classify = (plot, key) => {
+      const v = blockValue(plot, key);
+      const legend = cropProfileEntries.find(e => e.key === key)?.legend;
+      if (v == null || !Array.isArray(legend) || !legend.length) return null;
+      const sorted = [...legend].filter(l => Array.isArray(l.range)).sort((x, y) => Number(x.range[0]) - Number(y.range[0]));
+      const cls = sorted.find(l => v >= l.range[0] && v <= l.range[1]);
+      if (!cls) return null;
+      const i = sorted.indexOf(cls);
+      return { label: cls.label, rank: i === sorted.length - 1 ? 'best' : i === 0 ? 'worst' : 'middle' };
+    };
+    const keys = cropProfileEntries.map(e => e.key);
+    return {
+      plots: plotsData,
+      stats,
+      alerts,
+      classify,
+      primaryKey: cropPrimaryIndex || keys[0] || null,
+      waterKey: ['ndmi', 'lswi', 'smi'].find(k => keys.includes(k)) || null,
+      unitLabel: UNIT_LABEL[service?.id] || 'blocks',
+      latestPass: currentTimeline?.label || null,
+    };
+  }, [plotsData, stats, alerts, cropProfileEntries, cropPrimaryIndex, service?.id, currentTimeline]);
+
   const yieldTrendsData = useMemo(() => {
     // Real NDVI farm-average time series, one point per observation date —
     // see overviewTrends above for why this no longer reads off TIMELINE_DATA/plots.
@@ -3888,39 +3916,8 @@ Context: ${context}.`;
                 {/* Subpage Contents */}
                 {activeAnalyticsSubpage === 'overview' && (
                   <div className="space-y-10">
-                    {/* KPI Cards */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                      {[
-                        { label: 'Total Plots',   value: `${dashboardMetrics.plots}`,               subtext: 'Active Farm Plots',        icon: <Layers size={22} className="text-green-600" />,  accent: '#EFF6FF', border: '#BFDBFE' },
-                        { label: 'Area Monitored', value: `${dashboardMetrics.area.toLocaleString()} ha`, subtext: 'Hectares Covered',    icon: <Globe size={22} className="text-green-600" />,    accent: '#F0FDF4', border: '#BBF7D0' },
-                        { label: 'Carbon Density', value: `${dashboardMetrics.carbon} t/ha`,             subtext: 'Average tCO2e/Hectare',    icon: <Leaf size={22} className="text-green-600" />,   accent: '#f0fdf4', border: '#bbf7d0' },
-                        { label: 'Alerts',         value: dashboardMetrics.alerts,                    subtext: 'Critical Moisture Stress', icon: <AlertTriangle size={22} className="text-green-600" />, accent: '#FFF1F2', border: '#FECDD3' }
-                      ].map((kpi, i) => (
-                        <div key={i}
-                          className="bg-white p-7 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all group cursor-default"
-                        >
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="flex-1 min-w-0">
-                              <span className="text-xs font-semibold text-gray-600 block mb-3">
-                                {kpi.label} {renderInfoTooltip(kpi.label)}
-                              </span>
-                              <span className="text-4xl font-bold tracking-tight text-gray-900 block mb-2">
-                                {kpi.value}
-                              </span>
-                              <span className="text-xs text-gray-600 font-medium block tracking-wide">
-                                {kpi.subtext}
-                              </span>
-                            </div>
-                            <div
-                              className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 border group-hover:scale-105 transition-all"
-                              style={{ backgroundColor: kpi.accent, borderColor: kpi.border }}
-                            >
-                              {kpi.icon}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                    {/* KPI cards: chosen per crop or service (dashboard/kpiCatalog.js) */}
+                    <KpiCards serviceId={service?.id} ctx={kpiContext} />
 
                     {/* 4-Chart Overview Grid */}
                     <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
