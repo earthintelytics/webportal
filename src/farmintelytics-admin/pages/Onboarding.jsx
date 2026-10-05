@@ -7,7 +7,7 @@ import {
   createOrganization, createCredential, createFarm, uploadBoundary, generateFarmConfig, generateParentConfig,
   createSchedulerJob, uploadOrganizationLogo, getBoundaryProperties, updateOrganization,
 } from '../../services/adminApi';
-import { slugify, modulesForAccessModel, ACCESS_MODELS, ALL_RS_INDICES } from './Organizations';
+import { slugify, modulesForAccessModel, ACCESS_MODELS, ALL_RS_INDICES } from '../components/orgConstants';
 import ErrorBanner from '../components/ErrorBanner';
 import { SENSOR_OPTIONS, ALL_CROPS, toggleInList } from '../components/formHelpers';
 import { WEEKDAYS, cronFor, cronError, scheduleText as scheduleWords } from '../components/schedule';
