@@ -154,7 +154,8 @@ const SuitabilityMapView = ({ runResult, onSelectField }) => {
     let active = true;
     async function loadGeoData() {
       try {
-        const tenant = localStorage.getItem('fi_tenant') || runResult?.company_id || 'okomu';
+        const tenant = runResult?.company_id;
+        if (!tenant) return;
         const [boundaryRes, plotsRes] = await Promise.all([
           api.fetchFarmBoundary().catch(() => null),
           api.fetchPlotsIntelligence(tenant).catch(() => [])

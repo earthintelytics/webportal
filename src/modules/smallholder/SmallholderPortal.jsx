@@ -32,7 +32,6 @@ import ClusterMapView from './components/ClusterMapView';
 import SmallholderAdvisorView from './components/SmallholderAdvisorView';
 import GroupCarbonView from './components/GroupCarbonView';
 import EudrPassportView from './components/EudrPassportView';
-import { fetchCompanies } from '../suitability/suitabilityApi';
 
 const SMALLHOLDER_SERVICES = [
   {
@@ -92,76 +91,8 @@ const SmallholderPortal = ({ onBack, onSignOut }) => {
   const [selectedCoopId, setSelectedCoopId] = useState('');
   const [viewMode, setViewMode] = useState('hub'); // 'hub' | 'service'
   const [activeTab, setActiveTab] = useState('registry'); // 'registry' | 'map' | 'advisor' | 'carbon' | 'eudr'
-  const [members, setMembers] = useState([
-    {
-      id: 'MEM-OKO-0001',
-      name: 'Emmanuel Adeyemi',
-      phone: '+234 803 123 4567',
-      cluster: 'Udo Cluster A',
-      buying_ramp: 'Ramp 1 (Main Mill)',
-      primary_crop: 'Oil Palm',
-      intercrop: 'Cassava / Legumes',
-      area_ha: 3.8,
-      stand_age_yrs: 6,
-      eudr_status: 'Clear',
-      certification: 'RSPO IS',
-      vigor_percentile: 88,
-      sar_rvi: 0.81,
-      status: 'Active',
-      last_scouted: 'Yesterday'
-    },
-    {
-      id: 'MEM-OKO-0002',
-      name: 'Grace Oviawe',
-      phone: '+234 802 987 6543',
-      cluster: 'Udo Cluster A',
-      buying_ramp: 'Ramp 1 (Main Mill)',
-      primary_crop: 'Oil Palm',
-      intercrop: 'Cover Crops',
-      area_ha: 2.4,
-      stand_age_yrs: 4,
-      eudr_status: 'Clear',
-      certification: 'RSPO IS',
-      vigor_percentile: 92,
-      sar_rvi: 0.84,
-      status: 'Active',
-      last_scouted: '3 days ago'
-    },
-    {
-      id: 'MEM-OKO-0003',
-      name: 'Osasere Igbinedion',
-      phone: '+234 814 555 7890',
-      cluster: 'Iguoriakhi Cluster B',
-      buying_ramp: 'Ramp 2 (North Depot)',
-      primary_crop: 'Oil Palm',
-      intercrop: 'Maize',
-      area_ha: 5.1,
-      stand_age_yrs: 8,
-      eudr_status: 'Clear',
-      certification: 'Fairtrade',
-      vigor_percentile: 79,
-      sar_rvi: 0.74,
-      status: 'Active',
-      last_scouted: '1 week ago'
-    },
-    {
-      id: 'MEM-OKO-0004',
-      name: 'Blessing Okon',
-      phone: '+234 805 222 3456',
-      cluster: 'Ofunmwegbe Cluster C',
-      buying_ramp: 'Ramp 3 (East Collection)',
-      primary_crop: 'Cocoa',
-      intercrop: 'Plantain Shade',
-      area_ha: 4.2,
-      stand_age_yrs: 5,
-      eudr_status: 'Clear',
-      certification: 'Rainforest Alliance',
-      vigor_percentile: 84,
-      sar_rvi: 0.78,
-      status: 'Active',
-      last_scouted: '4 days ago'
-    }
-  ]);
+  // Members come from the member register (backend G30); nothing is seeded.
+  const [members, setMembers] = useState([]);
   
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCluster, setFilterCluster] = useState('all');
@@ -174,16 +105,11 @@ const SmallholderPortal = ({ onBack, onSignOut }) => {
     let isMounted = true;
     async function loadData() {
       try {
-        const comps = await fetchCompanies();
-        if (isMounted && Array.isArray(comps) && comps.length > 0) {
-          setCompanies(comps);
-          const activeTenant = localStorage.getItem('fi_tenant') || comps[0].company_id;
-          const match = comps.find(c => c.company_id === activeTenant) || comps[0];
-          setSelectedCoopId(match.company_id);
-        } else if (isMounted) {
-          const defaultCoop = { company_id: 'default', company_name: 'Outgrower Cooperative Union', country: 'Nigeria', state_region: 'Edo State', estates: [] };
-          setCompanies([defaultCoop]);
-          setSelectedCoopId('default');
+        // The co-operative is the signed-in organisation; never another one.
+        const tenant = localStorage.getItem('fi_tenant');
+        if (isMounted && tenant) {
+          setCompanies([{ company_id: tenant, company_name: localStorage.getItem('fi_display_name') || tenant, estates: [] }]);
+          setSelectedCoopId(tenant);
         }
       } catch (err) {
         console.error('Error fetching cooperatives:', err);
@@ -195,18 +121,13 @@ const SmallholderPortal = ({ onBack, onSignOut }) => {
     return () => { isMounted = false; };
   }, []);
 
-  const currentCoop = companies.find(c => c.company_id === selectedCoopId) || companies[0] || {
-    company_id: selectedCoopId || 'coop',
-    company_name: 'Outgrower Cooperative Society',
-    state_region: 'Main Region',
-    estates: []
-  };
+  const currentCoop = companies.find(c => c.company_id === selectedCoopId) || { company_id: selectedCoopId, company_name: selectedCoopId, estates: [] };
 
   const totalAreaHa = members.reduce((sum, m) => sum + (parseFloat(m.area_ha) || 0), 0);
   const clearEudrMembers = members.filter(m => m.eudr_status === 'Clear').length;
-  const eudrRate = members.length > 0 ? ((clearEudrMembers / members.length) * 100).toFixed(1) : '100.0';
+  const eudrRate = members.length > 0 ? ((clearEudrMembers / members.length) * 100).toFixed(1) : null;
   const avgVigor = members.length > 0 
-    ? Math.round(members.reduce((sum, m) => sum + (m.vigor_percentile || 80), 0) / members.length)
+    ? Math.round(members.reduce((sum, m) => sum + (m.vigor_percentile || 0), 0) / members.length)
     : 0;
 
   const availableClusters = Array.from(new Set(members.map(m => m.cluster).filter(Boolean)));
@@ -223,19 +144,19 @@ const SmallholderPortal = ({ onBack, onSignOut }) => {
     const newEntry = {
       id: `MEM-${(selectedCoopId || 'COOP').substring(0, 3).toUpperCase()}-${String(members.length + 1).padStart(4, '0')}`,
       name: newMemberData.farmer_name,
-      phone: newMemberData.phone || '+234 800 000 0000',
-      cluster: newMemberData.cluster || 'Cluster 1',
-      buying_ramp: newMemberData.buying_ramp || 'Ramp Depot',
-      primary_crop: newMemberData.primary_crop || 'Oil Palm',
-      intercrop: newMemberData.intercrop || 'Agroforestry mix',
-      area_ha: parseFloat(newMemberData.area_ha) || 2.5,
-      stand_age_yrs: parseInt(newMemberData.stand_age_yrs) || 4,
-      eudr_status: 'Clear',
-      certification: newMemberData.certification || 'RSPO IS',
-      vigor_percentile: 85,
-      sar_rvi: 0.76,
-      status: 'Active',
-      last_scouted: 'Today',
+      phone: newMemberData.phone || '',
+      cluster: newMemberData.cluster || '',
+      buying_ramp: newMemberData.buying_ramp || '',
+      primary_crop: newMemberData.primary_crop || '',
+      intercrop: newMemberData.intercrop || '',
+      area_ha: parseFloat(newMemberData.area_ha) || null,
+      stand_age_yrs: parseInt(newMemberData.stand_age_yrs) || null,
+      eudr_status: 'Not checked',
+      certification: newMemberData.certification || '',
+      vigor_percentile: null,
+      sar_rvi: null,
+      status: 'Pending review',
+      last_scouted: null,
       boundary_file_name: newMemberData.boundary_file_name || null,
       geometry: newMemberData.geometry || null
     };
@@ -506,15 +427,14 @@ const SmallholderPortal = ({ onBack, onSignOut }) => {
                           <div className="text-[11px] text-slate-500">{m.intercrop} • {m.stand_age_yrs} yrs</div>
                         </td>
                         <td className="py-3.5 px-4">
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-50 text-[#16a34a] border border-green-200">
-                            <CheckCircle2 size={11} />
-                            <span>EUDR Deforestation-Free</span>
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-50 text-gray-700 border border-gray-200">
+                            {m.eudr_status || 'Not checked'}
                           </span>
                         </td>
                         <td className="py-3.5 px-4">
                           <div className="flex items-center gap-2">
                             <div className="w-16 bg-slate-100 h-2 rounded-full overflow-hidden">
-                              <div style={{ width: `${m.vigor_percentile}%` }} className="bg-[#16a34a] h-full" />
+                              <div style={{ width: `${m.vigor_percentile || 0}%` }} className="bg-[#16a34a] h-full" />
                             </div>
                             <span className="font-bold text-slate-800 text-[11px]">{m.vigor_percentile}%</span>
                           </div>
@@ -607,12 +527,8 @@ const SmallholderPortal = ({ onBack, onSignOut }) => {
               </div>
             </div>
 
-            <div className="p-3.5 bg-green-50/70 border border-green-200 rounded-xl flex items-center gap-3 text-xs">
-              <ShieldCheck size={20} className="text-[#16a34a] shrink-0" />
-              <div>
-                <span className="font-bold text-[#16a34a] block">EUDR 2020 Deforestation Screened</span>
-                <span className="text-slate-600 text-[11px]">Zero forest disturbance detected on polygon since 31 Dec 2020 baseline.</span>
-              </div>
+            <div className="p-3.5 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-700">
+              EUDR check: <span className="font-semibold">{selectedMember.eudr_status || 'Not checked'}</span>
             </div>
 
             <div className="flex justify-end pt-2">

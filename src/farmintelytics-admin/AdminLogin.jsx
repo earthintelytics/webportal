@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, Mail, Eye, EyeOff, ArrowRight, Key } from 'lucide-react';
+import { Lock, Mail, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { adminLogin } from '../services/adminApi';
+import { clearStoredAccounts } from '../services/session';
 
 // Also used as the gate for the internal platform hub (`/`): pass onSuccess
 // to stay on the current page instead of opening the admin console.
@@ -22,9 +23,7 @@ const AdminLogin = ({ onSuccess = null, context = 'admin' }) => {
       const res = await adminLogin(email, code);
       if (res.status === 'success' && res.token) {
         // Clear any previous tenant session data for complete isolation
-        ['fi_token', 'fi_email', 'fi_tenant', 'fi_role', 'fi_full_name',
-         'fi_display_name', 'fi_allowed_modules', 'fi_allowed_crops', 'fi_map_center', 'fi_logo_url']
-          .forEach(k => localStorage.removeItem(k));
+        clearStoredAccounts();
 
         localStorage.setItem('fi_admin_token', res.token);
         localStorage.setItem('fi_admin_email', res.email);
@@ -58,15 +57,6 @@ const AdminLogin = ({ onSuccess = null, context = 'admin' }) => {
           {error && (
             <div className="mt-6 p-3.5 rounded-[10px] border border-red-200 bg-red-50 text-sm text-red-800">{error}</div>
           )}
-
-          {/* Demo autofill — fills credentials in one click for demos */}
-          <button
-            type="button"
-            onClick={() => { setEmail('superadmin@farmintelytics.com'); setCode('Farmintelytics@2026!'); }}
-            className="mt-6 w-full flex items-center justify-center gap-2 rounded-[10px] border border-dashed border-slate-300 bg-slate-50 hover:bg-slate-100 py-2.5 text-xs font-semibold text-slate-500 hover:text-slate-700 transition-colors"
-          >
-            <Key size={14} className="text-slate-400" /> Fill demo credentials
-          </button>
 
           <form onSubmit={handleSubmit} className="mt-4 space-y-5">
             <div>

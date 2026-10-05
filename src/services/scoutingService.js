@@ -4,15 +4,16 @@
  * Supports localStorage queuing, background synchronization, and alert workflow transitions.
  */
 
+import { tenantKey } from './session';
+
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/farmintelytics-engine/agromonitoring';
-const OFFLINE_QUEUE_KEY = 'fi_scouting_offline_queue';
-const OFFLINE_OBSERVATIONS_KEY = 'fi_scouting_local_cache';
+
+// Offline caches are kept per organisation, so another user signing in on the
+// same device never syncs or sees this organisation's observations.
+const OFFLINE_QUEUE = 'fi_scouting_offline_queue';
+const OFFLINE_OBSERVATIONS = 'fi_scouting_local_cache';
 
 function handleTenantAuthFailure() {
-  const isAdmin = Boolean(localStorage.getItem('fi_admin_token'));
-  if (isAdmin) {
-    return;
-  }
   localStorage.removeItem('fi_token');
   localStorage.removeItem('fi_user');
   localStorage.removeItem('fi_tenant');
@@ -23,7 +24,7 @@ function handleTenantAuthFailure() {
 
 async function apiFetch(path, options = {}) {
   const url = `${API_BASE}${path}`;
-  const token = localStorage.getItem('fi_token') || localStorage.getItem('fi_admin_token');
+  const token = localStorage.getItem('fi_token');
   const headers = { 'Content-Type': 'application/json', ...options.headers };
   if (token) headers['Authorization'] = `Bearer ${token}`;
   
@@ -244,7 +245,7 @@ export async function syncOfflineQueue() {
 
 function getOfflineQueue() {
   try {
-    const raw = localStorage.getItem(OFFLINE_QUEUE_KEY);
+    const raw = localStorage.getItem(tenantKey(OFFLINE_QUEUE));
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
@@ -254,17 +255,17 @@ function getOfflineQueue() {
 function queueOfflineObservation(payload) {
   const queue = getOfflineQueue();
   queue.push({ type: 'OBSERVATION', payload, timestamp: new Date().toISOString() });
-  localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue));
+  localStorage.setItem(tenantKey(OFFLINE_QUEUE), JSON.stringify(queue));
 }
 
 function queueOfflineAction(action) {
   const queue = getOfflineQueue();
   queue.push(action);
-  localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue));
+  localStorage.setItem(tenantKey(OFFLINE_QUEUE), JSON.stringify(queue));
 }
 
 function clearOfflineQueue() {
-  localStorage.removeItem(OFFLINE_QUEUE_KEY);
+  localStorage.removeItem(tenantKey(OFFLINE_QUEUE));
 }
 
 export function getPendingSyncCount() {
@@ -273,10 +274,10 @@ export function getPendingSyncCount() {
 
 function cacheLocalObservation(obs) {
   try {
-    const raw = localStorage.getItem(OFFLINE_OBSERVATIONS_KEY);
+    const raw = localStorage.getItem(tenantKey(OFFLINE_OBSERVATIONS));
     const list = raw ? JSON.parse(raw) : [];
     list.unshift(obs);
-    localStorage.setItem(OFFLINE_OBSERVATIONS_KEY, JSON.stringify(list.slice(0, 50)));
+    localStorage.setItem(tenantKey(OFFLINE_OBSERVATIONS), JSON.stringify(list.slice(0, 50)));
   } catch (e) {
     console.debug('Failed to cache observation locally:', e);
   }
@@ -284,7 +285,7 @@ function cacheLocalObservation(obs) {
 
 export function getCachedObservations() {
   try {
-    const raw = localStorage.getItem(OFFLINE_OBSERVATIONS_KEY);
+    const raw = localStorage.getItem(tenantKey(OFFLINE_OBSERVATIONS));
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];

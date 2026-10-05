@@ -170,7 +170,8 @@ const TenantHub = ({ onSelectModule, onSignOut }) => {
     if (!file) return;
     setLogoUploading(true);
     try {
-      const tenantSlug = tenantInfo.tenant || 'okomu';
+      const tenantSlug = tenantInfo.tenant;
+      if (!tenantSlug) throw new Error('No organisation in this session');
       const res = await uploadOrganizationLogo(tenantSlug, file);
       const newUrl = res?.logo_url || URL.createObjectURL(file);
       setTenantInfo(prev => ({ ...prev, logoUrl: newUrl }));

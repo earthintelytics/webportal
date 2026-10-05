@@ -142,6 +142,7 @@ const AGROMONITOR_PATH = '/farmintelytics-engine/agromonitoring';
 
 
 import TenantHub from './pages/TenantHub';
+import { clearTenantSession, clearTeamSession } from './services/session';
 
 // ─── Hub page ────────────────────────────────────────────────────────────────
 // The hub is the FarmIntelytics team's own screen (every crop and organisation
@@ -183,15 +184,12 @@ const HubPage = () => {
   };
 
   const handleTeamSignOut = () => {
-    localStorage.removeItem('fi_admin_token');
-    localStorage.removeItem('fi_admin_email');
+    clearTeamSession();
     setTeamSignedIn(false);
   };
 
   const handleTenantSignOut = () => {
-    ['fi_token', 'fi_email', 'fi_tenant', 'fi_role', 'fi_full_name',
-     'fi_display_name', 'fi_allowed_modules', 'fi_allowed_crops', 'fi_map_center', 'fi_logo_url']
-      .forEach(key => localStorage.removeItem(key));
+    clearTenantSession();
     setTenantSignedIn(false);
     navigate('/login');
   };
@@ -269,6 +267,9 @@ const LoginPage = () => {
 };
 
 
+// Tools only the FarmIntelytics team uses (clients receive their reports).
+const TEAM_ONLY_MODULES = new Set(['suitability-tool']);
+
 // ─── Portal page (generic modules) ──────────────────────────────────────────
 const PortalPage = () => {
   const navigate = useNavigate();
@@ -280,9 +281,7 @@ const PortalPage = () => {
   useEffect(() => { if (moduleFromUrl) sessionStorage.setItem('fi_module', moduleFromUrl); }, [moduleFromUrl]);
 
   const handleSignOut = () => {
-    ['fi_token', 'fi_email', 'fi_tenant', 'fi_role', 'fi_full_name',
-     'fi_display_name', 'fi_allowed_modules', 'fi_allowed_crops', 'fi_map_center', 'fi_logo_url']
-      .forEach(key => localStorage.removeItem(key));
+    clearTenantSession();
     navigate(`/login?module=${encodeURIComponent(moduleId || '')}`);
     setActiveSection('dashboard');
   };
@@ -307,7 +306,9 @@ const PortalPage = () => {
     const raw = localStorage.getItem('fi_allowed_modules');
     if (raw) allowedModules = JSON.parse(raw);
   } catch { allowedModules = null; }
-  if (!hasValidTeamSession() && moduleId !== 'suitability-tool' && Array.isArray(allowedModules) && allowedModules.length > 0 && !allowedModules.includes(moduleId)) {
+  const teamOnly = TEAM_ONLY_MODULES.has(moduleId);
+  const notLicensed = Array.isArray(allowedModules) && allowedModules.length > 0 && !allowedModules.includes(moduleId);
+  if (!hasValidTeamSession() && (teamOnly || notLicensed)) {
     return (
       <div className="flex flex-col items-center justify-center h-screen p-20 text-center bg-white">
         <div className="w-20 h-20 rounded-[2.5rem] bg-white border border-[var(--border-light)] flex items-center justify-center mx-auto mb-8 shadow-premium">

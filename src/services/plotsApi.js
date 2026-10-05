@@ -31,7 +31,7 @@ function handleAuthFailure() {
 
 async function apiFetch(path, options = {}) {
   const url = `${API_BASE}${path}`;
-  const token = localStorage.getItem('fi_token') || localStorage.getItem('fi_admin_token');
+  const token = localStorage.getItem('fi_token');
   const headers = { 'Content-Type': 'application/json', ...options.headers };
   if (token) headers['Authorization'] = `Bearer ${token}`;
   const res = await fetch(url, { cache: 'no-store', ...options, headers });
@@ -101,7 +101,7 @@ export async function fetchPlotsIntelligence(filters = {}) {
  */
 export async function fetchPlotsGeoParquet() {
   const url = `${API_BASE}/plots/geoparquet`;
-  const token = localStorage.getItem('fi_token') || localStorage.getItem('fi_admin_token');
+  const token = localStorage.getItem('fi_token');
   const headers = {};
   if (token) headers['Authorization'] = `Bearer ${token}`;
   const res = await fetch(url, { cache: 'no-store', headers });

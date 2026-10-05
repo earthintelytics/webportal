@@ -98,10 +98,10 @@ const SuitabilityCropAnalysis = ({ cropId, companyId, initialRun, onBack, onOpen
 
   // Live plots & tenant intelligence
   const [plots, setPlots] = useState([]);
-  const tenant = localStorage.getItem('fi_tenant') || companyId || 'okomu';
-  const tenantDisplayName = localStorage.getItem('fi_display_name') || companyId.toUpperCase();
-  const userEmail = localStorage.getItem('fi_email') || 'demo@farmintelytics.com';
-  const userRole = localStorage.getItem('fi_role') || 'Admin';
+  const tenant = companyId;
+  const tenantDisplayName = companyId;
+  const userEmail = localStorage.getItem('fi_admin_email') || '';
+  const userRole = 'FarmIntelytics team';
 
   // New Analysis Form State
   const [targetEstate, setTargetEstate] = useState('Main Estate');

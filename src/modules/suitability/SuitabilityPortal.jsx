@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Target, Plus, Building2, Sparkles, Layers, ArrowRight, CheckCircle2, Clock } from 'lucide-react';
-import CompanySelector from './components/CompanySelector';
 import CropCard from './components/CropCard';
 import SuitabilityCropAnalysis from './SuitabilityCropAnalysis';
 import { SUITABILITY_CROPS } from './suitabilityCatalog';
@@ -8,29 +7,27 @@ import { fetchCompanies, fetchSuitabilityRuns } from './suitabilityApi';
 
 const SuitabilityPortal = ({ onBack, onSignOut }) => {
   const [companies, setCompanies] = useState([]);
-  const [selectedCompanyId, setSelectedCompanyId] = useState('okomu');
+  const [selectedCompanyId, setSelectedCompanyId] = useState(null);
   const [runsMap, setRunsMap] = useState({});
   const [loading, setLoading] = useState(true);
 
   const [activeCropId, setActiveCropId] = useState(null);
   const [selectedRun, setSelectedRun] = useState(null);
 
-  useEffect(() => {
-    async function loadData() {
-      setLoading(true);
-      const comps = await fetchCompanies();
-      setCompanies(comps);
+  const [error, setError] = useState('');
 
-      const defaultCid = comps.length > 0 ? comps[0].company_id : (localStorage.getItem('fi_tenant') || 'okomu');
-      setSelectedCompanyId(defaultCid);
-      await loadRunsForCompany(defaultCid);
-      setLoading(false);
-    }
-    loadData();
+  // The team picks the organisation; nothing is chosen for them.
+  useEffect(() => {
+    fetchCompanies()
+      .then(setCompanies)
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
   }, []);
 
   const loadRunsForCompany = async (companyId) => {
-    const allRuns = await fetchSuitabilityRuns(companyId);
+    if (!companyId) { setRunsMap({}); return; }
+    let allRuns = [];
+    try { allRuns = await fetchSuitabilityRuns(companyId); } catch (e) { setError(e.message); }
     const map = {};
     allRuns.forEach(run => {
       if (!map[run.crop] || new Date(run.created_at) > new Date(map[run.crop].created_at)) {
@@ -63,8 +60,6 @@ const SuitabilityPortal = ({ onBack, onSignOut }) => {
     );
   }
 
-  const currentCompany = companies.find(c => c.company_id === selectedCompanyId) || { company_id: selectedCompanyId, company_name: selectedCompanyId.toUpperCase() };
-
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 font-sans flex flex-col">
       {/* Portal Navbar matching CropDashboardLayout style */}
@@ -96,8 +91,18 @@ const SuitabilityPortal = ({ onBack, onSignOut }) => {
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-          </div>
+          <label className="flex items-center gap-2 text-sm text-gray-600">
+            Organisation
+            <select
+              value={selectedCompanyId || ''}
+              onChange={(e) => handleSelectCompany(e.target.value || null)}
+              disabled={loading}
+              className="px-3 py-2 rounded-xl border border-gray-300 bg-white text-sm text-gray-900 focus:border-green-600 focus:outline-none"
+            >
+              <option value="">{loading ? 'Loading…' : 'Choose an organisation'}</option>
+              {companies.map((c) => <option key={c.company_id} value={c.company_id}>{c.company_name || c.company_id}</option>)}
+            </select>
+          </label>
         </div>
       </header>
 
@@ -115,6 +120,11 @@ const SuitabilityPortal = ({ onBack, onSignOut }) => {
           </span>
         </div>
 
+        {error && <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-3">{error.includes('not connected') ? 'The suitability service is not connected yet.' : error}</p>}
+        {!selectedCompanyId && !error && (
+          <p className="text-sm text-gray-600 bg-white border border-dashed border-gray-300 rounded-2xl px-5 py-4">Choose an organisation to see its suitability analyses.</p>
+        )}
+
         {/* 8 Crop Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {SUITABILITY_CROPS.map((crop) => (
@@ -123,6 +133,7 @@ const SuitabilityPortal = ({ onBack, onSignOut }) => {
               crop={crop}
               lastRun={runsMap[crop.id]}
               onClick={() => {
+                if (!selectedCompanyId) return;
                 setSelectedRun(null);
                 setActiveCropId(crop.id);
               }}

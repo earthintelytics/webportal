@@ -5,6 +5,7 @@ import {
 import { login, fetchCropMonitoringConfig } from '../services/organizationMonitorApi';
 import ForgotPasswordModal from '../components/ForgotPasswordModal';
 import { HERO_PLACEHOLDERS } from '../constants/heroPlaceholders';
+import { clearStoredAccounts } from '../services/session';
 
 // ─── Crop & Subapp Design System Registry (Clean Light Theme) ────────────────
 const CROP_DESIGNS = {
@@ -327,9 +328,7 @@ const Login = ({ onLogin, moduleName, onBack, defaultEmail = '', defaultCode = '
       const response = await login(email, accessCode);
       if (response.status === 'success' && response.token && response.tenant) {
         // Explicitly clear any previous session data for 100% portal isolation
-        ['fi_token', 'fi_email', 'fi_tenant', 'fi_role', 'fi_full_name',
-         'fi_display_name', 'fi_allowed_modules', 'fi_allowed_crops', 'fi_map_center', 'fi_logo_url',
-         'fi_admin_token', 'fi_admin_email'].forEach(k => localStorage.removeItem(k));
+        clearStoredAccounts();
 
         localStorage.setItem('fi_token', response.token);
         localStorage.setItem('fi_email', response.email);
@@ -359,11 +358,6 @@ const Login = ({ onLogin, moduleName, onBack, defaultEmail = '', defaultCode = '
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleFillDemo = (emailToSet = 'demo@farmintelytics.com', codeToSet = '***REMOVED***') => {
-    setEmail(emailToSet);
-    setAccessCode(codeToSet);
   };
 
   return (
@@ -498,14 +492,6 @@ const Login = ({ onLogin, moduleName, onBack, defaultEmail = '', defaultCode = '
               </button>
             </form>
 
-            {/* Demo quick-fill (demo server only) */}
-            <div className="mt-6 flex items-center gap-2 text-xs text-[var(--text-muted)]">
-              <span>Demo:</span>
-              <button type="button" onClick={() => handleFillDemo('demo@farmintelytics.com', '***REMOVED***')}
-                className="px-2.5 py-1 rounded-md border border-[var(--border-light)] hover:bg-[var(--bg-main)] text-[var(--text-main)]">Okomu</button>
-              <button type="button" onClick={() => handleFillDemo('olam@farmintelytics.com', '***REMOVED***')}
-                className="px-2.5 py-1 rounded-md border border-[var(--border-light)] hover:bg-[var(--bg-main)] text-[var(--text-main)]">Olam</button>
-            </div>
           </div>
         </div>
 

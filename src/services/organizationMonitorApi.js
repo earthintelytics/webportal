@@ -28,7 +28,7 @@ function handleTenantAuthFailure() {
 /** Generic fetch helper with JSON parsing and error handling */
 async function apiFetch(path, options = {}) {
   const url = `${API_BASE}${path}`;
-  const token = localStorage.getItem('fi_token') || localStorage.getItem('fi_admin_token');
+  const token = localStorage.getItem('fi_token');
   const headers = {
     'Content-Type': 'application/json',
     ...options.headers,

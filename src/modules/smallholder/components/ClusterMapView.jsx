@@ -67,7 +67,8 @@ const ClusterMapView = () => {
     let active = true;
     async function loadPlots() {
       try {
-        const tenant = localStorage.getItem('fi_tenant') || 'okomu';
+        const tenant = localStorage.getItem('fi_tenant');
+        if (!tenant) return;
         const [plotsRes, boundaryRes] = await Promise.all([
           api.fetchPlotsIntelligence(tenant).catch(() => []),
           api.fetchFarmBoundary().catch(() => null)
