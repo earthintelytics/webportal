@@ -1,4 +1,10 @@
-# Stage 1: Build static assets with Node.js
+# ==============================================================================
+# Farmintelytics Web Portal Production Multi-Stage Container Image Definition
+# Stage 1: Build static distribution bundle with Node.js
+# Stage 2: Serve optimized assets via Nginx 1.25 Alpine
+# ==============================================================================
+
+# Stage 1: Build
 FROM node:20-alpine AS builder
 
 WORKDIR /app
@@ -9,11 +15,15 @@ RUN npm install --legacy-peer-deps
 COPY . .
 RUN npm run build
 
-# Stage 2: Serve static bundle via lightweight Nginx
+# Stage 2: Production Web Server
 FROM nginx:1.25-alpine
 
 COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx.prod.conf /etc/nginx/conf.d/default.conf
+
+# Health check probe for static web server
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+    CMD wget --quiet --tries=1 --spider http://localhost:5173/ || exit 1
 
 EXPOSE 5173
 
