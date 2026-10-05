@@ -48,6 +48,10 @@ const FormBuilder = ({ initial, onSave, onCancel, saving, error }) => {
         <Field label="Form title"><input className={inputCls} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="e.g. New member registration" /></Field>
         <Field label="Description" hint="Shown to farmers at the top of the form."><input className={inputCls} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></Field>
       </div>
+      <label className="flex items-center gap-2 text-sm text-gray-800">
+        <input type="checkbox" checked={form.purpose === 'registration'} onChange={(e) => setForm({ ...form, purpose: e.target.checked ? 'registration' : '' })} />
+        This form registers members and their farms (used by Add member)
+      </label>
 
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px_340px] gap-6 items-start">
         <Card className="p-5 space-y-4">

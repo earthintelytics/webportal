@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { fetchPublicForm, submitPublicForm } from '../../services/formsApi';
 import FormRenderer from './FormRenderer';
 import { validateAnswers } from './fieldTypes';
+import { submissionBody, draftable as draftAnswers } from './submission';
 
 const draftKey = (token) => `fi_form_draft:${token}`;
 const readDraft = (token) => { try { return JSON.parse(localStorage.getItem(draftKey(token)) || '{}'); } catch { return {}; } };
@@ -28,7 +29,7 @@ const PublicFormPage = () => {
   }, [token]);
 
   // Keep a draft of everything except photos (files cannot be stored this way).
-  const draftable = useMemo(() => Object.fromEntries(Object.entries(answers).filter(([, v]) => !(Array.isArray(v) && v[0] instanceof File))), [answers]);
+  const draftable = useMemo(() => draftAnswers(answers), [answers]);
   useEffect(() => { try { localStorage.setItem(draftKey(token), JSON.stringify(draftable)); } catch { /* storage full or blocked */ } }, [draftable, token]);
 
   const send = async () => {
@@ -36,14 +37,7 @@ const PublicFormPage = () => {
     setErrors(errs);
     if (Object.keys(errs).length) { setSendError('Some answers need attention.'); return; }
     setSending(true); setSendError('');
-    const body = new FormData();
-    const plain = {};
-    Object.entries(answers).forEach(([id, v]) => {
-      if (Array.isArray(v) && v[0] instanceof File) v.forEach((file, i) => body.append(`photo:${id}`, file, `${id}_${i + 1}_${file.name}`));
-      else plain[id] = v;
-    });
-    body.append('answers', JSON.stringify(plain));
-    body.append('device_time', new Date().toISOString());
+    const body = submissionBody(answers);
     try {
       await submitPublicForm(token, body);
       localStorage.removeItem(draftKey(token));

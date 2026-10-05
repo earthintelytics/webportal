@@ -10,15 +10,6 @@ export const createMember = (member) => serviceCall('/smallholder/members', { me
 export const updateMember = (id, member) => serviceCall(`/smallholder/members/${encodeURIComponent(id)}`, { method: 'PATCH', body: member });
 
 export const fetchParcels = (params) => serviceCall(`/smallholder/parcels${query({ format: 'geojson', ...params })}`);
-export const createParcel = (parcel) => serviceCall('/smallholder/parcels', { method: 'POST', body: parcel });
 
 export const fetchCarbonSummary = (params) => serviceCall(`/smallholder/carbon-summary${query(params)}`);
 
-/** Boundary files the browser cannot read (KML, KMZ, zipped shapefile) go to the backend as they are. */
-export const uploadParcelFile = (memberId, file, extra = {}) => {
-  const form = new FormData();
-  form.append('member_id', memberId);
-  form.append('file', file);
-  Object.entries(extra).forEach(([k, v]) => v != null && v !== '' && form.append(k, v));
-  return serviceCall('/smallholder/parcels', { method: 'POST', form });
-};

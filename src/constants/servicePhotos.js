@@ -10,7 +10,7 @@ export const SERVICE_PHOTOS = {
   'forestry-intel': '/crops/forestry.webp', 'carbon-estimator': '/crops/estimator.webp',
   'land-restoration': '/crops/restoration.webp', 'eudr-check': '/crops/eudr.webp',
   advisor: '/crops/advisor.webp',
-  'smallholder-members': '/crops/smallholder.webp', 'smallholder-forms': '/crops/field_logs.webp',
+  'smallholder-members': '/crops/smallholder.webp',
   'group-monitoring': '/crops/advisor.webp', 'smallholder-eudr': '/crops/eudr.webp',
   'rs-drone': '/crops/drone.webp',
 };
@@ -32,8 +32,7 @@ export const SERVICE_GROUPS = [
     { id: 'rs-drone', label: 'Drone surveys', desc: 'Drone imagery with satellite context' },
   ] },
   { id: 'smallholder', label: 'Smallholder', services: [
-    { id: 'smallholder-members', label: 'Members and parcels', desc: 'Member and parcel register with parcel checks' },
-    { id: 'smallholder-forms', label: 'Forms', desc: 'Forms with photos and GPS, sent by link' },
+    { id: 'smallholder-members', label: 'Members and parcels', desc: 'Registration forms the co-op designs, the member and parcel register, parcel checks' },
     { id: 'group-monitoring', label: 'Field monitoring', desc: 'Member farms from satellite' },
     { id: 'carbon-groups', label: 'Group carbon', desc: 'Carbon estimate per group and member' },
     { id: 'smallholder-eudr', label: 'EUDR passport', desc: 'Location and deforestation check per member' },
@@ -44,5 +43,5 @@ export const SERVICE_GROUPS = [
 export const SERVICE_PACKAGES = [
   { id: 'slm', label: 'SLM programme', desc: 'Sustainable Land Management: restoration and advisor', services: ['land-restoration', 'advisor'] },
   { id: 'eudr-supply', label: 'EUDR supply chain', desc: 'EUDR check and evidence pack', services: ['eudr-check'] },
-  { id: 'smallholder', label: 'Smallholder co-operative', desc: 'Members, forms, field monitoring, group carbon and EUDR passport', services: ['smallholder-members', 'smallholder-forms', 'group-monitoring', 'carbon-groups', 'smallholder-eudr'] },
+  { id: 'smallholder', label: 'Smallholder co-operative', desc: 'Members and parcels, field monitoring, group carbon and EUDR passport', services: ['smallholder-members', 'group-monitoring', 'carbon-groups', 'smallholder-eudr'] },
 ];

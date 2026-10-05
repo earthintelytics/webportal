@@ -171,19 +171,11 @@ export const SERVICE_CATALOG = {
     overviewText: 'Every member parcel on the map, with its condition from satellite.',
     sidebar: [
       { id: 'members', label: 'Members and parcels' },
+      { id: 'forms', label: 'Registration forms' },
+      { id: 'submissions', label: 'Answers to review' },
       { id: 'analytics', label: 'Parcel map' },
     ],
     analytics: [{ id: 'overview', label: 'Overview' }],
-    topTabs: HEADER_TABS,
-  },
-  'smallholder-forms': {
-    title: 'Forms',
-    subtitle: 'Smallholder',
-    sidebar: [
-      { id: 'forms', label: 'Forms' },
-      { id: 'submissions', label: 'Answers' },
-    ],
-    analytics: [],
     topTabs: HEADER_TABS,
   },
   'group-monitoring': {

@@ -173,8 +173,6 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
 
   const [activeSidebarItem, setActiveSidebarItem] = useState(service?.sidebar?.[0]?.id || 'analytics');
   const [answersForm, setAnswersForm] = useState(null);
-  // Smallholder services link to each other (e.g. Members → Forms).
-  const navigateToService = (id) => { window.location.assign(`/portal/${encodeURIComponent(id)}`); };
   // Estate selector (organisations with several estates): 'All' or an estate
   // name. Lives in the URL (?estate=) so a link or refresh keeps the choice.
   const [filterEstate, setFilterEstate] = useState(() => new URLSearchParams(window.location.search).get('estate') || 'All');
@@ -6370,7 +6368,7 @@ Context: ${context}.`;
             <AdvicePage page={service.advice} alerts={alerts} onAsk={(q) => { setActiveSidebarItem('analytics'); setActiveTab('ai-assistant'); handleChatSubmit(q); }} />
           )}
 
-          {activeSidebarItem === 'members' && <MembersPage onOpenForms={() => navigateToService('smallholder-forms')} />}
+          {activeSidebarItem === 'members' && <MembersPage onOpenForms={() => handleSidebarClick('forms')} onOpenAnswers={() => handleSidebarClick('submissions')} />}
           {activeSidebarItem === 'forms' && <FormsPage onOpenAnswers={(id) => { setAnswersForm(id); setActiveSidebarItem('submissions'); }} />}
           {activeSidebarItem === 'submissions' && <SubmissionsPage key={answersForm || 'all'} formId={answersForm} />}
           {activeSidebarItem === 'group-carbon' && <GroupCarbonPage />}

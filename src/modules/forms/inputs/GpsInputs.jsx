@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { MapPin, Plus, Undo2 } from 'lucide-react';
 import { ringAreaHa } from '../geo';
+import { boundaryCheck } from '../../../farmintelytics-admin/components/validation';
 
 const readPosition = () => new Promise((resolve, reject) => {
   if (!navigator.geolocation) { reject(new Error('This phone cannot share its location.')); return; }
@@ -50,6 +51,35 @@ export const BoundaryWalkInput = ({ value, onChange }) => {
       </div>
       <p className="text-xs text-gray-700">{points.length} corner{points.length === 1 ? '' : 's'}{points.length >= 3 ? ` · about ${area.toFixed(2)} ha` : ''}</p>
       {error && <p className="text-xs text-red-700">{error}</p>}
+    </div>
+  );
+};
+
+const BROWSER_READABLE = /\.(geo)?json$/i;
+
+/**
+ * A boundary file. GeoJSON is checked here (polygons, longitude/latitude);
+ * KML, KMZ and zipped shapefiles are sent as they are and checked after
+ * sending. Value: { file, geojson?, note?, error? }.
+ */
+export const BoundaryFileInput = ({ value, onChange }) => {
+  const pick = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) { onChange(null); return; }
+    if (!BROWSER_READABLE.test(file.name)) { onChange({ file, note: 'Read and checked after sending.' }); return; }
+    try {
+      const geojson = JSON.parse(await file.text());
+      const check = boundaryCheck(geojson, file.size);
+      onChange(check.error ? { file, error: check.error } : { file, geojson, note: `${check.polygons} polygon${check.polygons > 1 ? 's' : ''} read.` });
+    } catch {
+      onChange({ file, error: 'The file is not valid GeoJSON.' });
+    }
+  };
+  return (
+    <div className="space-y-2">
+      <input type="file" accept=".geojson,.json,.kml,.kmz,.zip" onChange={pick} className="block w-full text-sm text-gray-700 file:mr-3 file:px-3 file:py-2 file:rounded-lg file:border file:border-gray-300 file:bg-white file:text-sm" />
+      {value?.file && <p className="text-xs text-gray-600">{value.file.name}{value.note ? ` · ${value.note}` : ''}</p>}
     </div>
   );
 };

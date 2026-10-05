@@ -218,19 +218,6 @@ const CROP_DESIGNS = {
     features: [],
     stats: []
   },
-  forms: {
-    key: 'forms',
-    name: 'Forms',
-    branding: 'Forms',
-    accentColor: '#16A34A',
-    lightBg: '#F0FDF4',
-    badge: 'Smallholder · Forms',
-    heroImage: '/crops/hero/field_logs.webp',
-    title: <>Your own <span className="text-emerald-500 font-black">forms</span>, filled in the field</>,
-    desc: 'Design the forms your farmers fill in, with photos and locations, and approve what comes back.',
-    features: [],
-    stats: []
-  },
   advisor: {
     key: 'advisor',
     name: 'Farm AI Advisor',
@@ -284,7 +271,6 @@ function resolveCropDesign(moduleName) {
   if (lower.includes('carbon estimator')) return CROP_DESIGNS.estimator;
   if (lower.includes('restoration')) return CROP_DESIGNS.restoration;
   if (lower.includes('eudr')) return CROP_DESIGNS.eudr;
-  if (lower === 'forms') return CROP_DESIGNS.forms;
   if (lower.includes('advisor')) return CROP_DESIGNS.advisor;
   if (lower.includes('ledger') || lower.includes('finance')) return CROP_DESIGNS.finance;
   if (lower.includes('oil palm') || lower.includes('ffb') || lower.includes('rs-ffb')) return CROP_DESIGNS.oil_palm;

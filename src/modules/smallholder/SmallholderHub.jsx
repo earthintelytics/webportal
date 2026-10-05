@@ -9,8 +9,7 @@ import { SMALLHOLDER_SERVICES } from '../registry';
  * only the services its organisation is licensed for; the team sees all.
  */
 const SMALLHOLDER_CARDS = [
-  { id: 'smallholder-members', title: 'Members and parcels', text: 'Your farmers, their groups and their land, with checks on every parcel.', photo: '/crops/smallholder.webp' },
-  { id: 'smallholder-forms', title: 'Forms', text: 'Design your own forms with photos and GPS, send a link, approve the answers.', photo: '/crops/field_logs.webp' },
+  { id: 'smallholder-members', title: 'Members and parcels', text: 'Design your registration form, send it to farmers or fill it yourself, and keep one register of members and their land.', photo: '/crops/smallholder.webp' },
   { id: 'group-monitoring', title: 'Field monitoring', text: 'How member farms are doing, from satellite, and which need a visit.', photo: '/crops/advisor.webp' },
   { id: 'carbon-groups', title: 'Group carbon', text: 'Estimated carbon in member farms, per group and per member.', photo: '/crops/group_carbon.webp' },
   { id: 'smallholder-eudr', title: 'EUDR passport', text: 'Location and deforestation check per member, for EU buyers.', photo: '/crops/eudr.webp' },

@@ -5,6 +5,7 @@ import { PageHeader, Card, NotConnectedNote, ErrorNote, EmptyState, PrimaryButto
 import { useLoader } from '../../components/page/useLoader';
 import FormBuilder from './FormBuilder';
 import FormLinks from './FormLinks';
+import { starterRegistrationForm } from './fieldTypes';
 
 /**
  * Forms: the co-operative designs its own forms (what it asks farmers, with
@@ -28,7 +29,7 @@ const FormsPage = ({ onOpenAnswers }) => {
   };
 
   if (editing) {
-    const isNew = editing === 'new';
+    const isNew = editing === 'new' || !editing.id;
     return (
       <div className="p-10 space-y-6">
         <button onClick={() => { setEditing(null); setTab('design'); }} className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"><ArrowLeft size={15} />All forms</button>
@@ -41,7 +42,7 @@ const FormsPage = ({ onOpenAnswers }) => {
             <button onClick={() => onOpenAnswers?.(editing.id)} className="-mb-px pb-3 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-800">Answers</button>
           </nav>
         )}
-        {(isNew || tab === 'design') && <FormBuilder key={isNew ? 'new' : editing.id} initial={isNew ? undefined : editing} onSave={save} onCancel={() => setEditing(null)} saving={saving} error={saveError} />}
+        {(isNew || tab === 'design') && <FormBuilder key={isNew ? 'new' : editing.id} initial={editing === 'new' ? undefined : editing} onSave={save} onCancel={() => setEditing(null)} saving={saving} error={saveError} />}
         {!isNew && tab === 'links' && <FormLinks form={editing} />}
       </div>
     );
@@ -50,14 +51,14 @@ const FormsPage = ({ onOpenAnswers }) => {
   return (
     <div className="p-10 space-y-8">
       <PageHeader
-        title="Forms"
-        text="Design the forms your farmers fill in: questions, photos, location and field boundaries. Send a link; approved answers fill the member register."
+        title="Registration forms"
+        text="Design the form that registers your members and their farms: your own questions, photos, location and boundaries. Use it here with Add member, or send its link to farmers; approved answers fill the register."
         actions={<PrimaryButton onClick={() => setEditing('new')} disabled={state === 'not_connected'}><Plus size={15} />New form</PrimaryButton>}
       />
       {state === 'not_connected' && <NotConnectedNote what="Forms" />}
       {state === 'error' && <ErrorNote message={error} onRetry={reload} />}
       {state === 'ready' && forms.length === 0 && (
-        <EmptyState title="No forms yet" text="Start with a member registration form: name, phone, group, a photo and a walked boundary." action={<PrimaryButton onClick={() => setEditing('new')}><Plus size={15} />New form</PrimaryButton>} />
+        <EmptyState title="No forms yet" text="Start from our registration form (name, phone, national ID, group, photo, crop, year planted, farm boundary) and change it to suit you, or start from a blank form." action={<div className="flex justify-center gap-3"><PrimaryButton onClick={() => setEditing(starterRegistrationForm())}>Start from our registration form</PrimaryButton><SecondaryButton onClick={() => setEditing('new')}>Blank form</SecondaryButton></div>} />
       )}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
         {forms.map((f) => (
@@ -66,6 +67,7 @@ const FormsPage = ({ onOpenAnswers }) => {
               <h3 className="font-display text-lg font-semibold text-gray-900">{f.title}</h3>
               {f.description && <p className="text-sm text-gray-500 mt-1 line-clamp-2">{f.description}</p>}
             </div>
+            {f.purpose === 'registration' && <span className="w-fit text-xs font-medium px-2 py-0.5 rounded-full border bg-green-50 text-[var(--brand-primary-dark)] border-green-200">Registers members</span>}
             <p className="text-xs text-gray-500">{(f.fields || []).length} fields · {f.submissions_count ?? 0} answers{f.updated_at ? ` · changed ${new Date(f.updated_at).toLocaleDateString()}` : ''}</p>
             <div className="flex gap-2 mt-auto">
               <SecondaryButton onClick={() => { setEditing(f); setTab('design'); }}>Edit</SecondaryButton>

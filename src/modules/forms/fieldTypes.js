@@ -12,6 +12,7 @@ export const FIELD_TYPES = [
   { type: 'photo', label: 'Photo', photos: true },
   { type: 'gps_point', label: 'GPS point' },
   { type: 'boundary_walk', label: 'Walked boundary' },
+  { type: 'boundary_file', label: 'Boundary file' },
   { type: 'signature', label: 'Signature' },
   { type: 'section', label: 'Section heading', noAnswer: true },
 ];
@@ -26,7 +27,7 @@ export const MAPS_TO = [
   { value: 'member.national_id', label: 'Member: national ID', types: ['text'] },
   { value: 'member.group', label: 'Member: group', types: ['choice', 'text'] },
   { value: 'member.photo', label: 'Member: photo', types: ['photo'] },
-  { value: 'parcel.geometry', label: 'Parcel: boundary', types: ['boundary_walk'] },
+  { value: 'parcel.geometry', label: 'Parcel: boundary', types: ['boundary_walk', 'boundary_file'] },
   { value: 'parcel.point', label: 'Parcel: location (point)', types: ['gps_point'] },
   { value: 'parcel.crop', label: 'Parcel: crop', types: ['choice', 'text'] },
   { value: 'parcel.planting_year', label: 'Parcel: planting year', types: ['number'] },
@@ -74,6 +75,34 @@ export function validateAnswers(fields, answers) {
     }
     if (f.type === 'phone' && !/^\+?[0-9 ()-]{7,20}$/.test(v)) errors[f.id] = 'Use digits and an optional +';
     if (f.type === 'boundary_walk' && (!Array.isArray(v) || v.length < 3)) errors[f.id] = 'Walk at least 3 corners';
+    if (f.type === 'boundary_file' && v?.error) errors[f.id] = v.error;
   });
   return errors;
+}
+
+/**
+ * A starting point for a co-operative's registration form: member details
+ * and one parcel. The co-op changes it freely in the builder.
+ */
+export function starterRegistrationForm() {
+  const f = (type, label, extra = {}) => ({ ...newField(type), label, ...extra });
+  return {
+    title: 'Member registration',
+    description: 'Register a farmer and their farm.',
+    purpose: 'registration',
+    fields: [
+      f('section', 'The farmer'),
+      f('text', 'Full name', { required: true, maps_to: 'member.name' }),
+      f('phone', 'Phone number', { maps_to: 'member.phone' }),
+      f('text', 'National ID', { maps_to: 'member.national_id' }),
+      f('text', 'Group or community', { maps_to: 'member.group' }),
+      f('photo', 'Photo of the farmer', { maps_to: 'member.photo' }),
+      f('section', 'The farm'),
+      f('text', 'Main crop', { maps_to: 'parcel.crop' }),
+      f('number', 'Year planted', { min: 1950, max: new Date().getFullYear(), maps_to: 'parcel.planting_year' }),
+      f('boundary_walk', 'Walk the farm boundary', { help: 'Or upload a boundary file below.', maps_to: 'parcel.geometry' }),
+      f('boundary_file', 'Boundary file', { help: 'GeoJSON, KML, KMZ or a zipped shapefile.', maps_to: 'parcel.geometry' }),
+      f('signature', 'Signature of the farmer'),
+    ],
+  };
 }

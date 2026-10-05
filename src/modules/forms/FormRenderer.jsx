@@ -1,5 +1,5 @@
 import { isShown, typeInfo } from './fieldTypes';
-import { GpsPointInput, BoundaryWalkInput } from './inputs/GpsInputs';
+import { GpsPointInput, BoundaryWalkInput, BoundaryFileInput } from './inputs/GpsInputs';
 import { PhotoInput, SignatureInput } from './inputs/MediaInputs';
 
 const inputCls = 'w-full px-3.5 py-3 rounded-xl border border-gray-300 bg-white text-base text-gray-900 focus:border-green-600 focus:outline-none';
@@ -37,6 +37,7 @@ function Input({ field, value, onChange }) {
     case 'photo': return <PhotoInput value={value} onChange={onChange} max={field.max_photos || 1} />;
     case 'gps_point': return <GpsPointInput value={value} onChange={onChange} />;
     case 'boundary_walk': return <BoundaryWalkInput value={value} onChange={onChange} />;
+    case 'boundary_file': return <BoundaryFileInput value={value} onChange={onChange} />;
     case 'signature': return <SignatureInput value={value} onChange={onChange} />;
     default:
       return <input type="text" className={inputCls} value={value ?? ''} onChange={(e) => onChange(e.target.value)} />;

@@ -26,10 +26,12 @@ const CROPS = {
 // Old IDs still found in links and organisation settings.
 const ALIASES = {
   'group-management': 'smallholder-hub',
+  // Forms are part of Members and parcels: the registration form fills the register.
+  'smallholder-forms': 'smallholder-members',
 };
 
 // Services reached from the Smallholder hub; licensing any of them opens the hub.
-export const SMALLHOLDER_SERVICES = ['group-monitoring', 'carbon-groups', 'smallholder-members', 'smallholder-forms', 'smallholder-eudr'];
+export const SMALLHOLDER_SERVICES = ['group-monitoring', 'carbon-groups', 'smallholder-members', 'smallholder-eudr'];
 
 export const canonicalModuleId = (id) => ALIASES[id] || id;
 

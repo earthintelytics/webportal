@@ -4,7 +4,7 @@ import { fetchGroups, fetchMembers } from '../../../services/smallholderApi';
 import { PageHeader, Card, NotConnectedNote, ErrorNote, EmptyState, StatusPill, PrimaryButton, SecondaryButton } from '../../../components/page/PageKit';
 import { inputCls, useLoader } from '../../../components/page/useLoader';
 import MemberDrawer from './MemberDrawer';
-import AddMemberDialog from './AddMemberDialog';
+import AddMemberEntry from './AddMemberEntry';
 import { EUDR_STATUS, MEMBER_STATUS } from '../smallholderLabels';
 
 const PAGE_SIZE = 50;
@@ -13,7 +13,7 @@ const PAGE_SIZE = 50;
  * Members & parcels: the co-operative's register. Members arrive from the
  * co-op's own entry, uploads or approved form submissions (Forms page).
  */
-const MembersPage = ({ onOpenForms }) => {
+const MembersPage = ({ onOpenForms, onOpenAnswers }) => {
   const [filters, setFilters] = useState({ q: '', group: 'all', status: 'all', eudr: 'all' });
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState(null);
@@ -45,10 +45,11 @@ const MembersPage = ({ onOpenForms }) => {
     <div className="p-10 space-y-8">
       <PageHeader
         title="Members and parcels"
-        text="Every farmer in your co-operative, their group and their land. Add members here, upload a list under Your data, or send a form link and approve what farmers send."
+        text="Every farmer in your co-operative, their group and their land. Members come from your registration form: fill it here, or send its link to farmers and approve their answers."
         actions={<>
           <SecondaryButton onClick={exportCsv} disabled={!rows.length}><Download size={15} />Export</SecondaryButton>
-          <SecondaryButton onClick={onOpenForms}>Send a form</SecondaryButton>
+          <SecondaryButton onClick={onOpenAnswers}>Answers to review</SecondaryButton>
+          <SecondaryButton onClick={onOpenForms}>Registration forms</SecondaryButton>
           <PrimaryButton onClick={() => setAdding(true)} disabled={!connected}><Plus size={15} />Add member</PrimaryButton>
         </>}
       />
@@ -80,7 +81,7 @@ const MembersPage = ({ onOpenForms }) => {
       {state === 'ready' && rows.length === 0 && (
         <EmptyState
           title="No members yet"
-          text="Add the first member, upload your member list under Your data, or create a form and send its link to farmers."
+          text="Add the first member with your registration form, send the form's link to farmers, or upload a member list under Your data."
           action={<PrimaryButton onClick={() => setAdding(true)}><Plus size={15} />Add member</PrimaryButton>}
         />
       )}
@@ -132,7 +133,7 @@ const MembersPage = ({ onOpenForms }) => {
       )}
 
       {selected && <MemberDrawer member={selected} onClose={() => setSelected(null)} onSaved={reload} />}
-      {adding && <AddMemberDialog groups={groups} onClose={() => setAdding(false)} onSaved={() => { setAdding(false); reload(); }} />}
+      {adding && <AddMemberEntry onClose={() => setAdding(false)} onSaved={() => { setAdding(false); reload(); }} onDesign={() => { setAdding(false); onOpenForms?.(); }} />}
     </div>
   );
 };
