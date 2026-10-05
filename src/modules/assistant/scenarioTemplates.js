@@ -3,7 +3,7 @@
  * (docs/WORK_SPLIT.md, "Assistant scenarios"). The Assistant is an advisor,
  * not only a question box: each template is a what-if case with parameters
  * the user fills in. Scenarios come from the crop and service documents
- * (docs/crops, docs/services); none promises a certified or measured result.
+ * (docs/services); none promises a certified or measured result.
  *
  * Param types: month, percent, number, weeks, estate, choice, text.
  * {name} in `question` is replaced by the filled value.

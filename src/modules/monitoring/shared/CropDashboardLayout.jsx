@@ -190,7 +190,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
   // Settings → Your data: which dataset to open (set by the sign-in "Data needed" dialog)
   const [dataFocus, setDataFocus] = useState(null);
   // Page set: a service's catalogue entry, or the crop's (backend catalogue,
-  // admin-editable; interim copy from docs/crops until it is deployed).
+  // admin-editable; interim copy from docs/services/*-monitoring.md until it is deployed).
   // Organisation dashboards get the organisation page set (farmer wording, no service pages).
   const [cropPages, setCropPages] = useState(() => (service ? null : mode === 'organization' ? ORGANISATION_PAGES : CROP_CATALOG[cropType] || null));
   useEffect(() => {

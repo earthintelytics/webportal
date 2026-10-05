@@ -1,6 +1,6 @@
 /**
  * Overview KPI cards per crop and service. Each portal lists the questions its
- * users ask (docs/services/*.md, docs/crops/*.md); every value is computed
+ * users ask (docs/services/*.md, docs/services/*-monitoring.md); every value is computed
  * from real data only. A KPI without data says why instead of showing a
  * number. Condition classes come from the admin's map classes for the index
  * (Crop thresholds), never from a fixed table.

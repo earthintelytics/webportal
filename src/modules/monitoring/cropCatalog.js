@@ -1,7 +1,7 @@
 /**
  * Crop page sets — interim copy until the backend catalogue answers
  * (GET /crop-monitoring/catalogue/{crop}; admin-editable, FINDINGS G5/D11).
- * From each crop document in docs/crops ("Portal pages and main page"),
+ * From each crop monitoring document in docs/services ("Portal pages and main page"),
  * mapped onto the shared layout's page kinds, in farmer words without redundant map tabs.
  *
  * sidebar ids: analytics, crop-health, crop-yield, moisture-content, climate, alerts.
