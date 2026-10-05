@@ -3,8 +3,6 @@ import {
   ArrowRight, 
   Globe, 
   Activity, 
-  CreditCard, 
-  ClipboardList, 
   MessageSquare, 
   Leaf, 
   Satellite,
@@ -23,27 +21,27 @@ import {
   DroneIcon, 
   SmallholderIcon 
 } from '../components/CropIcons';
-import { fetchTenants, fetchCropMonitoringConfig } from '../services/organizationMonitorApi';
+import { fetchTenants } from '../services/organizationMonitorApi';
 import { HERO_PLACEHOLDERS } from '../constants/heroPlaceholders';
 
 // Photo per service (compressed WebP in /public/crops). Organisation cards use
 // the organisation photo unless the organisation has uploaded its own logo.
 const CARD_PHOTOS = {
-  'rs-ffb': '/crops/oil_palm.webp', 'management-ffb': '/crops/oil_palm.webp',
-  'rs-maize': '/crops/maize.webp', 'management-maize': '/crops/maize.webp',
-  'rs-rice': '/crops/rice.webp', 'management-rice': '/crops/rice.webp',
-  'rs-cassava': '/crops/cassava.webp', 'management-cassava': '/crops/cassava.webp',
-  'rs-cocoa': '/crops/cocoa.webp', 'management-cocoa': '/crops/cocoa.webp',
-  'rs-sugarcane': '/crops/sugarcane.webp', 'management-sugarcane': '/crops/sugarcane.webp',
-  'rs-cashew': '/crops/cashew.webp', 'management-cashew': '/crops/cashew.webp',
-  'rs-rubber': '/crops/rubber.webp', 'management-rubber': '/crops/rubber.webp',
+  'rs-ffb': '/crops/oil_palm.webp',
+  'rs-maize': '/crops/maize.webp',
+  'rs-rice': '/crops/rice.webp',
+  'rs-cassava': '/crops/cassava.webp',
+  'rs-cocoa': '/crops/cocoa.webp',
+  'rs-sugarcane': '/crops/sugarcane.webp',
+  'rs-cashew': '/crops/cashew.webp',
+  'rs-rubber': '/crops/rubber.webp',
   'rs-drone': '/crops/drone.webp',
-  'group-monitoring': '/crops/smallholder.webp', 'group-management': '/crops/smallholder.webp',
+  'smallholder-hub': '/crops/smallholder.webp',
   'carbon-ffb': '/crops/estate_carbon.webp', 'carbon-groups': '/crops/group_carbon.webp',
   'forestry-intel': '/crops/forestry.webp', 'carbon-estimator': '/crops/estimator.webp',
   'land-restoration': '/crops/restoration.webp', 'eudr-check': '/crops/eudr.webp',
   'suitability-tool': '/crops/suitability.webp',
-  'finance-hub': '/crops/finance.webp', 'advisor': '/crops/advisor.webp',
+  'advisor': '/crops/advisor.webp',
 };
 const photoFor = (id) => CARD_PHOTOS[id] || (id?.startsWith('custom-agromonitor') ? '/crops/organization.webp' : null);
 
@@ -81,8 +79,8 @@ const ModuleCard = ({ title, crop, id, icon, active, onSelect, logoUrl }) => {
         <p className="text-xs font-medium text-slate-500">{crop}</p>
         <h3 className="font-display text-lg font-semibold text-slate-900 leading-snug mt-1">{title}</h3>
         <span className={`mt-5 flex items-center gap-1.5 text-sm font-medium ${active ? 'text-[var(--brand-primary)]' : 'text-slate-400'}`}>
-          {active ? 'Open sign-in' : 'Coming soon'}
-          {active && <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />}
+          Open
+          <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
         </span>
       </div>
     </button>
@@ -91,10 +89,8 @@ const ModuleCard = ({ title, crop, id, icon, active, onSelect, logoUrl }) => {
 
 const PortalHub = ({ onSelectModule, onSignOut, onOpenAdmin }) => {
   const [activeTab, setActiveTab] = React.useState('monitoring');
-  const [customModules, setCustomModules] = React.useState([
-    { id: 'custom-agromonitor-olam', title: 'Olam Agro Monitoring', crop: 'Olam', icon: <Satellite />, active: true },
-    { id: 'custom-agromonitor-okomu', title: 'Okomu Agro Monitoring', crop: 'Okomu', icon: <Satellite />, active: true },
-  ]);
+  // Organisations come from the backend (Admin → Organisations); none are listed here.
+  const [customModules, setCustomModules] = React.useState([]);
 
   // Load tenant list for the Organization section (dynamic agro-monitoring cards)
   React.useEffect(() => {
@@ -113,7 +109,7 @@ const PortalHub = ({ onSelectModule, onSignOut, onOpenAdmin }) => {
           setCustomModules(mapped);
         }
       } catch (err) {
-        console.error("Failed to fetch tenants, using static fallback:", err);
+        console.error("Failed to fetch organisations:", err);
       }
     }
     loadTenants();
@@ -125,86 +121,57 @@ const PortalHub = ({ onSelectModule, onSignOut, onOpenAdmin }) => {
 
   const sections = [
     {
-      id: 'management',
-      title: 'Management Solutions',
-      description: 'Workforce logistics, biometrics, and smallholder group planning for large-scale estate and cooperative operations.',
-      modules: filterModules([
-        { id: 'management-ffb',       title: 'FFB Intelligence',  crop: 'Oil Palm',    icon: <OilPalmIcon />,     active: true },
-        { id: 'management-maize',     title: 'Maize Hub',         crop: 'Maize',       icon: <MaizeIcon />,       active: true },
-        { id: 'management-cassava',   title: 'Cassava Core',      crop: 'Cassava',     icon: <CassavaIcon />,     active: true },
-        { id: 'management-rice',      title: 'Rice Monitor',      crop: 'Rice',        icon: <RiceIcon />,        active: true },
-        { id: 'management-cocoa',     title: 'Cocoa Core',        crop: 'Cocoa',       icon: <CocoaIcon />,       active: true },
-        { id: 'management-sugarcane', title: 'Cane Console',      crop: 'SugarCane',   icon: <SugarcaneIcon />,   active: true },
-        { id: 'management-cashew',    title: 'Cashew Hub',        crop: 'Cashew',      icon: <CashewIcon />,      active: true },
-        { id: 'management-rubber',    title: 'Rubber Hub',        crop: 'Rubber',      icon: <RubberIcon />,      active: true },
-        { id: 'group-management',     title: 'Groups Hub',        crop: 'Smallholder', icon: <SmallholderIcon />, active: true },
-      ])
-    },
-    {
       id: 'monitoring',
-      title: 'Geospatial Intelligence',
-      description: 'Multispectral satellite surveillance and vegetative index analytics for the 8 core commercial crops.',
+      title: 'Crop monitoring',
+      description: 'Crop condition, water, weather and alerts per field, for each crop.',
       modules: filterModules([
-        { id: 'rs-ffb',       title: 'Oil Palm',    crop: 'Oil Palm',    icon: <OilPalmIcon />,     active: true },
-        { id: 'rs-maize',     title: 'Maize Hub',   crop: 'Maize',       icon: <MaizeIcon />,       active: true },
-        { id: 'rs-cassava',   title: 'Cassava',     crop: 'Cassava',     icon: <CassavaIcon />,     active: true },
-        { id: 'rs-rice',      title: 'Rice Monitor',crop: 'Rice',        icon: <RiceIcon />,        active: true },
-        { id: 'rs-cocoa',     title: 'Cocoa Core',  crop: 'Cocoa',       icon: <CocoaIcon />,       active: true },
-        { id: 'rs-sugarcane', title: 'SugarCane',   crop: 'SugarCane',   icon: <SugarcaneIcon />,   active: true },
-        { id: 'rs-cashew',    title: 'Cashew',      crop: 'Cashew',      icon: <CashewIcon />,      active: true },
-        { id: 'rs-rubber',    title: 'Rubber',      crop: 'Rubber',      icon: <RubberIcon />,      active: true },
-      ])
+        { id: 'rs-ffb',       title: 'Oil palm',   crop: 'Crop monitoring', icon: <OilPalmIcon /> },
+        { id: 'rs-cocoa',     title: 'Cocoa',      crop: 'Crop monitoring', icon: <CocoaIcon /> },
+        { id: 'rs-rubber',    title: 'Rubber',     crop: 'Crop monitoring', icon: <RubberIcon /> },
+        { id: 'rs-cashew',    title: 'Cashew',     crop: 'Crop monitoring', icon: <CashewIcon /> },
+        { id: 'rs-maize',     title: 'Maize',      crop: 'Crop monitoring', icon: <MaizeIcon /> },
+        { id: 'rs-rice',      title: 'Rice',       crop: 'Crop monitoring', icon: <RiceIcon /> },
+        { id: 'rs-cassava',   title: 'Cassava',    crop: 'Crop monitoring', icon: <CassavaIcon /> },
+        { id: 'rs-sugarcane', title: 'Sugarcane',  crop: 'Crop monitoring', icon: <SugarcaneIcon /> },
+        { id: 'rs-drone',     title: 'Drone surveys', crop: 'Drone imagery', icon: <DroneIcon /> },
+      ]),
     },
     {
       id: 'sustainability',
       title: 'Sustainability',
-      // Services that are not tied to one crop's day-to-day monitoring. Land
-      // restoration and EUDR moved here from the crop portals (docs/crops,
-      // shared principles section 7). All open in the organisation monitoring
-      // layout with their own sub-pages (modules/services/serviceCatalog.js).
-      description: 'Carbon, forestry, land restoration and deforestation-free (EUDR) services, for estates and smallholder groups.',
+      description: 'Carbon, forests, restoration and deforestation evidence for estates and supply chains.',
       modules: filterModules([
-        { id: 'carbon-ffb',       title: 'Estate carbon',         crop: 'Estates',            icon: <Leaf />,     active: true  },
-        { id: 'carbon-groups',    title: 'Group carbon',          crop: 'Smallholder groups', icon: <Globe />,    active: true  },
-        { id: 'forestry-intel',   title: 'Forestry intelligence', crop: 'Forests',            icon: <Trees />,    active: true  },
-        { id: 'carbon-estimator', title: 'Carbon estimator',      crop: 'Planning',           icon: <Activity />, active: true  },
-        { id: 'land-restoration', title: 'Land restoration',      crop: 'Restoration sites',  icon: <Leaf />,     active: true  },
-        { id: 'eudr-check',       title: 'EUDR deforestation check', crop: 'Oil palm, cocoa, rubber', icon: <Globe />, active: true  },
-      ])
+        { id: 'carbon-ffb',       title: 'Estate carbon',         crop: 'Estates',                 icon: <Leaf /> },
+        { id: 'forestry-intel',   title: 'Forestry intelligence', crop: 'Forests',                 icon: <Trees /> },
+        { id: 'carbon-estimator', title: 'Carbon estimator',      crop: 'Planning',                icon: <Activity /> },
+        { id: 'land-restoration', title: 'Land restoration',      crop: 'Restoration sites',       icon: <Leaf /> },
+        { id: 'eudr-check',       title: 'EUDR check',            crop: 'Oil palm, cocoa, rubber', icon: <Globe /> },
+      ]),
     },
     {
-      id: 'farm-advisor',
-      title: 'Farm Advisory',
-      description: 'Crop suitability evaluations, smallholder outgrower management, and AI agronomy decision tools.',
+      id: 'field-advisory',
+      title: 'Field advisory',
+      description: 'Advice for farmers and co-operatives, smallholder registers and forms, and land suitability.',
       modules: filterModules([
-        { id: 'suitability-tool', title: 'Crop Suitability',   crop: 'Planning & Evaluation', icon: <Target />,          active: true },
-        { id: 'group-monitoring', title: 'Smallholder Hub',    crop: 'Outgrower OS',          icon: <SmallholderIcon />, active: true },
-        { id: 'advisor',          title: 'Farm AI Advisor',    crop: 'GAP Agronomy',          icon: <MessageSquare />,   active: true },
-      ])
-    },
-    {
-      id: 'engine',
-      title: 'Engine',
-      description: 'Specialized UAV photogrammetry, high-resolution aerial orthomosaics, and flight mission processing engines.',
-      modules: filterModules([
-        { id: 'rs-drone',         title: 'Drone Services',     crop: 'High-Res Aerial UAV',   icon: <DroneIcon />,       active: true },
-      ])
+        { id: 'smallholder-hub',  title: 'Smallholder',      crop: 'Co-operatives and outgrowers', icon: <SmallholderIcon /> },
+        { id: 'advisor',          title: 'Farm AI advisor',  crop: 'Advice per field',             icon: <MessageSquare /> },
+        { id: 'suitability-tool', title: 'Crop suitability', crop: 'FarmIntelytics team only',     icon: <Target /> },
+      ]),
     },
     {
       id: 'custom',
-      title: 'Custom Solutions',
-      description: 'Bespoke operational gateways and proprietary analytics models tailored for specific agri-businesses.',
+      title: 'Organisations',
+      description: "Each client organisation's own dashboard, as set up in the admin console.",
       modules: filterModules(customModules),
     },
   ];
 
-  // Organisations come last. Management and Finance & ledger are hidden for
-  // now (their sections stay defined above; add the tab back to show them).
+  // Organisations come last. Management and Finance & ledger are not in the
+  // current plan and have no tab.
   const visibleTabs = [
     { id: 'monitoring', label: 'Crop monitoring' },
     { id: 'sustainability', label: 'Sustainability' },
-    { id: 'farm-advisor', label: 'Farm Advisory' },
-    { id: 'engine', label: 'Engine' },
+    { id: 'field-advisory', label: 'Field advisory' },
     { id: 'custom', label: 'Organisations' },
   ].filter(tab => (sections.find(s => s.id === tab.id)?.modules.length ?? 0) > 0);
   const currentTabId = visibleTabs.some(t => t.id === activeTab) ? activeTab : visibleTabs[0]?.id;

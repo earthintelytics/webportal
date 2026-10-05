@@ -48,6 +48,7 @@ import { uploadOrganizationLogo } from '../services/adminApi';
 import { changePassword } from '../services/authApi';
 import { fetchTeam, addTeamMember, updateTeamMember, removeTeamMember } from '../services/teamApi';
 import { NotConnectedError } from '../services/datasetsApi';
+import { SMALLHOLDER_SERVICES } from '../modules/registry';
 
 const CARD_PHOTOS = {
   'rs-ffb': '/crops/oil_palm.webp', 'management-ffb': '/crops/oil_palm.webp',
@@ -59,7 +60,7 @@ const CARD_PHOTOS = {
   'rs-cashew': '/crops/cashew.webp', 'management-cashew': '/crops/cashew.webp',
   'rs-rubber': '/crops/rubber.webp', 'management-rubber': '/crops/rubber.webp',
   'rs-drone': '/crops/drone.webp',
-  'group-monitoring': '/crops/smallholder.webp', 'group-management': '/crops/smallholder.webp',
+  'smallholder-hub': '/crops/smallholder.webp',
   'carbon-ffb': '/crops/estate_carbon.webp', 'carbon-groups': '/crops/group_carbon.webp',
   'forestry-intel': '/crops/forestry.webp', 'carbon-estimator': '/crops/estimator.webp',
   'land-restoration': '/crops/restoration.webp', 'eudr-check': '/crops/eudr.webp',
@@ -79,7 +80,7 @@ const ALL_SERVICE_CATALOG = [
   { id: 'rs-sugarcane', title: 'Sugarcane Monitoring', group: 'crops', crop: 'Sugarcane', description: 'Biomass accumulation, moisture deficit and ripening indicators.', icon: <SugarcaneIcon /> },
   { id: 'rs-cashew', title: 'Cashew Monitoring', group: 'crops', crop: 'Cashew', description: 'Orchard canopy health, vegetative flush and yield indicators.', icon: <CashewIcon /> },
   { id: 'rs-drone', title: 'Drone Inspection', group: 'crops', crop: 'Aerial Recon', description: 'Ultra-high-resolution aerial surveys and orthomosaic anomalies.', icon: <DroneIcon /> },
-  { id: 'group-monitoring', title: 'Smallholder Cooperative Hub', group: 'crops', crop: 'Cooperative OS', description: 'Integrated outgrower OS: member onboarding, geospatial cluster map, GAP advisor, group carbon & EUDR passports.', icon: <SmallholderIcon /> },
+  { id: 'smallholder-hub', title: 'Smallholder', group: 'crops', crop: 'Co-operatives and outgrowers', description: 'Members and parcels, forms for farmers, field monitoring, group carbon and EUDR evidence.', icon: <SmallholderIcon /> },
 
   // Sustainability & Compliance
   { id: 'eudr-check', title: 'EUDR Deforestation Check', group: 'sustainability', crop: 'Compliance', description: 'Post-2020 forest loss screening, boundary verification and audit packs.', icon: <Globe />, badge: 'EU Compliance' },
@@ -281,8 +282,8 @@ const TenantHub = ({ onSelectModule, onSignOut }) => {
       const cropKey = service.id.replace('rs-', '');
       if (allowedCropsSet.has(cropKey)) return true;
     }
-    if (allowedSet.size === 0) return true;
-    return false;
+    if (service.id === 'smallholder-hub') return SMALLHOLDER_SERVICES.some(id => allowedSet.has(id));
+    return false; // nothing is shown that the organisation is not licensed for
   });
 
   const allTiles = [...licensedModules];

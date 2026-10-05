@@ -24,11 +24,16 @@ class ErrorBoundary extends Component {
   render() {
     if (this.state.error) {
       return (
-        <div style={{ padding: 40, fontFamily: 'var(--font-mono)', background: '#0f172a', color: '#f87171', minHeight: '100vh' }}>
-          <h2 style={{ color: '#fca5a5', marginBottom: 16 }}>Render Error</h2>
-          <pre style={{ whiteSpace: 'pre-wrap', fontSize: 12 }}>{this.state.error?.message}</pre>
-          <pre style={{ whiteSpace: 'pre-wrap', fontSize: 11, color: '#94a3b8', marginTop: 12 }}>{this.state.error?.stack}</pre>
-          <button onClick={() => this.setState({ error: null })} style={{ marginTop: 20, padding: '8px 16px', background: '#1e40af', color: 'white', border: 'none', borderRadius: 6, cursor: 'pointer' }}>Retry</button>
+        <div className="min-h-screen bg-white flex items-center justify-center p-8">
+          <div className="max-w-xl w-full bg-white border border-gray-200 rounded-2xl p-7 space-y-4">
+            <h2 className="font-display text-2xl font-semibold text-gray-900">Something went wrong on this page</h2>
+            <p className="text-sm text-gray-600">Try again. If it keeps happening, send the details below to the FarmIntelytics team.</p>
+            <details className="text-xs text-gray-500">
+              <summary className="cursor-pointer text-sm text-gray-700">Technical details</summary>
+              <pre className="whitespace-pre-wrap font-mono mt-2">{this.state.error?.message}</pre>
+            </details>
+            <button onClick={() => this.setState({ error: null })} className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-green-700 hover:bg-green-800">Try again</button>
+          </div>
         </div>
       );
     }
@@ -38,7 +43,6 @@ class ErrorBoundary extends Component {
 import { Routes, Route, Navigate, useNavigate, useLocation, useParams } from 'react-router-dom';
 import Login from './pages/Login';
 import PortalHub from './pages/PortalHub';
-import PortalLayout from './layouts/PortalLayout';
 
 // Everything below is route-gated content — a user only ever needs ONE of
 // these per session, but they used to all be top-level imports, so every
@@ -76,61 +80,13 @@ const OrganizationMonitor = lazyWithReload(() => import('./modules/organization-
 import AdminLogin from './farmintelytics-admin/AdminLogin';
 const AdminPortal = lazyWithReload(() => import('./farmintelytics-admin/AdminPortal'));
 
-import { crops } from './constants/crops.jsx';
-import { isServiceModule } from './modules/services/serviceCatalog';
-import { Zap } from 'lucide-react';
+import { resolveModule, canonicalModuleId, SMALLHOLDER_SERVICES, moduleName as moduleDisplayName } from './modules/registry';
 
 const RouteLoading = () => (
   <div className="flex items-center justify-center h-screen bg-white">
     <div className="w-10 h-10 border-4 border-gray-100 border-t-green-600 rounded-full animate-spin" />
   </div>
 );
-
-// Placeholder for modules in development
-const ComingSoon = ({ title, description }) => (
-  <div className="flex flex-col items-center justify-center h-full p-20 text-center bg-white">
-    <div className="w-20 h-20 rounded-[2.5rem] bg-white border border-[var(--border-light)] flex items-center justify-center mx-auto mb-8 shadow-premium">
-      <Zap size={32} className="text-[var(--brand-primary)]" />
-    </div>
-    <h2 className="font-display text-3xl font-semibold text-[var(--text-main)] mb-4 tracking-tight">{title}</h2>
-    <p className="text-[var(--text-muted)] max-w-md text-sm">{description}</p>
-  </div>
-);
-
-// ─── Module name map ─────────────────────────────────────────────────────────
-const MODULE_NAMES = {
-  'rs-ffb':               'Oil Palm Monitoring',
-  'rs-cashew':            'Cashew Monitoring',
-  'rs-sugarcane':         'SugarCane Monitoring',
-  'rs-rice':              'Rice Monitoring',
-  'rs-cocoa':             'Cocoa Monitoring',
-  'rs-rubber':            'Rubber Monitoring',
-  'rs-cassava':           'Cassava Monitoring',
-  'rs-maize':             'Maize Monitoring',
-  'rs-drone':             'Drone Intelligence',
-  'finance-hub':          'Central Ledger',
-  'carbon-ffb':           'Estate Carbon',
-  'carbon-groups':        'Group Carbon',
-  'forestry-intel':       'Forestry Intelligence',
-  'carbon-estimator':     'Carbon Estimator',
-  'land-restoration':     'Land Restoration',
-  'eudr-check':           'EUDR Check',
-  'management-ffb':       'Oil Palm Management',
-  'management-cashew':    'Cashew Management',
-  'management-sugarcane': 'SugarCane Management',
-  'management-rice':      'Rice Management',
-  'management-cocoa':     'Cocoa Management',
-  'management-rubber':    'Rubber Management',
-  'management-cassava':   'Cassava Management',
-  'management-maize':     'Maize Management',
-  'group-management':     'Groups Management',
-  'group-monitoring':     'Group Monitoring',
-  'advisor':              'Farm AI Advisor',
-  'suitability-tool':     'Crop Suitability Analysis',
-  'custom-agromonitor':   'Agro Monitoring',
-  'custom-agromonitor-olam': 'Olam Agro Monitoring',
-  'custom-agromonitor-okomu': 'Okomu Agro Monitoring',
-};
 
 // ─── Build-time access restriction ──────────────────────────────────────────
 // If VITE_RESTRICT_TO_MODULE is set (e.g. in netlify.toml), the app bypasses
@@ -232,13 +188,7 @@ const LoginPage = () => {
     || directModule
     || sessionStorage.getItem('fi_module');
   
-  const prettyDynamicName = (id) => {
-    if (!id?.startsWith('custom-agromonitor-')) return id;
-    const words = id.replace('custom-agromonitor-', '').split(/[_-]+/).filter(Boolean);
-    const title = words.map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-    return `${title} Agro Monitoring`;
-  };
-  const moduleName = MODULE_NAMES[moduleId] || prettyDynamicName(moduleId);
+  const moduleName = moduleDisplayName(moduleId) || moduleId;
 
   const handleLogin = () => {
     if (directModule) {
@@ -267,163 +217,93 @@ const LoginPage = () => {
 };
 
 
-// Tools only the FarmIntelytics team uses (clients receive their reports).
-const TEAM_ONLY_MODULES = new Set(['suitability-tool']);
-
 // ─── Portal page (generic modules) ──────────────────────────────────────────
+const CROP_APPS = {
+  'rs-ffb': OilPalmMonitoring,
+  'rs-sugarcane': SugarcaneMonitoring,
+  'rs-rice': RiceMonitoring,
+  'rs-cocoa': CocoaMonitoring,
+  'rs-cassava': CassavaMonitoring,
+  'rs-maize': MaizeMonitoring,
+  'rs-cashew': CashewMonitoring,
+  'rs-rubber': RubberMonitoring,
+};
+
+const PortalMessage = ({ title, text, action }) => (
+  <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center bg-white">
+    <h2 className="font-display text-3xl font-semibold text-[var(--text-main)] mb-3 tracking-tight">{title}</h2>
+    <p className="text-[var(--text-muted)] max-w-md text-sm">{text}</p>
+    {action}
+  </div>
+);
+
 const PortalPage = () => {
   const navigate = useNavigate();
-  const [activeSection, setActiveSection] = useState('dashboard');
-  const [currentCrop, setCurrentCrop]     = useState(crops[0]);
-
   const { moduleId: moduleFromUrl } = useParams();
-  const moduleId = moduleFromUrl || sessionStorage.getItem('fi_module');
-  useEffect(() => { if (moduleFromUrl) sessionStorage.setItem('fi_module', moduleFromUrl); }, [moduleFromUrl]);
+  const rawId = moduleFromUrl || sessionStorage.getItem('fi_module');
+  const moduleId = canonicalModuleId(rawId);
+  useEffect(() => { if (moduleId) sessionStorage.setItem('fi_module', moduleId); }, [moduleId]);
 
   const handleSignOut = () => {
     clearTenantSession();
     navigate(`/login?module=${encodeURIComponent(moduleId || '')}`);
-    setActiveSection('dashboard');
   };
-  const handleBackToHub = () => { 
-    if (hasTenantSession()) {
-      navigate('/tenant/hub');
-    } else {
-      navigate('/');
-    }
-    setActiveSection('dashboard'); 
-  };
+  const handleBackToHub = () => navigate(hasTenantSession() ? '/tenant/hub' : '/');
 
   if (!moduleId) return <Navigate to="/" replace />;
-  if (!moduleFromUrl) return <Navigate to={`/portal/${encodeURIComponent(moduleId)}`} replace />;
+  if (moduleFromUrl !== moduleId) return <Navigate to={`/portal/${encodeURIComponent(moduleId)}`} replace />;
 
-  // ── Organization-level module licensing ──
-  // The admin portal assigns each organization its allowed modules
-  // (TenantConfig.allowed_modules); the list is stored at login. A module
-  // outside that list must not open, whichever tile was clicked.
+  const team = hasValidTeamSession();
+  const backButton = (label, onClick) => (
+    <button onClick={onClick} className="mt-8 px-6 py-3 bg-white text-[var(--text-main)] border border-[var(--border-light)] rounded-xl font-semibold text-sm hover:bg-[var(--bg-main)] transition-colors">{label}</button>
+  );
+  // Clients arrive by direct link and never see the internal hub: send them
+  // back to their own sign-in; the team goes back to the hub.
+  const exitAction = team ? backButton('Back to hub', handleBackToHub) : backButton('Back to sign in', handleSignOut);
+
+  const mod = resolveModule(moduleId);
+  if (!mod) {
+    return <PortalMessage title="Not available" text="This link does not open a FarmIntelytics service." action={exitAction} />;
+  }
+
+  // No session at all: sign in to this service first.
+  if (!team && !hasTenantSession()) {
+    return <Navigate to={`/login?module=${encodeURIComponent(moduleId)}`} replace />;
+  }
+
+  // Licensing: the admin portal assigns each organisation its modules
+  // (TenantConfig.allowed_modules, stored at sign-in). Team-only tools never
+  // open for a client.
   let allowedModules = null;
   try {
     const raw = localStorage.getItem('fi_allowed_modules');
     if (raw) allowedModules = JSON.parse(raw);
   } catch { allowedModules = null; }
-  const teamOnly = TEAM_ONLY_MODULES.has(moduleId);
-  const notLicensed = Array.isArray(allowedModules) && allowedModules.length > 0 && !allowedModules.includes(moduleId);
-  if (!hasValidTeamSession() && (teamOnly || notLicensed)) {
-    return (
-      <div className="flex flex-col items-center justify-center h-screen p-20 text-center bg-white">
-        <div className="w-20 h-20 rounded-[2.5rem] bg-white border border-[var(--border-light)] flex items-center justify-center mx-auto mb-8 shadow-premium">
-          <Zap size={32} className="text-[var(--brand-primary)]" />
-        </div>
-        <h2 className="font-display text-3xl font-semibold text-[var(--text-main)] mb-4 tracking-tight">Not enabled</h2>
-        <p className="text-[var(--text-muted)] max-w-md text-sm">
-          This module is not enabled for your organization. Contact your administrator to request access.
-        </p>
-        {/* Clients arrive by direct link and never see the internal hub: send
-            them back to their own sign-in; the team goes back to the hub. */}
-        {hasValidTeamSession() ? (
-          <button onClick={handleBackToHub} className="mt-8 px-6 py-3 bg-white text-[var(--text-main)] border border-[var(--border-light)] rounded-xl font-semibold text-sm shadow-sm hover:bg-[var(--bg-main)] transition-all">
-            Back to Hub
-          </button>
-        ) : (
-          <button onClick={() => { handleSignOut(); navigate(`/login?module=${encodeURIComponent(moduleId)}`); }} className="mt-8 px-6 py-3 bg-white text-[var(--text-main)] border border-[var(--border-light)] rounded-xl font-semibold text-sm shadow-sm hover:bg-[var(--bg-main)] transition-all">
-            Back to sign in
-          </button>
-        )}
-      </div>
-    );
+  let allowedCrops;
+  try { allowedCrops = JSON.parse(localStorage.getItem('fi_allowed_crops') || '[]') || []; } catch { allowedCrops = []; }
+  const allowed = Array.isArray(allowedModules) ? allowedModules.map(canonicalModuleId) : [];
+  const notLicensed = mod.kind === 'smallholder'
+    ? !allowed.some((m) => m === moduleId || SMALLHOLDER_SERVICES.includes(m))
+    : mod.kind === 'crop'
+      ? !allowed.includes(moduleId) && !allowedCrops.includes(moduleId.replace('rs-', ''))
+      : !allowed.includes(moduleId);
+  if (!team && (mod.teamOnly || notLicensed)) {
+    return <PortalMessage title="Not enabled" text="This service is not enabled for your organisation. Contact your administrator to request access." action={exitAction} />;
   }
 
-  // ── resolve the component for this module ──
-  const getContent = () => {
-    // Suitability Tool standalone portal
-    if (moduleId === 'suitability-tool') {
-      return <SuitabilityPortal onSignOut={handleSignOut} onBack={handleBackToHub} />;
-    }
-
-    // Smallholder Cooperative OS Hub
-    if (moduleId === 'group-monitoring' || moduleId === 'group-management' || moduleId === 'smallholder-hub' || moduleId === 'carbon-groups') {
-      return <SmallholderPortal onSignOut={handleSignOut} onBack={handleBackToHub} />;
-    }
-
-    // Services (Sustainability, Field Advisory, Carbon, Forestry, EUDR)
-    if (isServiceModule(moduleId)) {
-      return <ServicePortal moduleId={moduleId} onSignOut={handleSignOut} onBack={handleBackToHub} />;
-    }
-    if (moduleId.startsWith('rs-')) {
-      const rsApps = {
-        'rs-ffb':      <OilPalmMonitoring />,
-        'rs-sugarcane':<SugarcaneMonitoring />,
-        'rs-rice':     <RiceMonitoring />,
-        'rs-cocoa':    <CocoaMonitoring />,
-        'rs-cassava':  <CassavaMonitoring />,
-        'rs-maize':    <MaizeMonitoring />,
-        'rs-cashew':   <CashewMonitoring />,
-        'rs-rubber':   <RubberMonitoring />,
-      };
-      if (rsApps[moduleId]) {
-        return React.cloneElement(rsApps[moduleId], { onSignOut: handleSignOut, onBack: handleBackToHub });
-      }
-      return <ComingSoon title={moduleId.replace(/-/g, ' ')} description="This crop portal is not set up yet." />;
-    }
-
-    const routeMap = {
-      'management-ffb': <ComingSoon title="Not in the current plan" description="Management dashboards are parked. They showed sample figures, which have been removed; they return with real data if they come back into the plan." />,
-      'management-cashew': <ComingSoon title="Not in the current plan" description="Management dashboards are parked. They showed sample figures, which have been removed; they return with real data if they come back into the plan." />,
-      'management-sugarcane': <ComingSoon title="Not in the current plan" description="Management dashboards are parked. They showed sample figures, which have been removed; they return with real data if they come back into the plan." />,
-      'management-rice': <ComingSoon title="Not in the current plan" description="Management dashboards are parked. They showed sample figures, which have been removed; they return with real data if they come back into the plan." />,
-      'management-cocoa': <ComingSoon title="Not in the current plan" description="Management dashboards are parked. They showed sample figures, which have been removed; they return with real data if they come back into the plan." />,
-      'management-rubber': <ComingSoon title="Not in the current plan" description="Management dashboards are parked. They showed sample figures, which have been removed; they return with real data if they come back into the plan." />,
-      'management-cassava': <ComingSoon title="Not in the current plan" description="Management dashboards are parked. They showed sample figures, which have been removed; they return with real data if they come back into the plan." />,
-      'management-maize': <ComingSoon title="Not in the current plan" description="Management dashboards are parked. They showed sample figures, which have been removed; they return with real data if they come back into the plan." />,
-
-      'drone-ffb':    <ComingSoon title="Drone Inspection" description="Live drone feed and high-resolution field surveillance." />,
-      'drone-cashew': <ComingSoon title="Orchard Survey" description="Tree count, canopy gap analysis and disease spot detection." />,
-
-
-      'group-management': <ComingSoon title="Not in the current plan" description="Group management is parked. It showed sample figures, which have been removed." />,
-      'suitability-tool': <SuitabilityPortal />,
-    };
-
-    // Sustainability, field advisory and finance services
-    if (isServiceModule(moduleId)) {
-      return <ServicePortal moduleId={moduleId} onSignOut={handleSignOut} onBack={handleBackToHub} />;
-    }
-
-    return routeMap[moduleId] || (
-      <ComingSoon title={moduleId.replace(/-/g, ' ')} description="This module is under active development." />
-    );
-  };
-
-  const content = getContent();
-
-  // Standalone modules (full-screen, no PortalLayout sidebar)
-  const standaloneModules = ['rs-', 'group-monitoring', 'carbon-', 'forestry-', 'advisor', 'suitability-tool'];
-  const isStandalone = isServiceModule(moduleId) || standaloneModules.some(m => moduleId.startsWith(m) || moduleId === m);
-
-  if (isStandalone || moduleId === 'group-management') {
-    // Pass back/signout handlers if the component accepts them (RS portals already have them)
-    try {
-      return <ErrorBoundary>{React.cloneElement(content, { onBack: handleBackToHub, onSignOut: handleSignOut })}</ErrorBoundary>;
-    } catch {
-      return <ErrorBoundary>{content}</ErrorBoundary>;
-    }
+  const props = { onSignOut: handleSignOut, onBack: handleBackToHub };
+  let content;
+  if (mod.kind === 'crop') {
+    const CropApp = CROP_APPS[moduleId];
+    content = <CropApp {...props} />;
+  } else if (mod.kind === 'suitability') {
+    content = <SuitabilityPortal {...props} />;
+  } else if (mod.kind === 'smallholder') {
+    content = <SmallholderPortal {...props} />;
+  } else {
+    content = <ServicePortal moduleId={moduleId} {...props} />;
   }
-
-  return (
-    <ErrorBoundary>
-      <PortalLayout
-        activeSection={activeSection}
-        setActiveSection={setActiveSection}
-        currentCrop={currentCrop}
-        setCurrentCrop={setCurrentCrop}
-        crops={crops}
-        onBackToHub={handleBackToHub}
-        onSignOut={handleSignOut}
-      >
-        {content}
-      </PortalLayout>
-    </ErrorBoundary>
-  );
+  return <ErrorBoundary key={moduleId}>{content}</ErrorBoundary>;
 };
 
 

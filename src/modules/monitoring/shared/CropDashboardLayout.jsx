@@ -130,7 +130,8 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
   // exact layout; the service config only picks and names the sub-pages.
   // pick(defaults, list): keep the service's entries, in its order, with
   // its labels, and the default icon for each id.
-  const pick = (defaults, list) => !list ? defaults : list
+  // A service that lists nothing shows nothing: it never falls back to the crop pages.
+  const pick = (defaults, list) => !list ? (service ? [] : defaults) : list
     .map(s => { const d = defaults.find(x => x.id === s.id); return d ? { ...d, label: s.label || d.label } : null; })
     .filter(Boolean);
   const cropLabel = isOrg ? '' : (CROP_META[cropType]?.label || CROP_CONFIG_KEYS[cropType] || cropType);
@@ -3769,9 +3770,9 @@ Context: ${context}.`;
                 {/* Page header */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                   <div>
-                    <h2 className="text-3xl font-bold text-gray-900 tracking-tight">{pageSet?.overviewTitle || 'Agro Analytics Hub'}</h2>
+                    <h2 className="text-3xl font-bold text-gray-900 tracking-tight">{pageSet?.overviewTitle || 'Overview'}</h2>
                     <p className="text-sm text-gray-500 font-medium mt-2 max-w-lg">
-                      {pageSet?.overviewText || 'Direct analytical metrics derived from Sentinel-2 & Landsat-8 imagery pass dates.'}
+                      {pageSet?.overviewText || 'How your fields are doing, from the latest satellite passes.'}
                     </p>
                   </div>
                   <div className="bg-white px-5 py-3 rounded-2xl border border-gray-200 shadow-sm flex items-center gap-3 shrink-0">
