@@ -101,7 +101,12 @@ import ReportBuilder from '../../reports/ReportBuilder';
 import VerificationPage from '../../reports/VerificationPage';
 import { CheckPage, LogPage, AdvicePage } from '../../services/ServicePages';
 import { ShieldCheck as CheckIcon, ClipboardList as LogIcon, Lightbulb as AdviceIcon } from 'lucide-react';
-import { Table2 as RegisterIcon } from 'lucide-react';
+import { Table2 as RegisterIcon, Users as MembersIcon, FileText as FormsIcon, Inbox as AnswersIcon, Leaf as CarbonIcon, BadgeCheck as PassportIcon } from 'lucide-react';
+import MembersPage from '../../smallholder/pages/MembersPage';
+import GroupCarbonPage from '../../smallholder/pages/GroupCarbonPage';
+import EudrPassportPage from '../../smallholder/pages/EudrPassportPage';
+import FormsPage from '../../forms/FormsPage';
+import SubmissionsPage from '../../forms/SubmissionsPage';
 import ScenarioBuilder from '../../assistant/ScenarioBuilder';
 import { ANSWER_FORMAT } from '../../assistant/scenarioTemplates';
 import { ResizeMap, MapPaneClipSetter, SwipeSliderOverlay, FitBoundsToPlots, FitToZarrBounds } from './dashboard/map/MapHelpers';
@@ -125,7 +130,7 @@ ChartJS.register(
 
 const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSummary, cropBlocks, cropIndices, cropLoading, cropError, mapCenter, onBack, onSignOut }) => {
   const isOrg = mode === 'organization' || Boolean(service);
-  const isAiOnly = service?.id === 'advisor' || Boolean(service?.isAiOnly);
+  const isAiOnly = Boolean(service?.isAiOnly);
   // Service portals (sustainability, field advisory, finance) reuse this
   // exact layout; the service config only picks and names the sub-pages.
   // pick(defaults, list): keep the service's entries, in its order, with
@@ -165,6 +170,9 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
 
 
   const [activeSidebarItem, setActiveSidebarItem] = useState(service?.sidebar?.[0]?.id || 'analytics');
+  const [answersForm, setAnswersForm] = useState(null);
+  // Smallholder services link to each other (e.g. Members → Forms).
+  const navigateToService = (id) => { window.location.assign(`/portal/${encodeURIComponent(id)}`); };
   // Estate selector (organisations with several estates): 'All' or an estate
   // name. Lives in the URL (?estate=) so a link or refresh keeps the choice.
   const [filterEstate, setFilterEstate] = useState(() => new URLSearchParams(window.location.search).get('estate') || 'All');
@@ -205,7 +213,10 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
     }
   }, [isAiOnly, service?.id]);
 
+  // Reports, Verification and Assistant cover the whole portal, so they open
+  // from any page; choosing a sidebar page returns to Monitor.
   const handleTopNavTabClick = (tabId) => {
+    if (tabId !== 'monitor') setActiveSidebarItem('analytics');
     setActiveTab(tabId);
   };
 
@@ -2046,6 +2057,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
 
   const handleSidebarClick = (item) => {
     setActiveSidebarItem(item);
+    setActiveTab('monitor');
     // selectedIndex/showRasterLayer are shared across every section's map —
     // switching sections used to leave whatever raster the previous section
     // had on (e.g. Moisture Content's SMI/SAR) still showing on the next
@@ -3627,7 +3639,9 @@ Context: ${context}.`;
                   { id: 'land-restoration',    label: 'Land Restoration',    icon: <Leaf size={17} /> },
                   { id: 'alerts',              label: 'Alerts',              icon: <AlertTriangle size={17} />, badge: alerts.filter(a => a.status === 'Active').length },
                   // Service-only page kinds: pick() keeps them only when the service lists them
-                  ...(service ? [{ id: 'register', label: 'Register', icon: <RegisterIcon size={17} /> }, { id: 'check', label: 'Check', icon: <CheckIcon size={17} /> }, { id: 'log', label: 'Log', icon: <LogIcon size={17} /> }, { id: 'advice', label: 'Advice', icon: <AdviceIcon size={17} /> }] : []),
+                  ...(service ? [{ id: 'register', label: 'Register', icon: <RegisterIcon size={17} /> }, { id: 'check', label: 'Check', icon: <CheckIcon size={17} /> }, { id: 'log', label: 'Log', icon: <LogIcon size={17} /> }, { id: 'advice', label: 'Advice', icon: <AdviceIcon size={17} /> },
+                    { id: 'members', label: 'Members', icon: <MembersIcon size={17} /> }, { id: 'forms', label: 'Forms', icon: <FormsIcon size={17} /> }, { id: 'submissions', label: 'Answers', icon: <AnswersIcon size={17} /> },
+                    { id: 'group-carbon', label: 'Group carbon', icon: <CarbonIcon size={17} /> }, { id: 'eudr-passport', label: 'EUDR passport', icon: <PassportIcon size={17} /> }] : []),
                 ], pageSet?.sidebar).map(item => (
                   <button
                     key={item.id}
@@ -6361,6 +6375,12 @@ Context: ${context}.`;
           {activeSidebarItem === 'advice' && service?.advice && (
             <AdvicePage page={service.advice} alerts={alerts} onAsk={(q) => { setActiveSidebarItem('analytics'); setActiveTab('ai-assistant'); handleChatSubmit(q); }} />
           )}
+
+          {activeSidebarItem === 'members' && <MembersPage onOpenForms={() => navigateToService('smallholder-forms')} />}
+          {activeSidebarItem === 'forms' && <FormsPage onOpenAnswers={(id) => { setAnswersForm(id); setActiveSidebarItem('submissions'); }} />}
+          {activeSidebarItem === 'submissions' && <SubmissionsPage key={answersForm || 'all'} formId={answersForm} />}
+          {activeSidebarItem === 'group-carbon' && <GroupCarbonPage />}
+          {activeSidebarItem === 'eudr-passport' && <EudrPassportPage />}
 
           {activeSidebarItem === 'register' && service?.register && (
             <RegisterPage register={service.register} plots={plotsData} />

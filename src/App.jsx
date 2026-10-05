@@ -60,7 +60,8 @@ import PortalHub from './pages/PortalHub';
 // One portal for all of them: the organisation monitoring layout with the
 const ServicePortal = lazyWithReload(() => import('./modules/services/ServicePortal'));
 const SuitabilityPortal = lazyWithReload(() => import('./modules/suitability/SuitabilityPortal'));
-const SmallholderPortal = lazyWithReload(() => import('./modules/smallholder/SmallholderPortal'));
+const SmallholderHub = lazyWithReload(() => import('./modules/smallholder/SmallholderHub'));
+const PublicFormPage = lazyWithReload(() => import('./modules/forms/PublicFormPage'));
 
 // === Specialized Monitoring Apps ===
 const RiceMonitoring = lazyWithReload(() => import('./modules/monitoring/rice/Monitoring'));
@@ -248,7 +249,10 @@ const PortalPage = () => {
     clearTenantSession();
     navigate(`/login?module=${encodeURIComponent(moduleId || '')}`);
   };
-  const handleBackToHub = () => navigate(hasTenantSession() ? '/tenant/hub' : '/');
+  // Smallholder services go back to the Smallholder hub; everything else to the hub.
+  const handleBackToHub = () => navigate(
+    SMALLHOLDER_SERVICES.includes(moduleId) ? '/portal/smallholder-hub' : hasTenantSession() ? '/tenant/hub' : '/',
+  );
 
   if (!moduleId) return <Navigate to="/" replace />;
   if (moduleFromUrl !== moduleId) return <Navigate to={`/portal/${encodeURIComponent(moduleId)}`} replace />;
@@ -299,7 +303,7 @@ const PortalPage = () => {
   } else if (mod.kind === 'suitability') {
     content = <SuitabilityPortal {...props} />;
   } else if (mod.kind === 'smallholder') {
-    content = <SmallholderPortal {...props} />;
+    content = <SmallholderHub {...props} />;
   } else {
     content = <ServicePortal moduleId={moduleId} {...props} />;
   }
@@ -343,6 +347,7 @@ const App = () => {
         <Route path="/hub"                    element={<HubPage />} />
         <Route path="/tenant/hub"             element={<HubPage />} />
         <Route path="/login"                  element={<LoginPage />} />
+        <Route path="/f/:token"               element={<PublicFormPage />} />
         <Route path="/portal"                 element={<PortalPage />} />
         <Route path="/portal/:moduleId"       element={<PortalPage />} />
         <Route path={AGROMONITOR_PATH}        element={<OrganizationMonitorPage />} />

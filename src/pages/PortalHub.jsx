@@ -41,7 +41,7 @@ const CARD_PHOTOS = {
   'forestry-intel': '/crops/forestry.webp', 'carbon-estimator': '/crops/estimator.webp',
   'land-restoration': '/crops/restoration.webp', 'eudr-check': '/crops/eudr.webp',
   'suitability-tool': '/crops/suitability.webp',
-  'advisor': '/crops/advisor.webp',
+  'advisor': '/crops/advisor.webp', 'activity-ffb': '/crops/field_logs.webp',
 };
 const photoFor = (id) => CARD_PHOTOS[id] || (id?.startsWith('custom-agromonitor') ? '/crops/organization.webp' : null);
 
@@ -155,6 +155,7 @@ const PortalHub = ({ onSelectModule, onSignOut, onOpenAdmin }) => {
       modules: filterModules([
         { id: 'smallholder-hub',  title: 'Smallholder',      crop: 'Co-operatives and outgrowers', icon: <SmallholderIcon /> },
         { id: 'advisor',          title: 'Farm AI advisor',  crop: 'Advice per field',             icon: <MessageSquare /> },
+        { id: 'activity-ffb',     title: 'Field logs',       crop: 'Operations and scouting',      icon: <Activity /> },
         { id: 'suitability-tool', title: 'Crop suitability', crop: 'FarmIntelytics team only',     icon: <Target /> },
       ]),
     },

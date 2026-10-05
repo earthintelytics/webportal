@@ -6,7 +6,6 @@ import {
   CreditCard, 
   ClipboardList, 
   MessageSquare, 
-  Target,
   Leaf, 
   Trees,
   Building2, 
@@ -64,34 +63,33 @@ const CARD_PHOTOS = {
   'carbon-ffb': '/crops/estate_carbon.webp', 'carbon-groups': '/crops/group_carbon.webp',
   'forestry-intel': '/crops/forestry.webp', 'carbon-estimator': '/crops/estimator.webp',
   'land-restoration': '/crops/restoration.webp', 'eudr-check': '/crops/eudr.webp',
-  'suitability-tool': '/crops/suitability.webp',
-  'finance-hub': '/crops/finance.webp', 'advisor': '/crops/advisor.webp',
+  'advisor': '/crops/advisor.webp', 'activity-ffb': '/crops/field_logs.webp',
 };
 
 const photoFor = (id) => CARD_PHOTOS[id] || '/crops/oil_palm.webp';
 
+// Every service a client can be licensed for; the hub shows only licensed ones.
+// Crop suitability is a FarmIntelytics team tool and never appears here.
 const ALL_SERVICE_CATALOG = [
-  { id: 'rs-ffb', title: 'Oil Palm Monitoring', group: 'crops', crop: 'Oil Palm', description: 'Multispectral canopy vitality, water deficit and yield forecast telemetry.', icon: <OilPalmIcon /> },
-  { id: 'rs-rubber', title: 'Rubber Monitoring', group: 'crops', crop: 'Rubber', description: 'Latex vegetation indices, canopy vigor and tapping moisture index.', icon: <RubberIcon /> },
-  { id: 'rs-cocoa', title: 'Cocoa Monitoring', group: 'crops', crop: 'Cocoa', description: 'Shade-canopy density, stress detection and parcel boundary screening.', icon: <CocoaIcon /> },
-  { id: 'rs-rice', title: 'Rice Monitoring', group: 'crops', crop: 'Rice', description: 'Paddy flooding cycles, vegetative stage tracking and biomass density.', icon: <RiceIcon /> },
-  { id: 'rs-maize', title: 'Maize Monitoring', group: 'crops', crop: 'Maize', description: 'Hybrid crop vigor, water stress and seasonal yield tracking.', icon: <MaizeIcon /> },
-  { id: 'rs-cassava', title: 'Cassava Monitoring', group: 'crops', crop: 'Cassava', description: 'Tuber canopy stress, nitrogen assimilation and harvest timing.', icon: <CassavaIcon /> },
-  { id: 'rs-sugarcane', title: 'Sugarcane Monitoring', group: 'crops', crop: 'Sugarcane', description: 'Biomass accumulation, moisture deficit and ripening indicators.', icon: <SugarcaneIcon /> },
-  { id: 'rs-cashew', title: 'Cashew Monitoring', group: 'crops', crop: 'Cashew', description: 'Orchard canopy health, vegetative flush and yield indicators.', icon: <CashewIcon /> },
-  { id: 'rs-drone', title: 'Drone Inspection', group: 'crops', crop: 'Aerial Recon', description: 'Ultra-high-resolution aerial surveys and orthomosaic anomalies.', icon: <DroneIcon /> },
-  { id: 'smallholder-hub', title: 'Smallholder', group: 'crops', crop: 'Co-operatives and outgrowers', description: 'Members and parcels, forms for farmers, field monitoring, group carbon and EUDR evidence.', icon: <SmallholderIcon /> },
+  { id: 'rs-ffb', title: 'Oil palm', group: 'crops', crop: 'Crop monitoring', description: 'Crop condition, water, weather and alerts for every block.', icon: <OilPalmIcon /> },
+  { id: 'rs-rubber', title: 'Rubber', group: 'crops', crop: 'Crop monitoring', description: 'Canopy condition, leaf change and tapping conditions.', icon: <RubberIcon /> },
+  { id: 'rs-cocoa', title: 'Cocoa', group: 'crops', crop: 'Crop monitoring', description: 'Canopy condition, stress and farm boundaries.', icon: <CocoaIcon /> },
+  { id: 'rs-rice', title: 'Rice', group: 'crops', crop: 'Crop monitoring', description: 'Flooding, growth stage and crop condition per field.', icon: <RiceIcon /> },
+  { id: 'rs-maize', title: 'Maize', group: 'crops', crop: 'Crop monitoring', description: 'Crop condition, water stress and growth through the season.', icon: <MaizeIcon /> },
+  { id: 'rs-cassava', title: 'Cassava', group: 'crops', crop: 'Crop monitoring', description: 'Crop condition, stress and time to harvest.', icon: <CassavaIcon /> },
+  { id: 'rs-sugarcane', title: 'Sugarcane', group: 'crops', crop: 'Crop monitoring', description: 'Growth, water shortage and ripening per field.', icon: <SugarcaneIcon /> },
+  { id: 'rs-cashew', title: 'Cashew', group: 'crops', crop: 'Crop monitoring', description: 'Orchard condition, flowering weather and new growth.', icon: <CashewIcon /> },
+  { id: 'rs-drone', title: 'Drone surveys', group: 'crops', crop: 'Drone imagery', description: 'Detailed drone surveys next to the latest satellite view.', icon: <DroneIcon /> },
 
-  // Sustainability & Compliance
-  { id: 'eudr-check', title: 'EUDR Deforestation Check', group: 'sustainability', crop: 'Compliance', description: 'Post-2020 forest loss screening, boundary verification and audit packs.', icon: <Globe />, badge: 'EU Compliance' },
-  { id: 'carbon-ffb', title: 'Estate Carbon Accounting', group: 'sustainability', crop: 'Carbon', description: 'Aboveground biomass stocks, IPCC Tier-1 carbon flux and trend lines.', icon: <Leaf />, badge: 'Carbon Suite' },
-  { id: 'forestry-intel', title: 'Forestry Intelligence', group: 'sustainability', crop: 'Forests', description: 'Canopy density mapping, high-conservation area protection and tree cover.', icon: <Trees /> },
-  { id: 'carbon-estimator', title: 'Carbon Potential Estimator', group: 'sustainability', crop: 'Carbon', description: 'Scenario modeling for afforestation, agroforestry and carbon sequestration.', icon: <Activity /> },
-  { id: 'land-restoration', title: 'Land Restoration & Soil', group: 'sustainability', crop: 'Restoration', description: 'Degraded land rehabilitation monitoring and vegetation recovery.', icon: <Leaf /> },
+  { id: 'eudr-check', title: 'EUDR check', group: 'sustainability', crop: 'Sustainability', description: 'Where each plot is and whether forest was cleared after 2020.', icon: <Globe /> },
+  { id: 'carbon-ffb', title: 'Estate carbon', group: 'sustainability', crop: 'Sustainability', description: 'Carbon held by the estate and land-use change since the baseline.', icon: <Leaf /> },
+  { id: 'forestry-intel', title: 'Forestry intelligence', group: 'sustainability', crop: 'Sustainability', description: 'Forest condition, clearing and disturbance.', icon: <Trees /> },
+  { id: 'carbon-estimator', title: 'Carbon estimator', group: 'sustainability', crop: 'Sustainability', description: 'Carbon a site could hold under different plans.', icon: <Activity /> },
+  { id: 'land-restoration', title: 'Land restoration', group: 'sustainability', crop: 'Sustainability', description: 'Degraded land and how it recovers.', icon: <Leaf /> },
 
-  // Advisory & Operations
-  { id: 'suitability-tool', title: 'Crop Suitability Tool', group: 'advisory', crop: 'Planning & Evaluation', description: 'Soil, climate, and MCDA crop suitability analysis for 8 major crops.', icon: <Target />, badge: 'Agronomic Model' },
-  { id: 'advisor', title: 'Farm AI Advisor', group: 'advisory', crop: 'AI Intelligence', description: 'Multi-LLM agronomic advisory grounded in your real estate telemetry and weather.', icon: <MessageSquare />, badge: 'AI Powered' },
+  { id: 'smallholder-hub', title: 'Smallholder', group: 'advisory', crop: 'Co-operatives and outgrowers', description: 'Members and parcels, forms for farmers, field monitoring, group carbon and EUDR evidence.', icon: <SmallholderIcon /> },
+  { id: 'advisor', title: 'Farm AI advisor', group: 'advisory', crop: 'Field advisory', description: 'Advice for each field from your own monitoring data and the weather.', icon: <MessageSquare /> },
+  { id: 'activity-ffb', title: 'Field logs', group: 'advisory', crop: 'Field advisory', description: 'Operations and scouting recorded for each block.', icon: <Activity /> },
 ];
 
 const TenantHub = ({ onSelectModule, onSignOut }) => {
@@ -290,9 +288,9 @@ const TenantHub = ({ onSelectModule, onSignOut }) => {
 
   const tabs = [
     { id: 'all', label: 'All Licensed Services', count: allTiles.length },
-    { id: 'crops', label: 'Crop Portals', count: allTiles.filter(t => t.group === 'crops').length },
-    { id: 'sustainability', label: 'Sustainability & EUDR', count: allTiles.filter(t => t.group === 'sustainability').length },
-    { id: 'advisory', label: 'AI Advisory & Logs', count: allTiles.filter(t => t.group === 'advisory').length },
+    { id: 'crops', label: 'Crop monitoring', count: allTiles.filter(t => t.group === 'crops').length },
+    { id: 'sustainability', label: 'Sustainability', count: allTiles.filter(t => t.group === 'sustainability').length },
+    { id: 'advisory', label: 'Field advisory', count: allTiles.filter(t => t.group === 'advisory').length },
   ].filter(t => t.id === 'all' || t.count > 0);
 
   const displayedTiles = activeTab === 'all' 

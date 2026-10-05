@@ -1,16 +1,22 @@
 /**
- * Service catalogue: sustainability, field advisory and finance services.
+ * Service catalogue: sustainability, field advisory and smallholder services.
  *
  * Every service opens in the same layout as organisation and crop monitoring
  * (CropDashboardLayout: header, sidebar, map, calendar, time slider, split
- * comparison, alerts, reports). A service defines which specialized sub-pages it
- * shows, in which order and under which names without redundant map tabs.
+ * comparison, alerts, reports). A service only defines which sub-pages it
+ * shows, in which order and under which names. Labels are plain, sentence
+ * case, with no sensor or index names (docs/INFORMATION_PRESENTATION.md).
  *
- *   sidebar    left sidebar pages   (analytics, register, check, log, advice, crop-health,
- *              crop-yield, moisture-content, climate, land-restoration, alerts)
+ *   sidebar    left sidebar pages: analytics, crop-health, crop-yield,
+ *              moisture-content, climate, land-restoration, alerts, and the
+ *              service page kinds register, check, log, advice, members,
+ *              forms, submissions, group-carbon, eudr-passport
  *   analytics  sub-tabs of the Overview page (overview, vigor-health,
  *              moisture-et, et-log, water-management, soil-nutrients)
  *   topTabs    always HEADER_TABS: Monitor, Reports, Verification, Assistant
+ *
+ * The backend catalogue (GET /crop-monitoring/catalogue/{id}, WORK_SPLIT.md)
+ * has the same shape and replaces this copy when it is live.
  */
 const HEADER_TABS = [
   { id: 'monitor', label: 'Monitor' },
@@ -20,86 +26,64 @@ const HEADER_TABS = [
 ];
 
 export const SERVICE_CATALOG = {
+  // ── Sustainability ────────────────────────────────────────────────────────
   'carbon-ffb': {
-    title: 'Estate Carbon',
+    title: 'Estate carbon',
     subtitle: 'Carbon stock and land-use change',
-    overviewTitle: 'Estate carbon overview',
-    overviewText: 'Vegetation, biomass and land-use signals behind the estate carbon stock, from Sentinel-2, Landsat and Sentinel-1.',
+    overviewTitle: 'Estate carbon',
+    overviewText: 'How much carbon the estate holds, block by block, and where land use has changed since the baseline.',
     sidebar: [
-      { id: 'analytics', label: 'Carbon overview' },
-      { id: 'crop-health', label: 'Biomass & canopy vigour' },
-      { id: 'land-restoration', label: 'Land-use & biomass flux' },
-      { id: 'climate', label: 'Carbon climate telemetry' },
+      { id: 'analytics', label: 'Overview' },
+      { id: 'crop-health', label: 'Biomass and growth' },
+      { id: 'land-restoration', label: 'Land-use change' },
+      { id: 'climate', label: 'Weather' },
       { id: 'alerts', label: 'Canopy loss alerts' },
     ],
     analytics: [
-      { id: 'overview', label: 'Carbon overview' },
-      { id: 'vigor-health', label: 'Biomass & growth' },
-      { id: 'soil-nutrients', label: 'Soil carbon signals' },
-    ],
-    topTabs: HEADER_TABS,
-  },
-  'carbon-groups': {
-    title: 'Group Carbon',
-    subtitle: 'Carbon for smallholder groups',
-    overviewTitle: 'Group carbon overview',
-    overviewText: 'Member plots, vegetation and land-use change across each smallholder cooperative group.',
-    register: {
-      title: 'Groups and members', file: 'group-members',
-      text: 'Member plots by group, with area. Group and member names come from the group membership data you upload (Settings, Your data).',
-      columns: [{ id: 'block', label: 'Plot' }, { id: 'estate', label: 'Group' }, { id: 'area', label: 'Area' }],
-    },
-    sidebar: [
-      { id: 'analytics', label: 'Group overview' },
-      { id: 'register', label: 'Groups & members' },
-      { id: 'crop-health', label: 'Plot vegetative condition' },
-      { id: 'land-restoration', label: 'Land-use changes' },
-      { id: 'alerts', label: 'Group alerts' },
-    ],
-    analytics: [
       { id: 'overview', label: 'Overview' },
-      { id: 'vigor-health', label: 'Biomass & growth' },
+      { id: 'vigor-health', label: 'Biomass and growth' },
+      { id: 'soil-nutrients', label: 'Soil' },
     ],
     topTabs: HEADER_TABS,
   },
   'forestry-intel': {
-    title: 'Forestry Intelligence',
+    title: 'Forestry intelligence',
     subtitle: 'Forest cover, condition and disturbance',
-    overviewTitle: 'Forestry canopy overview',
-    overviewText: 'Canopy condition, moisture and forest-cover change from optical and radar satellites.',
+    overviewTitle: 'Forest overview',
+    overviewText: 'Where forest is healthy, where it is stressed, and where it has been cleared or disturbed.',
     sidebar: [
-      { id: 'analytics', label: 'Forest overview' },
+      { id: 'analytics', label: 'Overview' },
       { id: 'crop-health', label: 'Canopy condition' },
       { id: 'moisture-content', label: 'Canopy moisture' },
       { id: 'land-restoration', label: 'Forest cover change' },
-      { id: 'climate', label: 'Forest climate' },
+      { id: 'climate', label: 'Weather' },
       { id: 'alerts', label: 'Disturbance alerts' },
     ],
     analytics: [
       { id: 'overview', label: 'Overview' },
-      { id: 'vigor-health', label: 'Canopy vigour' },
+      { id: 'vigor-health', label: 'Canopy condition' },
       { id: 'moisture-et', label: 'Canopy moisture' },
     ],
     topTabs: HEADER_TABS,
   },
   'carbon-estimator': {
-    title: 'Carbon Estimator',
+    title: 'Carbon estimator',
     subtitle: 'Carbon estimates and scenarios',
-    overviewTitle: 'Carbon scenario estimate',
-    overviewText: 'Vegetation and land-cover inputs used to estimate carbon for a site, with scenarios.',
+    overviewTitle: 'Carbon estimate',
+    overviewText: 'An estimate of the carbon a site could hold under different plans, before a project starts.',
     sidebar: [
-      { id: 'analytics', label: 'Estimate overview' },
-      { id: 'land-restoration', label: 'Land cover baseline' },
-      { id: 'climate', label: 'Site climate' },
+      { id: 'analytics', label: 'Overview' },
+      { id: 'land-restoration', label: 'Land cover today' },
+      { id: 'climate', label: 'Weather' },
     ],
     analytics: [
       { id: 'overview', label: 'Overview' },
-      { id: 'vigor-health', label: 'Biomass & growth' },
+      { id: 'vigor-health', label: 'Biomass and growth' },
     ],
     topTabs: HEADER_TABS,
   },
   'land-restoration': {
-    title: 'Land Restoration',
+    title: 'Land restoration',
     subtitle: 'Restoration sites and recovery',
     overviewTitle: 'Restoration overview',
     overviewText: 'Where land is degraded, where it is recovering, and how vegetation and moisture respond over time.',
@@ -109,12 +93,12 @@ export const SERVICE_CATALOG = {
       columns: [{ id: 'block', label: 'Zone' }, { id: 'estate', label: 'Site' }, { id: 'area', label: 'Area' }],
     },
     sidebar: [
-      { id: 'analytics', label: 'Restoration overview' },
+      { id: 'analytics', label: 'Overview' },
       { id: 'register', label: 'Zone register' },
       { id: 'land-restoration', label: 'Restoration zones' },
       { id: 'crop-health', label: 'Vegetation recovery' },
       { id: 'moisture-content', label: 'Soil moisture' },
-      { id: 'climate', label: 'Restoration climate' },
+      { id: 'climate', label: 'Weather' },
       { id: 'alerts', label: 'Degradation alerts' },
     ],
     analytics: [
@@ -125,14 +109,14 @@ export const SERVICE_CATALOG = {
     topTabs: HEADER_TABS,
   },
   'eudr-check': {
-    title: 'EUDR Check',
-    subtitle: 'Deforestation-free evidence (EUDR)',
-    overviewTitle: 'EUDR compliance overview',
-    overviewText: 'Plot geolocation and forest-cover change since the 31 December 2020 cut-off, for oil palm, cocoa and rubber supply.',
+    title: 'EUDR check',
+    subtitle: 'Deforestation evidence for EU buyers',
+    overviewTitle: 'EUDR overview',
+    overviewText: 'Where each supplying plot is, and whether forest was cleared there after 31 December 2020.',
     register: {
       title: 'Plot register', file: 'eudr-plot-register',
       text: 'Every plot that supplies EU buyers: estate, area, geolocation and the result of the deforestation check since 31 December 2020.',
-      note: 'The deforestation check is evaluated on the EU reference forest map and loss data. Until it runs, every plot shows "Not checked": no plot is marked deforestation-free without a real check.',
+      note: 'Until the deforestation check has run for a plot, it shows "Not checked": no plot is marked deforestation-free without a real check.',
       columns: [{ id: 'block', label: 'Plot' }, { id: 'estate', label: 'Estate' }, { id: 'area', label: 'Area' }, { id: 'geolocation', label: 'Geolocation' }, { id: 'status', label: 'Check result' }],
     },
     check: {
@@ -140,7 +124,7 @@ export const SERVICE_CATALOG = {
       text: 'For each plot: was it forest on 31 December 2020, has any been cleared since, does it overlap a protected area, and on what evidence.',
     },
     sidebar: [
-      { id: 'analytics', label: 'Compliance overview' },
+      { id: 'analytics', label: 'Overview' },
       { id: 'register', label: 'Plot register' },
       { id: 'check', label: 'Deforestation check' },
       { id: 'land-restoration', label: 'Land cover change' },
@@ -151,39 +135,87 @@ export const SERVICE_CATALOG = {
     ],
     topTabs: HEADER_TABS,
   },
+
+  // ── Field advisory ────────────────────────────────────────────────────────
   'advisor': {
-    title: 'Farm AI Advisor',
-    subtitle: 'Unified Agronomic AI & Multi-Service Report Engine',
-    overviewTitle: 'Farm AI Advisor',
-    overviewText: 'Single enterprise AI intelligence engine and executive report builder across all your licensed crops and services.',
-    sidebar: [],
-    analytics: [],
-    topTabs: [
-      { id: 'ai-assistant', label: 'AI Assistant & Scenarios' },
-      { id: 'reports', label: 'Multi-Service Reports' },
-    ],
-    isAiOnly: true,
-  },
-  'suitability-tool': {
-    title: 'Crop Suitability Analysis',
-    subtitle: 'Agronomic Soil, Climate & MCDA Suitability Tool',
-    overviewTitle: 'Crop Suitability Engine',
-    overviewText: 'Evaluate land suitability for 8 major crops based on soil pH, rainfall, temperature, elevation, slope, and drainage with customizable MCDA weights.',
+    title: 'Farm AI advisor',
+    subtitle: 'Weather and advice per field',
+    overviewTitle: 'Advisory overview',
+    overviewText: 'Crop condition, water and weather, turned into advice for each field.',
+    advice: {
+      title: 'This week',
+      text: 'What to do in each field this week, most urgent first, with the reason behind it.',
+    },
     sidebar: [
-      { id: 'suitability-eval', label: 'Suitability Analysis' },
+      { id: 'advice', label: 'This week' },
+      { id: 'analytics', label: 'Overview' },
+      { id: 'crop-health', label: 'Crop condition' },
+      { id: 'moisture-content', label: 'Water' },
+      { id: 'climate', label: 'Weather' },
+      { id: 'alerts', label: 'Advisories' },
     ],
     analytics: [
-      { id: 'overview', label: 'Evaluation Engine' },
+      { id: 'overview', label: 'Overview' },
+      { id: 'vigor-health', label: 'Crop growth' },
+      { id: 'moisture-et', label: 'Water use' },
+      { id: 'water-management', label: 'Irrigation' },
     ],
     topTabs: HEADER_TABS,
   },
-  'group-monitoring': {
-    title: 'Smallholder Monitoring',
-    subtitle: 'Member farms across your groups',
-    overviewTitle: 'Groups overview',
-    overviewText: 'How member farms are doing across groups, from satellite, with the farms that need a visit.',
+  'activity-ffb': {
+    title: 'Field logs',
+    subtitle: 'Field operations and scouting',
+    overviewTitle: 'Field operations',
+    overviewText: 'Field condition from satellite, next to the operations and scouting recorded for each block.',
+    log: {
+      title: 'Operations log', dataset: 'field-operations',
+      text: 'What was done in each block, when and by whom: harvesting, spraying, pruning, fertiliser and scouting.',
+      types: ['Harvest', 'Spray', 'Prune', 'Fertilise', 'Weed', 'Scout'],
+    },
     sidebar: [
-      { id: 'analytics', label: 'Groups overview' },
+      { id: 'analytics', label: 'Overview' },
+      { id: 'log', label: 'Operations log' },
+      { id: 'crop-health', label: 'Field condition' },
+      { id: 'climate', label: 'Weather' },
+      { id: 'alerts', label: 'Field alerts' },
+    ],
+    analytics: [
+      { id: 'overview', label: 'Overview' },
+      { id: 'vigor-health', label: 'Growth' },
+    ],
+    topTabs: HEADER_TABS,
+  },
+
+  // ── Smallholder (opened from the Smallholder hub) ─────────────────────────
+  'smallholder-members': {
+    title: 'Members and parcels',
+    subtitle: 'Smallholder',
+    overviewTitle: 'Member parcels',
+    overviewText: 'Every member parcel on the map, with its condition from satellite.',
+    sidebar: [
+      { id: 'members', label: 'Members and parcels' },
+      { id: 'analytics', label: 'Parcel map' },
+    ],
+    analytics: [{ id: 'overview', label: 'Overview' }],
+    topTabs: HEADER_TABS,
+  },
+  'smallholder-forms': {
+    title: 'Forms',
+    subtitle: 'Smallholder',
+    sidebar: [
+      { id: 'forms', label: 'Forms' },
+      { id: 'submissions', label: 'Answers' },
+    ],
+    analytics: [],
+    topTabs: HEADER_TABS,
+  },
+  'group-monitoring': {
+    title: 'Field monitoring',
+    subtitle: 'Smallholder',
+    overviewTitle: 'Member farms',
+    overviewText: 'How member farms are doing across groups, from satellite, and which ones need a visit.',
+    sidebar: [
+      { id: 'analytics', label: 'Overview' },
       { id: 'crop-health', label: 'Crop health' },
       { id: 'moisture-content', label: 'Water' },
       { id: 'climate', label: 'Weather' },
@@ -196,32 +228,51 @@ export const SERVICE_CATALOG = {
     ],
     topTabs: HEADER_TABS,
   },
-  'rs-drone': {
-    title: 'Drone Surveys',
-    subtitle: 'Drone imagery with satellite context',
-    overviewTitle: 'Survey overview',
-    overviewText: 'High-resolution drone surveys with contextual multi-spectral satellite intelligence.',
+  'carbon-groups': {
+    title: 'Group carbon',
+    subtitle: 'Smallholder',
+    overviewTitle: 'Group carbon',
+    overviewText: 'Member farms, vegetation and land-use change behind the carbon estimate for each group.',
     sidebar: [
-      { id: 'analytics', label: 'Survey overview' },
-      { id: 'crop-health', label: 'Canopy anomalies' },
-      { id: 'alerts', label: 'Survey alerts' },
+      { id: 'group-carbon', label: 'Carbon by group' },
+      { id: 'analytics', label: 'Overview' },
+      { id: 'crop-health', label: 'Farm condition' },
+      { id: 'land-restoration', label: 'Land-use change' },
+      { id: 'alerts', label: 'Alerts' },
+    ],
+    analytics: [
+      { id: 'overview', label: 'Overview' },
+      { id: 'vigor-health', label: 'Biomass and growth' },
+    ],
+    topTabs: HEADER_TABS,
+  },
+  'smallholder-eudr': {
+    title: 'EUDR passport',
+    subtitle: 'Smallholder',
+    overviewTitle: 'Member parcels',
+    overviewText: 'Member parcels and forest-cover change since 31 December 2020.',
+    sidebar: [
+      { id: 'eudr-passport', label: 'EUDR passport' },
+      { id: 'analytics', label: 'Parcel map' },
+      { id: 'land-restoration', label: 'Land cover change' },
+      { id: 'alerts', label: 'Deforestation alerts' },
     ],
     analytics: [{ id: 'overview', label: 'Overview' }],
     topTabs: HEADER_TABS,
   },
-  'finance-hub': {
-    title: 'Central Ledger',
-    subtitle: 'Farm production and payments',
-    overviewTitle: 'Ledger overview',
-    overviewText: 'Production signals per block that feed farmer statements and payments.',
+
+  // ── Crop monitoring extras ────────────────────────────────────────────────
+  'rs-drone': {
+    title: 'Drone surveys',
+    subtitle: 'Drone imagery with satellite context',
+    overviewTitle: 'Survey overview',
+    overviewText: 'Detailed drone surveys, next to the latest satellite view of the same fields.',
     sidebar: [
-      { id: 'analytics', label: 'Ledger overview' },
-      { id: 'crop-yield', label: 'Production outlook' },
-      { id: 'alerts', label: 'Payment alerts' },
+      { id: 'analytics', label: 'Overview' },
+      { id: 'crop-health', label: 'Canopy problems' },
+      { id: 'alerts', label: 'Survey alerts' },
     ],
-    analytics: [
-      { id: 'overview', label: 'Overview' },
-    ],
+    analytics: [{ id: 'overview', label: 'Overview' }],
     topTabs: HEADER_TABS,
   },
 };
