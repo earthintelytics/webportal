@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ArrowRight, Database, Plus, Sparkles, X } from 'lucide-react';
 import { SCENARIOS } from './scenarioTemplates';
 import { scopeKeys } from '../data/datasetDefinitions';
@@ -36,9 +36,10 @@ const FieldNotes = ({ value, onChange, placeholder }) => (
 /**
  * The Assistant's start page: what-ifs chosen for this crop or service, each
  * with a few values to fill in, or a question of the person's own. The filled
- * question goes to the chat (onRun) with the data it relies on.
+ * question goes to the chat (onRun) with the data it relies on. onFormOpen
+ * tells the page when a form is open, so it can hide its chat box.
  */
-const ScenarioBuilder = ({ cropType, serviceId, estates = [], onRun }) => {
+const ScenarioBuilder = ({ cropType, serviceId, estates = [], onRun, onFormOpen }) => {
   const keys = scopeKeys({ cropType, serviceId });
   if (serviceId === 'advisor' && !keys.includes('service:advisor')) keys.unshift('service:advisor');
   const scenarios = keys.flatMap((k) => SCENARIOS[k] || []);
@@ -47,6 +48,8 @@ const ScenarioBuilder = ({ cropType, serviceId, estates = [], onRun }) => {
   const [values, setValues] = useState({});
   const [notes, setNotes] = useState('');
   const [custom, setCustom] = useState(null); // null | { title, question, estate }
+  const formOpen = !!(active || custom);
+  useEffect(() => { onFormOpen?.(formOpen); }, [formOpen, onFormOpen]);
 
   const withNotes = (q) => (notes.trim() ? `${q}\n\nWhat we saw in the field: ${notes.trim()}` : q);
 
@@ -165,14 +168,14 @@ const ScenarioBuilder = ({ cropType, serviceId, estates = [], onRun }) => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {scenarios.map((s) => (
-            <button key={s.id} type="button" onClick={() => open(s)} className="text-left p-5 bg-white border border-gray-200 hover:border-green-600 rounded-2xl flex flex-col gap-3 group">
+            <button key={s.id} type="button" onClick={() => open(s)} className="min-w-0 text-left p-5 bg-white border border-gray-200 hover:border-green-600 rounded-2xl flex flex-col gap-3 group">
               <span className="flex items-center gap-2.5">
                 <span className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center text-green-700 shrink-0"><Sparkles size={16} /></span>
                 <span className="text-sm font-semibold text-gray-900">{s.title}</span>
               </span>
               <span className="text-sm text-gray-600 leading-relaxed">{s.desc}</span>
-              <span className="mt-auto pt-3 border-t border-gray-100 flex items-center justify-between gap-3 text-xs">
-                <span className="text-gray-500 truncate">Uses: {(s.requiredData || []).join(', ') || 'your monitoring results and the weather'}</span>
+              <span className="w-full min-w-0 mt-auto pt-3 border-t border-gray-100 flex items-center justify-between gap-3 text-xs">
+                <span className="min-w-0 flex-1 text-gray-500 truncate">Uses: {(s.requiredData || []).join(', ') || 'your monitoring results and the weather'}</span>
                 <span className="flex items-center gap-1 font-semibold text-green-800 shrink-0">Set up<ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" /></span>
               </span>
             </button>

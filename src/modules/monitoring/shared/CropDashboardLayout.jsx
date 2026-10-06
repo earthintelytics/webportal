@@ -1055,6 +1055,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
 
 
   // Chat state
+  const [scenarioFormOpen, setScenarioFormOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState([
     { sender: 'assistant', text: "Ask about your fields: crop condition, water, weather or alerts. Answers use your own monitoring data." }
   ]);
@@ -3231,6 +3232,7 @@ Context: ${context}.`;
                       serviceId={service?.id}
                       estates={estateOptions}
                       onRun={(text, meta) => handleChatSubmit(text, meta)}
+                      onFormOpen={setScenarioFormOpen}
                     />
                   </div>
                 ) : (
@@ -3270,7 +3272,8 @@ Context: ${context}.`;
                 )}
               </div>
 
-              {/* Bottom Input Area */}
+              {/* Bottom Input Area (hidden while a what-if form, which has its own button, is open) */}
+              {!(scenarioFormOpen && chatMessages.length === 1) && (
               <div className="bg-white px-6 py-4 border-t border-gray-100 shrink-0">
                 <div className="max-w-3xl mx-auto">
                   <form
@@ -3303,6 +3306,7 @@ Context: ${context}.`;
                   </form>
                 </div>
               </div>
+              )}
 
             </div>
           )}
