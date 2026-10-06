@@ -38,17 +38,6 @@ export const fetchCompanies = async () => {
   return Array.isArray(data) ? data : [];
 };
 
-export const onboardCompany = (payload) => call('/companies', { method: 'POST', body: JSON.stringify(payload) });
-
-export const triggerDataPrefetch = (companyId) =>
-  call(`/companies/${encodeURIComponent(companyId)}/fetch`, { method: 'POST' });
-
-export const fetchPrefetchProgress = (companyId, jobId) =>
-  call(`/companies/${encodeURIComponent(companyId)}/fetch/${encodeURIComponent(jobId)}`);
-
-export const fetchCompanyDataSummary = (companyId) =>
-  call(`/companies/${encodeURIComponent(companyId)}/summary`);
-
 export const fetchSuitabilityRuns = async (companyId, cropId = null) => {
   const data = await call(`/runs?${q({ company_id: companyId, crop: cropId })}`);
   return Array.isArray(data) ? data : [];
@@ -57,8 +46,6 @@ export const fetchSuitabilityRuns = async (companyId, cropId = null) => {
 export const fetchSuitabilityRun = (runId) => call(`/runs/${encodeURIComponent(runId)}`);
 
 export const submitSuitabilityRun = (payload) => call('/runs', { method: 'POST', body: JSON.stringify(payload) });
-
-export const fetchSuitabilityReport = (runId) => call(`/runs/${encodeURIComponent(runId)}/report`);
 
 export const generateReportPdf = (runId) =>
   call(`/runs/${encodeURIComponent(runId)}/report/pdf`, { method: 'POST' });
