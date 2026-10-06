@@ -78,7 +78,7 @@ export default function ParcelMapPage({ basemapAttribution, basemapMaxNativeZoom
                           key={key}
                           value={dynamicFilterValues[key] || 'All'}
                           onChange={e => setDynamicFilterValues(v => ({ ...v, [key]: e.target.value }))}
-                          className="text-[11px] font-bold text-slate-700 bg-white border border-slate-300 rounded-lg px-2 py-1.5 shadow-sm"
+                          className="text-[11px] font-bold text-gray-700 bg-white border border-gray-300 rounded-lg px-2 py-1.5 shadow-sm"
                         >
                           <option value="All">{key}: All</option>
                           {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}

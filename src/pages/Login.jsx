@@ -84,7 +84,7 @@ const Login = ({ onLogin, moduleId, onBack, defaultEmail = '', defaultCode = '' 
     <div className="min-h-screen flex flex-col lg:flex-row bg-white text-[var(--text-main)] font-sans">
       {/* ── Left: crop photograph, full height, caption on a soft gradient ── */}
       <aside
-        className="relative lg:w-1/2 min-h-[260px] lg:min-h-screen overflow-hidden bg-slate-100 bg-cover bg-center"
+        className="relative lg:w-1/2 min-h-[260px] lg:min-h-screen overflow-hidden bg-gray-100 bg-cover bg-center"
         style={{ backgroundImage: HERO_PLACEHOLDERS[currentDesign.image] ? `url(${HERO_PLACEHOLDERS[currentDesign.image]})` : undefined }}
       >
         {currentDesign.image.startsWith('/crops/hero/') && (
@@ -103,7 +103,7 @@ const Login = ({ onLogin, moduleId, onBack, defaultEmail = '', defaultCode = '' 
           fetchpriority="high"
           onLoad={() => setHeroLoaded(true)}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-950/20 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-gray-950/70 via-gray-950/20 to-transparent" />
         <div className="relative h-full flex flex-col justify-end p-8 lg:p-14 text-white">
           <span className="self-start mb-4 px-3 py-1 rounded-full bg-white/15 border border-white/25 text-xs font-medium">
             {currentDesign.group}
@@ -155,14 +155,14 @@ const Login = ({ onLogin, moduleId, onBack, defaultEmail = '', defaultCode = '' 
               <div>
                 <label className="block text-sm font-medium mb-1.5">Email</label>
                 <div className="relative">
-                  <Mail size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <Mail size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                   <input
                     type="email"
                     required
                     placeholder="you@organisation.com"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
-                    className="w-full rounded-[10px] border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm outline-none transition-colors placeholder:text-slate-400 focus:border-[var(--brand-primary)] focus:ring-1 focus:ring-[var(--brand-primary)]"
+                    className="w-full rounded-[10px] border border-gray-200 bg-white py-3 pl-11 pr-4 text-sm outline-none transition-colors placeholder:text-gray-400 focus:border-[var(--brand-primary)] focus:ring-1 focus:ring-[var(--brand-primary)]"
                   />
                 </div>
               </div>
@@ -179,19 +179,19 @@ const Login = ({ onLogin, moduleId, onBack, defaultEmail = '', defaultCode = '' 
                   </button>
                 </div>
                 <div className="relative">
-                  <Lock size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <Lock size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     required
                     placeholder="••••••••"
                     value={accessCode}
                     onChange={e => setAccessCode(e.target.value)}
-                    className="w-full rounded-[10px] border border-slate-200 bg-white py-3 pl-11 pr-11 text-sm outline-none transition-colors placeholder:text-slate-400 focus:border-[var(--brand-primary)] focus:ring-1 focus:ring-[var(--brand-primary)]"
+                    className="w-full rounded-[10px] border border-gray-200 bg-white py-3 pl-11 pr-11 text-sm outline-none transition-colors placeholder:text-gray-400 focus:border-[var(--brand-primary)] focus:ring-1 focus:ring-[var(--brand-primary)]"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition-colors"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition-colors"
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
@@ -237,7 +237,7 @@ const Login = ({ onLogin, moduleId, onBack, defaultEmail = '', defaultCode = '' 
           }}
         />
 
-        <footer className="text-xs text-slate-400">© {new Date().getFullYear()} FarmIntelytics</footer>
+        <footer className="text-xs text-gray-400">© {new Date().getFullYear()} FarmIntelytics</footer>
       </main>
     </div>
   );

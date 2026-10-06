@@ -109,7 +109,7 @@ export const Note = ({ tone = 'info', children }) => (
 );
 
 export const Modal = ({ title, text, onClose, footer, children, size = 'md' }) => (
-  <div className="fixed inset-0 z-[1000] bg-slate-900/30 flex items-center justify-center p-4" onClick={onClose}>
+  <div className="fixed inset-0 z-[1000] bg-gray-900/30 flex items-center justify-center p-4" onClick={onClose}>
     <div className={`w-full ${size === 'lg' ? 'max-w-3xl' : size === 'xl' ? 'max-w-5xl' : 'max-w-lg'} max-h-[90vh] overflow-y-auto bg-white rounded-2xl border border-gray-200 shadow-xl`} onClick={(e) => e.stopPropagation()}>
       <div className="flex items-start justify-between gap-4 px-7 pt-6">
         <div>

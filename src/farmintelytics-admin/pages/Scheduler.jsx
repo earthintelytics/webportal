@@ -96,7 +96,7 @@ function JobModal({ job, orgs, configs, onSave, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-slate-900/30 p-4" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-gray-900/30 p-4" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="w-full max-w-lg bg-white rounded-2xl border border-gray-200 shadow-xl p-7 space-y-5 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-gray-900">{job ? 'Edit schedule' : 'New schedule'}</h3>

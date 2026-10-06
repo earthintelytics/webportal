@@ -70,11 +70,11 @@ const ForgotPasswordModal = ({ isOpen, onClose, initialEmail = '', onSuccess }) 
   };
 
   return (
-    <div className="fixed inset-0 z-[2500] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="w-full max-w-md bg-white rounded-2xl border border-slate-200 shadow-2xl p-6 sm:p-8 relative">
+    <div className="fixed inset-0 z-[2500] flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+      <div className="w-full max-w-md bg-white rounded-2xl border border-gray-200 shadow-xl p-6 sm:p-8 relative">
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-colors"
+          className="absolute right-4 top-4 p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors"
           aria-label="Close"
         >
           <X size={18} />
@@ -85,8 +85,8 @@ const ForgotPasswordModal = ({ isOpen, onClose, initialEmail = '', onSuccess }) 
             <KeyRound size={20} />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-slate-900">Reset password</h3>
-            <p className="text-xs text-slate-500">
+            <h3 className="text-lg font-bold text-gray-900">Reset password</h3>
+            <p className="text-xs text-gray-500">
               {step === 'email' ? 'Enter email to receive reset code' : `Code sent to ${email}`}
             </p>
           </div>
@@ -108,16 +108,16 @@ const ForgotPasswordModal = ({ isOpen, onClose, initialEmail = '', onSuccess }) 
         {step === 'email' ? (
           <form onSubmit={handleRequestCode} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Account email</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">Account email</label>
               <div className="relative">
-                <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
                   type="email"
                   required
                   placeholder="you@organisation.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-3 text-sm outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+                  className="w-full rounded-xl border border-gray-300 bg-white py-2.5 pl-10 pr-3 text-sm outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
                 />
               </div>
             </div>
@@ -132,20 +132,20 @@ const ForgotPasswordModal = ({ isOpen, onClose, initialEmail = '', onSuccess }) 
         ) : (
           <form onSubmit={handleReset} className="space-y-3.5">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Verification code</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">Verification code</label>
               <input
                 type="text"
                 required
                 placeholder="6-character code"
                 value={resetCode}
                 onChange={(e) => setResetCode(e.target.value.toUpperCase())}
-                className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-mono uppercase tracking-widest outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+                className="w-full rounded-xl border border-gray-300 bg-white px-3.5 py-2.5 text-sm font-mono  outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">New password</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">New password</label>
               <div className="relative">
-                <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
                   type="password"
                   required
@@ -153,14 +153,14 @@ const ForgotPasswordModal = ({ isOpen, onClose, initialEmail = '', onSuccess }) 
                   placeholder="At least 8 characters"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-3 text-sm outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+                  className="w-full rounded-xl border border-gray-300 bg-white py-2.5 pl-10 pr-3 text-sm outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
                 />
               </div>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Confirm new password</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">Confirm new password</label>
               <div className="relative">
-                <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
                   type="password"
                   required
@@ -168,7 +168,7 @@ const ForgotPasswordModal = ({ isOpen, onClose, initialEmail = '', onSuccess }) 
                   placeholder="Re-enter new password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-3 text-sm outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+                  className="w-full rounded-xl border border-gray-300 bg-white py-2.5 pl-10 pr-3 text-sm outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
                 />
               </div>
             </div>
@@ -182,7 +182,7 @@ const ForgotPasswordModal = ({ isOpen, onClose, initialEmail = '', onSuccess }) 
             <button
               type="button"
               onClick={() => setStep('email')}
-              className="w-full py-1 text-xs text-slate-500 hover:text-slate-800"
+              className="w-full py-1 text-xs text-gray-500 hover:text-gray-800"
             >
               ← Back to email entry
             </button>

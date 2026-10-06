@@ -13,7 +13,7 @@ import { parseCsv, suggestMapping, applyMapping, checkRows, templateCsv, buildFi
  */
 
 const STATUS = {
-  missing: { label: 'Not provided yet', cls: 'bg-slate-50 text-slate-700 border-slate-200' },
+  missing: { label: 'Not provided yet', cls: 'bg-gray-50 text-gray-700 border-gray-200' },
   due: { label: 'Update due', cls: 'bg-sky-50 text-sky-700 border-sky-200' },
   ok: { label: 'Up to date', cls: 'bg-green-50 text-green-700 border-green-200' },
 };
@@ -67,25 +67,25 @@ function CheckResult({ result, total }) {
           ['Unknown blocks', result.unknownIds.length],
         ].map(([label, value]) => (
           <div key={label} className="rounded-xl border border-gray-200 px-4 py-3">
-            <div className="text-[11px] font-bold text-gray-600 uppercase tracking-widest">{label}</div>
+            <div className="text-[11px] font-bold text-gray-600 ">{label}</div>
             <div className="text-2xl font-bold text-gray-900 mt-1">{value}</div>
           </div>
         ))}
       </div>
       {result.unknownIds.length > 0 && (
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <div className="text-sm font-semibold text-slate-900">These blocks are not registered for your organisation</div>
-          <p className="text-xs text-slate-600 mt-1">Check the spelling, or the estate column if you have several estates. Blocks are registered with your boundary at onboarding.</p>
+        <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+          <div className="text-sm font-semibold text-gray-900">These blocks are not registered for your organisation</div>
+          <p className="text-xs text-gray-600 mt-1">Check the spelling, or the estate column if you have several estates. Blocks are registered with your boundary at onboarding.</p>
           <div className="flex flex-wrap gap-1.5 mt-3">
-            {result.unknownIds.slice(0, 40).map(id => <span key={id} className="text-xs font-mono px-2 py-0.5 rounded bg-white border border-slate-200 text-slate-800">{id}</span>)}
-            {result.unknownIds.length > 40 && <span className="text-xs text-slate-600">+{result.unknownIds.length - 40} more</span>}
+            {result.unknownIds.slice(0, 40).map(id => <span key={id} className="text-xs font-mono px-2 py-0.5 rounded bg-white border border-gray-200 text-gray-800">{id}</span>)}
+            {result.unknownIds.length > 40 && <span className="text-xs text-gray-600">+{result.unknownIds.length - 40} more</span>}
           </div>
         </div>
       )}
       {problems > 0 ? (
         <div className="rounded-xl border border-gray-200 overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-left text-[11px] uppercase tracking-widest text-gray-600">
+            <thead className="bg-gray-50 text-left text-[11px]  text-gray-600">
               <tr><th className="px-4 py-2.5">Row</th><th className="px-4 py-2.5">Column</th><th className="px-4 py-2.5">Problem</th></tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -191,7 +191,7 @@ function UploadTab({ dataset, fieldIndex, connected }) {
             <>
               <div className="rounded-xl border border-gray-200 overflow-hidden">
                 <table className="w-full text-sm">
-                  <thead className="bg-gray-50 text-left text-[11px] uppercase tracking-widest text-gray-600">
+                  <thead className="bg-gray-50 text-left text-[11px]  text-gray-600">
                     <tr><th className="px-4 py-2.5 w-[40%]">Our column</th><th className="px-4 py-2.5 w-[30%]">Your column</th><th className="px-4 py-2.5">Example from your file</th></tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
@@ -282,7 +282,7 @@ function ManualTab({ dataset, fieldIndex, blockOptions, connected }) {
       <p className="text-sm text-gray-600">Enter a few values directly{perField ? ', one row per block' : ''}. For many blocks, upload a file instead.</p>
       <div className="rounded-xl border border-gray-200 overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-left text-[11px] uppercase tracking-widest text-gray-600">
+          <thead className="bg-gray-50 text-left text-[11px]  text-gray-600">
             <tr>{dataset.columns.map(c => <th key={c.name} className="px-3 py-2.5 whitespace-nowrap">{c.name.replace(/_/g, ' ')}{c.required ? ' *' : ''}</th>)}<th className="w-10" /></tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -314,7 +314,7 @@ function ColumnGuide({ dataset }) {
       </div>
       <div className="rounded-xl border border-gray-200 overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-left text-[11px] uppercase tracking-widest text-gray-600">
+          <thead className="bg-gray-50 text-left text-[11px]  text-gray-600">
             <tr><th className="px-4 py-2.5">Column</th><th className="px-4 py-2.5">Meaning</th><th className="px-4 py-2.5">Format</th><th className="px-4 py-2.5">Example</th></tr>
           </thead>
           <tbody className="divide-y divide-gray-100">

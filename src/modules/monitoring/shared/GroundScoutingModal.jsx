@@ -159,8 +159,10 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
     }
   };
 
+  const [confirmDismiss, setConfirmDismiss] = useState(false);
   const handleDismiss = async () => {
-    if (!window.confirm('Are you sure you want to dismiss this anomaly alert?')) return;
+    // Two clicks instead of a browser pop-up: the button asks first.
+    if (!confirmDismiss) { setConfirmDismiss(true); return; }
     setSubmitting(true);
     try {
       await dismissAlert(alert.alert_id);
@@ -176,54 +178,45 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
   if (!alert) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/30">
+      <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 bg-slate-900 text-white">
-          <div className="flex items-center space-x-3">
-            <div className={`p-2 rounded-lg ${alert.severity === 'Critical' ? 'bg-red-500/20 text-red-400' : 'bg-amber-500/20 text-amber-400'}`}>
+        <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-gray-200 bg-white">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className={`p-2 rounded-lg ${alert.severity === 'Critical' ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700'}`}>
               <AlertTriangle size={20} />
             </div>
-            <div>
-              <div className="flex items-center space-x-2">
-                <span className="font-bold text-sm tracking-wide">Plot anomaly action hub</span>
-                <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold uppercase bg-slate-800 text-slate-300 border border-slate-700">
-                  {alert.alert_id}
-                </span>
-              </div>
-              <p className="text-xs text-slate-400">Plot #{alert.plot_id} · {alert.type}</p>
+            <div className="min-w-0">
+              <p className="font-display text-base font-semibold text-gray-900">Field visit</p>
+              <p className="text-xs text-gray-500 truncate">Plot {alert.plot_id} · {alert.type}</p>
             </div>
           </div>
-          <div className="flex items-center space-x-3">
-            {/* Connectivity Badge */}
-            <div className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${isOnline ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-800' : 'bg-amber-950/80 text-amber-400 border border-amber-800'}`}>
+          <div className="flex items-center gap-2 shrink-0">
+            <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${isOnline ? 'bg-green-50 text-green-800 border-green-200' : 'bg-amber-50 text-amber-800 border-amber-200'}`}>
               {isOnline ? <Wifi size={13} /> : <WifiOff size={13} />}
-              <span>{isOnline ? 'Cloud Synced' : 'Offline Mode'}</span>
-            </div>
+              {isOnline ? 'Online' : 'Offline: saved on this device'}
+            </span>
             {pendingSync > 0 && (
               <button
                 onClick={handleSyncNow}
                 disabled={submitting}
-                className="flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white transition-all shadow-sm"
-                title="Sync offline queue"
+                className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-white bg-green-700 hover:bg-green-800"
+                title="Send the visits saved offline"
               >
                 <RefreshCw size={12} className={submitting ? 'animate-spin' : ''} />
-                <span>{pendingSync} Pending</span>
+                {pendingSync} to send
               </button>
             )}
-            <button
-              onClick={onClose}
-              className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
-            >
+            <button onClick={onClose} aria-label="Close" className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100">
               <X size={20} />
             </button>
           </div>
         </div>
 
         {/* Anomaly Brief Banner */}
-        <div className="px-6 py-3 bg-slate-50 border-b border-gray-100 flex items-center justify-between text-xs text-slate-600">
+        <div className="px-6 py-3 bg-gray-50 border-b border-gray-100 flex items-center justify-between text-xs text-gray-600">
           <div className="flex items-center space-x-2 truncate max-w-md">
-            <span className="font-semibold text-slate-900">Satellite Signal:</span>
+            <span className="font-semibold text-gray-900">Satellite Signal:</span>
             <span className="truncate">{alert.message}</span>
           </div>
           <div className="flex items-center space-x-3 flex-shrink-0">
@@ -243,7 +236,7 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
           <button
             onClick={() => setActiveTab('dispatch')}
             className={`flex-1 flex items-center justify-center space-x-2 py-3 text-xs font-semibold border-b-2 transition-colors ${
-              activeTab === 'dispatch' ? 'border-emerald-600 text-emerald-600 bg-emerald-50/30' : 'border-transparent text-slate-500 hover:text-slate-900'
+              activeTab === 'dispatch' ? 'border-emerald-600 text-emerald-600 bg-emerald-50/30' : 'border-transparent text-gray-500 hover:text-gray-900'
             }`}
           >
             <UserCheck size={16} />
@@ -252,7 +245,7 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
           <button
             onClick={() => setActiveTab('observation')}
             className={`flex-1 flex items-center justify-center space-x-2 py-3 text-xs font-semibold border-b-2 transition-colors ${
-              activeTab === 'observation' ? 'border-emerald-600 text-emerald-600 bg-emerald-50/30' : 'border-transparent text-slate-500 hover:text-slate-900'
+              activeTab === 'observation' ? 'border-emerald-600 text-emerald-600 bg-emerald-50/30' : 'border-transparent text-gray-500 hover:text-gray-900'
             }`}
           >
             <Camera size={16} />
@@ -261,7 +254,7 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
           <button
             onClick={() => setActiveTab('resolve')}
             className={`flex-1 flex items-center justify-center space-x-2 py-3 text-xs font-semibold border-b-2 transition-colors ${
-              activeTab === 'resolve' ? 'border-emerald-600 text-emerald-600 bg-emerald-50/30' : 'border-transparent text-slate-500 hover:text-slate-900'
+              activeTab === 'resolve' ? 'border-emerald-600 text-emerald-600 bg-emerald-50/30' : 'border-transparent text-gray-500 hover:text-gray-900'
             }`}
           >
             <CheckCircle2 size={16} />
@@ -270,7 +263,7 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
           <button
             onClick={() => setActiveTab('history')}
             className={`flex-1 flex items-center justify-center space-x-2 py-3 text-xs font-semibold border-b-2 transition-colors ${
-              activeTab === 'history' ? 'border-emerald-600 text-emerald-600 bg-emerald-50/30' : 'border-transparent text-slate-500 hover:text-slate-900'
+              activeTab === 'history' ? 'border-emerald-600 text-emerald-600 bg-emerald-50/30' : 'border-transparent text-gray-500 hover:text-gray-900'
             }`}
           >
             <History size={16} />
@@ -291,7 +284,7 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
           <form onSubmit={handleDispatch} className="p-6 space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Field Scout / Agronomist Name</label>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Field Scout / Agronomist Name</label>
                 <input
                   type="text"
                   required
@@ -302,7 +295,7 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Phone / WhatsApp Contact</label>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Phone / WhatsApp Contact</label>
                 <input
                   type="text"
                   placeholder="e.g. +234 803 123 4567"
@@ -314,7 +307,7 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Scouting Target Date / Deadline</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">Scouting Target Date / Deadline</label>
               <input
                 type="date"
                 value={deadline}
@@ -324,7 +317,7 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Scouting Directives / Instructions</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">Scouting Directives / Instructions</label>
               <textarea
                 rows={3}
                 placeholder="Specify specific quadrant or visual symptoms to inspect on the ground..."
@@ -338,9 +331,9 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
               <button
                 type="button"
                 onClick={handleDismiss}
-                className="text-xs text-red-600 hover:text-red-700 font-medium"
+                className="text-xs text-red-700 hover:text-red-800 font-medium"
               >
-                Dismiss false alarm
+                {confirmDismiss ? 'Click again to dismiss this alert' : 'Dismiss false alarm'}
               </button>
               <button
                 type="submit"
@@ -359,7 +352,7 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
           <form onSubmit={handleLogObservation} className="p-6 space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Crop growth stage</label>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Crop growth stage</label>
                 <select
                   value={cropStage}
                   onChange={(e) => setCropStage(e.target.value)}
@@ -373,7 +366,7 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Primary finding</label>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Primary finding</label>
                 <select
                   value={findingType}
                   onChange={(e) => setFindingType(e.target.value)}
@@ -391,7 +384,7 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
 
             <div>
               <div className="flex justify-between items-center mb-1">
-                <label className="text-xs font-semibold text-slate-700">Canopy Health Score (1 = Dead, 10 = Optimal)</label>
+                <label className="text-xs font-semibold text-gray-700">Canopy Health Score (1 = Dead, 10 = Optimal)</label>
                 <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">{canopyScore}/10</span>
               </div>
               <input
@@ -412,13 +405,13 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
                 onChange={(e) => setPestDetected(e.target.checked)}
                 className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
               />
-              <label htmlFor="pestCheck" className="text-xs text-slate-700 font-medium cursor-pointer">
+              <label htmlFor="pestCheck" className="text-xs text-gray-700 font-medium cursor-pointer">
                 Pest or Disease active symptoms observed on field inspection
               </label>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Field notes & ground evidence</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">Field notes & ground evidence</label>
               <textarea
                 rows={3}
                 placeholder="Describe leaf symptoms, soil condition, or estimated affected percentage..."
@@ -445,7 +438,7 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
         {activeTab === 'resolve' && (
           <form onSubmit={handleResolve} className="p-6 space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Verified ground truth category</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">Verified ground truth category</label>
               <select
                 value={resolveCategory}
                 onChange={(e) => setResolveCategory(e.target.value)}
@@ -461,7 +454,7 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Resolution summary & agronomic actions taken</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">Resolution summary & agronomic actions taken</label>
               <textarea
                 rows={4}
                 required
@@ -473,7 +466,7 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
             </div>
 
             <div className="flex items-center justify-between pt-2">
-              <div className="flex items-center space-x-2 text-[11px] text-slate-500">
+              <div className="flex items-center space-x-2 text-[11px] text-gray-500">
                 <ShieldCheck size={14} className="text-emerald-600" />
                 <span>Will record closure timestamp & update MRV audit logs</span>
               </div>
@@ -493,35 +486,35 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
         {activeTab === 'history' && (
           <div className="p-6 space-y-4 max-h-[420px] overflow-y-auto">
             {loadingPast ? (
-              <div className="flex items-center justify-center py-10 text-xs text-slate-400 space-x-2">
+              <div className="flex items-center justify-center py-10 text-xs text-gray-400 space-x-2">
                 <RefreshCw size={16} className="animate-spin text-emerald-600" />
                 <span>Loading ground observations...</span>
               </div>
             ) : pastObservations.length === 0 ? (
               <div className="text-center py-10">
-                <FileText size={32} className="mx-auto text-slate-300 mb-2" />
-                <p className="text-xs font-semibold text-slate-700">No ground observations yet</p>
-                <p className="text-[11px] text-slate-500 max-w-xs mx-auto mt-1">
+                <FileText size={32} className="mx-auto text-gray-300 mb-2" />
+                <p className="text-xs font-semibold text-gray-700">No ground observations yet</p>
+                <p className="text-[11px] text-gray-500 max-w-xs mx-auto mt-1">
                   Field scouts have not yet recorded direct observations for Plot #{alert.plot_id}. Use Tab 1 or 2 to log one.
                 </p>
               </div>
             ) : (
               <div className="space-y-3">
                 {pastObservations.map((obs, idx) => (
-                  <div key={obs.observation_id || idx} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 text-xs space-y-2">
+                  <div key={obs.observation_id || idx} className="p-3.5 rounded-xl bg-gray-50 border border-gray-200/80 text-xs space-y-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
-                        <span className="font-bold text-slate-800">{obs.scout_name || 'Field Officer'}</span>
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800 uppercase">
+                        <span className="font-bold text-gray-800">{obs.scout_name || 'Field Officer'}</span>
+                        <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 ">
                           {obs.finding_type ? obs.finding_type.replace('_', ' ') : 'Observation'}
                         </span>
                       </div>
-                      <span className="text-[11px] text-slate-400">{obs.observed_at || 'Recently'}</span>
+                      <span className="text-[11px] text-gray-400">{obs.observed_at || 'Recently'}</span>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-600 bg-white p-2 rounded-lg border border-slate-100">
-                      <div><span className="text-slate-400">Crop Stage:</span> <span className="font-semibold text-slate-700">{obs.crop_stage || 'N/A'}</span></div>
-                      <div><span className="text-slate-400">Canopy Health:</span> <span className="font-semibold text-slate-700">{obs.canopy_health_score}/10</span></div>
+                    <div className="grid grid-cols-2 gap-2 text-[11px] text-gray-600 bg-white p-2 rounded-lg border border-gray-100">
+                      <div><span className="text-gray-400">Crop Stage:</span> <span className="font-semibold text-gray-700">{obs.crop_stage || 'N/A'}</span></div>
+                      <div><span className="text-gray-400">Canopy Health:</span> <span className="font-semibold text-gray-700">{obs.canopy_health_score}/10</span></div>
                       {obs.pest_disease_detected && (
                         <div className="col-span-2 text-red-600 font-semibold flex items-center space-x-1">
                           <AlertTriangle size={12} />
@@ -531,7 +524,7 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
                     </div>
 
                     {obs.notes && (
-                      <p className="text-slate-600 text-[11px] italic bg-slate-100/60 p-2 rounded-lg">
+                      <p className="text-gray-600 text-[11px] italic bg-gray-100/60 p-2 rounded-lg">
                         "{obs.notes}"
                       </p>
                     )}

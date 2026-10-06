@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { AlertCircle, RefreshCw, X, Copy, Check } from 'lucide-react';
 
+/** One error message for the admin pages: what went wrong, copy, try again, close. */
 const ErrorBanner = ({ message, onDismiss, onRetry }) => {
   const [copied, setCopied] = useState(false);
   if (!message) return null;
 
-  // Extract clean text and optional request ID
   let text = typeof message === 'string' ? message : (message?.message || String(message));
   let reqId = message?.requestId || message?.meta?.request_id || null;
   if (text.startsWith('{') && text.endsWith('}')) {
@@ -19,75 +19,29 @@ const ErrorBanner = ({ message, onDismiss, onRetry }) => {
   }
 
   const handleCopy = () => {
-    const copyText = reqId ? `${text} (Request ID: ${reqId})` : text;
-    navigator.clipboard.writeText(copyText);
+    navigator.clipboard.writeText(reqId ? `${text} (Request ID: ${reqId})` : text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   return (
-    <div style={{
-      padding: '12px 16px',
-      background: '#fef2f2',
-      border: '1px solid #fecaca',
-      borderRadius: '12px',
-      color: '#991b1b',
-      fontSize: '13px',
-      display: 'flex',
-      gap: '12px',
-      alignItems: 'center',
-      boxShadow: 'none',
-    }}>
-      <div style={{
-        width: '28px', height: '28px', borderRadius: '8px',
-        background: '#fee2e2', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        flexShrink: 0,
-      }}>
-        <AlertCircle size={16} style={{ color: '#dc2626' }} />
+    <div role="alert" className="flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+      <AlertCircle size={18} className="shrink-0 text-red-700" />
+      <div className="flex-1 min-w-0">
+        <p className="font-semibold leading-snug break-words">{text}</p>
+        {reqId && <p className="mt-1 text-xs font-mono text-red-700">Request ID: {reqId}</p>}
       </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ margin: 0, fontWeight: 600, color: '#991b1b', lineHeight: 1.4, wordBreak: 'break-word' }}>
-          {text}
-        </p>
-        {reqId && (
-          <p style={{ margin: '4px 0 0', fontSize: '11px', color: '#b91c1c', fontFamily: 'var(--font-mono)' }}>
-            Request ID: {reqId}
-          </p>
-        )}
-      </div>
-      <button
-        onClick={handleCopy}
-        title="Copy error message"
-        style={{
-          display: 'flex', alignItems: 'center', gap: '4px', background: '#ffffff',
-          border: '1px solid #fca5a5', borderRadius: '8px', padding: '5px 9px',
-          cursor: 'pointer', color: '#b91c1c', fontSize: '11px', fontWeight: 700, flexShrink: 0,
-        }}
-      >
-        {copied ? <Check size={12} color="#3F8432" /> : <Copy size={12} />}
+      <button type="button" onClick={handleCopy} className="inline-flex items-center gap-1 shrink-0 rounded-lg border border-red-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50">
+        {copied ? <Check size={12} className="text-green-700" /> : <Copy size={12} />}
         {copied ? 'Copied' : 'Copy'}
       </button>
       {onRetry && (
-        <button
-          onClick={onRetry}
-          style={{
-            display: 'flex', alignItems: 'center', gap: '5px', background: '#dc2626',
-            border: 'none', borderRadius: '8px', padding: '6px 12px',
-            cursor: 'pointer', color: '#ffffff', fontSize: '11px', fontWeight: 700, flexShrink: 0,
-          }}
-        >
-          <RefreshCw size={11} /> Retry
+        <button type="button" onClick={onRetry} className="inline-flex items-center gap-1.5 shrink-0 rounded-lg bg-red-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-800">
+          <RefreshCw size={12} /> Try again
         </button>
       )}
       {onDismiss && (
-        <button
-          onClick={onDismiss}
-          style={{
-            background: 'none', border: 'none', cursor: 'pointer',
-            color: '#991b1b', padding: '4px', borderRadius: '6px',
-            flexShrink: 0, display: 'flex', alignItems: 'center',
-          }}
-        >
+        <button type="button" onClick={onDismiss} aria-label="Close" className="shrink-0 rounded-md p-1 text-red-700 hover:bg-red-100">
           <X size={15} />
         </button>
       )}

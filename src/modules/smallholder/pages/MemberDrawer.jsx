@@ -49,7 +49,7 @@ const MemberDrawer = ({ member, onClose, onSaved }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[1000] bg-slate-900/30 flex justify-end" onClick={onClose}>
+    <div className="fixed inset-0 z-[1000] bg-gray-900/30 flex justify-end" onClick={onClose}>
       <aside className="w-full max-w-xl h-full overflow-y-auto bg-white border-l border-gray-200 p-7 space-y-6" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-start justify-between gap-4">
           <div>

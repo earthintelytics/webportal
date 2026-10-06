@@ -61,7 +61,7 @@ export const SwipeSliderOverlay = ({ isCompareMode, splitPosition, currentTimeli
       <div
         onMouseDown={handleSplitDragStart}
         onTouchStart={handleSplitDragStart}
-        className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-white border-2 border-green-600 shadow-2xl flex items-center justify-center cursor-ew-resize select-none transition-transform hover:scale-110 active:scale-95"
+        className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-white border-2 border-green-600 shadow-xl flex items-center justify-center cursor-ew-resize select-none transition-transform hover:scale-110 active:scale-95"
         style={{ left: `${splitPosition}%`, zIndex: 30001 }}
       >
         <span className="text-green-600 font-extrabold text-lg select-none">↔</span>
@@ -73,7 +73,7 @@ export const SwipeSliderOverlay = ({ isCompareMode, splitPosition, currentTimeli
         className="absolute bg-white/90 backdrop-blur-sm border border-gray-200 px-2 py-1 rounded-sm shadow-md flex flex-col pointer-events-none"
         style={{ left: '12px', bottom: '12px', zIndex: 20000 }}
       >
-        <span className="text-[11px] font-bold text-gray-600 uppercase tracking-wider">Left</span>
+        <span className="text-[11px] font-bold text-gray-600 ">Left</span>
         <span className="text-[11px] font-extrabold text-gray-800">{currentTimelineA?.label?.split(',')[0]}</span>
       </div>
 
@@ -82,7 +82,7 @@ export const SwipeSliderOverlay = ({ isCompareMode, splitPosition, currentTimeli
         className="absolute bg-white/90 backdrop-blur-sm border border-gray-200 px-2 py-1 rounded-sm shadow-md flex flex-col pointer-events-none text-right"
         style={{ right: '55px', bottom: '12px', zIndex: 20000 }}
       >
-        <span className="text-[11px] font-bold text-gray-600 uppercase tracking-wider">Right</span>
+        <span className="text-[11px] font-bold text-gray-600 ">Right</span>
         <span className="text-[11px] font-extrabold text-gray-800">{currentTimelineB?.label?.split(',')[0]}</span>
       </div>
     </>

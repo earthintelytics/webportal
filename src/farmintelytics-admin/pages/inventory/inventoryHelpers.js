@@ -15,7 +15,7 @@ export function formatSize(bytes) {
 // Bar segment colours per file type (Tailwind classes, not hex).
 export const TYPE_COLOURS = {
   'Zarr Dataset': 'bg-sky-500', 'Boundary (GeoJSON)': 'bg-green-600', 'Plots Health Data': 'bg-violet-500',
-  'GeoJSON Data': 'bg-cyan-500', 'Run Metadata': 'bg-amber-500', 'JSON Data': 'bg-slate-500', 'ZIP Archive': 'bg-pink-500',
+  'GeoJSON Data': 'bg-cyan-500', 'Run Metadata': 'bg-amber-500', 'JSON Data': 'bg-gray-500', 'ZIP Archive': 'bg-pink-500',
   'Parquet Data': 'bg-rose-500', Image: 'bg-yellow-500', 'GeoTIFF Image': 'bg-teal-500', 'YAML Config': 'bg-gray-700', Other: 'bg-gray-400',
 };
 

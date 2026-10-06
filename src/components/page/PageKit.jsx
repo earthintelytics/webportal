@@ -68,7 +68,7 @@ export const Field = ({ label, hint, error, children }) => (
 );
 
 export const Modal = ({ title, children, onClose, footer, wide = false }) => (
-  <div className="fixed inset-0 z-[1000] bg-slate-900/30 flex items-center justify-center p-4" onClick={onClose}>
+  <div className="fixed inset-0 z-[1000] bg-gray-900/30 flex items-center justify-center p-4" onClick={onClose}>
     <div className={`w-full ${wide ? 'max-w-3xl' : 'max-w-lg'} max-h-[90vh] overflow-y-auto bg-white rounded-2xl border border-gray-200 shadow-xl p-7 space-y-5`} onClick={(e) => e.stopPropagation()}>
       <h3 className="font-display text-xl font-semibold text-gray-900">{title}</h3>
       {children}

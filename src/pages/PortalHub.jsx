@@ -51,12 +51,12 @@ const ModuleCard = ({ title, crop, id, icon, active, onSelect, logoUrl }) => {
     <button
       onClick={() => active && onSelect(id)}
       disabled={!active}
-      className={`group flex flex-col text-left bg-white rounded-2xl border border-slate-200 overflow-hidden transition-colors ${
-        active ? 'hover:border-slate-300' : 'opacity-50 cursor-not-allowed'
+      className={`group flex flex-col text-left bg-white rounded-2xl border border-gray-200 overflow-hidden transition-colors ${
+        active ? 'hover:border-gray-300' : 'opacity-50 cursor-not-allowed'
       }`}
     >
       <div
-        className="relative h-36 w-full overflow-hidden bg-slate-100 bg-cover bg-center"
+        className="relative h-36 w-full overflow-hidden bg-gray-100 bg-cover bg-center"
         style={photo && HERO_PLACEHOLDERS[photo] ? { backgroundImage: `url(${HERO_PLACEHOLDERS[photo]})` } : undefined}
       >
         {photo && (
@@ -69,16 +69,16 @@ const ModuleCard = ({ title, crop, id, icon, active, onSelect, logoUrl }) => {
           />
         )}
         {(logoUrl || !photo) && (
-          <div className="absolute left-4 bottom-4 w-11 h-11 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-700">
+          <div className="absolute left-4 bottom-4 w-11 h-11 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-700">
             {logoUrl ? <img src={logoUrl} alt="" className="w-7 h-7 object-contain" /> : React.cloneElement(icon, { size: 22, strokeWidth: 1.75 })}
           </div>
         )}
       </div>
 
       <div className="flex-1 flex flex-col p-5">
-        <p className="text-xs font-medium text-slate-500">{crop}</p>
-        <h3 className="font-display text-lg font-semibold text-slate-900 leading-snug mt-1">{title}</h3>
-        <span className={`mt-5 flex items-center gap-1.5 text-sm font-medium ${active ? 'text-[var(--brand-primary)]' : 'text-slate-400'}`}>
+        <p className="text-xs font-medium text-gray-500">{crop}</p>
+        <h3 className="font-display text-lg font-semibold text-gray-900 leading-snug mt-1">{title}</h3>
+        <span className={`mt-5 flex items-center gap-1.5 text-sm font-medium ${active ? 'text-[var(--brand-primary)]' : 'text-gray-400'}`}>
           Open
           <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
         </span>
@@ -190,7 +190,7 @@ const PortalHub = ({ onSelectModule, onSignOut, onOpenAdmin }) => {
 
   return (
     <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] font-sans">
-      <header className="bg-white border-b border-slate-200">
+      <header className="bg-white border-b border-gray-200">
         <div className="max-w-6xl mx-auto px-6 lg:px-10 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img src="/farmintelytics-logo.png" alt="FarmIntelytics" className="h-10 w-10 object-contain" width="40" height="40" />
@@ -201,12 +201,12 @@ const PortalHub = ({ onSelectModule, onSignOut, onOpenAdmin }) => {
           </div>
           <div className="flex items-center gap-3">
             {onOpenAdmin && (
-              <button onClick={onOpenAdmin} className="px-4 py-2 rounded-[10px] border border-slate-200 bg-white text-sm font-medium hover:bg-slate-50 transition-colors">
+              <button onClick={onOpenAdmin} className="px-4 py-2 rounded-[10px] border border-gray-200 bg-white text-sm font-medium hover:bg-gray-50 transition-colors">
                 Admin console
               </button>
             )}
             {onSignOut && (
-              <button onClick={onSignOut} className="px-4 py-2 rounded-[10px] text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors">
+              <button onClick={onSignOut} className="px-4 py-2 rounded-[10px] text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors">
                 Sign out
               </button>
             )}
@@ -221,10 +221,10 @@ const PortalHub = ({ onSelectModule, onSignOut, onOpenAdmin }) => {
           <p className="text-base text-[var(--text-muted)] leading-relaxed mt-4">
             Open any service or organisation to check it the way a client sees it. Clients never see this page &mdash; each gets a direct link to their own sign-in.
           </p>
-          <p className="text-sm text-slate-500 mt-5">{serviceCount} services &middot; {orgCount} organisations</p>
+          <p className="text-sm text-gray-500 mt-5">{serviceCount} services &middot; {orgCount} organisations</p>
         </section>
 
-        <nav className="mt-12 flex gap-8 border-b border-slate-200">
+        <nav className="mt-12 flex gap-8 border-b border-gray-200">
           {visibleTabs.map(tab => {
             const count = sections.find(s => s.id === tab.id)?.modules.length ?? 0;
             const on = currentTabId === tab.id;
@@ -233,11 +233,11 @@ const PortalHub = ({ onSelectModule, onSignOut, onOpenAdmin }) => {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`-mb-px pb-3 border-b-2 text-sm font-medium transition-colors ${
-                  on ? 'border-[var(--brand-primary)] text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-800'
+                  on ? 'border-[var(--brand-primary)] text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-800'
                 }`}
               >
                 {tab.label}
-                <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${on ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>{count}</span>
+                <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${on ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'}`}>{count}</span>
               </button>
             );
           })}
@@ -253,7 +253,7 @@ const PortalHub = ({ onSelectModule, onSignOut, onOpenAdmin }) => {
         </section>
       </main>
 
-      <footer className="max-w-6xl mx-auto px-6 lg:px-10 py-10 border-t border-slate-200 text-xs text-slate-400">
+      <footer className="max-w-6xl mx-auto px-6 lg:px-10 py-10 border-t border-gray-200 text-xs text-gray-400">
         &copy; {new Date().getFullYear()} FarmIntelytics &middot; Internal platform hub
       </footer>
     </div>
