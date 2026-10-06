@@ -5,6 +5,8 @@ import { boundaryCheck } from '../../../farmintelytics-admin/components/validati
 import { Modal, Field, PrimaryButton, SecondaryButton, ErrorNote } from '../../../components/page/PageKit';
 import { inputCls } from '../../../components/page/useLoader';
 import { CROPS } from '../suitabilityLabels';
+import { dataForCrop } from '../suitabilityData';
+import { DATASET_DEFINITIONS } from '../../data/datasetDefinitions';
 
 const STRICTNESS = [
   { id: 'estate', label: 'Commercial estate', text: 'Stricter: only the best land counts as well suited' },
@@ -119,7 +121,11 @@ const RunWizard = ({ orgs, initialCrop, onClose, onStarted }) => {
         </Field>
         <div className="space-y-2 pt-7">
           <label className="flex items-center gap-2 text-sm text-gray-800"><input type="checkbox" checked={form.irrigated} onChange={(e) => set('irrigated', e.target.checked)} />Irrigated (rainfall limits are relaxed)</label>
-          <label className="flex items-center gap-2 text-sm text-gray-800"><input type="checkbox" checked={form.use_soil_samples} onChange={(e) => set('use_soil_samples', e.target.checked)} />Use the organisation's soil samples</label>
+          <label className="flex items-start gap-2 text-sm text-gray-800"><input type="checkbox" className="mt-0.5" checked={form.use_soil_samples} onChange={(e) => set('use_soil_samples', e.target.checked)} />
+            <span>Use the organisation's own data where uploaded
+              <span className="block text-xs text-gray-500">{dataForCrop(crop).map((d) => DATASET_DEFINITIONS.find((x) => x.id === d.dataset)?.name).filter(Boolean).join(', ')}</span>
+            </span>
+          </label>
         </div>
       </div>
 

@@ -379,7 +379,7 @@ export default function ReportBuilder({ plots, alerts, estates, tenant, orgName,
             <span className="w-9 h-9 rounded-xl bg-green-50 border border-green-200 flex items-center justify-center text-green-700">
               <BrainCircuit size={20} />
             </span>
-            <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Reports & decision intelligence</h2>
+            <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Reports</h2>
           </div>
           <p className="text-sm text-gray-500 font-medium mt-2 max-w-2xl">
             Choose what, where and when on the left; your report appears on the right, in plain language, ready to download or share.

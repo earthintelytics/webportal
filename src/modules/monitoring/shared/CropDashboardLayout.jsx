@@ -3440,7 +3440,7 @@ Context: ${context}.`;
                           handleChatSubmit();
                         }
                       }}
-                      placeholder="Ask about your farm... e.g. Which plots have low NDVI this season?"
+                      placeholder="Ask about your farm, e.g. Which blocks are short of water this month?"
                       className="w-full bg-gray-50 border border-transparent focus:border-green-600 focus:bg-white rounded-2xl py-5 pl-6 pr-16 text-sm font-semibold outline-none transition-all text-gray-800 placeholder-gray-400 shadow-sm resize-none h-44 disabled:opacity-50"
                     />
                     <button

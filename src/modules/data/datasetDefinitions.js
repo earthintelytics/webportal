@@ -163,6 +163,30 @@ export const DATASET_DEFINITIONS = [
       { name: 'mean_height_m', definition: 'Mean tree height', type: 'number', unit: 'm', required: false, range: [0.5, 90], aliases: ['height'], example: '11' },
     ],
   },
+  {
+    id: 'weather-station', name: 'Weather station records', applies_to: ['crop:oil_palm', 'crop:cocoa', 'crop:rubber', 'crop:cashew', 'crop:maize', 'crop:rice', 'crop:cassava', 'crop:sugarcane'],
+    why: 'Rain and temperature measured on your land replace the regional estimates near each station, in suitability and weather pages.',
+    unlocks: ['Suitability engine', 'Local weather'], due: 'monthly', grain: 'per station and day',
+    columns: [
+      { name: 'station_id', definition: 'Your station name or code', type: 'text', required: true, aliases: ['station', 'station id', 'gauge'], example: 'Main office' },
+      { name: 'lat', definition: 'Latitude of the station (decimal degrees)', type: 'number', required: true, range: [-90, 90], aliases: ['lat', 'latitude', 'y'], example: '6.4321' },
+      { name: 'lon', definition: 'Longitude of the station (decimal degrees)', type: 'number', required: true, range: [-180, 180], aliases: ['lon', 'lng', 'longitude', 'x'], example: '5.2711' },
+      { name: 'date', definition: 'Day of the reading', type: 'date', required: true, aliases: ['date', 'day'], example: '2026-03-14' },
+      { name: 'rain_mm', definition: 'Rain that day', type: 'number', unit: 'mm', required: true, range: [0, 500], aliases: ['rain', 'rainfall', 'precip', 'rain (mm)'], example: '12.5' },
+      { name: 'tmin_c', definition: 'Lowest temperature', type: 'number', unit: '°C', required: false, range: [-10, 50], aliases: ['tmin', 'min temp'], example: '22' },
+      { name: 'tmax_c', definition: 'Highest temperature', type: 'number', unit: '°C', required: false, range: [-10, 60], aliases: ['tmax', 'max temp'], example: '33' },
+    ],
+  },
+  {
+    id: 'harvest-history', name: 'Harvest history', applies_to: ['crop:oil_palm', 'crop:cocoa', 'crop:rubber', 'crop:cashew', 'crop:maize', 'crop:rice', 'crop:cassava', 'crop:sugarcane'],
+    why: 'Past yields per field show how productive the land really is; suitability marks well-rated land with poor history for review.',
+    unlocks: ['Suitability check against real yields', 'Yield trend'], due: 'season', grain: 'per field and season',
+    columns: [FIELD_ID, ESTATE,
+      { name: 'season', definition: 'Season or year of the harvest', type: 'text', required: true, aliases: ['season', 'year', 'campaign'], example: '2025' },
+      { name: 'crop', definition: 'Crop harvested', type: 'text', required: true, aliases: ['crop', 'commodity'], example: 'Maize' },
+      { name: 'yield_t_ha', definition: 'Yield', type: 'number', unit: 't/ha', required: true, range: [0, 300], aliases: ['yield', 'yield t/ha', 't/ha'], example: '3.8' },
+    ],
+  },
 ];
 
 const CROP_KEY = { ffb: 'oil_palm', oil_palm: 'oil_palm', 'oil palm': 'oil_palm' };

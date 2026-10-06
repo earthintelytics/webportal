@@ -8,8 +8,9 @@ import { CROPS } from '../suitabilityLabels';
  * The factor ranges and advice in use for a crop, read from the admin
  * settings (read-only here; edit them in Admin → Map classes and suitability).
  */
-const FactorGuide = ({ companyId }) => {
-  const [crop, setCrop] = useState(CROPS[0]);
+const FactorGuide = ({ companyId, cropId }) => {
+  const [picked, setCrop] = useState(CROPS[0]);
+  const crop = (cropId && CROPS.find((c) => c.id === cropId)) || picked;
   const load = useCallback(() => fetchSuitabilityThresholds(crop.admin, companyId || ''), [crop, companyId]);
   const { data, state, error, reload } = useLoader(load);
   const factors = data?.factors || [];
@@ -17,11 +18,11 @@ const FactorGuide = ({ companyId }) => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap gap-2">
+      {!cropId && <div className="flex flex-wrap gap-2">
         {CROPS.map((c) => (
           <button key={c.id} type="button" onClick={() => setCrop(c)} className={`px-3 py-1.5 rounded-lg text-xs font-semibold border ${crop.id === c.id ? 'bg-green-50 border-green-600 text-green-800' : 'bg-white border-gray-300 text-gray-600 hover:border-gray-400'}`}>{c.name}</button>
         ))}
-      </div>
+      </div>}
       {state === 'not_connected' && <NotConnectedNote what="Suitability settings" />}
       {state === 'error' && <ErrorNote message={error} onRetry={reload} />}
       {state === 'ready' && factors.length === 0 && <EmptyState title="No factors set" text="Set the factor ranges for this crop in Admin → Map classes and suitability." />}

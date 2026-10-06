@@ -15,15 +15,17 @@ const NewResultsBanner = ({ farmId }) => {
 
   useEffect(() => {
     let live = true;
+    let t = null;
     const check = () => serviceCall(`/data/latest${farmId ? `?farm_id=${encodeURIComponent(farmId)}` : ''}`)
       .then((d) => {
         if (!live || !d?.updated_at) return;
         if (first.current == null) first.current = d.updated_at;
         else if (d.updated_at !== first.current) setFresh(true);
       })
-      .catch(() => {});
+      // Not on this server yet (404): stop asking until the page is opened again.
+      .catch((e) => { if (e?.name === 'NotConnectedError' && t) { clearInterval(t); t = null; } });
+    t = setInterval(check, CHECK_MS);
     check();
-    const t = setInterval(check, CHECK_MS);
     return () => { live = false; clearInterval(t); };
   }, [farmId]);
 

@@ -164,13 +164,13 @@ const ScenarioBuilder = ({ cropType, serviceId, estates = [], onRun }) => {
       <div className="text-center space-y-3">
         <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold">
           <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-          <span>Agronomic AI scenario modeller</span>
+          <span>Ask, or try a what-if</span>
         </div>
         <h3 className="text-3xl lg:text-4xl font-display font-bold text-gray-900 tracking-tight">
           Farm AI advisor
         </h3>
         <p className="text-sm text-gray-600 max-w-2xl mx-auto leading-relaxed">
-          Select a recommended what-if simulation below or define your own custom scenario. You can ingest your own ground measurements, telemetry, and field parameters to model crop responses with confidence.
+          Pick a what-if below, or describe your own. Answers use your monitoring data and the weather, and you can add what you saw in the field.
         </p>
       </div>
 
@@ -179,15 +179,15 @@ const ScenarioBuilder = ({ cropType, serviceId, estates = [], onRun }) => {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <h4 className="text-base font-bold text-gray-900">Recommended agronomic scenarios</h4>
-              <p className="text-xs text-gray-500">Simulations tailored to your licensed crops and estate telemetry</p>
+              <h4 className="text-base font-bold text-gray-900">What-ifs for your crops</h4>
+              <p className="text-xs text-gray-500">Chosen for the crops your organisation monitors</p>
             </div>
             <button
               onClick={() => setIsCustomMode(true)}
               className="px-4 py-2 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 text-xs font-bold text-gray-700 flex items-center gap-1.5 transition-colors shadow-xs"
             >
               <Plus size={14} className="text-emerald-700" />
-              <span>Define custom scenario</span>
+              <span>Describe your own</span>
             </button>
           </div>
 
@@ -216,7 +216,7 @@ const ScenarioBuilder = ({ cropType, serviceId, estates = [], onRun }) => {
                 <div className="pt-3 border-t border-gray-100 space-y-2">
                   <div className="flex items-center gap-1.5 text-[11px] font-bold text-gray-700">
                     <Database size={13} className="text-emerald-700" />
-                    <span>Data Needed & Recommended:</span>
+                    <span>Uses:</span>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {(s.requiredData || ['Sentinel Telemetry', 'Weather Forecast']).map((req, idx) => (
