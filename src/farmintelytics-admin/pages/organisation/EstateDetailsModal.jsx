@@ -30,7 +30,7 @@ const EstateDetailsModal = ({ farm, onClose, onSaved }) => {
         </select>
       </Field>
       <Field label="Group or co-operative" hint="Optional."><input className={inputCls} value={form.group_name} onChange={(e) => setForm((f) => ({ ...f, group_name: e.target.value }))} /></Field>
-      <Field label="Planting or season start" error={future ? 'The date cannot be in the future.' : null} hint="Lets alerts and wording follow the crop stage. Clients can add dates per block under Your data.">
+      <Field label="Planting or season start" error={future ? 'The date cannot be in the future.' : null} hint="Lets alerts and wording follow the crop stage. Clients can add dates per block under Farm data.">
         <input type="date" className={inputCls} value={form.planting_date || ''} onChange={(e) => setForm((f) => ({ ...f, planting_date: e.target.value }))} />
       </Field>
       <label className="flex items-center gap-2 text-sm text-gray-800"><input type="checkbox" checked={form.is_irrigated} onChange={(e) => setForm((f) => ({ ...f, is_irrigated: e.target.checked }))} />Irrigated</label>

@@ -1,5 +1,5 @@
 /**
- * CSV parsing, header matching and row checks for the Your data page.
+ * CSV parsing, header matching and row checks for the Farm data page.
  * The same checks run on the server (POST /datasets/{id}/validate); running
  * them here gives instant feedback while the client maps columns.
  */

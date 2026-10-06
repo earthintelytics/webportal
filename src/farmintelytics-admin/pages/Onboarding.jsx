@@ -32,7 +32,7 @@ const CROP_LABELS = { ffb: 'Oil palm', maize: 'Maize', rice: 'Rice', cocoa: 'Coc
 const CROP_KEY = { ffb: 'oil_palm' };
 const ALL_INDICES = ['NDVI', 'EVI', 'NDMI', 'RECI', 'NDWI', 'LSWI', 'LAI', 'NDRE', 'CVI', 'SAVI', 'MSI', 'GNDVI', 'ETC', 'LST', 'SMI_LANDSAT', 'VCI'];
 // Pages a crop portal shows today (shared layout). Per-crop page sets come with the catalogue (D11).
-const CROP_PAGES = ['Overview', 'Map', 'Crop health', 'Crop yield', 'Moisture', 'Climate', 'Alerts', 'Your data'];
+const CROP_PAGES = ['Overview', 'Map', 'Crop health', 'Crop yield', 'Moisture', 'Climate', 'Alerts', 'Farm data'];
 const DEFAULT_ALERT_THRESHOLDS = { alert_ndvi_drop_pct: 0.25, alert_smi_critical: 0.2, alert_ndmi_water_stress_critical: 0.0, alert_ndvi_health_critical: 0.35 };
 const STEPS = ['Organisation', 'Crops and services', 'Estates', 'Blocks and filters', 'Login', 'Schedule', 'Finish'];
 const NEAR_KM = 20; // estates further apart than this are processed separately
@@ -638,7 +638,7 @@ const Onboarding = () => {
               <Card>
                 <div>
                   <h3 className="text-base font-semibold text-gray-900">Data the client will be asked for</h3>
-                  <p className="text-sm text-gray-500 mt-1">Shown to them at sign-in until provided (Settings → Your data).</p>
+                  <p className="text-sm text-gray-500 mt-1">Shown to them at sign-in until provided (Settings → Farm data).</p>
                 </div>
                 <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {datasetsAsked.map(d => (

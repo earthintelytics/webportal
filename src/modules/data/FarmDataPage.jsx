@@ -5,7 +5,7 @@ import { DATASET_DEFINITIONS, scopeKeys, datasetsForScope, scopedDatasets } from
 import { parseCsv, suggestMapping, applyMapping, checkRows, templateCsv, buildFieldIndex } from './tabular';
 
 /**
- * Settings → Your data. The client answers the open questions its pages need
+ * Settings → Farm data. The client answers the open questions its pages need
  * (planting years, harvests, flowering months…) and uploads calibration data:
  * by hand, or as a CSV whose columns it matches to ours. Rows are checked
  * against the blocks registered at onboarding before anything is saved.
@@ -337,7 +337,7 @@ function ColumnGuide({ dataset }) {
   );
 }
 
-const YourDataPage = ({ cropType, serviceId, plots, initialDataset }) => {
+const FarmDataPage = ({ cropType, serviceId, plots, initialDataset }) => {
   const [datasets, setDatasets] = useState(null);
   const [connected, setConnected] = useState(false);
   const [pickedId, setSelectedId] = useState(initialDataset || null);
@@ -364,7 +364,7 @@ const YourDataPage = ({ cropType, serviceId, plots, initialDataset }) => {
     <div className="p-10 space-y-8">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Your data</h2>
+          <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Farm data</h2>
           <p className="text-sm text-gray-500 font-medium mt-2 max-w-2xl">
             Facts only you have, like planting years, harvests and season dates, make your dashboards fit your farms. Enter them by hand or upload a file in your own format.
           </p>
@@ -439,4 +439,4 @@ const YourDataPage = ({ cropType, serviceId, plots, initialDataset }) => {
   );
 };
 
-export default YourDataPage;
+export default FarmDataPage;

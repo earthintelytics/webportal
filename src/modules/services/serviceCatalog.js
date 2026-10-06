@@ -89,7 +89,7 @@ export const SERVICE_CATALOG = {
     overviewText: 'Where land is degraded, where it is recovering, and how vegetation and moisture respond over time.',
     register: {
       title: 'Restoration zones', file: 'restoration-zones',
-      text: 'Every restoration zone with its area. Planting and survival come from your planting records and surveys (Settings, Your data).',
+      text: 'Every restoration zone with its area. Planting and survival come from your planting records and surveys (Settings, Farm data).',
       columns: [{ id: 'block', label: 'Zone' }, { id: 'estate', label: 'Site' }, { id: 'area', label: 'Area' }],
     },
     sidebar: [

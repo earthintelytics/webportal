@@ -37,7 +37,7 @@ function localChecks(kind, plots) {
     { id: 'protected', name: 'No overlap with protected areas', status: 'not_checked', why: 'Protected-area data (WDPA) is being connected.', evidence: { sources: ['WDPA'] } },
   );
   if (kind === 'carbon') checks.push({ id: 'method', name: 'Method, factors and calibration recorded', status: 'not_checked', why: 'Carbon figures are uncalibrated estimates until plot inventory data is uploaded.', evidence: { sources: ['IPCC Tier 1 factors'] } });
-  if (kind === 'restoration') checks.push({ id: 'survival', name: 'Survival backed by field surveys', status: 'not_checked', why: 'Survival comes from the client’s survey uploads (Your data).', evidence: { sources: ['Survival surveys'] } });
+  if (kind === 'restoration') checks.push({ id: 'survival', name: 'Survival backed by field surveys', status: 'not_checked', why: 'Survival comes from the client’s survey uploads (Farm data).', evidence: { sources: ['Survival surveys'] } });
   return checks;
 }
 
@@ -108,7 +108,7 @@ export default function VerificationPage({ plots, serviceId, onOpenData }) {
       {outstanding.length > 0 && (
         <Card className="p-6 space-y-3">
           <div className="text-sm font-semibold text-gray-900">Still needed from you</div>
-          <ul className="space-y-2">{outstanding.map(o => <li key={o.item} className="flex items-center justify-between gap-4 text-sm text-gray-700"><span>{o.item}</span>{o.dataset && <button onClick={() => onOpenData?.(o.dataset)} className="shrink-0 text-sm font-semibold text-green-700 hover:underline">Add in Your data</button>}</li>)}</ul>
+          <ul className="space-y-2">{outstanding.map(o => <li key={o.item} className="flex items-center justify-between gap-4 text-sm text-gray-700"><span>{o.item}</span>{o.dataset && <button onClick={() => onOpenData?.(o.dataset)} className="shrink-0 text-sm font-semibold text-green-700 hover:underline">Add in Farm data</button>}</li>)}</ul>
         </Card>
       )}
 

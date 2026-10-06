@@ -81,7 +81,7 @@ const MembersPage = ({ onOpenForms, onOpenAnswers }) => {
       {state === 'ready' && rows.length === 0 && (
         <EmptyState
           title="No members yet"
-          text="Add the first member with your registration form, send the form's link to farmers, or upload a member list under Your data."
+          text="Add the first member with your registration form, send the form's link to farmers, or upload a member list under Farm data."
           action={<PrimaryButton onClick={() => setAdding(true)}><Plus size={15} />Add member</PrimaryButton>}
         />
       )}

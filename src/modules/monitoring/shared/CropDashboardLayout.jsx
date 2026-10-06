@@ -92,7 +92,7 @@ import {
 import { InfoTooltipPortal } from './dashboard/components/InfoTooltipPortal';
 import { Upload as UploadIcon, MapPin as EstateIcon } from 'lucide-react';
 import { fetchEstates } from '../../../services/estatesApi';
-import YourDataPage from '../../data/YourDataPage';
+import FarmDataPage from '../../data/FarmDataPage';
 import DataNeededDialog from '../../data/DataNeededDialog';
 import RegisterPage from '../../services/RegisterPage';
 import { CROP_CATALOG, ORGANISATION_PAGES, loadCropPages } from '../cropCatalog';
@@ -187,7 +187,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
     if (filterEstate && filterEstate !== 'All') url.searchParams.set('estate', filterEstate); else url.searchParams.delete('estate');
     window.history.replaceState(window.history.state, '', url);
   }, [filterEstate]);
-  // Settings → Your data: which dataset to open (set by the sign-in "Data needed" dialog)
+  // Settings → Farm data: which dataset to open (set by the sign-in "Data needed" dialog)
   const [dataFocus, setDataFocus] = useState(null);
   // Page set: a service's catalogue entry, or the crop's (backend catalogue,
   // admin-editable; interim copy from docs/services/*-monitoring.md until it is deployed).
@@ -3483,7 +3483,7 @@ Context: ${context}.`;
         <DataNeededDialog
           cropType={isOrg ? null : cropType}
           serviceId={service?.id}
-          onFill={(id) => { setActiveTab('monitor'); setActiveSidebarItem('your-data'); setDataFocus(id); }}
+          onFill={(id) => { setActiveTab('monitor'); setActiveSidebarItem('farm-data'); setDataFocus(id); }}
         />
       )}
       {/* ── TOP HEADER BAR ─────────────────────────────────────────────────── */}
@@ -3765,7 +3765,7 @@ Context: ${context}.`;
               <div className="space-y-1">
                 <div className="text-[11px] font-bold text-gray-600 px-3 mb-3">Settings</div>
                 {[
-                  { id: 'your-data', label: 'Your data',        icon: <UploadIcon size={17} /> },
+                  { id: 'farm-data', label: 'Farm data',        icon: <UploadIcon size={17} /> },
                   { id: 'help',      label: 'Glossary',         icon: <Info size={17} /> }
                 ].map(item => (
                   <button
@@ -6231,7 +6231,7 @@ Context: ${context}.`;
               VERIFICATION
           ══════════════════════════════════════════════════════════════ */}
           {activeSidebarItem === 'analytics' && activeTab === 'verification' && (
-            <VerificationPage plots={plotsData} serviceId={service?.id} onOpenData={(id) => { setDataFocus(id); setActiveTab('monitor'); setActiveSidebarItem('your-data'); }} />
+            <VerificationPage plots={plotsData} serviceId={service?.id} onOpenData={(id) => { setDataFocus(id); setActiveTab('monitor'); setActiveSidebarItem('farm-data'); }} />
           )}
 
           {((isAiOnly && activeTab === 'reports') || (activeSidebarItem === 'analytics' && activeTab === 'reports')) && (
@@ -6362,7 +6362,7 @@ Context: ${context}.`;
           )}
 
           {activeSidebarItem === 'check' && service?.check && (
-            <CheckPage page={service.check} plots={plotsData} onOpenData={() => setActiveSidebarItem('your-data')} />
+            <CheckPage page={service.check} plots={plotsData} onOpenData={() => setActiveSidebarItem('farm-data')} />
           )}
           {activeSidebarItem === 'advice' && service?.advice && (
             <AdvicePage page={service.advice} alerts={alerts} onAsk={(q) => { setActiveSidebarItem('analytics'); setActiveTab('ai-assistant'); handleChatSubmit(q); }} />
@@ -6378,8 +6378,8 @@ Context: ${context}.`;
             <RegisterPage register={service.register} plots={plotsData} />
           )}
 
-          {activeSidebarItem === 'your-data' && (
-            <YourDataPage key={dataFocus || 'data'} cropType={isOrg ? null : cropType} serviceId={service?.id} plots={plots} initialDataset={dataFocus} />
+          {activeSidebarItem === 'farm-data' && (
+            <FarmDataPage key={dataFocus || 'data'} cropType={isOrg ? null : cropType} serviceId={service?.id} plots={plots} initialDataset={dataFocus} />
           )}
 
 

@@ -61,7 +61,7 @@ export function CheckPage({ page, plots, onOpenData }) {
         ))}
       </div>
       {rows.length === 0 ? (
-        <Card className="p-10 text-center text-sm text-gray-600">No registered plots yet. Plots appear once their boundaries are uploaded, and the commodity per plot comes from the EUDR plot register (<button onClick={onOpenData} className="font-semibold text-green-700 hover:underline">Your data</button>).</Card>
+        <Card className="p-10 text-center text-sm text-gray-600">No registered plots yet. Plots appear once their boundaries are uploaded, and the commodity per plot comes from the EUDR plot register (<button onClick={onOpenData} className="font-semibold text-green-700 hover:underline">Farm data</button>).</Card>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6 items-start">
           <Card className="overflow-hidden">
