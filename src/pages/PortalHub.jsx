@@ -21,7 +21,7 @@ import {
   DroneIcon, 
   SmallholderIcon 
 } from '../components/CropIcons';
-import { fetchTenants } from '../services/organizationMonitorApi';
+import { fetchOrganizations } from '../services/adminApi';
 import { HERO_PLACEHOLDERS } from '../constants/heroPlaceholders';
 
 // Photo per service (compressed WebP in /public/crops). Organisation cards use
@@ -96,19 +96,18 @@ const PortalHub = ({ onSelectModule, onSignOut, onOpenAdmin }) => {
   React.useEffect(() => {
     async function loadTenants() {
       try {
-        const tenants = await fetchTenants();
-        if (tenants && Array.isArray(tenants)) {
-          // Each card opens that organisation's own hub (/org/<slug>).
-          const mapped = tenants.map(t => ({
-            id: `org:${String(t.id).replace(/^custom-agromonitor-/, '')}`,
-            title: t.title,
-            crop: t.crop,
-            icon: <Satellite />,
-            active: t.active,
-            logoUrl: t.logo_url || ''
-          }));
-          setCustomModules(mapped);
-        }
+        // The team's own list (admin API); the client API needs a client sign-in.
+        const res = await fetchOrganizations();
+        const orgs = Array.isArray(res) ? res : res?.items || [];
+        // Each card opens that organisation's own hub (/org/<slug>).
+        setCustomModules(orgs.map(o => ({
+          id: `org:${o.schema_name}`,
+          title: o.display_name || o.schema_name,
+          crop: `/org/${o.schema_name}`,
+          icon: <Satellite />,
+          active: o.is_active !== false,
+          logoUrl: o.logo_url || '',
+        })));
       } catch (err) {
         console.error("Failed to fetch organisations:", err);
       }
