@@ -1,4 +1,3 @@
-import React from 'react';
 
 /**
  * CropIcons.jsx
@@ -331,27 +330,4 @@ export const SmallholderIcon = ({ size = 24, strokeWidth = 1.75, className = '',
     <path d="M12 2c.8 0 1.5-.5 1.5-1-1 0-1.5.5-1.5 1z" />
   </svg>
 );
-
-export const CROP_ICON_MAP = {
-  ffb: OilPalmIcon,
-  oil_palm: OilPalmIcon,
-  'oil palm': OilPalmIcon,
-  rubber: RubberIcon,
-  sugarcane: SugarcaneIcon,
-  cashew: CashewIcon,
-  cocoa: CocoaIcon,
-  cassava: CassavaIcon,
-  maize: MaizeIcon,
-  rice: RiceIcon,
-  aerial: DroneIcon,
-  drone: DroneIcon,
-  fusion: SmallholderIcon,
-  smallholder: SmallholderIcon,
-};
-
-export const getCropIcon = (cropKey = '', defaultIcon = null) => {
-  if (!cropKey) return defaultIcon || OilPalmIcon;
-  const k = String(cropKey).toLowerCase().replace('-', '_').trim();
-  return CROP_ICON_MAP[k] || CROP_ICON_MAP[cropKey.toLowerCase()] || defaultIcon || OilPalmIcon;
-};
 

@@ -34,10 +34,6 @@ export function clearTeamAccount() {
   TEAM_KEYS.forEach((k) => localStorage.removeItem(k));
 }
 
-export function clearStoredAccounts() {
-  [...TENANT_KEYS, ...TEAM_KEYS].forEach((k) => localStorage.removeItem(k));
-}
-
 /**
  * A client token was refused: drop it and go to that organisation's own
  * sign-in (/org/<tenant>/login), coming back to the same service afterwards.

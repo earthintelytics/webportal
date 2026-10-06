@@ -87,19 +87,6 @@ export async function fetchDashboardStats(tenant) {
   return apiFetch(`/dashboard/stats${params}`);
 }
 
-/**
- * GET /api/dashboard/trends?tenant={tenant}
- * Returns charting datasets:
- *   ndvi_vigor_trends[]   → for the 6-month NDVI line chart
- *   moisture_comparison[] → NDMI bar chart (matches plotsData field ndmi)
- *   nutrient_profile      → radar chart labels + values
- *   land_use_classification[] → doughnut chart segments
- */
-export async function fetchDashboardTrends(tenant) {
-  const params = tenant ? `?tenant=${tenant}` : '';
-  return apiFetch(`/dashboard/trends${params}`);
-}
-
 // ─── Intelligence Layers ────────────────────────────────────────────────────
 
 /**
@@ -123,53 +110,7 @@ export async function fetchPlotsIntelligence(tenant) {
 
 // ─── Crop Health Analytics ──────────────────────────────────────────────────
 
-/**
- * GET /api/plots/health/?date={date}&plot_id={plot_id}
- * Returns health indices per plot.
- * Each item: { plot_id, indices: { ndvi, chlorophyll, water_stress, pest_risk } }
- *
- * Frontend field mapping:
- *   indices.ndvi         → ndvi
- *   indices.chlorophyll  → chlorophyll
- *   indices.water_stress → waterStress
- *   indices.pest_risk    → pestRisk  ("Low Risk" | "Moderate Risk" | "High Risk")
- *
- * @param {string} [date]    ISO date string e.g. "2026-06-01"
- * @param {string} [plotId]  e.g. "PLOT-ALPHA"
- */
-export async function fetchPlotsHealth({ date, plotId } = {}) {
-  const params = new URLSearchParams();
-  if (date)   params.set('date', date);
-  if (plotId) params.set('plot_id', plotId);
-  const qs = params.toString() ? `?${params}` : '';
-  return apiFetch(`/plots/health${qs}`);
-}
-
 // ─── Crop Yield Forecasting ─────────────────────────────────────────────────
-
-/**
- * GET /api/plots/yield/forecast/?date={date}&plot_id={plot_id}
- * Returns yield forecasts per plot.
- * Each item: { plot_id, yield_rate_ton_ha, projected_yield_tons, biomass_index,
- *              harvest_readiness_pct, confidence_accuracy }
- *
- * Frontend field mapping:
- *   yield_rate_ton_ha    → yieldValue
- *   projected_yield_tons → predictedYield
- *   biomass_index        → biomass (EVI-derived)
- *   harvest_readiness_pct → readiness
- *   confidence_accuracy  → predAccuracy
- *
- * @param {string} [date]
- * @param {string} [plotId]
- */
-export async function fetchPlotsYieldForecast({ date, plotId } = {}) {
-  const params = new URLSearchParams();
-  if (date)   params.set('date', date);
-  if (plotId) params.set('plot_id', plotId);
-  const qs = params.toString() ? `?${params}` : '';
-  return apiFetch(`/plots/yield/forecast${qs}`);
-}
 
 // ─── Crop Water Demand (FAO-56) ─────────────────────────────────────────────
 
@@ -267,44 +208,7 @@ export async function acknowledgeAlert(alertId) {
 
 // ─── Verification (Intentionally blank for now) ─────────────────────────────
 
-/**
- * GET /api/verification/audit/?plot_id={plot_id}
- * NOTE: The verification page is intentionally left blank/empty.
- * This endpoint returns { overall_compliance: true, checks: [], logs: [] }.
- * Wire this in later when the page is implemented.
- *
- * @param {string} [plotId]
- */
-export async function fetchVerificationAudit(plotId) {
-  if (!plotId) throw new Error('plotId is required');
-  return apiFetch(`/verification/audit?plot_id=${plotId}`);
-}
-
 // ─── Certificate & Reports ──────────────────────────────────────────────────
-
-/**
- * POST /api/reports/certificate
- * Generates a cryptographic MRV certificate with SHA-256 hash.
- * @param {{ scope: string, metric: string, plot_id?: string }} payload
- *   scope:   "Whole Farm (Aggregate)" | "Plot-Level"
- *   metric:  "NDVI" | "NDMI" | "NDWI" | "SOC" | "AGB"
- *   plot_id: optional, e.g. "PLOT-ALPHA"
- * @returns {{ certificate_id, hash, blockchain_status, data_points, diagnostic_summary, … }}
- */
-export async function generateCertificate(payload) {
-  return apiFetch('/reports/certificate', {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  });
-}
-
-/**
- * GET /api/reports/options
- * Returns available report types, estates, blocks, filter columns, and months with data.
- */
-export async function fetchReportOptions() {
-  return apiFetch('/reports/options');
-}
 
 /**
  * POST /api/reports
@@ -326,33 +230,6 @@ export async function fetchReportsHistory() {
 }
 
 /**
- * GET /api/reports/{id}
- * Returns a specific report by ID.
- */
-export async function fetchReportById(reportId) {
-  return apiFetch(`/reports/${encodeURIComponent(reportId)}`);
-}
-
-/**
- * POST /api/reports/schedules
- * Creates a recurring report schedule.
- */
-export async function scheduleReport(payload) {
-  return apiFetch('/reports/schedules', {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  });
-}
-
-/**
- * GET /api/reports/schedules
- * Returns active report schedules.
- */
-export async function fetchReportSchedules() {
-  return apiFetch('/reports/schedules');
-}
-
-/**
  * POST /api/reports/ai-recommendations
  * Generates on-demand decision intelligence recommendations for reports.
  */
@@ -363,42 +240,7 @@ export async function fetchAiReportRecommendations(payload) {
   });
 }
 
-/**
- * GET /api/verification?kind=...&farm_id=...
- * Returns verification checklist and evidence for a claim.
- */
-export async function fetchVerificationData(kind = 'boundary', farmId = null) {
-  const q = new URLSearchParams({ kind });
-  if (farmId) q.set('farm_id', farmId);
-  return apiFetch(`/verification?${q.toString()}`);
-}
-
-/**
- * GET /api/reports/list
- * Returns list of pre-compiled environmental reports.
- * Each item: { report_id, title, metric, scope, plot_id, generated_at, download_url }
- */
-export async function fetchReportsList() {
-  return apiFetch('/reports/list');
-}
-
-
 // ─── AI Assistant ────────────────────────────────────────────────────────────
-
-/**
- * POST /api/chat/ask
- * Sends a message to the AI assistant and returns a contextual response.
- * @param {{ message: string, scenario?: string }} payload
- *   scenario: "Climate-Smart Agriculture" | "Land Restoration" |
- *             "Carbon Registry" | "Traceability"
- * @returns {{ response: string, sources: string[] }}
- */
-export async function askAiAssistant(payload) {
-  return apiFetch('/chat/ask', {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  });
-}
 
 // ─── Coordinate Helper ───────────────────────────────────────────────────────
 
@@ -558,88 +400,5 @@ export async function fetchRasterIndices() {
   return apiFetch('/raster/indices');
 }
 
-/**
- * POST /cache/clear
- * Clear all cached zarr stores. Call after pipeline ingestion completes to force refresh.
- * @returns {{ status: string, message: string }}
- */
-export async function clearCache() {
-  return apiFetch('/cache/clear', { method: 'POST' });
-}
-
-/**
- * POST /cache/rebuild
- * Rebuild cache by pre-loading indices for the current tenant.
- * Clears cache first, then pre-loads frequently accessed indices.
- * @returns {{ status: string, tenant: string, rebuilt_count: number, indices: string[] }}
- */
-export async function rebuildCache() {
-  return apiFetch('/cache/rebuild', { method: 'POST' });
-}
-
 // ─── Specialized ESG & Sustainability Services ──────────────────────────────
-
-/**
- * GET /services/carbon-footprint
- * Retrieves IPCC biomass and net greenhouse gas emissions balance summary.
- */
-export async function fetchCarbonFootprintSummary(tenant) {
-  const params = tenant ? `?tenant_slug=${encodeURIComponent(tenant)}` : '';
-  return apiFetch(`/services/carbon-footprint${params}`);
-}
-
-/**
- * GET /services/atmospheric-carbon
- * Retrieves Sentinel-3 / Sentinel-5P atmospheric air quality and AOD summary.
- */
-export async function fetchAtmosphericCarbonSummary(tenant) {
-  const params = tenant ? `?tenant_slug=${encodeURIComponent(tenant)}` : '';
-  return apiFetch(`/services/atmospheric-carbon${params}`);
-}
-
-/**
- * GET /services/forest-change
- * Retrieves EUDR forest baseline and canopy loss analysis.
- */
-export async function fetchForestChangeSummary(tenant) {
-  const params = tenant ? `?tenant_slug=${encodeURIComponent(tenant)}` : '';
-  return apiFetch(`/services/forest-change${params}`);
-}
-
-/**
- * GET /services/protected-areas
- * Retrieves World Database on Protected Areas (WDPA) intersection summary.
- */
-export async function fetchProtectedAreasSummary(tenant) {
-  const params = tenant ? `?tenant_slug=${encodeURIComponent(tenant)}` : '';
-  return apiFetch(`/services/protected-areas${params}`);
-}
-
-/**
- * GET /services/water-buffer
- * Retrieves permanent water proximity and 50m riparian buffer compliance.
- */
-export async function fetchWaterBufferSummary(tenant) {
-  const params = tenant ? `?tenant_slug=${encodeURIComponent(tenant)}` : '';
-  return apiFetch(`/services/water-buffer${params}`);
-}
-
-/**
- * GET /services/restoration
- * Retrieves land restoration and canopy recovery telemetry.
- */
-export async function fetchRestorationSummary(tenant) {
-  const params = tenant ? `?tenant_slug=${encodeURIComponent(tenant)}` : '';
-  return apiFetch(`/services/restoration${params}`);
-}
-
-/**
- * GET /services/summary
- * Retrieves unified portfolio summary across all active ESG & sustainability services.
- */
-export async function fetchServicesSummary(tenant) {
-  const params = tenant ? `?tenant_slug=${encodeURIComponent(tenant)}` : '';
-  return apiFetch(`/services/summary${params}`);
-}
-
 

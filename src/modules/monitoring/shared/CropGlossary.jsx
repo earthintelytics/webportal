@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { BookOpen, Search, X } from 'lucide-react';
+import { BookOpen, Search } from 'lucide-react';
 import { TOOLTIP_DESCRIPTIONS } from './dashboard/constants/tooltipDescriptions';
 
 /**
@@ -79,59 +79,4 @@ export default function CropGlossary({ entries, extra, cropName, focusKey }) {
 }
 
 // Terms a view uses besides index measures (weather, alerts…)
-const VIEW_TERMS = {
-  climate: [
-    { key: 'rain', plain: 'Rain', technical: 'Precipitation (mm)', meaning: 'Rain that fell or is forecast, in millimetres.' },
-    { key: 'water-use', plain: 'Water use', technical: 'Crop evapotranspiration, ETc (mm/day)', meaning: 'How much water the crop uses each day; compare with rain to judge irrigation.' },
-    { key: 'surface-heat', plain: 'Surface heat', technical: 'Land surface temperature, LST (°C)', meaning: 'How hot the ground and canopy are; high values stress the crop.' },
-  ],
-  alerts: [
-    { key: 'alert', plain: 'Alert', technical: 'Rule triggered on a block', meaning: 'A block where something changed enough to need a look, with the suggested action.' },
-    { key: 'scouting', plain: 'Scouting', technical: 'Ground check of an alert', meaning: 'Someone visits the block, records what they found and closes the alert.' },
-  ],
-};
 
-/**
- * "Glossary for this view": a side panel listing only the terms the current
- * page shows (its map layers / measures, plus view-specific terms).
- */
-export function ViewGlossary({ entries, viewKeys, view, onOpenFull }) {
-  const [open, setOpen] = useState(false);
-  const items = useMemo(() => {
-    const keys = new Set(viewKeys || []);
-    const fromIndices = (entries || []).filter(e => keys.has(e.key)).map(e => {
-      const tech = TOOLTIP_DESCRIPTIONS[e.key?.toUpperCase?.()] || TOOLTIP_DESCRIPTIONS[e.key] || {};
-      return { key: e.key, plain: e.crop_label || e.label || e.title || e.key, technical: `${String(e.key).toUpperCase()}${tech.full ? ` (${tech.full})` : ''}`, meaning: e.notes || tech.desc || tech.description || '', classes: (e.legend || []).map(l => ({ label: l.label, color: l.color })) };
-    });
-    return [...fromIndices, ...(VIEW_TERMS[view] || [])];
-  }, [entries, viewKeys, view]);
-  if (!items.length) return null;
-  return (
-    <>
-      <button onClick={() => setOpen(true)} className="no-print fixed right-6 bottom-6 z-[900] inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white border border-gray-200 shadow-md text-sm font-semibold text-gray-700 hover:border-green-600">
-        <BookOpen size={16} className="text-green-700" />Glossary for this view
-      </button>
-      {open && (
-        <div className="fixed inset-0 z-[1500] flex justify-end bg-slate-900/20" onClick={() => setOpen(false)}>
-          <aside onClick={e => e.stopPropagation()} className="w-full max-w-md h-full bg-white border-l border-gray-200 shadow-xl flex flex-col">
-            <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
-              <div><div className="text-base font-semibold text-gray-900">Glossary for this view</div><div className="text-xs text-gray-500">Only the terms on this page</div></div>
-              <button onClick={() => setOpen(false)} className="p-2 rounded-lg text-gray-400 hover:bg-gray-100" aria-label="Close"><X size={16} /></button>
-            </div>
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
-              {items.map(i => (
-                <div key={i.key} className="rounded-xl border border-gray-200 p-4 space-y-1.5">
-                  <div className="text-sm font-semibold text-gray-900">{i.plain}</div>
-                  {i.meaning && <p className="text-sm text-gray-700">{i.meaning}</p>}
-                  {i.classes?.length > 0 && <div className="flex flex-wrap gap-x-3 gap-y-1">{i.classes.map(c => <span key={c.label} className="inline-flex items-center gap-1.5 text-xs text-gray-600"><span className="w-2.5 h-2.5 rounded-sm border border-gray-200" style={{ background: c.color }} />{c.label}</span>)}</div>}
-                  <div className="text-xs text-gray-500">Technical name: {i.technical || '—'}</div>
-                </div>
-              ))}
-            </div>
-            {onOpenFull && <div className="px-6 py-4 border-t border-gray-100"><button onClick={() => { setOpen(false); onOpenFull(); }} className="text-sm font-semibold text-green-700 hover:underline">Open the full glossary</button></div>}
-          </aside>
-        </div>
-      )}
-    </>
-  );
-}

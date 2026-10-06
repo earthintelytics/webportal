@@ -1,8 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import {
-  Building2, Key, Activity, PlayCircle, LayoutDashboard, LogOut, Menu, X,
-  Clock, Database, Users, Rocket, SlidersHorizontal, Sparkles,
+  Building2,
+  Key,
+  Activity,
+  PlayCircle,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  X,
+  Clock,
+  Database,
+  Users,
+  Rocket,
+  SlidersHorizontal,
+  Sparkles
 } from 'lucide-react';
 
 import Onboarding from './pages/Onboarding';

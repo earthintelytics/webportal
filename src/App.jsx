@@ -51,11 +51,6 @@ import PortalHub from './pages/PortalHub';
 // screen. React.lazy() + the <Suspense> boundary in App below means each
 // chunk is only fetched when its route actually renders.
 
-// === FFB Management ===
-
-// === Crop Management Portals ===
-
-
 // === Sustainability, Field Advisory & Finance ===
 // One portal for all of them: the organisation monitoring layout with the
 const ServicePortal = lazyWithReload(() => import('./modules/services/ServicePortal'));
@@ -63,18 +58,8 @@ const SuitabilityPortal = lazyWithReload(() => import('./modules/suitability/Sui
 const SmallholderHub = lazyWithReload(() => import('./modules/smallholder/SmallholderHub'));
 const PublicFormPage = lazyWithReload(() => import('./modules/forms/PublicFormPage'));
 
-// === Specialized Monitoring Apps ===
-const RiceMonitoring = lazyWithReload(() => import('./modules/monitoring/rice/Monitoring'));
-const MaizeMonitoring = lazyWithReload(() => import('./modules/monitoring/maize/Monitoring'));
-const CocoaMonitoring = lazyWithReload(() => import('./modules/monitoring/cocoa/Monitoring'));
-const OilPalmMonitoring = lazyWithReload(() => import('./modules/monitoring/oil_palm/Monitoring'));
-const CassavaMonitoring = lazyWithReload(() => import('./modules/monitoring/cassava/Monitoring'));
-const SugarcaneMonitoring = lazyWithReload(() => import('./modules/monitoring/sugarcane/Monitoring'));
-const CashewMonitoring = lazyWithReload(() => import('./modules/monitoring/cashew/Monitoring'));
-const RubberMonitoring = lazyWithReload(() => import('./modules/monitoring/rubber/Monitoring'));
-
-// === Cooperative & Group Management ===
-
+// === Crop monitoring (one portal for every crop) ===
+const CropPortal = lazyWithReload(() => import('./modules/monitoring/CropPortal'));
 
 // === Super Admin Portal ===
 import AdminLogin from './farmintelytics-admin/AdminLogin';
@@ -214,16 +199,6 @@ const LoginPage = () => {
 
 
 // ─── Portal page (generic modules) ──────────────────────────────────────────
-const CROP_APPS = {
-  'rs-ffb': OilPalmMonitoring,
-  'rs-sugarcane': SugarcaneMonitoring,
-  'rs-rice': RiceMonitoring,
-  'rs-cocoa': CocoaMonitoring,
-  'rs-cassava': CassavaMonitoring,
-  'rs-maize': MaizeMonitoring,
-  'rs-cashew': CashewMonitoring,
-  'rs-rubber': RubberMonitoring,
-};
 
 const PortalMessage = ({ title, text, action }) => (
   <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center bg-white">
@@ -299,8 +274,7 @@ const PortalPage = () => {
   const props = { onSignOut: handleSignOut, onBack: handleBackToHub };
   let content;
   if (mod.kind === 'crop') {
-    const CropApp = CROP_APPS[moduleId];
-    content = <CropApp {...props} />;
+    content = <CropPortal moduleId={moduleId} {...props} />;
   } else if (mod.kind === 'suitability') {
     content = <SuitabilityPortal {...props} />;
   } else if (mod.kind === 'smallholder') {

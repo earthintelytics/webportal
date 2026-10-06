@@ -61,8 +61,7 @@ export async function fetchScoutingObservations(plotId = null, alertId = null) {
     return await apiFetch(`/scouting/observations${qs}`);
   } catch (err) {
     console.warn('Failed to fetch scouting observations from server, using local cache:', err);
-    const local = getCachedLocalObservations();
-    return local;
+    return getCachedObservations();
   }
 }
 
@@ -279,7 +278,7 @@ function cacheLocalObservation(obs) {
   }
 }
 
-export function getCachedObservations() {
+function getCachedObservations() {
   try {
     const raw = localStorage.getItem(tenantKey(OFFLINE_OBSERVATIONS));
     return raw ? JSON.parse(raw) : [];

@@ -246,4 +246,3 @@ export const SERVICE_CATALOG = {
   },
 };
 
-export const isServiceModule = (id) => Boolean(SERVICE_CATALOG[id]);

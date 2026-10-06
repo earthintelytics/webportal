@@ -40,40 +40,6 @@ export async function fetchCropIndices(cropType = 'ffb') {
   return apiFetch(`/crop-monitoring/indices?crop_type=${cropType}`);
 }
 
-/**
- * GET /crop-monitoring/blocks?crop_type={cropType}
- * Returns all plots/blocks with current index values for the given crop type.
- * Each block has: id, plot_nb, estate, area_ha, geometry (GeoJSON Polygon),
- * current_indices, health_class, water_stress_class, yield_t_ha, etc.
- * @param {string} cropType
- */
-export async function fetchCropBlocks(cropType = 'ffb') {
-  return apiFetch(`/crop-monitoring/blocks?crop_type=${cropType}`);
-}
-
-/**
- * GET /crop-monitoring/summary?crop_type={cropType}
- * Returns farm-level summary statistics and available index list.
- * @param {string} cropType
- */
-export async function fetchCropSummary(cropType = 'ffb') {
-  return apiFetch(`/crop-monitoring/summary?crop_type=${cropType}`);
-}
-
-/**
- * GET /crop-monitoring/timeseries?crop_type={cropType}&index={index}&lat={lat}&lon={lon}
- * Returns pixel-level weekly time series from the Zarr archive for a given crop + index.
- * @param {object} params
- * @param {string} params.cropType  e.g. "ffb", "sugarcane"
- * @param {string} params.index     e.g. "ndvi", "ndmi", "lswi"
- * @param {number} params.lat
- * @param {number} params.lon
- */
-export async function fetchCropTimeseries({ cropType = 'ffb', index = 'ndvi', lat, lon }) {
-  const params = new URLSearchParams({ crop_type: cropType, index, lat: lat.toString(), lon: lon.toString() });
-  return apiFetch(`/crop-monitoring/timeseries?${params}`);
-}
-
 // ─── Crop type metadata used by the frontend ──────────────────────────────────
 
 export const CROP_META = {

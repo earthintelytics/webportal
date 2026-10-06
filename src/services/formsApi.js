@@ -4,11 +4,8 @@ import { serviceCall, query } from './serviceClient';
 const id = (v) => encodeURIComponent(v);
 
 export const fetchForms = () => serviceCall('/forms');
-export const fetchForm = (formId) => serviceCall(`/forms/${id(formId)}`);
 export const createForm = (form) => serviceCall('/forms', { method: 'POST', body: form });
 export const saveForm = (formId, form) => serviceCall(`/forms/${id(formId)}`, { method: 'PUT', body: form });
-export const deleteForm = (formId) => serviceCall(`/forms/${id(formId)}`, { method: 'DELETE' });
-
 export const fetchLinks = (formId) => serviceCall(`/forms/${id(formId)}/links`);
 export const createLink = (formId, link) => serviceCall(`/forms/${id(formId)}/links`, { method: 'POST', body: link });
 export const updateLink = (linkId, link) => serviceCall(`/forms/links/${id(linkId)}`, { method: 'PATCH', body: link });

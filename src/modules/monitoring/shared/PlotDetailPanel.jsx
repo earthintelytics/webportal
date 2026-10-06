@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { X, MapPin, UserCheck, ShieldAlert } from 'lucide-react';
+import { useState } from 'react';
+import { X, MapPin, UserCheck } from 'lucide-react';
 import { Line } from 'react-chartjs-2';
 import GroundScoutingModal from './GroundScoutingModal';
 

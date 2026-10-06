@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
 
 // Replaces window.confirm(...) with a styled modal that matches the rest of

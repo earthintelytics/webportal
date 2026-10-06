@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { AlertCircle, RefreshCw, X, Copy, Check } from 'lucide-react';
 
 const ErrorBanner = ({ message, onDismiss, onRetry }) => {

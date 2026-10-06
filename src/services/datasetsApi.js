@@ -27,8 +27,6 @@ async function call(path, options = {}) {
 }
 
 export const fetchDatasets = () => call('/datasets');
-export const fetchNeededDatasets = () => call('/datasets/needed');
-export const fetchMapping = (id) => call(`/datasets/${encodeURIComponent(id)}/mapping`);
 export const saveMapping = (id, mapping) =>
   call(`/datasets/${encodeURIComponent(id)}/mapping`, { method: 'PUT', body: JSON.stringify({ mapping }) });
 // Rows already mapped to our column names travel as a CSV file: the backend

@@ -1,6 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  ArrowRight, Lock, Mail, Eye, EyeOff, Grid
+import { useState, useEffect } from 'react';
+import {
+  ArrowRight,
+  Lock,
+  Mail,
+  Eye,
+  EyeOff,
+  Grid
 } from 'lucide-react';
 import { login, fetchCropMonitoringConfig } from '../services/organizationMonitorApi';
 import ForgotPasswordModal from '../components/ForgotPasswordModal';

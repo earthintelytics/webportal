@@ -1,19 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   X,
   AlertTriangle,
   UserCheck,
   Send,
   CheckCircle2,
-  MapPin,
   Camera,
   Wifi,
   WifiOff,
-  Clock,
   ShieldCheck,
   FileText,
   RefreshCw,
-  Eye,
   Check,
   History
 } from 'lucide-react';

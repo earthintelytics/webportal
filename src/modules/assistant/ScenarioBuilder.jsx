@@ -1,18 +1,13 @@
-import React, { useState } from 'react';
-import { 
-  Sparkles, 
-  ArrowRight, 
-  X, 
-  Database, 
-  CheckCircle2, 
-  PlusCircle, 
-  Sliders, 
-  FileText, 
-  Layers, 
-  HelpCircle,
+import { useState } from 'react';
+import {
+  Sparkles,
+  ArrowRight,
+  X,
+  Database,
+  CheckCircle2,
+  Sliders,
   Plus,
-  Send,
-  Info
+  Send
 } from 'lucide-react';
 import { SCENARIOS } from './scenarioTemplates';
 import { scopeKeys } from '../data/datasetDefinitions';

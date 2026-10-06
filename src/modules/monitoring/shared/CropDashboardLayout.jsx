@@ -2,78 +2,47 @@ import { CROP_META } from '../../../services/cropMonitoringApi';
 import PlotDetailPanel from './PlotDetailPanel';
 import PlotSearchSelector from './PlotSearchSelector';
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { 
-  Globe, 
-  Layers, 
-  Satellite, 
-  Map as MapIcon, 
-  Activity, 
-  Zap, 
-  Droplets, 
-  Sun, 
+import {
+  Layers,
+  Satellite,
+  Map as MapIcon,
+  Activity,
+  Droplets,
+  Sun,
   ArrowLeft,
   LogOut,
   CheckCircle2,
-  BarChart4,
   TrendingUp,
   LayoutDashboard,
   Calendar as CalendarIcon,
-  Maximize2,
   Search,
-  Filter,
   Shield,
-  User,
   Bell,
   X,
   Info,
-  Navigation,
   RefreshCw,
   FileText,
-  History,
   Settings2,
   ChevronDown,
   ChevronUp,
   Clock,
-  ArrowRight,
   SlidersHorizontal,
-  MapPin,
-  LineChart,
   Waves,
-  Thermometer,
   CloudRain,
   Leaf,
-  MessageSquare,
   Sparkles,
   Send,
-  CheckSquare,
-  Lock,
-  Download,
   AlertTriangle,
-  Trash2,
-  Eye,
-  EyeOff,
-  UserPlus,
-  Users,
-  Plus,
-  Check,
-  FileSpreadsheet,
   Play,
   Pause,
   ChevronLeft,
   ChevronRight,
-  TrendingDown,
-  Flame,
-  Radio,
-  Target,
-  Gauge,
-  ListFilter,
-  Columns,
-  Wind
+  Columns
 } from 'lucide-react';
-import { MapContainer, TileLayer, ZoomControl, Polygon, Popup, Tooltip, Pane } from 'react-leaflet';
+import { MapContainer, TileLayer, ZoomControl, Polygon, Pane } from 'react-leaflet';
 import * as api from '../../../services/organizationMonitorApi';
 import 'leaflet/dist/leaflet.css';
-import { Line, Bar, Radar, Doughnut } from 'react-chartjs-2';
+import { Radar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -120,8 +89,8 @@ import ScenarioBuilder from '../../assistant/ScenarioBuilder';
 import { ANSWER_FORMAT } from '../../assistant/scenarioTemplates';
 import { ResizeMap, MapPaneClipSetter, SwipeSliderOverlay, FitBoundsToPlots, FitToZarrBounds } from './dashboard/map/MapHelpers';
 import { TOOLTIP_DESCRIPTIONS } from './dashboard/constants/tooltipDescriptions';
-import { getIndexFiveClasses } from './dashboard/constants/indexClasses';
-import { CHART_DEFAULTS, MONTH_NAMES, CROP_CONFIG_KEYS } from './dashboard/constants/chartConfig';
+
+import { MONTH_NAMES, CROP_CONFIG_KEYS } from './dashboard/constants/chartConfig';
 
 ChartJS.register(
   CategoryScale,
@@ -137,7 +106,7 @@ ChartJS.register(
   Filler
 );
 
-const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSummary, cropBlocks, cropIndices, cropLoading, cropError, mapCenter, onBack, onSignOut }) => {
+const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndices, mapCenter, onBack, onSignOut }) => {
   const isOrg = mode === 'organization' || Boolean(service);
   const isAiOnly = Boolean(service?.isAiOnly);
   // Service portals (sustainability, field advisory, finance) reuse this
@@ -274,11 +243,9 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
   }, [activeSidebarItem, activeTab, activeAnalyticsSubpage, tenant, cropType]);
 
   const [stats, setStats] = useState(null);
-  const [trends, setTrends] = useState(null);
   const [plots, setPlots] = useState([]);
   const [restorationZones, setRestorationZones] = useState([]);
   const [alerts, setAlerts] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [landUseChange, setLandUseChange] = useState(null);
   const [landUseChangeLoading, setLandUseChangeLoading] = useState(false);
 
@@ -293,9 +260,8 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
         // Run independent requests concurrently — previously these awaited
         // sequentially, so one slow endpoint delayed every other panel even
         // though its data had already arrived.
-        const [statsRes, trendsRes, plotsRes, zonesRes, alertsRes] = await Promise.all([
+        const [statsRes, plotsRes, zonesRes, alertsRes] = await Promise.all([
           api.fetchDashboardStats(tenant),
-          api.fetchDashboardTrends(tenant),
           api.fetchPlotsIntelligence(tenant),
           api.fetchRestorationZones(tenant),
           api.fetchAlerts(tenant),
@@ -303,7 +269,6 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
 
         if (active) {
           setStats(statsRes);
-          setTrends(trendsRes);
           setPlots(plotsRes);
           setRestorationZones(zonesRes);
           // Always fetch the farm boundary — used as overall outline for all tenants
@@ -326,12 +291,10 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
             status: a.acknowledged ? 'Acknowledged' : 'Active'
           }));
           setAlerts(mappedAlerts);
-          setLoading(false);
         }
       } catch (err) {
         console.error("Failed to fetch dashboard data from backend:", err);
         if (active) {
-          setLoading(false);
         }
       }
     }
@@ -483,16 +446,6 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
   const blockValue = (plot, key) => {
     const v = plot.indices?.[key] ?? (key === 'ndvi' ? plot.ndvi : key === 'ndmi' ? plot.ndmi : key === 'lswi' ? (plot.indices?.lswi ?? plot.ndmi) : null);
     return v == null || Number.isNaN(Number(v)) ? null : Number(v);
-  };
-  const blockColour = (plot, key) => {
-    const v = blockValue(plot, key);
-    if (v == null) return null;
-    const legend = cropProfileEntries.find(e => e.key === key)?.legend;
-    if (Array.isArray(legend) && legend.length) {
-      const cls = legend.find(l => Array.isArray(l.range) && v >= l.range[0] && v <= l.range[1]);
-      if (cls?.color) return cls.color;
-    }
-    return getIndexFiveClasses(v, key.toUpperCase()).color;
   };
 
   // Start on the crop's primary index once data is available (once only)
@@ -1100,23 +1053,9 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
   };
 
   // Reports state
-  const [reportPlot, setReportPlot] = useState('WHOLE-FARM');
-  const [reportIndex, setReportIndex] = useState('NDVI');
-  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
-  const [reportProgress, setReportProgress] = useState(0);
-  const [reportProgressText, setReportProgressText] = useState('');
-  const [generatedReport, setGeneratedReport] = useState(null);
 
   // Verification state
-  const [selectedVerifyPlot, setSelectedVerifyPlot] = useState('');
-  const [verificationSteps, setVerificationSteps] = useState({
-    boundary: { label: 'Boundary Integrity Check', status: 'idle', details: 'Verifying polygon shape match with cadastral registry' },
-    forest:   { label: 'Deforestation Compliance Check', status: 'idle', details: 'Scanning for canopy loss anomalies' },
-    cover:    { label: 'Canopy Density Standard', status: 'idle', details: 'Measuring active photosynthetic activity coverage' },
-    moisture: { label: 'Soil Water Index Target', status: 'idle', details: 'Assessing root-zone moisture anomalies' }
-  });
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [verificationStatus, setVerificationStatus] = useState('idle');
+
 
   // Chat state
   const [chatMessages, setChatMessages] = useState([
@@ -1124,7 +1063,6 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
   ]);
   const [chatInput, setChatInput] = useState('');
   const chatEndRef = useRef(null);
-  const [selectedThemeReport, setSelectedThemeReport] = useState('');
 
   // Map play / calendar / user menu
   const [isPlaying, setIsPlaying]       = useState(false);
@@ -1138,95 +1076,41 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
 
   // Land Restoration new layers states
   const [restoreShowInSar, setRestoreShowInSar] = useState(false);
-  const [restoreInSarOpacity, setRestoreInSarOpacity] = useState(70);
   const [restoreShowGedi, setRestoreShowGedi] = useState(false);
-  const [restoreGediOpacity, setRestoreGediOpacity] = useState(70);
-  const [restoreShowNdwi, setRestoreShowNdwi] = useState(false);
-  const [restoreNdwiOpacity, setRestoreNdwiOpacity] = useState(70);
   const [restoreShowLulc, setRestoreShowLulc] = useState(false);
-  const [restoreLulcOpacity, setRestoreLulcOpacity] = useState(70);
   const [restoreShowEudr, setRestoreShowEudr] = useState(false);
-  const [restoreEudrOpacity, setRestoreEudrOpacity] = useState(70);
   const [restoreLulcExpanded, setRestoreLulcExpanded] = useState(true);
   const [restoreEudrExpanded, setRestoreEudrExpanded] = useState(true);
-  const [restoreLulcSource, setRestoreLulcSource] = useState('worldcover');
-  const [restoreLulcYear, setRestoreLulcYear] = useState(2020);
   const [restoreShowLulcChange, setRestoreShowLulcChange] = useState(false);
 
 
   // Alerts Command Center redesigned states
 
   // Dropdown layout states
-  const [showEstateDropdown, setShowEstateDropdown] = useState(false);
-  const [showPlotDropdown, setShowPlotDropdown] = useState(false);
-  const [showDateDropdown, setShowDateDropdown] = useState(false);
 
   // Intelligence layers new states
-  const [intelShowCvi, setIntelShowCvi] = useState(false);
-  const [intelCviOpacity, setIntelCviOpacity] = useState(70);
-  const [intelShowCar, setIntelShowCar] = useState(false);
-  const [intelCarOpacity, setIntelCarOpacity] = useState(70);
-  const [intelShowNdre, setIntelShowNdre] = useState(false);
-  const [intelNdreOpacity, setIntelNdreOpacity] = useState(70);
-  const [intelShowWdi, setIntelShowWdi] = useState(false);
-  const [intelWdiOpacity, setIntelWdiOpacity] = useState(70);
-  const [intelShowDprvi, setIntelShowDprvi] = useState(false);
-  const [intelDprviOpacity, setIntelDprviOpacity] = useState(70);
-  const [intelShowRvi, setIntelShowRvi] = useState(false);
-  const [intelRviOpacity, setIntelRviOpacity] = useState(70);
-  const [intelShowFlood, setIntelShowFlood] = useState(false);
-  const [intelFloodOpacity, setIntelFloodOpacity] = useState(70);
-  const [intelShowUas, setIntelShowUas] = useState(false);
-  const [intelUasOpacity, setIntelUasOpacity] = useState(70);
 
   // Crop Health missing layers states
-  const [healthShowSmi, setHealthShowSmi] = useState(false);
-  const [healthSmiOpacity, setHealthSmiOpacity] = useState(80);
-  const [healthShowNdre, setHealthShowNdre] = useState(false);
-  const [healthNdreOpacity, setHealthNdreOpacity] = useState(80);
 
   // Climate missing layers states
   const [climateShowFlood, setClimateShowFlood] = useState(false);
-  const [climateFloodOpacity, setClimateFloodOpacity] = useState(80);
+  const climateFloodOpacity = 80;
 
   // Land Restoration missing layers states
   const [restoreShowAgb, setRestoreShowAgb] = useState(false);
-  const [restoreAgbOpacity, setRestoreAgbOpacity] = useState(70);
 
   // Land Restoration states
-  const [selectedRestoreZone, setSelectedRestoreZone] = useState(null);
-  const [restoreIndex, setRestoreIndex] = useState('progress');
-  const [restoreMapOpacity, setRestoreMapOpacity] = useState(85);
 
   // Crop Yield states
-  const [selectedYieldIndex, setSelectedYieldIndex] = useState('Yield');
-  const [yieldMapOpacity, setYieldMapOpacity] = useState(80);
-  const [selectedYieldPlot, setSelectedYieldPlot] = useState(null);
 
   // Crop Health states
-  const [selectedHealthIndex, setSelectedHealthIndex] = useState('NDVI');
-  const [healthMapOpacity, setHealthMapOpacity] = useState(80);
-  const [selectedHealthPlot, setSelectedHealthPlot] = useState(null);
 
   // Climate map states
-  const [selectedClimateIndex, setSelectedClimateIndex] = useState('Rainfall');
-  const [climateMapOpacity, setClimateMapOpacity] = useState(80);
-  const [selectedClimatePlot, setSelectedClimatePlot] = useState(null);
 
   // Intelligence Layers map layers states
   const [intelShowLayers, setIntelShowLayers] = useState(true);
   const [intelShowBoundaries, setIntelShowBoundaries] = useState(true);
   const [intelBoundariesOpacity, setIntelBoundariesOpacity] = useState(100);
-  const [intelShowGrowth, setIntelShowGrowth] = useState(true);
-  const [intelGrowthOpacity, setIntelGrowthOpacity] = useState(70);
-  const [intelShowEvi, setIntelShowEvi] = useState(false);
-  const [intelEviOpacity, setIntelEviOpacity] = useState(60);
-  const [intelShowLswi, setIntelShowLswi] = useState(false);
-  const [intelLswiOpacity, setIntelLswiOpacity] = useState(60);
-  const [intelShowVhi, setIntelShowVhi] = useState(false);
-  const [intelVhiOpacity, setIntelVhiOpacity] = useState(60);
-  const [intelShowSuitability, setIntelShowSuitability] = useState(false);
-  const [intelSuitabilityOpacity, setIntelSuitabilityOpacity] = useState(60);
 
   // Left sidebar Tools states
   const [showCalendarTool, setShowCalendarTool] = useState(true);
@@ -1234,63 +1118,25 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
 
   // Settings and User Management States — only the real logged-in account,
   // no fabricated team roster. Additional members appear when invited.
-  const sessionEmail = localStorage.getItem('fi_email') || '';
-  const [settingsUsers, setSettingsUsers] = useState(() => sessionEmail ? [
-    { id: 1, name: sessionEmail.split('@')[0], email: sessionEmail, role: 'Account Owner', status: 'Active', avatar: sessionEmail.slice(0, 2).toUpperCase() }
-  ] : []);
-  const [ndviThreshold, setNdviThreshold] = useState(0.50);
-  const [ndmiThreshold, setNdmiThreshold] = useState(0.35);
-  const [emailAlerts, setEmailAlerts] = useState(true);
-  const [smsAlerts, setSmsAlerts] = useState(true);
-  const [showConfigSaved, setShowConfigSaved] = useState(false);
-  const [showSupportSubmitted, setShowSupportSubmitted] = useState(false);
 
   // User Management Invite Form States
-  const [inviteName, setInviteName] = useState('');
-  const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteRole, setInviteRole] = useState('GIS Specialist');
-  const [inviteSuccess, setInviteSuccess] = useState(false);
 
   // Configuration API Keys States
-  const [sentinelApiKey, setSentinelApiKey] = useState('');
-  const [planetApiKey, setPlanetApiKey] = useState('');
-  const [showSentinelKey, setShowSentinelKey] = useState(false);
-  const [showPlanetKey, setShowPlanetKey] = useState(false);
 
   // Help Topics States
-  const [activeHelpTopic, setActiveHelpTopic] = useState(null);
-  const [ticketCategory, setTicketCategory] = useState('General Query');
-  const [ticketSubject, setTicketSubject] = useState('');
-  const [ticketMessage, setTicketMessage] = useState('');
-  const [filterAlertSeverity, setFilterAlertSeverity] = useState('All');
-  const [filterAlertStatus, setFilterAlertStatus] = useState('Active');
 
   // Crop Health map layers states
   const [healthShowLayers, setHealthShowLayers] = useState(true);
   const [healthShowBoundaries, setHealthShowBoundaries] = useState(true);
   const [healthBoundariesOpacity, setHealthBoundariesOpacity] = useState(100);
-  const [healthShowNdvi, setHealthShowNdvi] = useState(true);
-  const [healthNdviOpacity, setHealthNdviOpacity] = useState(80);
-  const [healthShowSavi, setHealthShowSavi] = useState(false);
-  const [healthSaviOpacity, setHealthSaviOpacity] = useState(80);
-  const [healthShowNdwi, setHealthShowNdwi] = useState(false);
-  const [healthNdwiOpacity, setHealthNdwiOpacity] = useState(80);
-  const [healthShowChlorophyll, setHealthShowChlorophyll] = useState(false);
-  const [healthChlorophyllOpacity, setHealthChlorophyllOpacity] = useState(70);
-  const [healthShowWater, setHealthShowWater] = useState(false);
-  const [healthWaterOpacity, setHealthWaterOpacity] = useState(70);
-  const [healthShowPest, setHealthShowPest] = useState(false);
-  const [healthPestOpacity, setHealthPestOpacity] = useState(70);
-  const [healthShowRainfall, setHealthShowRainfall] = useState(false);
-  const [healthRainfallOpacity, setHealthRainfallOpacity] = useState(80);
+  const healthShowRainfall = false;
+  const healthRainfallOpacity = 80;
 
   // Moisture Content map layers states
   const [moistureShowLayers, setMoistureShowLayers] = useState(true);
   const [moistureShowBoundaries, setMoistureShowBoundaries] = useState(true);
   const [moistureBoundariesOpacity, setMoistureBoundariesOpacity] = useState(100);
-  const [moistureSmiOpacity, setMoistureSmiOpacity] = useState(80);
   const [moistureOpExpanded, setMoistureOpExpanded] = useState(true);
-  const [moistureBioExpanded, setMoistureBioExpanded] = useState(true);
 
   // The signed-in person, read-only here; it is changed at /org/<tenant>/settings.
   const profileEmail = localStorage.getItem('fi_email') || '';
@@ -1301,8 +1147,6 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
 
   // Collapsible sidebar section groups states (collapsed/false by default)
   const [intelOpExpanded, setIntelOpExpanded] = useState(false);
-  const [intelBioExpanded, setIntelBioExpanded] = useState(true);
-  const [intelMonExpanded, setIntelMonExpanded] = useState(false);
 
   // Crop legend cards: which index legends are manually expanded
   // (the index currently rendered on the map is always expanded)
@@ -1470,9 +1314,6 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
     // globally selected index instead, so a SAR-only panel could still show
     // the Sentinel-2/Landsat picker whenever selectedIndex happened to be an
     // optical index from another page.
-    const allSar = groupNames.length > 0 && groupNames.every(g =>
-      (legendGroups[g] || []).every(e => SAR_INDICES.has(e.key.toLowerCase()))
-    );
     return (
       <>
         {/* Sensor choice lives here now instead of a separate toolbar
@@ -1506,8 +1347,6 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
   };
 
   const [healthOpExpanded, setHealthOpExpanded] = useState(false);
-  const [healthBioExpanded, setHealthBioExpanded] = useState(true);
-  const [healthMonExpanded, setHealthMonExpanded] = useState(false);
 
   const [yieldOpExpanded, setYieldOpExpanded] = useState(false);
   const [yieldProdExpanded, setYieldProdExpanded] = useState(false);
@@ -1521,9 +1360,6 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
   const [climateAtmExpanded, setClimateAtmExpanded] = useState(false);
 
 
-  const [telemetryLogs, setTelemetryLogs] = useState([]);
-  const [isFlushingCache, setIsFlushingCache] = useState(false);
-  const [isCheckingSystem, setIsCheckingSystem] = useState(false);
 
 
   const getHealthPlotStyleOutline = (plot) => {
@@ -1546,53 +1382,15 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
     };
   };
 
-  const getHealthPlotStyleFill = (plot, layer) => {
-    let fillColor = 'transparent';
-    let fillOpacity = 0;
-    
-    if (layer === 'pest') {
-      const risk = plot.pestRisk;
-      fillColor = risk === 'High Risk' ? '#ef4444' : risk === 'Moderate Risk' ? '#f97316' : '#16a34a';
-      fillOpacity = healthPestOpacity / 100;
-    } else if (layer === 'water') {
-      fillColor = blockColour(plot, 'ndmi') || 'transparent';
-      fillOpacity = healthWaterOpacity / 100;
-    } else if (layer === 'chlorophyll') {
-      fillColor = blockColour(plot, 'reci') || 'transparent';
-      fillOpacity = healthChlorophyllOpacity / 100;
-    } else if (layer === 'ndvi') {
-      fillColor = blockColour(plot, 'ndvi') || 'transparent';
-      fillOpacity = healthNdviOpacity / 100;
-    } else if (layer === 'ndre') {
-      fillColor = blockColour(plot, 'ndre') || 'transparent';
-      fillOpacity = healthNdreOpacity / 100;
-    } else if (layer === 'smi') {
-      // Real soil-moisture value only (admin classes when set); nothing invented when missing
-      fillColor = blockColour(plot, 'smi') || 'transparent';
-      fillOpacity = healthSmiOpacity / 100;
-    }
-    
-    return {
-      color: 'transparent',
-      weight: 0,
-      opacity: 0,
-      fillColor: fillColor,
-      fillOpacity: fillOpacity
-    };
-  };
 
   // Crop Yield map layers states
   const [yieldShowLayers, setYieldShowLayers] = useState(true);
   const [yieldShowBoundaries, setYieldShowBoundaries] = useState(true);
   const [yieldBoundariesOpacity, setYieldBoundariesOpacity] = useState(100);
   const [yieldShowYield, setYieldShowYield] = useState(true);
-  const [yieldYieldOpacity, setYieldYieldOpacity] = useState(80);
   const [yieldShowBiomass, setYieldShowBiomass] = useState(false);
-  const [yieldBiomassOpacity, setYieldBiomassOpacity] = useState(70);
   const [yieldShowReadiness, setYieldShowReadiness] = useState(false);
-  const [yieldReadinessOpacity, setYieldReadinessOpacity] = useState(70);
   const [yieldShowGrowth, setYieldShowGrowth] = useState(false);
-  const [yieldGrowthOpacity, setYieldGrowthOpacity] = useState(70);
 
   const getYieldPlotStyleOutline = () => ({
     color: yieldShowBoundaries ? '#000000' : 'transparent',
@@ -1602,49 +1400,19 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
     fillOpacity: 0
   });
 
-  const getYieldPlotStyleFill = (plot, layer) => {
-    let fillColor = 'transparent';
-    let fillOpacity = 0;
-    
-    if (layer === 'readiness') {
-      const val = plot.readiness;
-      fillColor = val > 85 ? '#16a34a' : val > 65 ? '#eab308' : '#f97316';
-      fillOpacity = yieldReadinessOpacity / 100;
-    } else if (layer === 'growth') {
-      const val = plot.growth;
-      fillColor = val > 0.7 ? '#15803d' : val > 0.55 ? '#22c55e' : val > 0.4 ? '#eab308' : '#ef4444';
-      fillOpacity = yieldGrowthOpacity / 100;
-    } else if (layer === 'biomass') {
-      const val = plot.biomass;
-      fillColor = val > 2.0 ? '#15803d' : val > 1.3 ? '#22c55e' : val > 0.8 ? '#eab308' : '#ef4444';
-      fillOpacity = yieldBiomassOpacity / 100;
-    } else if (layer === 'yield') {
-      const val = plot.yieldValue;
-      fillColor = val > 18 ? '#15803d' : val > 12 ? '#22c55e' : val > 8 ? '#eab308' : '#ef4444';
-      fillOpacity = yieldYieldOpacity / 100;
-    }
-    
-    return {
-      color: 'transparent',
-      weight: 0,
-      opacity: 0,
-      fillColor: fillColor,
-      fillOpacity: fillOpacity
-    };
-  };
 
   // Climate map layers states
   const [climateShowLayers, setClimateShowLayers] = useState(true);
   const [climateShowBoundaries, setClimateShowBoundaries] = useState(true);
   const [climateBoundariesOpacity, setClimateBoundariesOpacity] = useState(100);
   const [climateShowRainfall, setClimateShowRainfall] = useState(true);
-  const [climateRainfallOpacity, setClimateRainfallOpacity] = useState(80);
+  const climateRainfallOpacity = 80;
   const [climateShowSoilTemp, setClimateShowSoilTemp] = useState(false);
-  const [climateSoilTempOpacity, setClimateSoilTempOpacity] = useState(70);
+  const climateSoilTempOpacity = 70;
   const [climateShowLst, setClimateShowLst] = useState(false);
-  const [climateLstOpacity, setClimateLstOpacity] = useState(70);
+  const climateLstOpacity = 70;
   const [climateShowVaporDeficit, setClimateShowVaporDeficit] = useState(false);
-  const [climateVaporDeficitOpacity, setClimateVaporDeficitOpacity] = useState(70);
+  const climateVaporDeficitOpacity = 70;
 
   const getClimatePlotStyleOutline = () => ({
     color: climateShowBoundaries ? '#000000' : 'transparent',
@@ -1703,66 +1471,15 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
   const [restoreShowBoundaries, setRestoreShowBoundaries] = useState(true);
   const [restoreBoundariesOpacity, setRestoreBoundariesOpacity] = useState(100);
   const [restoreShowProgress, setRestoreShowProgress] = useState(true);
-  const [restoreProgressOpacity, setRestoreProgressOpacity] = useState(85);
   const [restoreShowSurvival, setRestoreShowSurvival] = useState(false);
-  const [restoreSurvivalOpacity, setRestoreSurvivalOpacity] = useState(70);
   const [restoreShowCarbon, setRestoreShowCarbon] = useState(false);
-  const [restoreCarbonOpacity, setRestoreCarbonOpacity] = useState(70);
   const [restoreShowBiodiversity, setRestoreShowBiodiversity] = useState(false);
-  const [restoreBiodiversityOpacity, setRestoreBiodiversityOpacity] = useState(70);
 
   // Layer independent toggle handlers for each page (allowing concurrent layers)
-  const handleIntelToggle = (layer) => {
-    if (layer === 'growth') setIntelShowGrowth(!intelShowGrowth);
-    if (layer === 'evi') setIntelShowEvi(!intelShowEvi);
-    if (layer === 'lswi') setIntelShowLswi(!intelShowLswi);
-    if (layer === 'vhi') setIntelShowVhi(!intelShowVhi);
-    if (layer === 'suitability') setIntelShowSuitability(!intelShowSuitability);
-    if (layer === 'cvi') setIntelShowCvi(!intelShowCvi);
-    if (layer === 'car') setIntelShowCar(!intelShowCar);
-    if (layer === 'ndre') setIntelShowNdre(!intelShowNdre);
-    if (layer === 'wdi') setIntelShowWdi(!intelShowWdi);
-    if (layer === 'dprvi') setIntelShowDprvi(!intelShowDprvi);
-    if (layer === 'rvi') setIntelShowRvi(!intelShowRvi);
-    if (layer === 'flood') setIntelShowFlood(!intelShowFlood);
-    if (layer === 'uas') setIntelShowUas(!intelShowUas);
-  };
 
-  const handleHealthToggle = (layer) => {
-    if (layer === 'ndvi') setHealthShowNdvi(!healthShowNdvi);
-    if (layer === 'chlorophyll') setHealthShowChlorophyll(!healthShowChlorophyll);
-    if (layer === 'water') setHealthShowWater(!healthShowWater);
-    if (layer === 'pest') setHealthShowPest(!healthShowPest);
-    if (layer === 'ndre') setHealthShowNdre(!healthShowNdre);
-    if (layer === 'smi') setHealthShowSmi(!healthShowSmi);
-  };
 
-  const handleYieldToggle = (layer) => {
-    if (layer === 'yield') setYieldShowYield(!yieldShowYield);
-    if (layer === 'biomass') setYieldShowBiomass(!yieldShowBiomass);
-    if (layer === 'readiness') setYieldShowReadiness(!yieldShowReadiness);
-    if (layer === 'growth') setYieldShowGrowth(!yieldShowGrowth);
-  };
 
-  const handleClimateToggle = (layer) => {
-    if (layer === 'rainfall') setClimateShowRainfall(!climateShowRainfall);
-    if (layer === 'soilTemp') setClimateShowSoilTemp(!climateShowSoilTemp);
-    if (layer === 'lst') setClimateShowLst(!climateShowLst);
-    if (layer === 'vpd') setClimateShowVaporDeficit(!climateShowVaporDeficit);
-    if (layer === 'flood') setClimateShowFlood(!climateShowFlood);
-  };
 
-  const handleRestoreToggle = (layer) => {
-    if (layer === 'progress') setRestoreShowProgress(!restoreShowProgress);
-    if (layer === 'survival') setRestoreShowSurvival(!restoreShowSurvival);
-    if (layer === 'carbon') setRestoreShowCarbon(!restoreShowCarbon);
-    if (layer === 'biodiversity') setRestoreShowBiodiversity(!restoreShowBiodiversity);
-    if (layer === 'insar') setRestoreShowInSar(!restoreShowInSar);
-    if (layer === 'gedi') setRestoreShowGedi(!restoreShowGedi);
-    if (layer === 'ndwi') setRestoreShowNdwi(!restoreShowNdwi);
-    if (layer === 'lulc') setRestoreShowLulc(!restoreShowLulc);
-    if (layer === 'eudr') setRestoreShowEudr(!restoreShowEudr);
-  };
 
   const getRestorePlotStyleOutline = () => ({
     color: restoreShowBoundaries ? '#000000' : 'transparent',
@@ -1772,60 +1489,6 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
     fillOpacity: 0
   });
 
-  const getRestorePlotStyleFill = (zone, layer) => {
-    let fillColor = 'transparent';
-    let fillOpacity = 0;
-    
-    if (layer === 'biodiversity') {
-      const val = zone.survivalNum ?? zone.progress ?? 80;
-      fillColor = val > 90 ? '#15803d' : val > 80 ? '#22c55e' : '#eab308';
-      fillOpacity = restoreBiodiversityOpacity / 100;
-    } else if (layer === 'carbon') {
-      const val = zone.carbon;
-      fillColor = val > 40 ? '#15803d' : val > 30 ? '#22c55e' : '#eab308';
-      fillOpacity = restoreCarbonOpacity / 100;
-    } else if (layer === 'survival') {
-      const val = zone.survivalNum;
-      fillColor = val > 90 ? '#15803d' : val > 85 ? '#22c55e' : '#eab308';
-      fillOpacity = restoreSurvivalOpacity / 100;
-    } else if (layer === 'progress') {
-      const val = zone.progress;
-      fillColor = val > 85 ? '#15803d' : val > 70 ? '#22c55e' : val > 55 ? '#eab308' : '#ef4444';
-      fillOpacity = restoreProgressOpacity / 100;
-    } else if (layer === 'insar') {
-      const val = zone.insar;
-      fillColor = val > 0.7 ? '#15803d' : val >= 0.4 ? '#eab308' : '#dc2626';
-      fillOpacity = restoreInSarOpacity / 100;
-    } else if (layer === 'gedi') {
-      const val = zone.gedi;
-      fillColor = val > 15 ? '#14532d' : val > 10 ? '#15803d' : val > 5 ? '#22c55e' : '#eab308';
-      fillOpacity = restoreGediOpacity / 100;
-    } else if (layer === 'ndwi') {
-      const val = zone.ndwi;
-      fillColor = val > 0.3 ? '#1e3a8a' : val > 0.15 ? '#2563eb' : val > 0.0 ? '#60a5fa' : '#ea580c';
-      fillOpacity = restoreNdwiOpacity / 100;
-    } else if (layer === 'lulc') {
-      const val = zone.lulc;
-      fillColor = val === 'Forest' ? '#15803d' : val === 'Shrubland' ? '#86efac' : val === 'Cropland' ? '#fde047' : val === 'Bare Soil' ? '#ca8a04' : val === 'Water' ? '#3b82f6' : '#94a3b8';
-      fillOpacity = restoreLulcOpacity / 100;
-    } else if (layer === 'eudr') {
-      const val = zone.eudr;
-      fillColor = val === 'Compliant' ? '#16a34a' : val === 'Warning' ? '#eab308' : '#dc2626';
-      fillOpacity = restoreEudrOpacity / 100;
-    } else if (layer === 'agb') {
-      const sv = zone.survivalNum ?? zone.progress ?? 80;
-      fillColor = sv > 90 ? '#14532D' : sv > 75 ? '#16A34A' : '#86EFAC';
-      fillOpacity = restoreAgbOpacity / 100;
-    }
-    
-    return {
-      color: 'transparent',
-      weight: 0,
-      opacity: 0,
-      fillColor: fillColor,
-      fillOpacity: fillOpacity
-    };
-  };
 
   const getIntelPlotStyleOutline = () => ({
     color: intelShowBoundaries ? '#000000' : 'transparent',
@@ -1835,82 +1498,9 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
     fillOpacity: 0
   });
 
-  const getIntelPlotStyleFill = (plot, layer) => {
-    let fillColor = 'transparent';
-    let fillOpacity = 0;
-    
-    if (layer === 'suitability') {
-      fillColor = (plot.ndvi != null && plot.ndvi < 0.5) ? '#dc2626' : '#16a34a';
-      fillOpacity = intelSuitabilityOpacity / 100;
-    } else if (layer === 'vhi') {
-      fillColor = blockColour(plot, 'ndvi') || 'transparent';
-      fillOpacity = intelVhiOpacity / 100;
-    } else if (layer === 'lswi') {
-      fillColor = blockColour(plot, 'lswi') || 'transparent';
-      fillOpacity = intelLswiOpacity / 100;
-    } else if (layer === 'evi') {
-      fillColor = blockColour(plot, 'evi') || 'transparent';
-      fillOpacity = intelEviOpacity / 100;
-    } else if (layer === 'growth') {
-      fillColor = (plot.ndvi ?? 0) > 0.7 ? '#15803d' : (plot.ndvi ?? 0) > 0.5 ? '#86efac' : '#fbbf24';
-      fillOpacity = intelGrowthOpacity / 100;
-    } else if (layer === 'cvi') {
-      fillColor = blockColour(plot, 'cvi') || 'transparent';
-      fillOpacity = intelCviOpacity / 100;
-    } else if (layer === 'car') {
-      fillColor = blockColour(plot, 'car') || 'transparent';
-      fillOpacity = intelCarOpacity / 100;
-    } else if (layer === 'ndre') {
-      fillColor = blockColour(plot, 'ndre') || 'transparent';
-      fillOpacity = intelNdreOpacity / 100;
-    } else if (layer === 'wdi') {
-      fillColor = blockColour(plot, 'wdi') || 'transparent';
-      fillOpacity = intelWdiOpacity / 100;
-    } else if (layer === 'dprvi') {
-      const dprvi = plot.indices?.dprvi ?? plot.ndvi;
-      fillColor = dprvi > 0.6 ? '#15803d' : dprvi > 0.4 ? '#eab308' : '#ef4444';
-      fillOpacity = intelDprviOpacity / 100;
-    } else if (layer === 'rvi') {
-      const val = plot.indices?.reci ?? plot.ndvi;
-      fillColor = val > 0.70 ? '#14532D' : val > 0.50 ? '#16A34A' : val > 0.30 ? '#86EFAC' : val > 0.15 ? '#EAB308' : '#EF4444';
-      fillOpacity = intelRviOpacity / 100;
-    } else if (layer === 'flood') {
-      const floodVal = plot.indices?.ndwi ?? 0;
-      fillColor = floodVal > 0 ? '#1e3a8a' : 'transparent';
-      fillOpacity = intelFloodOpacity / 100;
-    } else if (layer === 'uas') {
-      fillColor = 'transparent'; // UAS layer not yet connected
-      fillOpacity = 0;
-    }
-    
-    return {
-      color: 'transparent',
-      weight: 0,
-      opacity: 0,
-      fillColor: fillColor,
-      fillOpacity: fillOpacity
-    };
-  };
 
 
   // Helper methods to render overlapping active layers
-  const renderFarmBoundary = () => {
-    if (!farmBoundary || !farmBoundary.geometry || !farmBoundary.geometry.coordinates) return null;
-    const ring = farmBoundary.geometry.type === 'MultiPolygon'
-      ? farmBoundary.geometry.coordinates?.[0]?.[0]
-      : farmBoundary.geometry.coordinates?.[0];
-    if (!ring || !Array.isArray(ring)) return null;
-    // Convert [lng, lat] → Leaflet [lat, lng]
-    const positions = ring.map(([lng, lat]) => [lat, lng]);
-    const name = farmBoundary.properties?.name ?? tenantDisplayName;
-    const center = farmBoundary.properties?.center;
-    return (
-      <Polygon
-        positions={positions}
-        pathOptions={{ color: '#3F8432', weight: 2.5, fillColor: '#3F8432', fillOpacity: 0.08, dashArray: '6 4' }}
-      />
-    );
-  };
 
   const renderIntelPolygons = (plots, suffix = '') => {
     return plots.map(plot => {
@@ -1995,7 +1585,6 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
             <Polygon
               positions={zone.coords}
               pathOptions={getRestorePlotStyleOutline()}
-              eventHandlers={{ click: () => setSelectedRestoreZone(zone) }}
             />
           )}
         </React.Fragment>
@@ -2076,10 +1665,6 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
     setExpandedLegendKeys([]);
   };
 
-  const handleTabClick = (tab) => {
-    setActiveTab(tab);
-    setActiveSidebarItem('analytics');
-  };
 
   const handlePlotFilterChange = (plotId) => {
     setFilterPlot(plotId);
@@ -2098,29 +1683,8 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
   };
 
 
-  const handleProfileSave = (e) => {
-    e.preventDefault();
-    setShowProfileSaved(true);
-    setTimeout(() => setShowProfileSaved(false), 3000);
-  };
 
-  const handleFlushCache = () => {
-    setIsFlushingCache(true);
-    setTelemetryLogs(prev => [...prev, '[WARN] Flushing backend zarr cache...']);
-    api.clearCache()
-      .then(() => setTelemetryLogs(prev => [...prev, '[SUCCESS] Backend cache flushed.']))
-      .catch(err => setTelemetryLogs(prev => [...prev, `[ERROR] Cache flush failed: ${err.message}`]))
-      .finally(() => setIsFlushingCache(false));
-  };
 
-  const handleSystemCheck = () => {
-    setIsCheckingSystem(true);
-    setTelemetryLogs(prev => [...prev, '[INFO] Rebuilding backend cache for this tenant...']);
-    api.rebuildCache()
-      .then(() => setTelemetryLogs(prev => [...prev, '[SUCCESS] Connection verified. Cache rebuilt.']))
-      .catch(err => setTelemetryLogs(prev => [...prev, `[ERROR] System check failed: ${err.message}`]))
-      .finally(() => setIsCheckingSystem(false));
-  };
 
   const healthPlotsDataA = useMemo(() => {
     if (plots && plots.length > 0) {
@@ -2344,7 +1908,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
 
   const climatePlotsDataA = useMemo(() => {
     if (plots && plots.length > 0) {
-      return plots.map((p, idx) => {
+      return plots.map((p) => {
         let coords = [];
         if (p.boundary && p.boundary.coordinates && p.boundary.coordinates[0]) {
           coords = api.geoJsonToLeaflet(p.boundary.coordinates[0]);
@@ -2373,7 +1937,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
 
   const climatePlotsDataB = useMemo(() => {
     if (plots && plots.length > 0) {
-      return plots.map((p, idx) => {
+      return plots.map((p) => {
         let coords = [];
         if (p.boundary && p.boundary.coordinates && p.boundary.coordinates[0]) {
           coords = api.geoJsonToLeaflet(p.boundary.coordinates[0]);
@@ -2468,85 +2032,8 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
 
   const restorationPlotsData = restorationPlotsDataA;
 
-  const getRestorePolygonColor = (zone, indexName) => {
-    if (indexName === 'progress') {
-      const val = zone.progress;
-      if (val > 85) return '#15803d';
-      if (val > 70) return '#22c55e';
-      if (val > 55) return '#eab308';
-      return '#ef4444';
-    }
-    if (indexName === 'survival') {
-      const val = zone.survivalNum;
-      if (val > 90) return '#15803d';
-      if (val > 85) return '#22c55e';
-      return '#eab308';
-    }
-    if (indexName === 'carbon') {
-      const val = zone.carbon;
-      if (val > 40) return '#15803d';
-      if (val > 30) return '#22c55e';
-      return '#eab308';
-    }
-    const val = zone.survivalNum ?? zone.progress ?? 80;
-    if (val > 90) return '#15803d';
-    if (val > 80) return '#22c55e';
-    return '#eab308';
-  };
 
-  const getYieldPolygonColor = (plot, indexName) => {
-    if (indexName === 'Yield') {
-      const val = plot.yieldValue;
-      if (val > 18) return '#15803d';
-      if (val > 12) return '#22c55e';
-      if (val > 8)  return '#eab308';
-      return '#ef4444';
-    }
-    if (indexName === 'Biomass') {
-      const val = plot.biomass;
-      if (val > 2.0) return '#15803d';
-      if (val > 1.3) return '#22c55e';
-      if (val > 0.8) return '#eab308';
-      return '#ef4444';
-    }
-    if (indexName === 'Readiness') {
-      const val = plot.readiness;
-      if (val > 85) return '#16a34a';
-      if (val > 65) return '#eab308';
-      return '#f97316';
-    }
-    const val = plot.growth;
-    if (val > 0.7)  return '#15803d';
-    if (val > 0.55) return '#22c55e';
-    if (val > 0.4)  return '#eab308';
-    return '#ef4444';
-  };
 
-  const getClimatePolygonColor = (plot, indexName) => {
-    if (indexName === 'Rainfall') {
-      const val = plot.rainfall;
-      if (val > 25) return '#1d4ed8';
-      if (val > 18) return '#3b82f6';
-      return '#93c5fd';
-    }
-    if (indexName === 'SoilTemp') {
-      const val = plot.soilTemp;
-      if (val > 29) return '#ef4444';
-      if (val > 25) return '#f97316';
-      return '#10b981';
-    }
-    if (indexName === 'LST') {
-      const val = plot.lst;
-      if (val > 36) return '#b91c1c';
-      if (val > 30) return '#ef4444';
-      if (val > 25) return '#f97316';
-      return '#10b981';
-    }
-    const val = plot.vpd;
-    if (val > 2.2) return '#ef4444';
-    if (val > 1.5) return '#f97316';
-    return '#10b981';
-  };
 
   const renderMapBottomPanel = (indexValue, centerContent = null, hideCalendarAndSlider = false) => {
     if (!showTimeSliderTool && !showCalendarTool) {
@@ -2904,14 +2391,6 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
   };
 
   // Dynamic Dashboard Calculations — real data only, no mock fallback
-  const dashboardMetrics = useMemo(() => {
-    return {
-      plots: plots.length > 0 ? plots.length : (stats ? '—' : '—'),
-      area: stats?.total_area_ha != null ? Math.round(stats.total_area_ha) : '—',
-      carbon: stats?.average_carbon_density_tco2e_ha ?? '—',
-      alerts: stats?.active_alerts_count ?? '—',
-    };
-  }, [stats, plots]);
 
   // Inputs for the Overview KPI cards. Condition classes come from the
   // admin's map classes for the index: best = highest class, worst = lowest.
@@ -2945,27 +2424,6 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
 
 
 
-  const moistureRetentionData = useMemo(() => {
-    // Use real NDMI from plotsData — group into buckets by health classification
-    if (!plotsData || plotsData.length === 0) return { labels: [], datasets: [] };
-    const buckets = { 'High (>0.3)': 0, 'Medium (0–0.3)': 0, 'Low (<0)': 0 };
-    plotsData.forEach(p => {
-      const v = p.ndmi ?? 0;
-      if (v > 0.3) buckets['High (>0.3)']++;
-      else if (v >= 0) buckets['Medium (0–0.3)']++;
-      else buckets['Low (<0)']++;
-    });
-    return {
-      labels: Object.keys(buckets),
-      datasets: [{
-        label: 'Plot Count by NDMI',
-        data: Object.values(buckets),
-        backgroundColor: ['#0284C7', '#38BDF8', '#EF4444'],
-        borderRadius: 8,
-        borderSkipped: false,
-      }]
-    };
-  }, [plotsData]);
 
   const nutrientData = useMemo(() => {
     // Derive radar axes from real zarr index values via currentTimeline
@@ -2999,32 +2457,11 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
     };
   }, [currentTimeline]);
 
-  const landClassificationData = useMemo(() => {
-    // Real area distribution from plotsData by health class
-    if (!plotsData || plotsData.length === 0) return { labels: [], datasets: [{ data: [], backgroundColor: [], borderWidth: 0 }] };
-    let optimal = 0, good = 0, stressed = 0;
-    plotsData.forEach(p => {
-      const v = p.ndvi ?? 0;
-      if (v > 0.6) optimal++;
-      else if (v > 0.4) good++;
-      else stressed++;
-    });
-    return {
-      labels: [`Optimal NDVI (${optimal})`, `Moderate NDVI (${good})`, `Stressed NDVI (${stressed})`],
-      datasets: [{
-        data: [optimal, good, stressed],
-        backgroundColor: ['#16A34A', '#EAB308', '#EF4444'],
-        borderWidth: 0,
-        hoverOffset: 8,
-      }]
-    };
-  }, [plotsData]);
 
 
 
 
 
-  const getPolygonColor = (plot, indexName) => blockColour(plot, String(indexName).toLowerCase()) || 'transparent';
 
   // Static fallback (ESRI World Imagery) shown while a composite's own tiles
   // are still loading, so the basemap never goes blank mid-fetch.
@@ -3058,113 +2495,6 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
           : 'Imagery © Esri, Maxar, Earthstar Geographics';
   const basemapMaxNativeZoom = (selectedBasemap === 'terrain' || selectedBasemap === 'osm-streets') && !activeComposite ? (selectedBasemap === 'terrain' ? 17 : 19) : 18;
 
-  const triggerReportGeneration = async (overridePlot, overrideIndex) => {
-    const targetPlot = overridePlot !== undefined ? overridePlot : reportPlot;
-    const targetIndex = overrideIndex !== undefined ? overrideIndex : reportIndex;
-
-    setIsGeneratingReport(true);
-    setReportProgress(10);
-    setReportProgressText('Querying satellite data repositories...');
-    setGeneratedReport(null);
-
-    try {
-      setReportProgress(40);
-      setReportProgressText('Executing crop index calculations...');
-      const cert = await api.generateCertificate({
-        scope: targetPlot === 'WHOLE-FARM' ? 'Whole Farm (Aggregate)' : 'Plot-Level',
-        metric: targetIndex,
-        plot_id: targetPlot === 'WHOLE-FARM' ? null : targetPlot,
-      });
-      setReportProgress(80);
-      setReportProgressText('Compiling MRV compliance ledger...');
-      await new Promise(r => setTimeout(r, 500));
-      setReportProgress(100);
-      setReportProgressText('Report ready.');
-      await new Promise(r => setTimeout(r, 400));
-      setIsGeneratingReport(false);
-      const meanVal = (() => {
-        if (targetIndex === 'SOC' || targetIndex === 'AGB') return '—';
-        const key = targetIndex.toLowerCase();
-        const mean = TIMELINE_DATA.length > 0 ? (TIMELINE_DATA.reduce((s, t) => s + (t[key] ?? 0), 0) / TIMELINE_DATA.length) : null;
-        return mean !== null ? mean.toFixed(2) : '—';
-      })();
-      setGeneratedReport({
-        id: cert.certificate_id,
-        plot: targetPlot,
-        index: targetIndex,
-        date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-        meanVal,
-        status: 'Approved & Signed',
-        diagnosticSummary: cert.diagnostic_summary,
-      });
-    } catch (err) {
-      setIsGeneratingReport(false);
-      setReportProgress(0);
-      setReportProgressText('Report generation failed. Please try again.');
-    }
-  };
-
-  const triggerVerificationAudit = async () => {
-    // Real MRV audit from the backend — each check's outcome reflects actual
-    // plot data (boundary registry, EUDR record, measured NDVI/NDMI). No
-    // simulated always-success animation.
-    setIsVerifying(true);
-    setVerificationStatus('running');
-    const keys = ['boundary', 'forest', 'cover', 'moisture'];
-    setVerificationSteps(prev => {
-      const next = { ...prev };
-      keys.forEach(k => { next[k] = { ...next[k], status: 'scanning' }; });
-      return next;
-    });
-    try {
-      const audit = await api.fetchVerificationAudit(selectedVerifyPlot || undefined);
-      const backendChecks = audit?.checks || [];
-      const matchers = {
-        boundary: /boundary/i,
-        forest:   /deforestation|eudr/i,
-        cover:    /canopy|ndvi/i,
-        moisture: /water|ndmi|moisture/i,
-      };
-      setVerificationSteps(prev => {
-        const next = { ...prev };
-        keys.forEach(k => {
-          const found = backendChecks.find(c => matchers[k].test(c.name || ''));
-          if (found) {
-            const st = (found.status || '').toLowerCase();
-            next[k] = {
-              ...next[k],
-              status: st === 'pass' ? 'success' : st === 'warning' ? 'warning' : st === 'no data' ? 'nodata' : 'failed',
-              details: found.details || next[k].details,
-            };
-          } else {
-            next[k] = { ...next[k], status: 'nodata', details: 'No audit data returned for this check.' };
-          }
-        });
-        return next;
-      });
-      setVerificationStatus('completed');
-    } catch (err) {
-      console.error('Verification audit failed:', err);
-      setVerificationSteps(prev => {
-        const next = { ...prev };
-        keys.forEach(k => { next[k] = { ...next[k], status: 'failed', details: 'Audit request failed — backend unreachable.' }; });
-        return next;
-      });
-      setVerificationStatus('completed');
-    } finally {
-      setIsVerifying(false);
-    }
-  };
-
-  useEffect(() => {
-    setVerificationSteps({
-      boundary: { label: 'Boundary Integrity Check', status: 'idle', details: 'Verifying polygon shape match with cadastral registry' },
-      forest:   { label: 'Deforestation Compliance Check', status: 'idle', details: 'Scanning for canopy loss anomalies' },
-      cover:    { label: 'Canopy Density Standard', status: 'idle', details: 'Measuring active photosynthetic activity coverage' },
-      moisture: { label: 'Soil Water Index Target', status: 'idle', details: 'Assessing root-zone moisture anomalies' }
-    });
-    setVerificationStatus('idle');
-  }, [selectedVerifyPlot]);
 
   // Reset timeline selection to middle index when changing month/year
   useEffect(() => {
@@ -3199,7 +2529,7 @@ Context: ${context}.`;
       const result = await api.queryAiAgent(agentQuery);
       const reply = result?.response || "No response from AI agent.";
       setChatMessages(prev => [...prev, { sender: 'assistant', text: reply, sources: result?.sources }]);
-    } catch (err) {
+    } catch {
       setChatMessages(prev => [...prev, { sender: 'assistant', text: "Sorry, the AI assistant is unavailable right now. Please try again." }]);
     } finally {
       setChatLoading(false);
@@ -3261,46 +2591,10 @@ Context: ${context}.`;
 
   const togglePlay = () => setIsPlaying(p => !p);
 
-  const toggleUserStatus = (userId) => {
-    setSettingsUsers(prev => prev.map(u => u.id === userId ? { ...u, status: u.status === 'Active' ? 'Offline' : 'Active' } : u));
-  };
 
-  const deleteUser = (userId) => {
-    setSettingsUsers(prev => prev.filter(u => u.id !== userId));
-  };
 
-  const handleInviteSubmit = (e) => {
-    e.preventDefault();
-    if (!inviteName.trim() || !inviteEmail.trim()) return;
-    const initials = inviteName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'U';
-    const newUser = {
-      id: Date.now(),
-      name: inviteName,
-      email: inviteEmail,
-      role: inviteRole,
-      status: 'Active',
-      avatar: initials
-    };
-    setSettingsUsers(prev => [...prev, newUser]);
-    setInviteName('');
-    setInviteEmail('');
-    setInviteSuccess(true);
-    setTimeout(() => setInviteSuccess(false), 3000);
-  };
 
-  const handleConfigSave = () => {
-    setShowConfigSaved(true);
-    setTimeout(() => setShowConfigSaved(false), 3500);
-  };
 
-  const handleSupportSubmit = (e) => {
-    e.preventDefault();
-    if (!ticketSubject.trim() || !ticketMessage.trim()) return;
-    setShowSupportSubmitted(true);
-    setTicketSubject('');
-    setTicketMessage('');
-    setTimeout(() => setShowSupportSubmitted(false), 3500);
-  };
 
   const prevCalMonth = () => {
     if (calendarMonth === 0) { setCalendarMonth(11); setCalendarYear(y => y - 1); }
@@ -3317,19 +2611,6 @@ Context: ${context}.`;
   const calTrailing    = 42 - calFirstDay - calDaysInMonth;
 
   // ─── Health badge helper ────────────────────────────────────────────────
-  const HealthBadge = ({ health }) => {
-    const cfg = {
-      Optimal:  { bg: '#DCFCE7', color: '#15803D' },
-      Good:     { bg: '#DCFCE7', color: '#15803D' },
-      Moderate: { bg: '#FEF9C3', color: '#A16207' },
-      Stressed: { bg: '#FEE2E2', color: '#B91C1C' }
-    }[health] || { bg: '#F3F4F6', color: '#6B7280' };
-    return (
-      <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ backgroundColor: cfg.bg, color: cfg.color }}>
-        {health}
-      </span>
-    );
-  };
 
   return (
     <div className="h-screen flex flex-col bg-gray-50 text-gray-900 font-sans antialiased overflow-hidden">
@@ -5605,7 +4886,7 @@ Context: ${context}.`;
                     }])}
                     className="px-3.5 py-1.5 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 text-xs font-bold text-gray-700 transition-colors shadow-xs flex items-center gap-1.5"
                   >
-                    <Sliders size={13} className="text-green-700" />
+                    <SlidersHorizontal size={13} className="text-green-700" />
                     <span>Back to Scenario Modeller</span>
                   </button>
                 )}
