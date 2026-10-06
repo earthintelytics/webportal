@@ -130,6 +130,14 @@ export async function adminLogin(email, accessCode) {
   });
 }
 
+// ─── Team accounts (owners only) ─────────────────────────────────────────────
+
+export const fetchTeamAccounts = () => adminFetch('/team-accounts');
+export const createTeamAccount = (data) => adminFetch('/team-accounts', { method: 'POST', body: JSON.stringify(data) });
+export const updateTeamAccount = (id, data) => adminFetch(`/team-accounts/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
+export const newTeamAccountCode = (id) => adminFetch(`/team-accounts/${id}/new-code`, { method: 'POST' });
+export const deleteTeamAccount = (id) => adminFetch(`/team-accounts/${id}`, { method: 'DELETE' });
+
 // ─── Organizations ────────────────────────────────────────────────────────────
 
 export async function fetchOrganizations() {

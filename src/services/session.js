@@ -49,21 +49,39 @@ export function redirectToTenantSignIn() {
   window.location.href = tenant ? `/org/${encodeURIComponent(tenant)}/login${next}` : '/login';
 }
 
-/**
- * A usable team sign-in: a superadmin token issued for the team (aud "team")
- * and not expired. Tokens from before the access update have no audience and
- * are treated as signed out, so the person signs in again instead of seeing
- * "Forbidden".
- */
-export function hasValidTeamToken() {
+const teamClaims = () => {
   try {
     const token = localStorage.getItem('fi_admin_token');
-    if (!token) return false;
-    const p = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-    return p.role === 'superadmin' && p.aud === 'team' && (!p.exp || p.exp * 1000 > Date.now());
+    if (!token) return null;
+    return JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
   } catch {
-    return false;
+    return null;
   }
+};
+
+// FarmIntelytics team roles. "superadmin" tokens belong to the built-in owner.
+export const TEAM_ROLES = {
+  owner: { label: 'Owner', text: 'Everything, including team accounts and AI settings' },
+  operations: { label: 'Operations', text: 'Organisations, onboarding, farms, schedules, runs, map classes and client sign-ins' },
+  support: { label: 'Support', text: 'Can look at everything, cannot change anything' },
+};
+
+/**
+ * A usable team sign-in: a team token (aud "team") with a team role, not
+ * expired. Tokens from before the access update have no audience and are
+ * treated as signed out, so the person signs in again instead of seeing
+ * "Forbidden". The server re-checks the account on every request.
+ */
+export function hasValidTeamToken() {
+  const p = teamClaims();
+  return !!p && p.aud === 'team' && (p.role === 'superadmin' || p.role in TEAM_ROLES) && (!p.exp || p.exp * 1000 > Date.now());
+}
+
+/** owner | operations | support for the signed-in team member, or null. */
+export function teamRole() {
+  if (!hasValidTeamToken()) return null;
+  const r = teamClaims().role;
+  return r === 'superadmin' ? 'owner' : r;
 }
 
 /** The team sign-in was refused or is outdated: clear it and go to the team sign-in. */

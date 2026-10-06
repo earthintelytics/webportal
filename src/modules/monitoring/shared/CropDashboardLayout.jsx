@@ -3209,37 +3209,23 @@ Context: ${context}.`;
           ══════════════════════════════════════════════════════════════ */}
           {((isAiOnly && activeTab === 'ai-assistant') || (activeSidebarItem === 'analytics' && activeTab === 'ai-assistant')) && (
             <div className="flex flex-col flex-1 h-full bg-white overflow-hidden">
-              
-              {/* Header */}
-              <div className="px-8 py-3.5 border-b border-gray-100 flex items-center justify-between shrink-0 bg-white shadow-2xs">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-green-50 border border-green-200 flex items-center justify-center text-green-700">
-                    <Sparkles size={16} />
-                  </div>
-                  <div>
-                    <span className="text-sm font-bold text-gray-900">Farm AI advisor</span>
-                  </div>
-                </div>
-
-                {chatMessages.length > 1 && (
-                  <button
-                    onClick={() => setChatMessages([{
-                      sender: 'assistant',
-                      text: "Ask about your crop condition, water or weather, or choose a what-if scenario. Answers use your own monitoring data."
-                    }])}
-                    className="px-3.5 py-1.5 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 text-xs font-bold text-gray-700 transition-colors shadow-xs flex items-center gap-1.5"
-                  >
-                    <SlidersHorizontal size={13} className="text-green-700" />
-                    <span>Back to scenario modeller</span>
+              {/* In a conversation: one slim bar to start again (the page title is the header tab). */}
+              {chatMessages.length > 1 && (
+                <div className="px-6 py-3 border-b border-gray-100 flex items-center justify-between shrink-0">
+                  <span className="text-sm font-semibold text-gray-700">Conversation</span>
+                  <button type="button"
+                    onClick={() => setChatMessages([{ sender: 'assistant', text: "Ask about your crop condition, water or weather, or choose a what-if scenario. Answers use your own monitoring data." }])}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-gray-300 text-sm font-semibold text-gray-700 hover:bg-gray-50">
+                    <SlidersHorizontal size={14} className="text-green-700" />New question
                   </button>
-                )}
-              </div>
+                </div>
+              )}
 
               {/* Main Content Area */}
               <div className="flex-1 overflow-y-auto flex flex-col min-h-0 bg-gray-50/20">
                 {chatMessages.length === 1 ? (
-                  /* Landing Empty State (Plot layout) */
-                  <div className="flex-1 flex flex-col justify-center items-center px-6 py-10">
+                  /* Start page: what-ifs, scrolls from the top so nothing is cut off */
+                  <div className="w-full max-w-4xl mx-auto px-6 py-8">
                     <ScenarioBuilder
                       cropType={isOrg ? null : cropType}
                       serviceId={service?.id}
@@ -3256,7 +3242,7 @@ Context: ${context}.`;
                           <div className={`max-w-[85%] rounded-2xl text-sm leading-relaxed ${
                             msg.sender === 'user'
                               ? 'bg-green-700 text-white rounded-tr-none px-5 py-3.5'
-                              : 'bg-white border border-gray-150 text-gray-700 rounded-tl-none px-5 py-3.5'
+                              : 'bg-white border border-gray-200 text-gray-800 rounded-tl-none px-5 py-3.5'
                           }`}>
                             <div style={{ whiteSpace: 'pre-wrap' }}>{msg.text}</div>
                             {msg.sources && msg.sources.length > 0 && (
@@ -3271,7 +3257,7 @@ Context: ${context}.`;
                       ))}
                       {chatLoading && (
                         <div className="flex justify-start">
-                          <div className="bg-white border border-gray-150 rounded-2xl rounded-tl-none px-5 py-3.5 flex items-center gap-2 text-sm text-gray-600 font-medium">
+                          <div className="bg-white border border-gray-200 rounded-2xl rounded-tl-none px-5 py-3.5 flex items-center gap-2 text-sm text-gray-600" aria-label="The Assistant is writing">
                             <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                             <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
                             <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
@@ -3285,7 +3271,7 @@ Context: ${context}.`;
               </div>
 
               {/* Bottom Input Area */}
-              <div className="bg-white px-6 py-6 shrink-0">
+              <div className="bg-white px-6 py-4 border-t border-gray-100 shrink-0">
                 <div className="max-w-3xl mx-auto">
                   <form
                     onSubmit={(e) => { e.preventDefault(); handleChatSubmit(); }}
@@ -3302,12 +3288,14 @@ Context: ${context}.`;
                         }
                       }}
                       placeholder="Ask about your farm, e.g. Which blocks are short of water this month?"
-                      className="w-full bg-gray-50 border border-transparent focus:border-green-600 focus:bg-white rounded-2xl py-5 pl-6 pr-16 text-sm font-semibold outline-none transition-all text-gray-800 placeholder-gray-400 shadow-sm resize-none h-44 disabled:opacity-50"
+                      rows={3}
+                      aria-label="Your question"
+                      className="w-full bg-white border border-gray-300 focus:border-green-700 rounded-2xl py-3.5 pl-4 pr-16 text-sm outline-none text-gray-900 placeholder-gray-400 resize-none disabled:opacity-50"
                     />
                     <button
                       type="submit"
                       disabled={chatLoading}
-                      className="absolute right-4 bottom-4 w-11 h-11 bg-green-700 hover:bg-green-800 text-white rounded-xl flex items-center justify-center shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="absolute right-3 bottom-3 w-10 h-10 bg-green-700 hover:bg-green-800 text-white rounded-xl flex items-center justify-center shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
                       aria-label="Send"
                     >
                       <Send size={18} />

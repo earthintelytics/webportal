@@ -12,7 +12,7 @@ const TEAM_DEMOS = demoAccounts('team');
 const AdminLogin = ({ onSuccess = null, context = 'admin' }) => {
   const isHub = context === 'hub';
   const navigate = useNavigate();
-  const [email, setEmail] = useState('superadmin@farmintelytics.com');
+  const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [showCode, setShowCode] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -54,7 +54,7 @@ const AdminLogin = ({ onSuccess = null, context = 'admin' }) => {
         </div>
 
         <div className="bg-white rounded-2xl border border-[var(--border-light)] p-8 sm:p-10">
-          <p className="text-sm font-medium text-[var(--brand-primary)]">{isHub ? 'FarmIntelytics team' : 'Super-admin access'}</p>
+          <p className="text-sm font-medium text-[var(--brand-primary)]">FarmIntelytics team</p>
           <h2 className="font-display text-3xl font-semibold mt-1">Sign in</h2>
           <p className="text-sm text-[var(--text-muted)] mt-2">{isHub ? 'Internal access to every crop and organisation service.' : 'Manage organisations, farms, logins and schedules.'}</p>
 

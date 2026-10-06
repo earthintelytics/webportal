@@ -14,7 +14,8 @@ import {
   Users,
   Rocket,
   SlidersHorizontal,
-  Sparkles
+  Sparkles,
+  ShieldCheck
 } from 'lucide-react';
 
 import Onboarding from './pages/Onboarding';
@@ -27,17 +28,20 @@ import Inventory from './pages/Inventory';
 import UsersPage from './pages/Users';
 import AiSettings from './pages/AiSettings';
 import PipelineRuns from './pages/PipelineRuns';
-import { hasValidTeamToken, redirectToTeamSignIn } from '../services/session';
+import TeamAccounts from './pages/TeamAccounts';
+import { hasValidTeamToken, redirectToTeamSignIn, teamRole, TEAM_ROLES } from '../services/session';
 import { ConfirmProvider } from './components/ConfirmProvider';
 
 // Grouped by what the team is doing: setting clients up, running the
-// platform, or tuning how data is interpreted.
+// platform, or tuning how data is interpreted. `owner` pages are only for
+// team owners (the server refuses the others too).
 const NAV_GROUPS = [
   { label: 'Setup', items: [
     { id: 'onboarding',    label: 'Onboard organisation', icon: Rocket,    path: '/admin/onboarding' },
     { id: 'organizations', label: 'Organisations',        icon: Building2, path: '/admin/organizations' },
     { id: 'credentials',   label: 'Sign-in details',      icon: Key,       path: '/admin/credentials' },
-    { id: 'users',         label: 'User accounts',        icon: Users,     path: '/admin/users' },
+    { id: 'users',         label: 'User accounts',        icon: Users,     path: '/admin/users', owner: true },
+    { id: 'team',          label: 'Team accounts',        icon: ShieldCheck, path: '/admin/team', owner: true },
   ]},
   { label: 'Operations', items: [
     { id: 'scheduler',     label: 'Monitoring schedule',  icon: Clock,     path: '/admin/scheduler' },
@@ -47,7 +51,7 @@ const NAV_GROUPS = [
   ]},
   { label: 'Configuration', items: [
     { id: 'thresholds',    label: 'Map classes',          icon: SlidersHorizontal, path: '/admin/thresholds' },
-    { id: 'ai',            label: 'AI settings',          icon: Sparkles,  path: '/admin/ai' },
+    { id: 'ai',            label: 'AI settings',          icon: Sparkles,  path: '/admin/ai', owner: true },
   ]},
 ];
 const NAV_ITEMS = NAV_GROUPS.flatMap(g => g.items);
@@ -56,12 +60,19 @@ const AdminPortal = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [adminEmail, setAdminEmail] = useState('');
+  const adminEmail = localStorage.getItem('fi_admin_email') || '';
+  const role = teamRole();
+  const groups = NAV_GROUPS.map((g) => ({ ...g, items: g.items.filter((i) => !i.owner || role === 'owner') })).filter((g) => g.items.length);
+  const ownerOnly = (el) => (role === 'owner' ? el : (
+    <div className="max-w-xl mx-auto px-6 py-16 text-center">
+      <h1 className="font-display text-2xl font-semibold text-gray-900">Only team owners can open this page</h1>
+      <p className="text-sm text-gray-500 mt-2">Your role is {TEAM_ROLES[role]?.label || 'not set'}. Ask a team owner if you need it.</p>
+    </div>
+  ));
 
   useEffect(() => {
     // An outdated or missing team sign-in goes to the sign-in page, not to "Forbidden".
-    if (!hasValidTeamToken()) { redirectToTeamSignIn(); return; }
-    setAdminEmail(localStorage.getItem('fi_admin_email') || 'superadmin');
+    if (!hasValidTeamToken()) redirectToTeamSignIn();
   }, [navigate]);
 
   const handleSignOut = () => {
@@ -91,7 +102,7 @@ const AdminPortal = () => {
         </div>
 
         <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
-          {NAV_GROUPS.map(group => (
+          {groups.map(group => (
             <div key={group.label}>
               {sidebarOpen && <p className="px-3 mb-2 text-xs font-medium text-gray-400">{group.label}</p>}
               <div className="space-y-0.5">
@@ -103,7 +114,7 @@ const AdminPortal = () => {
                       onClick={() => navigate(item.path)}
                       title={!sidebarOpen ? item.label : undefined}
                       className={`w-full flex items-center gap-3 rounded-[10px] text-sm transition-colors ${sidebarOpen ? 'px-3 py-2' : 'justify-center py-2.5'} ${
-                        active ? 'bg-emerald-50 text-emerald-800 font-medium' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        active ? 'bg-green-50 text-green-800 font-medium' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                       }`}
                     >
                       <item.icon size={17} className={`shrink-0 ${active ? 'text-[var(--brand-primary)]' : ''}`} />
@@ -121,6 +132,7 @@ const AdminPortal = () => {
             <div className="px-3 py-2">
               <p className="text-xs text-gray-400">Signed in as</p>
               <p className="text-sm text-gray-700 truncate">{adminEmail}</p>
+              {role && <p className="text-xs font-medium text-green-800 mt-0.5">{TEAM_ROLES[role].label}</p>}
             </div>
           )}
           <button onClick={() => navigate('/')} title="Platform hub"
@@ -152,18 +164,22 @@ const AdminPortal = () => {
           </>}
         </header>
 
+        {role === 'support' && (
+          <p className="shrink-0 px-8 py-2 bg-amber-50 border-b border-amber-200 text-sm text-amber-900">Support access: you can look at everything, but changes will be refused.</p>
+        )}
         <main className="flex-1 overflow-auto">
           <Routes>
             <Route index element={<Navigate to="organizations" replace />} />
             <Route path="onboarding"    element={<Onboarding />} />
-            <Route path="users"         element={<UsersPage />} />
+            <Route path="users"         element={ownerOnly(<UsersPage />)} />
+            <Route path="team"          element={ownerOnly(<TeamAccounts />)} />
             <Route path="organizations" element={<Organizations />} />
             <Route path="inventory"     element={<Inventory />} />
             <Route path="credentials"   element={<Credentials />} />
             <Route path="scheduler"     element={<Scheduler />} />
             <Route path="runs"          element={<PipelineRuns />} />
             <Route path="thresholds"    element={<CropThresholds />} />
-            <Route path="ai"            element={<AiSettings />} />
+            <Route path="ai"            element={ownerOnly(<AiSettings />)} />
             <Route path="logs"          element={<Logs />} />
           </Routes>
         </main>
