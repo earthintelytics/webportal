@@ -5,7 +5,7 @@ import {
 import { login, fetchCropMonitoringConfig } from '../services/organizationMonitorApi';
 import ForgotPasswordModal from '../components/ForgotPasswordModal';
 import { HERO_PLACEHOLDERS } from '../constants/heroPlaceholders';
-import { clearStoredAccounts } from '../services/session';
+import { clearTenantAccount } from '../services/session';
 import { demoAccounts } from '../constants/demoAccounts';
 
 // ─── Crop & Subapp Design System Registry (Clean Light Theme) ────────────────
@@ -306,7 +306,8 @@ const Login = ({ onLogin, moduleId, onBack, defaultEmail = '', defaultCode = '' 
       const response = await login(email, accessCode);
       if (response.status === 'success' && response.token && response.tenant) {
         // Explicitly clear any previous session data for 100% portal isolation
-        clearStoredAccounts();
+        // Replace any previous client account; a team login stays signed in.
+        clearTenantAccount();
 
         localStorage.setItem('fi_token', response.token);
         localStorage.setItem('fi_email', response.email);

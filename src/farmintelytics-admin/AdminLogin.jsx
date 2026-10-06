@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, Mail, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { adminLogin } from '../services/adminApi';
-import { clearStoredAccounts } from '../services/session';
+import { clearTeamAccount } from '../services/session';
 import { demoAccounts } from '../constants/demoAccounts';
 
 const TEAM_DEMOS = demoAccounts('team');
@@ -26,7 +26,7 @@ const AdminLogin = ({ onSuccess = null, context = 'admin' }) => {
       const res = await adminLogin(email, code);
       if (res.status === 'success' && res.token) {
         // Clear any previous tenant session data for complete isolation
-        clearStoredAccounts();
+        clearTeamAccount();
 
         localStorage.setItem('fi_admin_token', res.token);
         localStorage.setItem('fi_admin_email', res.email);

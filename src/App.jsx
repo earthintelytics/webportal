@@ -127,6 +127,7 @@ const hasTenantSession = () => {
 
 const HubPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [teamSignedIn, setTeamSignedIn] = useState(hasValidTeamSession);
   const [tenantSignedIn, setTenantSignedIn] = useState(hasTenantSession);
 
@@ -151,15 +152,17 @@ const HubPage = () => {
     navigate('/login');
   };
 
-  // If authenticated as tenant operator/enterprise user, show their custom Tenant Hub
-  if (tenantSignedIn) {
-    return <TenantHub onSelectModule={handleSelectModule} onSignOut={handleTenantSignOut} />;
+  // "/" is the team hub; "/tenant/hub" is the client's own hub. A team member
+  // who also signed in to a client account keeps the team hub at "/".
+  const isClientHub = location.pathname.startsWith('/tenant');
+  const teamHub = <PortalHub onSelectModule={handleSelectModule} onSignOut={handleTeamSignOut} onOpenAdmin={() => navigate('/admin/organizations')} />;
+  const clientHub = <TenantHub onSelectModule={handleSelectModule} onSignOut={handleTenantSignOut} />;
+  if (isClientHub) {
+    if (tenantSignedIn) return clientHub;
+    return teamSignedIn ? <Navigate to="/" replace /> : <Navigate to="/login" replace />;
   }
-
-  // If authenticated as super-admin team member, show the complete platform hub
-  if (teamSignedIn) {
-    return <PortalHub onSelectModule={handleSelectModule} onSignOut={handleTeamSignOut} onOpenAdmin={() => navigate('/admin/organizations')} />;
-  }
+  if (teamSignedIn) return teamHub;
+  if (tenantSignedIn) return <Navigate to="/tenant/hub" replace />;
 
   // Otherwise prompt admin login or redirect to login
   return <AdminLogin context="hub" onSuccess={() => setTeamSignedIn(true)} />;
@@ -206,7 +209,7 @@ const LoginPage = () => {
   };
 
   const cameFromHub = hasValidTeamSession() || hasTenantSession() || sessionStorage.getItem('fi_from_hub') === '1';
-  const handleBack = (RESTRICTED_MODULE || ((directTenant || directModule) && !cameFromHub)) ? null : () => navigate('/tenant/hub');
+  const handleBack = (RESTRICTED_MODULE || ((directTenant || directModule) && !cameFromHub)) ? null : () => navigate(hasValidTeamSession() ? '/' : '/tenant/hub');
 
   return (
     <Login
@@ -251,8 +254,10 @@ const PortalPage = () => {
     navigate(`/login?module=${encodeURIComponent(moduleId || '')}`);
   };
   // Smallholder services go back to the Smallholder hub; everything else to the hub.
+  // Back goes to where the user came from: a Smallholder service to the
+  // Smallholder hub, the team to the team hub, a client to its own hub.
   const handleBackToHub = () => navigate(
-    SMALLHOLDER_SERVICES.includes(moduleId) ? '/portal/smallholder-hub' : hasTenantSession() ? '/tenant/hub' : '/',
+    SMALLHOLDER_SERVICES.includes(moduleId) ? '/portal/smallholder-hub' : hasValidTeamSession() ? '/' : '/tenant/hub',
   );
 
   if (!moduleId) return <Navigate to="/" replace />;
@@ -271,8 +276,11 @@ const PortalPage = () => {
     return <PortalMessage title="Not available" text="This link does not open a FarmIntelytics service." action={exitAction} />;
   }
 
-  // No session at all: sign in to this service first.
-  if (!team && !hasTenantSession()) {
+  // Every service except the team-only tools shows a client's data, so it
+  // needs a client sign-in (the team signs in with a client account, e.g. the
+  // demo account). Go straight to that service's sign-in instead of opening
+  // the page and bouncing out of it.
+  if (!hasTenantSession() && !(team && mod.teamOnly)) {
     return <Navigate to={`/login?module=${encodeURIComponent(moduleId)}`} replace />;
   }
 

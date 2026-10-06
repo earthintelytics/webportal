@@ -26,6 +26,14 @@ export function clearTeamSession() {
 
 /** Before a new sign-in: no account data from a previous user survives (the
  *  module being opened, in sessionStorage, is kept). */
+export function clearTenantAccount() {
+  TENANT_KEYS.forEach((k) => localStorage.removeItem(k));
+}
+
+export function clearTeamAccount() {
+  TEAM_KEYS.forEach((k) => localStorage.removeItem(k));
+}
+
 export function clearStoredAccounts() {
   [...TENANT_KEYS, ...TEAM_KEYS].forEach((k) => localStorage.removeItem(k));
 }
