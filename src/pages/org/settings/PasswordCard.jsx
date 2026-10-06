@@ -3,7 +3,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { Card, CardHeader, Button, Field, Note } from '../../../farmintelytics-admin/components/ui';
 import { inputCls } from '../../../farmintelytics-admin/components/formHelpers';
 import { changePassword } from '../../../services/authApi';
-import { roleLabel } from '../orgProfile';
+import { ROLES, roleLabel } from '../orgProfile';
 
 const Secret = ({ value, onChange, autoComplete }) => {
   const [show, setShow] = useState(false);
@@ -17,7 +17,7 @@ const Secret = ({ value, onChange, autoComplete }) => {
   );
 };
 
-/** The signed-in person's own account and password. */
+/** The signed-in person's own account: who they are, their role, and their password. */
 const PasswordCard = ({ profile }) => {
   const [f, setF] = useState({ current: '', next: '', confirm: '' });
   const [busy, setBusy] = useState(false);
@@ -43,9 +43,19 @@ const PasswordCard = ({ profile }) => {
     }
   };
 
+  const role = ROLES.find((r) => r.id === profile.role);
   return (
+    <>
     <Card>
-      <CardHeader title="Your account" text={`${profile.email} · ${roleLabel(profile.role)}`} />
+      <CardHeader title="Your account" text="Who you are signed in as." />
+      <dl className="p-6 grid grid-cols-1 sm:grid-cols-3 gap-5 text-sm">
+        <div><dt className="text-gray-500">Name</dt><dd className="mt-1 font-semibold text-gray-900">{profile.fullName || 'Not set'}</dd></div>
+        <div><dt className="text-gray-500">Email</dt><dd className="mt-1 font-semibold text-gray-900 break-all">{profile.email}</dd></div>
+        <div><dt className="text-gray-500">Role</dt><dd className="mt-1 font-semibold text-gray-900">{roleLabel(profile.role)}</dd>{role && <dd className="text-xs text-gray-500 mt-0.5">{role.text}</dd>}</div>
+      </dl>
+    </Card>
+    <Card>
+      <CardHeader title="Password" text="Change the password you sign in with." />
       <form onSubmit={submit} className="p-6 space-y-5 max-w-2xl">
         <Field label="Current password"><Secret value={f.current} onChange={set('current')} autoComplete="current-password" /></Field>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -56,6 +66,7 @@ const PasswordCard = ({ profile }) => {
         <div className="flex justify-end"><Button type="submit" disabled={busy}>{busy ? 'Saving…' : 'Change password'}</Button></div>
       </form>
     </Card>
+    </>
   );
 };
 

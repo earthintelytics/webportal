@@ -90,9 +90,10 @@ import { clearTenantSession, clearTeamSession, hasValidTeamToken } from './servi
 // service) or an authenticated tenant's personalized multi-service launchpad.
 const hasValidTeamSession = hasValidTeamToken;
 
-// The hub to go back to: the one the service was opened from; otherwise the
-// organisation's hub for a client and the team hub for the team.
-const backHub = (tenant) => sessionStorage.getItem('fi_hub') || (tenant ? paths.orgHub(tenant) : '/');
+// "Back to hub" on an organisation's page always means that organisation's
+// own hub, never the FarmIntelytics team hub or the admin console. Team-only
+// tools (/tools/<id>) go back to the team hub.
+const backHub = (tenant) => (tenant ? paths.orgHub(tenant) : '/');
 
 // "/" is the team hub. A client who lands here goes to its own hub.
 const HubPage = () => {
@@ -107,8 +108,6 @@ const HubPage = () => {
       navigate(sessionTenant() === org ? paths.orgHub(org) : paths.orgLogin(org));
       return;
     }
-    sessionStorage.setItem('fi_from_hub', '1');
-    sessionStorage.setItem('fi_hub', '/');
     navigate(paths.service(id, sessionTenant()));
   };
 
@@ -171,17 +170,19 @@ const LoginPage = () => {
   const handleLogin = () => {
     const tenant = sessionTenant();
     if (!tenant) return;
-    sessionStorage.setItem('fi_hub', paths.orgHub(tenant));
     navigate(moduleId ? paths.service(moduleId, tenant) : paths.orgHub(tenant), { replace: true });
   };
 
-  const cameFromHub = hasValidTeamSession() || sessionStorage.getItem('fi_from_hub') === '1';
-  const handleBack = (RESTRICTED_MODULE || !cameFromHub) ? null : () => navigate(sessionStorage.getItem('fi_hub') || '/');
+  // Back to the organisation's hub only for someone already signed in to
+  // this organisation; nobody is sent to another hub from a sign-in page.
+  const hasOrgAccess = !!urlTenant && sessionTenant() === urlTenant;
+  const handleBack = (RESTRICTED_MODULE || !hasOrgAccess) ? null : () => navigate(paths.orgHub(urlTenant));
 
   return (
     <Login
       onLogin={handleLogin}
       moduleId={moduleId}
+      tenant={urlTenant || null}
       moduleName={moduleDisplayName(moduleId) || moduleId}
       onBack={handleBack}
     />

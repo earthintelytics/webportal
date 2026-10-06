@@ -998,7 +998,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
     const activeBasemapObj = BASEMAPS.find(b => b.id === selectedBasemap) || BASEMAPS[0];
 
     return (
-      <div className="absolute top-4 left-4" style={{ zIndex: 40000 }} ref={basemapDropdownRef}>
+      <div className="absolute top-4 left-4 z-[1000]" ref={basemapDropdownRef}>
         <button
           onClick={() => setShowBasemapDropdown(!showBasemapDropdown)}
           className="bg-white border border-gray-200 px-2 py-1.5 rounded-sm shadow-md hover:bg-gray-55 flex items-center gap-1.5 font-bold text-[11px] text-gray-700 transition-all active:scale-95"
@@ -1036,8 +1036,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
                 >
                   <span className="text-[11px] font-bold text-gray-700">Show place names</span>
                   <span
-                    className="w-7 h-4 rounded-full p-0.5 transition-colors duration-200 shrink-0"
-                    style={{ backgroundColor: showGoogleLabels ? '#16A34A' : '#E5E7EB' }}
+                    className={`w-7 h-4 rounded-full p-0.5 transition-colors duration-200 shrink-0 ${showGoogleLabels ? 'bg-green-600' : 'bg-gray-300'}`}
                   >
                     <span className={`block w-3 h-3 rounded-full bg-white shadow transform transition-transform duration-200 ${showGoogleLabels ? 'translate-x-3' : 'translate-x-0'}`} />
                   </span>
@@ -1073,13 +1072,6 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
 
 
   // Land Restoration new layers states
-  const [restoreShowInSar, setRestoreShowInSar] = useState(false);
-  const [restoreShowGedi, setRestoreShowGedi] = useState(false);
-  const [restoreShowLulc, setRestoreShowLulc] = useState(false);
-  const [restoreShowEudr, setRestoreShowEudr] = useState(false);
-  const [restoreLulcExpanded, setRestoreLulcExpanded] = useState(true);
-  const [restoreEudrExpanded, setRestoreEudrExpanded] = useState(true);
-  const [restoreShowLulcChange, setRestoreShowLulcChange] = useState(false);
 
 
   // Alerts Command Center redesigned states
@@ -1091,11 +1083,8 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
   // Crop Health missing layers states
 
   // Climate missing layers states
-  const [climateShowFlood, setClimateShowFlood] = useState(false);
-  const climateFloodOpacity = 80;
 
   // Land Restoration missing layers states
-  const [restoreShowAgb, setRestoreShowAgb] = useState(false);
 
   // Land Restoration states
 
@@ -1134,7 +1123,6 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
   const [moistureShowLayers, setMoistureShowLayers] = useState(true);
   const [moistureShowBoundaries, setMoistureShowBoundaries] = useState(true);
   const [moistureBoundariesOpacity, setMoistureBoundariesOpacity] = useState(100);
-  const [moistureOpExpanded, setMoistureOpExpanded] = useState(true);
 
   // The signed-in person, read-only here; it is changed at /org/<tenant>/settings.
   const profileEmail = localStorage.getItem('fi_email') || '';
@@ -1144,7 +1132,6 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
   const [showNotifications, setShowNotifications] = useState(false);
 
   // Collapsible sidebar section groups states (collapsed/false by default)
-  const [intelOpExpanded, setIntelOpExpanded] = useState(false);
 
   // Crop legend cards: which index legends are manually expanded
   // (the index currently rendered on the map is always expanded)
@@ -1248,7 +1235,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
           else { setSelectedIndex(entry.key); setShowRasterLayer(true); }
         };
         return (
-          <div key={entry.key} className={`border rounded-xl p-3.5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-2.5 ${isOnMap ? 'border-green-300 ring-1 ring-green-100' : 'border-gray-100'} ${!entry.hasData ? 'opacity-60' : ''}`}>
+          <div key={entry.key} className={`border rounded-xl p-3.5 bg-white space-y-2.5 ${isOnMap ? 'border-green-300 ring-1 ring-green-100' : 'border-gray-100'} ${!entry.hasData ? 'opacity-60' : ''}`}>
             <div className="flex items-center justify-between">
               <div onClick={() => toggleLegendKey(entry.key)} style={{ cursor: 'pointer' }}>
                 <div className="text-xs font-bold text-gray-700 leading-tight flex items-center gap-1.5">
@@ -1344,18 +1331,9 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
     );
   };
 
-  const [healthOpExpanded, setHealthOpExpanded] = useState(false);
 
-  const [yieldOpExpanded, setYieldOpExpanded] = useState(false);
-  const [yieldProdExpanded, setYieldProdExpanded] = useState(false);
-  const [yieldStatExpanded, setYieldStatExpanded] = useState(false);
 
-  const [restoreOpExpanded, setRestoreOpExpanded] = useState(false);
-  const [restoreEcoExpanded, setRestoreEcoExpanded] = useState(false);
 
-  const [climateOpExpanded, setClimateOpExpanded] = useState(false);
-  const [climateBioExpanded, setClimateBioExpanded] = useState(false);
-  const [climateAtmExpanded, setClimateAtmExpanded] = useState(false);
 
 
 
@@ -1385,10 +1363,6 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
   const [yieldShowLayers, setYieldShowLayers] = useState(true);
   const [yieldShowBoundaries, setYieldShowBoundaries] = useState(true);
   const [yieldBoundariesOpacity, setYieldBoundariesOpacity] = useState(100);
-  const [yieldShowYield, setYieldShowYield] = useState(true);
-  const [yieldShowBiomass, setYieldShowBiomass] = useState(false);
-  const [yieldShowReadiness, setYieldShowReadiness] = useState(false);
-  const [yieldShowGrowth, setYieldShowGrowth] = useState(false);
 
   const getYieldPlotStyleOutline = () => ({
     color: yieldShowBoundaries ? '#000000' : 'transparent',
@@ -1403,14 +1377,6 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
   const [climateShowLayers, setClimateShowLayers] = useState(true);
   const [climateShowBoundaries, setClimateShowBoundaries] = useState(true);
   const [climateBoundariesOpacity, setClimateBoundariesOpacity] = useState(100);
-  const [climateShowRainfall, setClimateShowRainfall] = useState(true);
-  const climateRainfallOpacity = 80;
-  const [climateShowSoilTemp, setClimateShowSoilTemp] = useState(false);
-  const climateSoilTempOpacity = 70;
-  const [climateShowLst, setClimateShowLst] = useState(false);
-  const climateLstOpacity = 70;
-  const [climateShowVaporDeficit, setClimateShowVaporDeficit] = useState(false);
-  const climateVaporDeficitOpacity = 70;
 
   const getClimatePlotStyleOutline = () => ({
     color: climateShowBoundaries ? '#000000' : 'transparent',
@@ -1420,58 +1386,11 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
     fillOpacity: 0
   });
 
-  const getClimatePlotStyleFill = (plot, layer) => {
-    let fillColor = 'transparent';
-    let fillOpacity = 0;
-
-    if (layer === 'vpd') {
-      const val = plot.vpd;
-      if (val != null) {
-        fillColor = val > 2.2 ? '#ef4444' : val > 1.5 ? '#f97316' : '#10b981';
-        fillOpacity = climateVaporDeficitOpacity / 100;
-      }
-    } else if (layer === 'lst') {
-      const val = plot.lst;
-      if (val != null) {
-        fillColor = classColour(val, 'heat', cropType) || 'transparent';
-        fillOpacity = climateLstOpacity / 100;
-      }
-    } else if (layer === 'soilTemp') {
-      const val = plot.soilTemp;
-      if (val != null) {
-        fillColor = val > 29 ? '#ef4444' : val > 25 ? '#f97316' : '#10b981';
-        fillOpacity = climateSoilTempOpacity / 100;
-      }
-    } else if (layer === 'rainfall') {
-      const val = plot.rainfall;
-      if (val != null) {
-        fillColor = classColour(val, 'rain', cropType) || 'transparent';
-        fillOpacity = climateRainfallOpacity / 100;
-      }
-    } else if (layer === 'flood') {
-      if (plot.indices?.flood_risk != null) {
-        fillColor = plot.indices.flood_risk > 0.5 ? '#1e3a8a' : 'transparent';
-        fillOpacity = plot.indices.flood_risk > 0.5 ? climateFloodOpacity / 100 : 0;
-      }
-    }
-
-    return {
-      color: 'transparent',
-      weight: 0,
-      opacity: 0,
-      fillColor: fillColor,
-      fillOpacity: fillOpacity
-    };
-  };
 
   // Land Restoration map layers states
   const [restoreShowLayers, setRestoreShowLayers] = useState(true);
   const [restoreShowBoundaries, setRestoreShowBoundaries] = useState(true);
   const [restoreBoundariesOpacity, setRestoreBoundariesOpacity] = useState(100);
-  const [restoreShowProgress, setRestoreShowProgress] = useState(true);
-  const [restoreShowSurvival, setRestoreShowSurvival] = useState(false);
-  const [restoreShowCarbon, setRestoreShowCarbon] = useState(false);
-  const [restoreShowBiodiversity, setRestoreShowBiodiversity] = useState(false);
 
   // Layer independent toggle handlers for each page (allowing concurrent layers)
 
@@ -1557,70 +1476,40 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
     });
   };
 
-  const renderYieldPolygons = (plots) => {
-    return plots.map(plot => {
-      const keyPrefix = `${plot.id}`;
-      return (
-        <React.Fragment key={keyPrefix}>
-          {yieldShowBoundaries && (
-            <Polygon
-              positions={plot.coords}
-              pathOptions={getYieldPlotStyleOutline()}
-              eventHandlers={{ click: (e) => handlePlotClick(plot, e.latlng.lat, e.latlng.lng) }}
-            />
-          )}
-        </React.Fragment>
-      );
-    });
+  // A block or zone filled by the "Colour by" choice of its map page, with
+  // the same classes as the panel's legend (dashboard/legends/layerLegends.js).
+  const colouredPolygon = (key, coords, value, layer, opacity, onClick) => {
+    const colour = classColour(value, layer, cropType);
+    if (!colour || !coords?.length) return null;
+    return <Polygon key={key} positions={coords} pathOptions={{ color: colour, weight: 1, fillColor: colour, fillOpacity: opacity / 100 }} eventHandlers={onClick ? { click: onClick } : undefined} />;
   };
 
-  const renderRestorePolygons = (zones) => {
-    return zones.map(zone => {
-      const keyPrefix = `${zone.id}`;
-      return (
-        <React.Fragment key={keyPrefix}>
-          {restoreShowBoundaries && (
-            <Polygon
-              positions={zone.coords}
-              pathOptions={getRestorePlotStyleOutline()}
-            />
-          )}
-        </React.Fragment>
-      );
-    });
-  };
+  const renderYieldPolygons = (plots, suffix = '', colourBy = null) => plots.map(plot => (
+    <React.Fragment key={`${plot.id}${suffix}`}>
+      {colourBy === 'yield' && colouredPolygon(`${plot.id}-yield${suffix}`, plot.coords, plot.yieldValue, 'yield', 70, (e) => handlePlotClick(plot, e.latlng.lat, e.latlng.lng))}
+      {yieldShowBoundaries && (
+        <Polygon positions={plot.coords} pathOptions={getYieldPlotStyleOutline()} eventHandlers={{ click: (e) => handlePlotClick(plot, e.latlng.lat, e.latlng.lng) }} />
+      )}
+    </React.Fragment>
+  ));
 
-  const renderClimatePolygons = (plots, suffix = '') => {
-    const activeLayers = [
-      climateShowRainfall && 'rainfall',
-      climateShowSoilTemp && 'soilTemp',
-      climateShowLst && 'lst',
-      climateShowVaporDeficit && 'vpd',
-      climateShowFlood && 'flood',
-    ].filter(Boolean);
-    return plots.map(plot => {
-      const keyPrefix = `${plot.id}`;
-      return (
-        <React.Fragment key={keyPrefix}>
-          {activeLayers.map(layer => (
-            <Polygon
-              key={`${keyPrefix}-${layer}${suffix ? '-' + suffix : ''}`}
-              positions={plot.coords}
-              pathOptions={getClimatePlotStyleFill(plot, layer)}
-              eventHandlers={{ click: (e) => handlePlotClick(plot, e.latlng.lat, e.latlng.lng) }}
-            />
-          ))}
-          {climateShowBoundaries && (
-            <Polygon
-              positions={plot.coords}
-              pathOptions={getClimatePlotStyleOutline()}
-              eventHandlers={{ click: (e) => handlePlotClick(plot, e.latlng.lat, e.latlng.lng) }}
-            />
-          )}
-        </React.Fragment>
-      );
-    });
-  };
+  const RESTORE_VALUE = { restoration_progress: 'progress', survival: 'survivalNum', carbon: 'carbonPerHa' };
+  const renderRestorePolygons = (zones, suffix = '', colourBy = null) => zones.map(zone => (
+    <React.Fragment key={`${zone.id}${suffix}`}>
+      {colourBy && colouredPolygon(`${zone.id}-${colourBy}${suffix}`, zone.coords, zone[RESTORE_VALUE[colourBy]], colourBy, 70)}
+      {restoreShowBoundaries && <Polygon positions={zone.coords} pathOptions={getRestorePlotStyleOutline()} />}
+    </React.Fragment>
+  ));
+
+  const CLIMATE_VALUE = { rain: 'rainfall', heat: 'lst' };
+  const renderClimatePolygons = (plots, suffix = '', colourBy = null) => plots.map(plot => (
+    <React.Fragment key={`${plot.id}${suffix}`}>
+      {colourBy && colouredPolygon(`${plot.id}-${colourBy}${suffix}`, plot.coords, plot[CLIMATE_VALUE[colourBy]], colourBy, 70, (e) => handlePlotClick(plot, e.latlng.lat, e.latlng.lng))}
+      {climateShowBoundaries && (
+        <Polygon positions={plot.coords} pathOptions={getClimatePlotStyleOutline()} eventHandlers={{ click: (e) => handlePlotClick(plot, e.latlng.lat, e.latlng.lng) }} />
+      )}
+    </React.Fragment>
+  ));
 
   const handleEstateChange = (val) => {
     setFilterEstate(val);
@@ -1698,7 +1587,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
         return {
           id: p.plot_id,
           name: p.name || p.plot_id,
-          area: `${p.area_ha || 10.0} HA`,
+          area: p.area_ha != null ? `${p.area_ha} ha` : null,
           health: healthVal,
           ndvi: ndviVal,
           savi: p.indices?.savi ?? null,
@@ -1728,7 +1617,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
         return {
           id: p.plot_id,
           name: p.name || p.plot_id,
-          area: `${p.area_ha || 10.0} HA`,
+          area: p.area_ha != null ? `${p.area_ha} ha` : null,
           health: healthVal,
           ndvi: ndviVal,
           savi: p.indices?.savi ?? null,
@@ -1779,7 +1668,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
         return {
           id: p.plot_id,
           name: p.name || p.plot_id,
-          area: `${p.area_ha || 10.0} HA`,
+          area: p.area_ha != null ? `${p.area_ha} ha` : null,
           ndmi: ndmiVal,
           ndwi: ndwiVal,
           lswi: lswiVal,
@@ -1828,7 +1717,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
         return {
           id: p.plot_id,
           name: p.name || p.plot_id,
-          area: `${p.area_ha || 10.0} HA`,
+          area: p.area_ha != null ? `${p.area_ha} ha` : null,
           ndmi: ndmiVal,
           ndwi: ndwiVal,
           lswi: lswiVal,
@@ -1855,19 +1744,13 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
         } else {
           coords = [];
         }
-        const ndviVal = p.indices?.ndvi ?? 0;
         return {
           id: p.plot_id,
           name: p.name || p.plot_id,
-          area: `${p.area_ha || 10.0} HA`,
-          yieldValue: null,
-          biomass: null,
-          readiness: Math.min(100, Math.round(ndviVal * 115)),
-          growth: parseFloat(ndviVal.toFixed(2)),
-          coords,
-          predAccuracy: null,
-          predictedYield: null,
-          yieldStatus: ndviVal > 0.6 ? 'Optimal (On Track)' : 'Underperforming (Water Stress)'
+          area: p.area_ha != null ? `${p.area_ha} ha` : null,
+          // From harvest records (Farm data); empty until they are uploaded.
+          yieldValue: p.yield_t_ha ?? null,
+          coords
         };
       });
     }
@@ -1883,19 +1766,13 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
         } else {
           coords = [];
         }
-        const ndviVal = p.indices?.ndvi ?? 0;
         return {
           id: p.plot_id,
           name: p.name || p.plot_id,
-          area: `${p.area_ha || 10.0} HA`,
-          yieldValue: null,
-          biomass: null,
-          readiness: Math.min(100, Math.round(ndviVal * 115)),
-          growth: parseFloat(ndviVal.toFixed(2)),
-          coords,
-          predAccuracy: null,
-          predictedYield: null,
-          yieldStatus: ndviVal > 0.6 ? 'Optimal (On Track)' : 'Underperforming (Water Stress)'
+          area: p.area_ha != null ? `${p.area_ha} ha` : null,
+          // From harvest records (Farm data); empty until they are uploaded.
+          yieldValue: p.yield_t_ha ?? null,
+          coords
         };
       });
     }
@@ -1913,19 +1790,15 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
         } else {
           coords = [];
         }
-        // Only LST has a real per-plot source (Landsat thermal band, via
-        // /plots/telemetry). Soil temp/rainfall/VPD have no real per-plot
-        // measurement anywhere in the pipeline, so they stay null rather
-        // than being invented.
+        // Rain and surface heat per block from /plots/telemetry; null when
+        // the run had no reading, never invented.
         const telemetry = (plotsTelemetry || []).find(t => t.plot_id === p.plot_id);
         return {
           id: p.plot_id,
           name: p.name || p.plot_id,
-          area: `${p.area_ha || 10.0} HA`,
+          area: p.area_ha != null ? `${p.area_ha} ha` : null,
           rainfall: telemetry?.rainfall_mm ?? null,
-          soilTemp: telemetry?.soil_temp_celsius ?? null,
           lst: telemetry?.surface_lst_celsius ?? null,
-          vpd: telemetry?.vpd_kpa ?? null,
           coords
         };
       });
@@ -1946,11 +1819,9 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
         return {
           id: p.plot_id,
           name: p.name || p.plot_id,
-          area: `${p.area_ha || 10.0} HA`,
+          area: p.area_ha != null ? `${p.area_ha} ha` : null,
           rainfall: telemetry?.rainfall_mm ?? null,
-          soilTemp: telemetry?.soil_temp_celsius ?? null,
           lst: telemetry?.surface_lst_celsius ?? null,
-          vpd: telemetry?.vpd_kpa ?? null,
           coords
         };
       });
@@ -1972,22 +1843,17 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
         return {
           id: z.zone_id,
           name: z.name,
-          area: `${z.area_ha ?? 6.0} HA`,
+          area: z.area_ha != null ? `${z.area_ha} ha` : null,
+          carbonPerHa: z.carbon_offset_tco2e != null && z.area_ha ? z.carbon_offset_tco2e / z.area_ha : null,
           type: z.project_type ?? null,
           progress: z.progress_pct ?? null,
           survival: z.survival_rate_pct != null ? `${z.survival_rate_pct}%` : '—',
           trees: z.tree_count != null ? z.tree_count.toLocaleString() : '—',
           carbon: z.carbon_offset_tco2e != null ? `${z.carbon_offset_tco2e} tCO2e` : '—',
-          status: z.progress_pct != null ? (z.progress_pct > 80 ? 'Optimal Growth' : 'Active Care') : '—',
-          color: z.progress_pct != null ? (z.progress_pct > 80 ? '#16A34A' : '#EAB308') : '#9CA3AF',
+          status: z.status ?? null,
           coords,
           manager: z.manager ?? null,
-          survivalNum: z.survival_rate_pct ?? null,
-          insar: z.biodiversity_score != null ? z.biodiversity_score / 100 : null,
-          gedi: null,
-          ndwi: null,
-          lulc: null,
-          eudr: null
+          survivalNum: z.survival_rate_pct ?? null
         };
       });
     }
@@ -2006,22 +1872,17 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
         return {
           id: z.zone_id,
           name: z.name,
-          area: `${z.area_ha ?? 6.0} HA`,
+          area: z.area_ha != null ? `${z.area_ha} ha` : null,
+          carbonPerHa: z.carbon_offset_tco2e != null && z.area_ha ? z.carbon_offset_tco2e / z.area_ha : null,
           type: z.project_type ?? null,
           progress: z.progress_pct ?? null,
           survival: z.survival_rate_pct != null ? `${z.survival_rate_pct}%` : '—',
           trees: z.tree_count != null ? z.tree_count.toLocaleString() : '—',
           carbon: z.carbon_offset_tco2e != null ? `${z.carbon_offset_tco2e} tCO2e` : '—',
-          status: z.progress_pct != null ? (z.progress_pct > 80 ? 'Optimal Growth' : 'Active Care') : '—',
-          color: z.progress_pct != null ? (z.progress_pct > 80 ? '#16A34A' : '#EAB308') : '#9CA3AF',
+          status: z.status ?? null,
           coords,
           manager: z.manager ?? null,
-          survivalNum: z.survival_rate_pct ?? null,
-          insar: z.biodiversity_score != null ? z.biodiversity_score / 100 : null,
-          gedi: null,
-          ndwi: null,
-          lulc: null,
-          eudr: null
+          survivalNum: z.survival_rate_pct ?? null
         };
       });
     }
@@ -3277,26 +3138,26 @@ Context: ${context}.`;
               MAP ANALYTICS
           ══════════════════════════════════════════════════════════════ */}
           {activeSidebarItem === 'intelligence-layers' && (
-            <ParcelMapPage basemapAttribution={basemapAttribution} basemapMaxNativeZoom={basemapMaxNativeZoom} basemapUrl={basemapUrl} currentTileUrl={currentTileUrl} currentTileUrlB={currentTileUrlB} currentTimelineA={currentTimelineA} currentTimelineB={currentTimelineB} dashboardFilterKeys={dashboardFilterKeys} defaultMapCenter={defaultMapCenter} dynamicFilterValues={dynamicFilterValues} effectiveSensor={effectiveSensor} farmBoundary={farmBoundary} filterEstate={filterEstate} filteredPlotsData={filteredPlotsData} handlePlotClick={handlePlotClick} handleSplitDragStart={handleSplitDragStart} intelBoundariesOpacity={intelBoundariesOpacity} intelOpExpanded={intelOpExpanded} intelShowBoundaries={intelShowBoundaries} intelShowLayers={intelShowLayers} isCompareMode={isCompareMode} mapOpacity={mapOpacity} pixelTimeseries={pixelTimeseries} plotsData={plotsData} plotsDataA={plotsDataA} plotsDataB={plotsDataB} rasterOverlayBounds={rasterOverlayBounds} renderFloatingBasemapSelector={renderFloatingBasemapSelector} renderInfoTooltip={renderInfoTooltip} renderIntelPolygons={renderIntelPolygons} renderMapBottomPanel={renderMapBottomPanel} selectedIndex={selectedIndex} selectedPlot={selectedPlot} setDynamicFilterValues={setDynamicFilterValues} setIntelBoundariesOpacity={setIntelBoundariesOpacity} setIntelOpExpanded={setIntelOpExpanded} setIntelShowBoundaries={setIntelShowBoundaries} setIntelShowLayers={setIntelShowLayers} setMapOpacity={setMapOpacity} setSelectedPlot={setSelectedPlot} setShowRasterLayer={setShowRasterLayer} showRasterLayer={showRasterLayer} splitPosition={splitPosition} tileRefreshing={tileRefreshing} zarrBounds={zarrBounds} />
+            <ParcelMapPage cropType={cropType} basemapAttribution={basemapAttribution} basemapMaxNativeZoom={basemapMaxNativeZoom} basemapUrl={basemapUrl} currentTileUrl={currentTileUrl} currentTileUrlB={currentTileUrlB} currentTimelineA={currentTimelineA} currentTimelineB={currentTimelineB} dashboardFilterKeys={dashboardFilterKeys} defaultMapCenter={defaultMapCenter} dynamicFilterValues={dynamicFilterValues} farmBoundary={farmBoundary} filterEstate={filterEstate} filteredPlotsData={filteredPlotsData} handlePlotClick={handlePlotClick} handleSplitDragStart={handleSplitDragStart} intelBoundariesOpacity={intelBoundariesOpacity} intelShowBoundaries={intelShowBoundaries} intelShowLayers={intelShowLayers} isCompareMode={isCompareMode} mapOpacity={mapOpacity} pixelTimeseries={pixelTimeseries} plotsData={plotsData} plotsDataA={plotsDataA} plotsDataB={plotsDataB} rasterOverlayBounds={rasterOverlayBounds} renderFloatingBasemapSelector={renderFloatingBasemapSelector} renderIntelPolygons={renderIntelPolygons} renderMapBottomPanel={renderMapBottomPanel} selectedIndex={selectedIndex} selectedPlot={selectedPlot} setDynamicFilterValues={setDynamicFilterValues} setIntelBoundariesOpacity={setIntelBoundariesOpacity} setIntelShowBoundaries={setIntelShowBoundaries} setIntelShowLayers={setIntelShowLayers} setMapOpacity={setMapOpacity} setSelectedPlot={setSelectedPlot} setShowRasterLayer={setShowRasterLayer} showRasterLayer={showRasterLayer} splitPosition={splitPosition} tileRefreshing={tileRefreshing} zarrBounds={zarrBounds} />
           )}
 
           {activeSidebarItem === 'crop-health' && (
-            <CropHealthMapPage basemapAttribution={basemapAttribution} basemapMaxNativeZoom={basemapMaxNativeZoom} basemapUrl={basemapUrl} currentTileUrl={currentTileUrl} currentTileUrlB={currentTileUrlB} currentTimelineA={currentTimelineA} currentTimelineB={currentTimelineB} defaultMapCenter={defaultMapCenter} effectiveSensor={effectiveSensor} farmBoundary={farmBoundary} filterEstate={filterEstate} handleSplitDragStart={handleSplitDragStart} healthBoundariesOpacity={healthBoundariesOpacity} healthOpExpanded={healthOpExpanded} healthPlotsData={healthPlotsData} healthPlotsDataA={healthPlotsDataA} healthPlotsDataB={healthPlotsDataB} healthShowBoundaries={healthShowBoundaries} healthShowLayers={healthShowLayers} isCompareMode={isCompareMode} isOrg={isOrg} mapOpacity={mapOpacity} plotsData={plotsData} rasterOverlayBounds={rasterOverlayBounds} renderFloatingBasemapSelector={renderFloatingBasemapSelector} renderHealthPolygons={renderHealthPolygons} renderInfoTooltip={renderInfoTooltip} renderLegendCards={renderLegendCards} renderMapBottomPanel={renderMapBottomPanel} selectedIndex={selectedIndex} setHealthBoundariesOpacity={setHealthBoundariesOpacity} setHealthOpExpanded={setHealthOpExpanded} setHealthShowBoundaries={setHealthShowBoundaries} setHealthShowLayers={setHealthShowLayers} setMapOpacity={setMapOpacity} setShowRasterLayer={setShowRasterLayer} showRasterLayer={showRasterLayer} splitPosition={splitPosition} tileRefreshing={tileRefreshing} zarrBounds={zarrBounds} />
+            <CropHealthMapPage cropType={cropType} basemapAttribution={basemapAttribution} basemapMaxNativeZoom={basemapMaxNativeZoom} basemapUrl={basemapUrl} currentTileUrl={currentTileUrl} currentTileUrlB={currentTileUrlB} currentTimelineA={currentTimelineA} currentTimelineB={currentTimelineB} defaultMapCenter={defaultMapCenter} farmBoundary={farmBoundary} filterEstate={filterEstate} handleSplitDragStart={handleSplitDragStart} healthBoundariesOpacity={healthBoundariesOpacity} healthPlotsData={healthPlotsData} healthPlotsDataA={healthPlotsDataA} healthPlotsDataB={healthPlotsDataB} healthShowBoundaries={healthShowBoundaries} healthShowLayers={healthShowLayers} isCompareMode={isCompareMode} isOrg={isOrg} mapOpacity={mapOpacity} plotsData={plotsData} rasterOverlayBounds={rasterOverlayBounds} renderFloatingBasemapSelector={renderFloatingBasemapSelector} renderHealthPolygons={renderHealthPolygons} renderLegendCards={renderLegendCards} renderMapBottomPanel={renderMapBottomPanel} selectedIndex={selectedIndex} setHealthBoundariesOpacity={setHealthBoundariesOpacity} setHealthShowBoundaries={setHealthShowBoundaries} setHealthShowLayers={setHealthShowLayers} setMapOpacity={setMapOpacity} setShowRasterLayer={setShowRasterLayer} showRasterLayer={showRasterLayer} splitPosition={splitPosition} tileRefreshing={tileRefreshing} zarrBounds={zarrBounds} />
           )}
 
           {/* ══════════════════════════════════════════════════════════════
               CROP YIELD MAP VIEW
           ══════════════════════════════════════════════════════════════ */}
           {activeSidebarItem === 'crop-yield' && (
-            <YieldMapPage cropType={cropType} basemapAttribution={basemapAttribution} basemapMaxNativeZoom={basemapMaxNativeZoom} basemapUrl={basemapUrl} currentTileUrl={currentTileUrl} currentTileUrlB={currentTileUrlB} currentTimelineA={currentTimelineA} currentTimelineB={currentTimelineB} defaultMapCenter={defaultMapCenter} effectiveSensor={effectiveSensor} farmBoundary={farmBoundary} filterEstate={filterEstate} handleSplitDragStart={handleSplitDragStart} isCompareMode={isCompareMode} mapOpacity={mapOpacity} plotsData={plotsData} rasterOverlayBounds={rasterOverlayBounds} renderFloatingBasemapSelector={renderFloatingBasemapSelector} renderInfoTooltip={renderInfoTooltip} renderMapBottomPanel={renderMapBottomPanel} renderYieldPolygons={renderYieldPolygons} selectedIndex={selectedIndex} setMapOpacity={setMapOpacity} setShowRasterLayer={setShowRasterLayer} setYieldBoundariesOpacity={setYieldBoundariesOpacity} setYieldOpExpanded={setYieldOpExpanded} setYieldProdExpanded={setYieldProdExpanded} setYieldShowBiomass={setYieldShowBiomass} setYieldShowBoundaries={setYieldShowBoundaries} setYieldShowGrowth={setYieldShowGrowth} setYieldShowLayers={setYieldShowLayers} setYieldShowReadiness={setYieldShowReadiness} setYieldShowYield={setYieldShowYield} setYieldStatExpanded={setYieldStatExpanded} showRasterLayer={showRasterLayer} splitPosition={splitPosition} tileRefreshing={tileRefreshing} yieldBoundariesOpacity={yieldBoundariesOpacity} yieldOpExpanded={yieldOpExpanded} yieldPlotsData={yieldPlotsData} yieldPlotsDataA={yieldPlotsDataA} yieldPlotsDataB={yieldPlotsDataB} yieldProdExpanded={yieldProdExpanded} yieldShowBiomass={yieldShowBiomass} yieldShowBoundaries={yieldShowBoundaries} yieldShowGrowth={yieldShowGrowth} yieldShowLayers={yieldShowLayers} yieldShowReadiness={yieldShowReadiness} yieldShowYield={yieldShowYield} yieldStatExpanded={yieldStatExpanded} zarrBounds={zarrBounds} />
+            <YieldMapPage cropType={cropType} basemapAttribution={basemapAttribution} basemapMaxNativeZoom={basemapMaxNativeZoom} basemapUrl={basemapUrl} currentTileUrl={currentTileUrl} currentTileUrlB={currentTileUrlB} currentTimelineA={currentTimelineA} currentTimelineB={currentTimelineB} defaultMapCenter={defaultMapCenter} farmBoundary={farmBoundary} filterEstate={filterEstate} handleSplitDragStart={handleSplitDragStart} isCompareMode={isCompareMode} mapOpacity={mapOpacity} plotsData={plotsData} rasterOverlayBounds={rasterOverlayBounds} renderFloatingBasemapSelector={renderFloatingBasemapSelector} renderMapBottomPanel={renderMapBottomPanel} renderYieldPolygons={renderYieldPolygons} selectedIndex={selectedIndex} setMapOpacity={setMapOpacity} setShowRasterLayer={setShowRasterLayer} setYieldBoundariesOpacity={setYieldBoundariesOpacity} setYieldShowBoundaries={setYieldShowBoundaries} setYieldShowLayers={setYieldShowLayers} showRasterLayer={showRasterLayer} splitPosition={splitPosition} tileRefreshing={tileRefreshing} yieldBoundariesOpacity={yieldBoundariesOpacity} yieldPlotsData={yieldPlotsData} yieldPlotsDataA={yieldPlotsDataA} yieldPlotsDataB={yieldPlotsDataB} yieldShowBoundaries={yieldShowBoundaries} yieldShowLayers={yieldShowLayers} zarrBounds={zarrBounds} />
           )}
 
           {activeSidebarItem === 'moisture-content' && (
-            <WaterMapPage basemapAttribution={basemapAttribution} basemapMaxNativeZoom={basemapMaxNativeZoom} basemapUrl={basemapUrl} currentTileUrl={currentTileUrl} currentTileUrlB={currentTileUrlB} currentTimelineA={currentTimelineA} currentTimelineB={currentTimelineB} defaultMapCenter={defaultMapCenter} farmBoundary={farmBoundary} filterEstate={filterEstate} handleSplitDragStart={handleSplitDragStart} isCompareMode={isCompareMode} mapOpacity={mapOpacity} moistureBoundariesOpacity={moistureBoundariesOpacity} moistureOpExpanded={moistureOpExpanded} moisturePlotsData={moisturePlotsData} moisturePlotsDataA={moisturePlotsDataA} moisturePlotsDataB={moisturePlotsDataB} moistureShowBoundaries={moistureShowBoundaries} moistureShowLayers={moistureShowLayers} plotsData={plotsData} rasterOverlayBounds={rasterOverlayBounds} renderFloatingBasemapSelector={renderFloatingBasemapSelector} renderLegendCards={renderLegendCards} renderMapBottomPanel={renderMapBottomPanel} renderMoisturePolygons={renderMoisturePolygons} selectedIndex={selectedIndex} setMapOpacity={setMapOpacity} setMoistureBoundariesOpacity={setMoistureBoundariesOpacity} setMoistureOpExpanded={setMoistureOpExpanded} setMoistureShowBoundaries={setMoistureShowBoundaries} setMoistureShowLayers={setMoistureShowLayers} setShowRasterLayer={setShowRasterLayer} showRasterLayer={showRasterLayer} splitPosition={splitPosition} tileRefreshing={tileRefreshing} zarrBounds={zarrBounds} />
+            <WaterMapPage cropType={cropType} basemapAttribution={basemapAttribution} basemapMaxNativeZoom={basemapMaxNativeZoom} basemapUrl={basemapUrl} currentTileUrl={currentTileUrl} currentTileUrlB={currentTileUrlB} currentTimelineA={currentTimelineA} currentTimelineB={currentTimelineB} defaultMapCenter={defaultMapCenter} farmBoundary={farmBoundary} filterEstate={filterEstate} handleSplitDragStart={handleSplitDragStart} isCompareMode={isCompareMode} mapOpacity={mapOpacity} moistureBoundariesOpacity={moistureBoundariesOpacity} moisturePlotsData={moisturePlotsData} moisturePlotsDataA={moisturePlotsDataA} moisturePlotsDataB={moisturePlotsDataB} moistureShowBoundaries={moistureShowBoundaries} moistureShowLayers={moistureShowLayers} plotsData={plotsData} rasterOverlayBounds={rasterOverlayBounds} renderFloatingBasemapSelector={renderFloatingBasemapSelector} renderLegendCards={renderLegendCards} renderMapBottomPanel={renderMapBottomPanel} renderMoisturePolygons={renderMoisturePolygons} selectedIndex={selectedIndex} setMapOpacity={setMapOpacity} setMoistureBoundariesOpacity={setMoistureBoundariesOpacity} setMoistureShowBoundaries={setMoistureShowBoundaries} setMoistureShowLayers={setMoistureShowLayers} setShowRasterLayer={setShowRasterLayer} showRasterLayer={showRasterLayer} splitPosition={splitPosition} tileRefreshing={tileRefreshing} zarrBounds={zarrBounds} />
           )}
 
           {activeSidebarItem === 'land-restoration' && (
-            <RestorationMapPage cropType={cropType} basemapAttribution={basemapAttribution} basemapMaxNativeZoom={basemapMaxNativeZoom} basemapUrl={basemapUrl} currentTileUrl={currentTileUrl} currentTileUrlB={currentTileUrlB} currentTimelineA={currentTimelineA} currentTimelineB={currentTimelineB} defaultMapCenter={defaultMapCenter} effectiveSensor={effectiveSensor} farmBoundary={farmBoundary} filterEstate={filterEstate} handleSplitDragStart={handleSplitDragStart} isCompareMode={isCompareMode} landUseChange={landUseChange} landUseChangeLoading={landUseChangeLoading} legendEntries={legendEntries} mapOpacity={mapOpacity} plotsData={plotsData} rasterOverlayBounds={rasterOverlayBounds} renderFloatingBasemapSelector={renderFloatingBasemapSelector} renderInfoTooltip={renderInfoTooltip} renderLegendCard={renderLegendCard} renderMapBottomPanel={renderMapBottomPanel} renderRestorePolygons={renderRestorePolygons} restorationPlotsData={restorationPlotsData} restorationPlotsDataA={restorationPlotsDataA} restorationPlotsDataB={restorationPlotsDataB} restoreBoundariesOpacity={restoreBoundariesOpacity} restoreEcoExpanded={restoreEcoExpanded} restoreEudrExpanded={restoreEudrExpanded} restoreLulcExpanded={restoreLulcExpanded} restoreOpExpanded={restoreOpExpanded} restoreShowAgb={restoreShowAgb} restoreShowBiodiversity={restoreShowBiodiversity} restoreShowBoundaries={restoreShowBoundaries} restoreShowCarbon={restoreShowCarbon} restoreShowEudr={restoreShowEudr} restoreShowGedi={restoreShowGedi} restoreShowInSar={restoreShowInSar} restoreShowLayers={restoreShowLayers} restoreShowLulc={restoreShowLulc} restoreShowLulcChange={restoreShowLulcChange} restoreShowProgress={restoreShowProgress} restoreShowSurvival={restoreShowSurvival} selectedIndex={selectedIndex} setMapOpacity={setMapOpacity} setRestoreBoundariesOpacity={setRestoreBoundariesOpacity} setRestoreEcoExpanded={setRestoreEcoExpanded} setRestoreEudrExpanded={setRestoreEudrExpanded} setRestoreLulcExpanded={setRestoreLulcExpanded} setRestoreOpExpanded={setRestoreOpExpanded} setRestoreShowAgb={setRestoreShowAgb} setRestoreShowBiodiversity={setRestoreShowBiodiversity} setRestoreShowBoundaries={setRestoreShowBoundaries} setRestoreShowCarbon={setRestoreShowCarbon} setRestoreShowEudr={setRestoreShowEudr} setRestoreShowGedi={setRestoreShowGedi} setRestoreShowInSar={setRestoreShowInSar} setRestoreShowLayers={setRestoreShowLayers} setRestoreShowLulc={setRestoreShowLulc} setRestoreShowLulcChange={setRestoreShowLulcChange} setRestoreShowProgress={setRestoreShowProgress} setRestoreShowSurvival={setRestoreShowSurvival} setShowRasterLayer={setShowRasterLayer} showRasterLayer={showRasterLayer} splitPosition={splitPosition} tileRefreshing={tileRefreshing} zarrBounds={zarrBounds} />
+            <RestorationMapPage cropType={cropType} basemapAttribution={basemapAttribution} basemapMaxNativeZoom={basemapMaxNativeZoom} basemapUrl={basemapUrl} currentTileUrl={currentTileUrl} currentTileUrlB={currentTileUrlB} currentTimelineA={currentTimelineA} currentTimelineB={currentTimelineB} defaultMapCenter={defaultMapCenter} farmBoundary={farmBoundary} filterEstate={filterEstate} handleSplitDragStart={handleSplitDragStart} isCompareMode={isCompareMode} landUseChange={landUseChange} landUseChangeLoading={landUseChangeLoading} mapOpacity={mapOpacity} plotsData={plotsData} rasterOverlayBounds={rasterOverlayBounds} renderFloatingBasemapSelector={renderFloatingBasemapSelector} renderMapBottomPanel={renderMapBottomPanel} renderRestorePolygons={renderRestorePolygons} restorationPlotsData={restorationPlotsData} restorationPlotsDataA={restorationPlotsDataA} restorationPlotsDataB={restorationPlotsDataB} restoreBoundariesOpacity={restoreBoundariesOpacity} restoreShowBoundaries={restoreShowBoundaries} restoreShowLayers={restoreShowLayers} selectedIndex={selectedIndex} setMapOpacity={setMapOpacity} setRestoreBoundariesOpacity={setRestoreBoundariesOpacity} setRestoreShowBoundaries={setRestoreShowBoundaries} setRestoreShowLayers={setRestoreShowLayers} setShowRasterLayer={setShowRasterLayer} showRasterLayer={showRasterLayer} splitPosition={splitPosition} tileRefreshing={tileRefreshing} zarrBounds={zarrBounds} />
           )}
 
           {/* ══════════════════════════════════════════════════════════════
@@ -3321,7 +3182,7 @@ Context: ${context}.`;
               CLIMATE MAP VIEW
           ══════════════════════════════════════════════════════════════ */}
           {activeSidebarItem === 'climate' && (
-            <WeatherPage cropType={cropType} basemapAttribution={basemapAttribution} basemapMaxNativeZoom={basemapMaxNativeZoom} basemapUrl={basemapUrl} climateAtmExpanded={climateAtmExpanded} climateBioExpanded={climateBioExpanded} climateBoundariesOpacity={climateBoundariesOpacity} climateOpExpanded={climateOpExpanded} climatePlotsData={climatePlotsData} climatePlotsDataA={climatePlotsDataA} climatePlotsDataB={climatePlotsDataB} climateShowBoundaries={climateShowBoundaries} climateShowFlood={climateShowFlood} climateShowLayers={climateShowLayers} climateShowLst={climateShowLst} climateShowRainfall={climateShowRainfall} climateShowSoilTemp={climateShowSoilTemp} climateShowVaporDeficit={climateShowVaporDeficit} currentTileUrl={currentTileUrl} currentTileUrlB={currentTileUrlB} currentTimelineA={currentTimelineA} currentTimelineB={currentTimelineB} defaultMapCenter={defaultMapCenter} effectiveSensor={effectiveSensor} farmBoundary={farmBoundary} filterEstate={filterEstate} handleSplitDragStart={handleSplitDragStart} isCompareMode={isCompareMode} mapOpacity={mapOpacity} plotsData={plotsData} rasterOverlayBounds={rasterOverlayBounds} renderClimatePolygons={renderClimatePolygons} renderFloatingBasemapSelector={renderFloatingBasemapSelector} renderInfoTooltip={renderInfoTooltip} renderMapBottomPanel={renderMapBottomPanel} selectedIndex={selectedIndex} setClimateAtmExpanded={setClimateAtmExpanded} setClimateBioExpanded={setClimateBioExpanded} setClimateBoundariesOpacity={setClimateBoundariesOpacity} setClimateOpExpanded={setClimateOpExpanded} setClimateShowBoundaries={setClimateShowBoundaries} setClimateShowFlood={setClimateShowFlood} setClimateShowLayers={setClimateShowLayers} setClimateShowLst={setClimateShowLst} setClimateShowRainfall={setClimateShowRainfall} setClimateShowSoilTemp={setClimateShowSoilTemp} setClimateShowVaporDeficit={setClimateShowVaporDeficit} showRasterLayer={showRasterLayer} splitPosition={splitPosition} tileRefreshing={tileRefreshing} zarrBounds={zarrBounds} />
+            <WeatherPage setShowRasterLayer={setShowRasterLayer} setMapOpacity={setMapOpacity} cropType={cropType} basemapAttribution={basemapAttribution} basemapMaxNativeZoom={basemapMaxNativeZoom} basemapUrl={basemapUrl} climateBoundariesOpacity={climateBoundariesOpacity} climatePlotsData={climatePlotsData} climatePlotsDataA={climatePlotsDataA} climatePlotsDataB={climatePlotsDataB} climateShowBoundaries={climateShowBoundaries} climateShowLayers={climateShowLayers} currentTileUrl={currentTileUrl} currentTileUrlB={currentTileUrlB} currentTimelineA={currentTimelineA} currentTimelineB={currentTimelineB} defaultMapCenter={defaultMapCenter} farmBoundary={farmBoundary} filterEstate={filterEstate} handleSplitDragStart={handleSplitDragStart} isCompareMode={isCompareMode} mapOpacity={mapOpacity} plotsData={plotsData} rasterOverlayBounds={rasterOverlayBounds} renderClimatePolygons={renderClimatePolygons} renderFloatingBasemapSelector={renderFloatingBasemapSelector} renderMapBottomPanel={renderMapBottomPanel} selectedIndex={selectedIndex} setClimateBoundariesOpacity={setClimateBoundariesOpacity} setClimateShowBoundaries={setClimateShowBoundaries} setClimateShowLayers={setClimateShowLayers} showRasterLayer={showRasterLayer} splitPosition={splitPosition} tileRefreshing={tileRefreshing} zarrBounds={zarrBounds} />
           )}
 
           {/* ══════════════════════════════════════════════════════════════
@@ -3392,11 +3253,11 @@ Context: ${context}.`;
                     <div className="max-w-3xl mx-auto space-y-6">
                       {chatMessages.map((msg, idx) => (
                         <div key={idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                          <div className={`max-w-[85%] rounded-2xl text-sm font-medium leading-relaxed shadow-[0_1px_2px_rgba(0,0,0,0.02)] ${
+                          <div className={`max-w-[85%] rounded-2xl text-sm leading-relaxed ${
                             msg.sender === 'user'
-                              ? 'text-white rounded-tr-none px-5 py-3.5'
+                              ? 'bg-green-700 text-white rounded-tr-none px-5 py-3.5'
                               : 'bg-white border border-gray-150 text-gray-700 rounded-tl-none px-5 py-3.5'
-                          }`} style={msg.sender === 'user' ? { backgroundColor: '#16A34A' } : undefined}>
+                          }`}>
                             <div style={{ whiteSpace: 'pre-wrap' }}>{msg.text}</div>
                             {msg.sources && msg.sources.length > 0 && (
                               <div className="mt-2 pt-2 border-t border-gray-100 flex flex-wrap gap-1">
@@ -3446,8 +3307,8 @@ Context: ${context}.`;
                     <button
                       type="submit"
                       disabled={chatLoading}
-                      className="absolute right-4 bottom-4 w-12 h-12 text-white rounded-xl flex items-center justify-center shadow-md shrink-0 transition-transform active:scale-95 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
-                      style={{ backgroundColor: '#16A34A' }}
+                      className="absolute right-4 bottom-4 w-11 h-11 bg-green-700 hover:bg-green-800 text-white rounded-xl flex items-center justify-center shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                      aria-label="Send"
                     >
                       <Send size={18} />
                     </button>

@@ -59,7 +59,6 @@ const TeamCard = ({ profile, services, canEdit }) => {
         {state === 'error' && <Note tone="warning">The team could not be loaded: {error}</Note>}
         {state === 'ready' && error && <Note tone="warning">{error}</Note>}
         {full && canEdit && <Note>Your licence allows {profile.maxAccounts} accounts and all are in use. Remove one, or ask FarmIntelytics for more.</Note>}
-        {!canEdit && <p className="text-sm text-gray-500">Only an admin of your organisation can change the team.</p>}
 
         {state === 'loading' ? <Loading>Loading the team…</Loading> : (
           <ul className="divide-y divide-gray-100">

@@ -15,7 +15,7 @@ import { demoAccounts } from '../constants/demoAccounts';
 import { signInDesignFor } from './login/signInDesigns';
 
 // ─── Main Login Component (Clean White Background Theme) ─────────────────────
-const Login = ({ onLogin, moduleId, onBack, defaultEmail = '', defaultCode = '' }) => {
+const Login = ({ onLogin, moduleId, tenant = null, onBack, defaultEmail = '', defaultCode = '' }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState(defaultEmail);
@@ -37,8 +37,12 @@ const Login = ({ onLogin, moduleId, onBack, defaultEmail = '', defaultCode = '' 
     setLoading(true);
     setError('');
     try {
-      const response = await login(email, accessCode);
-      if (response.status === 'success' && response.token && response.tenant) {
+      const response = await login(email, accessCode, tenant);
+      // On /org/<tenant>/login only that organisation's accounts get in.
+      const wrongOrg = tenant && response.tenant && response.tenant.toLowerCase() !== tenant.toLowerCase();
+      if (wrongOrg) {
+        setError('Invalid credentials.');
+      } else if (response.status === 'success' && response.token && response.tenant) {
         // Explicitly clear any previous session data for 100% portal isolation
         // Replace any previous client account; a team login stays signed in.
         clearTenantAccount();
@@ -132,7 +136,7 @@ const Login = ({ onLogin, moduleId, onBack, defaultEmail = '', defaultCode = '' 
               onClick={onBack}
               className="flex items-center gap-2 px-3.5 py-2 rounded-[10px] border border-[var(--border-light)] text-sm font-medium hover:bg-[var(--bg-main)] transition-colors"
             >
-              <Grid size={15} /> <span className="hidden sm:inline">Back to</span> hub
+              <Grid size={15} /> <span className="hidden sm:inline">Back to your</span> services
             </button>
           )}
         </header>

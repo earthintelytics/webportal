@@ -53,12 +53,13 @@ async function apiFetch(path, options = {}) {
  * POST /api/auth/login
  * @param {string} email
  * @param {string} accessCode
+ * @param {string} [tenant] the organisation whose sign-in page is used; other organisations' accounts are refused
  * @returns {{ token, email, status, message }}
  */
-export async function login(email, accessCode) {
+export async function login(email, accessCode, tenant = null) {
   return apiFetch('/auth/login', {
     method: 'POST',
-    body: JSON.stringify({ email, access_code: accessCode }),
+    body: JSON.stringify({ email, access_code: accessCode, ...(tenant ? { tenant } : {}) }),
   });
 }
 

@@ -16,7 +16,6 @@ const OrgServicesPage = ({ profile }) => {
   const first = (profile.fullName || '').split(' ')[0];
 
   const open = (id) => {
-    sessionStorage.setItem('fi_hub', paths.orgHub(profile.tenant));
     navigate(paths.service(id, profile.tenant));
   };
 
