@@ -4,6 +4,7 @@ import { fetchPublicForm, submitPublicForm } from '../../services/formsApi';
 import FormRenderer from './FormRenderer';
 import { validateAnswers } from './fieldTypes';
 import { submissionBody, draftable as draftAnswers } from './submission';
+import { consentText, consentRecord } from './consent';
 
 const draftKey = (token) => `fi_form_draft:${token}`;
 const readDraft = (token) => { try { return JSON.parse(localStorage.getItem(draftKey(token)) || '{}'); } catch { return {}; } };
@@ -21,6 +22,7 @@ const PublicFormPage = () => {
   const [errors, setErrors] = useState({});
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState('');
+  const [agreed, setAgreed] = useState(false);
 
   useEffect(() => {
     fetchPublicForm(token)
@@ -37,7 +39,8 @@ const PublicFormPage = () => {
     setErrors(errs);
     if (Object.keys(errs).length) { setSendError('Some answers need attention.'); return; }
     setSending(true); setSendError('');
-    const body = submissionBody(answers);
+    if (!agreed) { setSendError('Please read and tick the consent box before sending.'); return; }
+    const body = submissionBody(answers, consentRecord(form.organisation_name, 'farmer'));
     try {
       await submitPublicForm(token, body);
       localStorage.removeItem(draftKey(token));
@@ -70,6 +73,10 @@ const PublicFormPage = () => {
         {form.description && <p className="text-sm text-gray-600 mt-2">{form.description}</p>}
       </div>
       <FormRenderer fields={form.fields} answers={answers} onChange={setAnswers} errors={errors} />
+      <label className="flex items-start gap-3 p-4 rounded-xl border border-gray-200 bg-white text-sm text-gray-700">
+        <input type="checkbox" className="mt-1" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
+        <span>{consentText(form.organisation_name)}</span>
+      </label>
       {sendError && <p className="text-sm text-red-800 bg-red-50 border border-red-200 rounded-xl px-4 py-3">{sendError}</p>}
       <button onClick={send} disabled={sending} className="w-full py-3.5 rounded-xl text-base font-semibold text-white bg-green-700 active:bg-green-800 disabled:opacity-50">{sending ? 'Sending…' : 'Send answers'}</button>
       <p className="text-xs text-gray-500 text-center">Sent with FarmIntelytics</p>

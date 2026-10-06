@@ -4,7 +4,7 @@
  * files as `file:<field_id>`. Used by the public link page and by "Add
  * member" inside the portal, so both fill the register the same way.
  */
-export function submissionBody(answers) {
+export function submissionBody(answers, consent = null) {
   const body = new FormData();
   const plain = {};
   Object.entries(answers).forEach(([id, v]) => {
@@ -18,6 +18,7 @@ export function submissionBody(answers) {
     }
   });
   body.append('answers', JSON.stringify(plain));
+  if (consent) body.append('consent', JSON.stringify(consent));
   body.append('device_time', new Date().toISOString());
   return body;
 }

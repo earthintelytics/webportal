@@ -1029,13 +1029,13 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
 
   const renderFloatingBasemapSelector = () => {
     const BASEMAPS = [
-      { id: 'terrain',       label: 'Terrain',         sub: 'Default Basemap',    emoji: '' },
-      { id: 'google-hybrid', label: 'Google Satellite', sub: 'High-Res Basemap',   emoji: '' },
+      { id: 'terrain',       label: 'Map',             sub: 'Roads, rivers and terrain', emoji: '' },
+      { id: 'google-hybrid', label: 'Satellite',       sub: 'Detailed photo of the area', emoji: '' },
       // Live composites rendered from this tenant's own archive — move with
       // the time slider, unlike the static sources above.
-      { id: 'true-color',    label: 'True Colour',     sub: 'Red-Green-Blue · Live',      emoji: '' },
-      { id: 'false-color',   label: 'False Colour',    sub: 'NIR-Red-Green · Live',       emoji: '' },
-      { id: 'sar-rgb',       label: 'SAR RGB',         sub: 'Sentinel-1 VV-VH · Live',    emoji: '' },
+      { id: 'true-color',    label: 'Latest image',    sub: 'Your farms on the chosen date', emoji: '' },
+      { id: 'false-color',   label: 'Plant colours',   sub: 'Healthy plants show red',    emoji: '' },
+      { id: 'sar-rgb',       label: 'Cloudy-season view', sub: 'Sees through cloud',      emoji: '' },
     ];
     const activeBasemapObj = BASEMAPS.find(b => b.id === selectedBasemap) || BASEMAPS[0];
 
@@ -1076,7 +1076,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
                   onClick={() => setShowGoogleLabels(v => !v)}
                   className="w-full flex items-center justify-between gap-2 px-2 py-1.5 rounded-sm text-left border-t border-gray-100 mt-0.5 pt-1.5 hover:bg-gray-55"
                 >
-                  <span className="text-[11px] font-bold text-gray-700">Show Labels</span>
+                  <span className="text-[11px] font-bold text-gray-700">Show place names</span>
                   <span
                     className="w-7 h-4 rounded-full p-0.5 transition-colors duration-200 shrink-0"
                     style={{ backgroundColor: showGoogleLabels ? '#16A34A' : '#E5E7EB' }}
