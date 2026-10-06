@@ -48,3 +48,28 @@ export function redirectToTenantSignIn() {
   if (path.startsWith('/login') || path.endsWith('/login')) return;
   window.location.href = tenant ? `/org/${encodeURIComponent(tenant)}/login${next}` : '/login';
 }
+
+/**
+ * A usable team sign-in: a superadmin token issued for the team (aud "team")
+ * and not expired. Tokens from before the access update have no audience and
+ * are treated as signed out, so the person signs in again instead of seeing
+ * "Forbidden".
+ */
+export function hasValidTeamToken() {
+  try {
+    const token = localStorage.getItem('fi_admin_token');
+    if (!token) return false;
+    const p = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+    return p.role === 'superadmin' && p.aud === 'team' && (!p.exp || p.exp * 1000 > Date.now());
+  } catch {
+    return false;
+  }
+}
+
+/** The team sign-in was refused or is outdated: clear it and go to the team sign-in. */
+export function redirectToTeamSignIn() {
+  TEAM_KEYS.forEach((k) => localStorage.removeItem(k));
+  if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/admin/login')) {
+    window.location.href = '/admin/login';
+  }
+}

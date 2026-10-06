@@ -27,6 +27,7 @@ import Inventory from './pages/Inventory';
 import UsersPage from './pages/Users';
 import AiSettings from './pages/AiSettings';
 import PipelineRuns from './pages/PipelineRuns';
+import { hasValidTeamToken, redirectToTeamSignIn } from '../services/session';
 import { ConfirmProvider } from './components/ConfirmProvider';
 
 // Grouped by what the team is doing: setting clients up, running the
@@ -58,8 +59,8 @@ const AdminPortal = () => {
   const [adminEmail, setAdminEmail] = useState('');
 
   useEffect(() => {
-    const token = localStorage.getItem('fi_admin_token');
-    if (!token) { navigate('/admin/login'); return; }
+    // An outdated or missing team sign-in goes to the sign-in page, not to "Forbidden".
+    if (!hasValidTeamToken()) { redirectToTeamSignIn(); return; }
     setAdminEmail(localStorage.getItem('fi_admin_email') || 'superadmin');
   }, [navigate]);
 

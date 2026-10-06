@@ -74,6 +74,7 @@ import { UNIT_LABEL, CROP_UNIT } from './dashboard/kpiCatalog';
 import { Link } from 'react-router-dom';
 import AlertsPage from './dashboard/alerts/AlertsPage';
 import DataUsedNote from './dashboard/DataUsedNote';
+import LastUpdated from './dashboard/LastUpdated';
 import { classColour, useLayerLegends } from './dashboard/legends/layerLegends';
 import ParcelMapPage from './dashboard/pages/ParcelMapPage';
 import CropHealthMapPage from './dashboard/pages/CropHealthMapPage';
@@ -2949,12 +2950,7 @@ Context: ${context}.`;
                       {pageSet?.overviewText || 'How your fields are doing, from the latest satellite passes.'}
                     </p>
                   </div>
-                  <div className="bg-white px-5 py-3 rounded-2xl border border-gray-200 shadow-sm flex items-center gap-3 shrink-0">
-                    <CalendarIcon size={16} className="text-green-600" />
-                    <span className="text-sm font-bold text-gray-700">
-                      Date last update: {currentTimeline?.label ?? '—'}
-                    </span>
-                  </div>
+                  <LastUpdated newestImageDate={TIMELINE_DATA.length ? TIMELINE_DATA[TIMELINE_DATA.length - 1].date : null} />
                 </div>
 
                 {/* Subtabs Menu */}

@@ -1,3 +1,4 @@
+import { hasValidTeamToken, redirectToTeamSignIn } from './session';
 import { ADMIN_API_BASE } from './apiBase';
 /**
  * AI settings, usage and limits (super admin). Contract: docs/WORK_SPLIT.md,
@@ -14,6 +15,7 @@ async function call(path, options = {}) {
   try {
     res = await fetch(`${BASE}${path}`, { cache: 'no-store', ...options, headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...options.headers } });
   } catch { throw new AiNotConnected(); }
+  if (res.status === 401 || (res.status === 403 && !hasValidTeamToken())) { redirectToTeamSignIn(); throw new Error('Please sign in again.'); }
   if (res.status === 404 || res.status === 405 || !(res.headers.get('content-type') || '').includes('json')) throw new AiNotConnected();
   const body = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(body?.message || body?.error?.message || `Error ${res.status}`);

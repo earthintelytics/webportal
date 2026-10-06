@@ -83,21 +83,12 @@ import OrgServicesPage from './pages/org/OrgServicesPage';
 import OrgSettingsPage from './pages/org/OrgSettingsPage';
 import { readOrgProfile } from './pages/org/orgProfile';
 import { paths, sessionTenant } from './routes/paths';
-import { clearTenantSession, clearTeamSession } from './services/session';
+import { clearTenantSession, clearTeamSession, hasValidTeamToken } from './services/session';
 
 // ─── Hub page ────────────────────────────────────────────────────────────────
 // The hub is the FarmIntelytics team's own screen (every crop and organisation
 // service) or an authenticated tenant's personalized multi-service launchpad.
-const hasValidTeamSession = () => {
-  try {
-    const token = localStorage.getItem('fi_admin_token');
-    if (!token) return false;
-    const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-    return payload.role === 'superadmin' && (!payload.exp || payload.exp * 1000 > Date.now());
-  } catch {
-    return false;
-  }
-};
+const hasValidTeamSession = hasValidTeamToken;
 
 // The hub to go back to: the one the service was opened from; otherwise the
 // organisation's hub for a client and the team hub for the team.

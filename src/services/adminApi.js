@@ -1,3 +1,4 @@
+import { hasValidTeamToken, redirectToTeamSignIn } from './session';
 import { ADMIN_API_BASE } from './apiBase';
 /**
  * adminApi.js
@@ -14,13 +15,7 @@ import { ADMIN_API_BASE } from './apiBase';
 // just surface the raw "Invalid or expired token" JSON as a generic error
 // banner, leaving a signed-out user stuck staring at a broken page instead
 // of being sent back to log in.
-function handleAdminAuthFailure() {
-  localStorage.removeItem('fi_admin_token');
-  localStorage.removeItem('fi_admin_email');
-  if (!window.location.pathname.startsWith('/admin/login')) {
-    window.location.href = '/admin/login';
-  }
-}
+const handleAdminAuthFailure = redirectToTeamSignIn;
 
 /** Generic fetch helper for the admin API */
 async function adminFetch(path, options = {}) {
@@ -31,7 +26,8 @@ async function adminFetch(path, options = {}) {
 
   const res = await fetch(url, { cache: 'no-store', ...options, headers });
   const requestId = res.headers.get('X-Request-ID');
-  if (res.status === 401) handleAdminAuthFailure();
+  // 401, or 403 with an outdated team token: sign in again.
+  if (res.status === 401 || (res.status === 403 && !hasValidTeamToken())) handleAdminAuthFailure();
   if (!res.ok) {
     const text = await res.text();
     let msg;
