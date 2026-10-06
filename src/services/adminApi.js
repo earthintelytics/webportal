@@ -379,3 +379,20 @@ export async function deleteUser(userId) {
 }
 
 
+
+// ── Pipeline jobs (G27) ─────────────────────────────────────────────────────
+/** POST /admin/scheduler/{name}/run — start a scheduled site now → { job_id } */
+export async function runSchedulerJob(name) {
+  return adminFetch(`/scheduler/${encodeURIComponent(name)}/run`, { method: 'POST' });
+}
+
+/** GET /admin/jobs?company_id=&status=&kind=&limit= — every organisation's jobs */
+export async function fetchAdminJobs({ companyId = '', status = '', kind = '', limit = 100 } = {}) {
+  const p = new URLSearchParams(Object.entries({ company_id: companyId, status, kind, limit }).filter(([, v]) => v !== '' && v != null));
+  return adminFetch(`/jobs?${p}`);
+}
+
+/** POST /admin/jobs/{id}/retry → { job_id } */
+export async function retryAdminJob(id) {
+  return adminFetch(`/jobs/${encodeURIComponent(id)}/retry`, { method: 'POST' });
+}

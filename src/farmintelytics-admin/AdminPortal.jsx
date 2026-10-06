@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import {
-  Building2, Key, Activity, LayoutDashboard, LogOut, Menu, X,
+  Building2, Key, Activity, PlayCircle, LayoutDashboard, LogOut, Menu, X,
   Clock, Database, Users, Rocket, SlidersHorizontal, Sparkles,
 } from 'lucide-react';
 
@@ -14,6 +14,7 @@ import Scheduler from './pages/Scheduler';
 import Inventory from './pages/Inventory';
 import UsersPage from './pages/Users';
 import AiSettings from './pages/AiSettings';
+import PipelineRuns from './pages/PipelineRuns';
 import { ConfirmProvider } from './components/ConfirmProvider';
 
 // Grouped by what the team is doing: setting clients up, running the
@@ -27,6 +28,7 @@ const NAV_GROUPS = [
   ]},
   { label: 'Operations', items: [
     { id: 'scheduler',     label: 'Monitoring schedule',  icon: Clock,     path: '/admin/scheduler' },
+    { id: 'runs',          label: 'Pipeline runs',        icon: PlayCircle,  path: '/admin/runs' },
     { id: 'inventory',     label: 'Storage',              icon: Database,  path: '/admin/inventory' },
     { id: 'logs',          label: 'Logs',                 icon: Activity,  path: '/admin/logs' },
   ]},
@@ -146,6 +148,7 @@ const AdminPortal = () => {
             <Route path="inventory"     element={<Inventory />} />
             <Route path="credentials"   element={<Credentials />} />
             <Route path="scheduler"     element={<Scheduler />} />
+            <Route path="runs"          element={<PipelineRuns />} />
             <Route path="thresholds"    element={<CropThresholds />} />
             <Route path="ai"            element={<AiSettings />} />
             <Route path="logs"          element={<Logs />} />

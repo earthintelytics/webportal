@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Clock, Plus, Trash2, Pencil, X, Check, ChevronDown } from 'lucide-react';
+import { Clock, Plus, Trash2, Pencil, X, Check, ChevronDown, Play } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import {
-  fetchSchedulerJobs, createSchedulerJob, updateSchedulerJob, deleteSchedulerJob, fetchPipelineConfigs, fetchOrganizations, fetchPipelineLogs,
+  fetchSchedulerJobs, createSchedulerJob, updateSchedulerJob, deleteSchedulerJob, fetchPipelineConfigs, fetchOrganizations, fetchPipelineLogs, runSchedulerJob,
 } from '../../services/adminApi';
 import { useConfirm } from '../components/ConfirmProvider';
 import ErrorBanner from '../components/ErrorBanner';
@@ -142,6 +143,8 @@ function JobModal({ job, orgs, configs, onSave, onClose }) {
 
 const Scheduler = () => {
   const confirm = useConfirm();
+  const navigate = useNavigate();
+  const [started, setStarted] = useState({});
   const [jobs, setJobs] = useState([]);
   const [configs, setConfigs] = useState([]);
   const [orgs, setOrgs] = useState([]);
@@ -174,6 +177,10 @@ const Scheduler = () => {
     setJobs(prev => prev.map(j => j.name === job.name ? { ...j, enabled: !job.enabled } : j));
     try { await updateSchedulerJob(job.name, { enabled: !job.enabled }); } catch (e) { setError(`Could not change it: ${e.message}`); await load(); }
   };
+  // Run now: the backend queues a monitoring job; Pipeline runs shows its progress.
+  const runNow = async (name) => {
+    try { await runSchedulerJob(name); setStarted((s) => ({ ...s, [name]: true })); } catch (e) { setError(`Could not start it: ${e.message}`); }
+  };
   const save = async (name, form) => { if (name) await updateSchedulerJob(name, form); else await createSchedulerJob(form); setModal(null); await load(); };
   const remove = async (name) => {
     if (!(await confirm(`Delete the schedule "${name}"? Monitoring for that site stops until a new schedule is made.`))) return;
@@ -200,7 +207,7 @@ const Scheduler = () => {
           <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 text-left text-xs font-semibold text-gray-600">
-                <tr><th className="px-5 py-3">Organisation and site</th><th className="px-5 py-3">Schedule</th><th className="px-5 py-3">Next run</th><th className="px-5 py-3">Last run</th><th className="px-5 py-3">On</th><th className="px-5 py-3 w-24" /></tr>
+                <tr><th className="px-5 py-3">Organisation and site</th><th className="px-5 py-3">Schedule</th><th className="px-5 py-3">Next run</th><th className="px-5 py-3">Last run</th><th className="px-5 py-3">On</th><th className="px-5 py-3 w-36" /></tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {rows.map(({ job, org, site, parsed, next, last }) => (
@@ -229,6 +236,9 @@ const Scheduler = () => {
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex justify-end gap-1">
+                        {started[job.name]
+                          ? <button onClick={() => navigate('/admin/runs')} className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-sky-800 bg-sky-50 border border-sky-200">Started · view</button>
+                          : <button onClick={() => runNow(job.name)} className="p-2 rounded-lg text-gray-500 hover:bg-gray-100" aria-label="Run now" title="Run now"><Play size={15} /></button>}
                         <button onClick={() => setModal({ job })} className="p-2 rounded-lg text-gray-500 hover:bg-gray-100" aria-label="Edit"><Pencil size={15} /></button>
                         <button onClick={() => remove(job.name)} className="p-2 rounded-lg text-gray-500 hover:text-red-600 hover:bg-red-50" aria-label="Delete"><Trash2 size={15} /></button>
                       </div>
@@ -239,7 +249,7 @@ const Scheduler = () => {
             </table>
           </div>
         )}
-        <p className="text-xs text-gray-500">Times are server time. Next runs happen only while the pipeline scheduler service is running; this page cannot see its state yet. A paused schedule keeps its settings; turn it back on to resume.</p>
+        <p className="text-xs text-gray-500">Times are server time. Next runs happen only while the pipeline scheduler service is running; its runs and their progress are on Pipeline runs. A paused schedule keeps its settings; turn it back on to resume.</p>
       </div>
       {modal && <JobModal job={modal.job} orgs={orgs} configs={configs} onSave={save} onClose={() => setModal(null)} />}
     </div>

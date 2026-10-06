@@ -2,10 +2,11 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import { MapContainer, TileLayer, GeoJSON, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { Link } from 'react-router-dom';
 import { Check, ChevronRight, ChevronDown, Copy, Rocket, UploadCloud, Plus, Trash2, MapPin, AlertTriangle, Building2, ExternalLink } from 'lucide-react';
 import {
   createOrganization, createCredential, createFarm, uploadBoundary, generateFarmConfig, generateParentConfig,
-  createSchedulerJob, uploadOrganizationLogo, getBoundaryProperties, updateOrganization,
+  createSchedulerJob, uploadOrganizationLogo, getBoundaryProperties, updateOrganization, runSchedulerJob,
 } from '../../services/adminApi';
 import { slugify, modulesForAccessModel, ACCESS_MODELS, ALL_RS_INDICES } from '../components/orgConstants';
 import ErrorBanner from '../components/ErrorBanner';
@@ -17,6 +18,7 @@ const scheduleText = (s) => { const w = scheduleWords(s); return w.charAt(0).toL
 import { CROP_PHOTOS, SERVICE_PHOTOS, SERVICE_GROUPS, SERVICE_PACKAGES } from '../../constants/servicePhotos';
 import { HERO_PLACEHOLDERS } from '../../constants/heroPlaceholders';
 import { SERVICE_CATALOG } from '../../modules/services/serviceCatalog';
+import { SMALLHOLDER_SERVICES, resolveModule, moduleName } from '../../modules/registry';
 import { DATASET_DEFINITIONS, datasetsForScope } from '../../modules/data/datasetDefinitions';
 
 /**
@@ -209,7 +211,8 @@ const Onboarding = () => {
   // ── Submits (same backend calls as before) ──
   const submitEstates = () => run(async () => {
     let org = done.org;
-    const first = estates.find(e => e.centre)?.centre || { lat: 6.43, lon: 5.27 };
+    // Map centre from the first boundary; never a default location.
+    const first = estates.find(e => e.centre)?.centre || { lat: null, lon: null };
     if (!org) {
       org = await createOrganization({
         company_name: company.company_name, schema_name: slug,
@@ -308,10 +311,24 @@ const Onboarding = () => {
   };
 
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  // One link per entry point: the organisation dashboard, each crop portal and
+  // service, and one Smallholder hub link for all smallholder services.
+  const hasSmallholder = allowedModules.some(m => SMALLHOLDER_SERVICES.includes(m));
   const clientLinks = [
     ...(accessModel === 'organization' ? [{ label: `${company.company_name} dashboard`, url: `${origin}/login?tenant=${slug}` }] : []),
-    ...allowedModules.filter(m => !m.startsWith('custom-agromonitor')).map(m => ({ label: SERVICE_CATALOG[m]?.title || m, url: `${origin}/login?module=${m}` })),
+    ...allowedModules
+      .filter(m => !m.startsWith('custom-agromonitor') && !SMALLHOLDER_SERVICES.includes(m) && resolveModule(m))
+      .map(m => ({ label: moduleName(m), url: `${origin}/login?module=${m}` })),
+    ...(hasSmallholder ? [{ label: 'Smallholder (members, forms, monitoring, carbon, EUDR)', url: `${origin}/login?module=smallholder-hub` }] : []),
   ];
+  // Start the first monitoring run straight away (the backend queues a job).
+  const [firstRun, setFirstRun] = useState({});
+  const startFirstRuns = () => run(async () => {
+    for (const s of done.schedulers) {
+      const r = await runSchedulerJob(s.name);
+      setFirstRun(f => ({ ...f, [s.name]: r?.job_id || 'started' }));
+    }
+  });
 
   return (
     <div className="h-full overflow-y-auto bg-gray-50">
@@ -613,6 +630,33 @@ const Onboarding = () => {
                   `Login: ${done.credential?.email || cred.email}${done.credential?.access_code ? ` · access code ${done.credential.access_code}` : ''}`,
                   done.schedulers.length ? `Monitoring runs ${scheduleText(sched)}` : 'No automatic schedule: start runs from the Scheduler page',
                 ].map(t => <li key={t} className="flex items-start gap-2"><Check size={15} className="text-green-700 mt-0.5 shrink-0" />{t}</li>)}
+              </ul>
+            </Card>
+
+            {done.schedulers.length > 0 && (
+              <Card>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <h3 className="text-base font-semibold text-gray-900">First monitoring run</h3>
+                    <p className="text-sm text-gray-500 mt-1">Start it now instead of waiting for the schedule. Follow it on Pipeline runs; the client's maps and figures fill in when it finishes.</p>
+                  </div>
+                  {Object.keys(firstRun).length
+                    ? <Link to="/admin/runs" className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold text-sky-800 bg-sky-50 border border-sky-200">Started · view progress</Link>
+                    : <Primary onClick={startFirstRuns} disabled={busy}>{busy ? 'Starting…' : 'Run now'}</Primary>}
+                </div>
+              </Card>
+            )}
+
+            <Card>
+              <div>
+                <h3 className="text-base font-semibold text-gray-900">Next steps</h3>
+                <p className="text-sm text-gray-500 mt-1">Set once by the FarmIntelytics team; the client never sees these settings.</p>
+              </div>
+              <ul className="space-y-2 text-sm text-gray-700">
+                {crops.length > 0 && <li><Link to="/admin/thresholds" className="font-semibold text-green-700">Map classes</Link>: check the words, colours and advice for {crops.map(c => CROP_LABELS[c]).join(', ')} (platform defaults apply until changed).</li>}
+                {hasSmallholder && <li>Smallholder: the co-operative designs its own registration form under Members and parcels; a starter form is offered there.</li>}
+                <li><Link to="/admin/credentials" className="font-semibold text-green-700">Sign-in details</Link>: add more people from the organisation.</li>
+                <li><Link to="/admin/runs" className="font-semibold text-green-700">Pipeline runs</Link>: follow every run for this organisation.</li>
               </ul>
             </Card>
 
