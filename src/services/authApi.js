@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '/farmintelytics-engine/agromonitoring';
+import { API_BASE } from './apiBase';
 
 export const getAuthToken = () => localStorage.getItem('fi_token') || localStorage.getItem('token') || '';
 

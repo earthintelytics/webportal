@@ -6,8 +6,8 @@ import { redirectToTenantSignIn } from './session';
  */
 
 import { tenantKey } from './session';
+import { API_BASE } from './apiBase';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '/farmintelytics-engine/agromonitoring';
 
 // Offline caches are kept per organisation, so another user signing in on the
 // same device never syncs or sees this organisation's observations.
@@ -79,7 +79,7 @@ export async function assignScout(alertId, { scoutName, scoutContact = '', actio
         notes: notes,
       }),
     });
-  } catch (err) {
+  } catch {
     // If offline, queue action locally
     queueOfflineAction({
       type: 'ASSIGN_SCOUT',
@@ -109,7 +109,7 @@ export async function resolveAlert(alertId, { groundTruthCategory, resolutionNot
         resolved_by: resolvedBy,
       }),
     });
-  } catch (err) {
+  } catch {
     queueOfflineAction({
       type: 'RESOLVE_ALERT',
       alertId,
@@ -131,7 +131,7 @@ export async function resolveAlert(alertId, { groundTruthCategory, resolutionNot
 export async function dismissAlert(alertId) {
   try {
     return await apiFetch(`/alerts/${alertId}/dismiss`, { method: 'POST' });
-  } catch (err) {
+  } catch {
     queueOfflineAction({
       type: 'DISMISS_ALERT',
       alertId,

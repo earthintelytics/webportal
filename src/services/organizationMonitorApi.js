@@ -9,8 +9,8 @@ import { redirectToTenantSignIn } from './session';
  */
 
 import proj4 from 'proj4';
+import { API_BASE } from './apiBase';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '/farmintelytics-engine/agromonitoring';
 
 function handleTenantAuthFailure() {
   const isAdmin = Boolean(localStorage.getItem('fi_admin_token'));

@@ -4,8 +4,8 @@
  * settings page says so; nothing is kept only in the browser.
  */
 import { NotConnectedError } from './datasetsApi';
+import { API_BASE } from './apiBase';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '/farmintelytics-engine/agromonitoring';
 
 async function call(path, options = {}) {
   const token = localStorage.getItem('fi_token');

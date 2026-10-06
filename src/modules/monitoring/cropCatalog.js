@@ -1,3 +1,4 @@
+import { API_BASE } from '../../services/apiBase';
 /**
  * Crop page sets — interim copy until the backend catalogue answers
  * (GET /crop-monitoring/catalogue/{crop}; admin-editable, FINDINGS G5/D11).
@@ -94,7 +95,6 @@ export const CROP_CATALOG = {
 };
 
 const BACKEND_KEY = { oil_palm: 'ffb' };
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '/farmintelytics-engine/agromonitoring';
 
 /** Catalogue entry for a crop: backend first (admin-editable), interim copy otherwise. */
 export async function loadCropPages(cropType) {

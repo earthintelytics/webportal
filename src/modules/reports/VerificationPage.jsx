@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ShieldCheck, Download, Info, ChevronDown } from 'lucide-react';
+import { API_BASE } from '../../services/apiBase';
 
 /**
  * Verification page (design: docs/services/reports-and-verification.md):
@@ -7,7 +8,6 @@ import { ShieldCheck, Download, Info, ChevronDown } from 'lucide-react';
  * still has to provide, and an evidence pack. A check that did not run is
  * "Not checked", never "Passed".
  */
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '/farmintelytics-engine/agromonitoring';
 const STATUS = {
   passed: ['Passed', 'bg-green-50 text-green-800 border-green-200'],
   review: ['Needs review', 'bg-amber-50 text-amber-800 border-amber-200'],

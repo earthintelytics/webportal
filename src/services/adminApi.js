@@ -1,3 +1,4 @@
+import { ADMIN_API_BASE } from './apiBase';
 /**
  * adminApi.js
  * ─────────────────────────────────────────────────────────────────────────────
@@ -7,8 +8,6 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-const ADMIN_API_BASE =
-  import.meta.env.VITE_ADMIN_API_BASE_URL || '/farmintelytics-engine/admin';
 
 // A 401 here always means the stored superadmin token is missing/expired/
 // invalid (see _require_admin on the backend) — every admin page used to

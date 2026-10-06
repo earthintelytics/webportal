@@ -1,4 +1,5 @@
 import { redirectToTenantSignIn } from './session';
+import { API_BASE } from './apiBase';
 /**
  * cropMonitoringApi.js
  * API client for the crop-specific monitoring endpoints.
@@ -9,7 +10,6 @@ import { redirectToTenantSignIn } from './session';
  * E.g. sugarcane uses NDMI/LSWI/WDI for moisture; rice uses NDWI for flood detection.
  */
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '/farmintelytics-engine/agromonitoring';
 
 function handleTenantAuthFailure() {
   redirectToTenantSignIn();

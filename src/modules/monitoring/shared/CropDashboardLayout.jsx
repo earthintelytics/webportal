@@ -1559,7 +1559,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
     });
   };
 
-  const renderYieldPolygons = (plots, suffix = '') => {
+  const renderYieldPolygons = (plots) => {
     return plots.map(plot => {
       const keyPrefix = `${plot.id}`;
       return (
@@ -1576,7 +1576,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
     });
   };
 
-  const renderRestorePolygons = (zones, suffix = '') => {
+  const renderRestorePolygons = (zones) => {
     return zones.map(zone => {
       const keyPrefix = `${zone.id}`;
       return (

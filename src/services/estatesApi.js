@@ -4,8 +4,8 @@
  * portal falls back to the estate names carried by the plots.
  */
 import { NotConnectedError } from './datasetsApi';
+import { API_BASE } from './apiBase';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '/farmintelytics-engine/agromonitoring';
 
 // Until the backend ships GET /estates, remember that for the browser session
 // so every page load does not repeat a 404.

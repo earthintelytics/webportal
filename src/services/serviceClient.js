@@ -5,8 +5,8 @@
  * honestly; other failures reject with the backend's message.
  */
 import { NotConnectedError } from './datasetsApi';
+import { API_BASE } from './apiBase';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '/farmintelytics-engine/agromonitoring';
 
 export async function serviceCall(path, { method = 'GET', body, form, auth = true } = {}) {
   const headers = {};

@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ShieldCheck, Lightbulb, ArrowRight, Info } from 'lucide-react';
 import { NotConnectedError } from '../../services/datasetsApi';
+import { API_BASE } from '../../services/apiBase';
 
 /**
  * Service page kinds: Check, Log, Advice (docs/services/00-shared-principles.md).
  * Same design as every page. Each reads its backend endpoint from the shared
  * contract (docs/WORK_SPLIT.md) and says so honestly until it exists.
  */
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '/farmintelytics-engine/agromonitoring';
 async function getJson(path) {
   const token = localStorage.getItem('fi_token');
   let res;

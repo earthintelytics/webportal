@@ -329,7 +329,7 @@ const Login = ({ onLogin, moduleId, onBack, defaultEmail = '', defaultCode = '' 
           if (Array.isArray(config?.map_center)) localStorage.setItem('fi_map_center', JSON.stringify(config.map_center));
           if (config?.max_accounts != null) localStorage.setItem('fi_max_accounts', String(config.max_accounts));
           else localStorage.removeItem('fi_max_accounts');
-        } catch (_) {
+        } catch {
           localStorage.removeItem('fi_display_name');
           localStorage.removeItem('fi_allowed_modules');
           localStorage.removeItem('fi_allowed_crops');

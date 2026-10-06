@@ -1,9 +1,10 @@
+import { ADMIN_API_BASE } from './apiBase';
 /**
  * AI settings, usage and limits (super admin). Contract: docs/WORK_SPLIT.md,
  * "AI settings (G13)". Built by the backend team; until the endpoints exist
  * every call rejects with AiNotConnected and the page says so.
  */
-const BASE = import.meta.env.VITE_ADMIN_API_BASE_URL || '/farmintelytics-engine/admin';
+const BASE = ADMIN_API_BASE;
 
 export class AiNotConnected extends Error { constructor() { super('AI settings service not connected yet'); this.name = 'AiNotConnected'; } }
 

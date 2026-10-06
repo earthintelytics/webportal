@@ -1,9 +1,9 @@
+import { API_BASE } from './apiBase';
 /**
  * Client data (open questions and calibration) — contract in docs/WORK_SPLIT.md,
  * "Client data". Endpoints are built by the backend team; until they exist
  * every call rejects with NotConnectedError and the UI says so honestly.
  */
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '/farmintelytics-engine/agromonitoring';
 
 export class NotConnectedError extends Error {
   constructor() { super('The data service is not connected yet.'); this.name = 'NotConnectedError'; }
