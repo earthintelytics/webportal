@@ -6,6 +6,7 @@ import { fetchParcels, updateMember } from '../../../services/smallholderApi';
 import { StatusPill, SecondaryButton, PrimaryButton, ErrorNote } from '../../../components/page/PageKit';
 import { stateFromError } from '../../../components/page/useLoader';
 import { EUDR_STATUS, MEMBER_STATUS, PARCEL_CHECK } from '../smallholderLabels';
+import SecurePhoto from '../../../components/SecurePhoto';
 
 const FitTo = ({ data }) => {
   const map = useMap();
@@ -41,7 +42,9 @@ const MemberDrawer = ({ member, onClose, onSaved }) => {
   const features = useMemo(() => parcels?.features || [], [parcels]);
   const [statusLabel, statusTone] = MEMBER_STATUS[member.status] || [member.status, 'neutral'];
   const [eudrLabel, eudrTone] = EUDR_STATUS[member.eudr_status] || EUDR_STATUS.not_checked;
-  const extra = Object.entries(member.fields || {});
+  // The photo is shown as a picture, not as a storage path in the list.
+  const photo = member.fields?.photo;
+  const extra = Object.entries(member.fields || {}).filter(([k, v]) => k !== 'photo' && (v == null || typeof v !== 'object'));
 
   const setStatus = async (status) => {
     setSaving(true); setError('');
@@ -52,7 +55,8 @@ const MemberDrawer = ({ member, onClose, onSaved }) => {
     <div className="fixed inset-0 z-[1000] bg-gray-900/30 flex justify-end" onClick={onClose}>
       <aside className="w-full max-w-xl h-full overflow-y-auto bg-white border-l border-gray-200 p-7 space-y-6" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-start justify-between gap-4">
-          <div>
+          {photo && <SecurePhoto path={photo} alt={member.name} className="w-20 h-20 rounded-xl object-cover border border-gray-200 shrink-0" />}
+          <div className="flex-1 min-w-0">
             <p className="text-xs text-gray-500">{member.code}</p>
             <h3 className="font-display text-2xl font-semibold text-gray-900">{member.name}</h3>
             <div className="flex gap-2 mt-2"><StatusPill tone={statusTone}>{statusLabel}</StatusPill><StatusPill tone={eudrTone}>EUDR: {eudrLabel}</StatusPill></div>

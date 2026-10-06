@@ -5,6 +5,8 @@ import { inputCls, useLoader } from '../../components/page/useLoader';
 import { typeInfo } from './fieldTypes';
 import { geometryAreaHa, lineLengthM, toServerGeometry } from './geo';
 import GeometryPreview from './inputs/GeometryPreview';
+import SecurePhoto from '../../components/SecurePhoto';
+import { useSecurePhoto } from '../../components/useSecurePhoto';
 
 const STATUS = {
   new: ['To review', 'info'],
@@ -18,6 +20,12 @@ const geometryOf = (field, v) => {
   if (!typeInfo(field.type).geo || v == null) return null;
   if (v.type && v.coordinates) return v;
   return toServerGeometry(v) || null;
+};
+
+// The opened photo, full size (same private fetch as the thumbnails).
+const BigPhoto = ({ path }) => {
+  const { url } = useSecurePhoto(path);
+  return url ? <img src={url} alt="" className="max-h-full max-w-full rounded-xl" /> : null;
 };
 
 const answerText = (field, v) => {
@@ -137,13 +145,13 @@ const SubmissionDialog = ({ form, submission, onClose, onDone }) => {
       </dl>
       {(submission.photos || []).length > 0 && (
         <div className="flex flex-wrap gap-2">
-          {submission.photos.map((src) => <button key={src} onClick={() => setPhoto(src)}><img src={src} alt="" className="w-24 h-24 object-cover rounded-lg border border-gray-200" /></button>)}
+          {submission.photos.map((src) => <button key={src} onClick={() => setPhoto(src)} aria-label="Open photo"><SecurePhoto path={src} className="w-24 h-24 object-cover rounded-lg border border-gray-200" /></button>)}
         </div>
       )}
       {pending && <textarea className={inputCls} rows={2} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Note to keep with the decision (needed when asking for changes)" />}
       {photo && (
         <div className="fixed inset-0 z-[1100] bg-gray-900/70 flex items-center justify-center p-6" onClick={() => setPhoto(null)}>
-          <img src={photo} alt="" className="max-h-full max-w-full rounded-xl" />
+          <BigPhoto path={photo} />
         </div>
       )}
     </Modal>
