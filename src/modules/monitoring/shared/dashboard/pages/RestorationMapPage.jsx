@@ -1,9 +1,10 @@
+import LayerLegend from '../legends/LayerLegend';
 import { ChevronDown, ChevronRight, Layers, X } from 'lucide-react';
 import { FitBoundsToPlots, FitToZarrBounds, MapPaneClipSetter, ResizeMap, SwipeSliderOverlay } from '../../dashboard/map/MapHelpers';
 import { MapContainer, Pane, TileLayer, ZoomControl } from 'react-leaflet';
 
 /** The restoration zones map page of the crop and service dashboard (moved out of CropDashboardLayout). */
-export default function RestorationMapPage({ basemapAttribution, basemapMaxNativeZoom, basemapUrl, currentTileUrl, currentTileUrlB, currentTimelineA, currentTimelineB, defaultMapCenter, effectiveSensor, farmBoundary, filterEstate, handleSplitDragStart, isCompareMode, landUseChange, landUseChangeLoading, legendEntries, mapOpacity, plotsData, rasterOverlayBounds, renderFloatingBasemapSelector, renderInfoTooltip, renderLegendCard, renderMapBottomPanel, renderRestorePolygons, restorationPlotsData, restorationPlotsDataA, restorationPlotsDataB, restoreBoundariesOpacity, restoreEcoExpanded, restoreEudrExpanded, restoreLulcExpanded, restoreOpExpanded, restoreShowAgb, restoreShowBiodiversity, restoreShowBoundaries, restoreShowCarbon, restoreShowEudr, restoreShowGedi, restoreShowInSar, restoreShowLayers, restoreShowLulc, restoreShowLulcChange, restoreShowProgress, restoreShowSurvival, selectedIndex, setMapOpacity, setRestoreBoundariesOpacity, setRestoreEcoExpanded, setRestoreEudrExpanded, setRestoreLulcExpanded, setRestoreOpExpanded, setRestoreShowAgb, setRestoreShowBiodiversity, setRestoreShowBoundaries, setRestoreShowCarbon, setRestoreShowEudr, setRestoreShowGedi, setRestoreShowInSar, setRestoreShowLayers, setRestoreShowLulc, setRestoreShowLulcChange, setRestoreShowProgress, setRestoreShowSurvival, setShowRasterLayer, showRasterLayer, splitPosition, tileRefreshing, zarrBounds }) {
+export default function RestorationMapPage({ cropType, basemapAttribution, basemapMaxNativeZoom, basemapUrl, currentTileUrl, currentTileUrlB, currentTimelineA, currentTimelineB, defaultMapCenter, effectiveSensor, farmBoundary, filterEstate, handleSplitDragStart, isCompareMode, landUseChange, landUseChangeLoading, legendEntries, mapOpacity, plotsData, rasterOverlayBounds, renderFloatingBasemapSelector, renderInfoTooltip, renderLegendCard, renderMapBottomPanel, renderRestorePolygons, restorationPlotsData, restorationPlotsDataA, restorationPlotsDataB, restoreBoundariesOpacity, restoreEcoExpanded, restoreEudrExpanded, restoreLulcExpanded, restoreOpExpanded, restoreShowAgb, restoreShowBiodiversity, restoreShowBoundaries, restoreShowCarbon, restoreShowEudr, restoreShowGedi, restoreShowInSar, restoreShowLayers, restoreShowLulc, restoreShowLulcChange, restoreShowProgress, restoreShowSurvival, selectedIndex, setMapOpacity, setRestoreBoundariesOpacity, setRestoreEcoExpanded, setRestoreEudrExpanded, setRestoreLulcExpanded, setRestoreOpExpanded, setRestoreShowAgb, setRestoreShowBiodiversity, setRestoreShowBoundaries, setRestoreShowCarbon, setRestoreShowEudr, setRestoreShowGedi, setRestoreShowInSar, setRestoreShowLayers, setRestoreShowLulc, setRestoreShowLulcChange, setRestoreShowProgress, setRestoreShowSurvival, setShowRasterLayer, showRasterLayer, splitPosition, tileRefreshing, zarrBounds }) {
   return (
       <div className="flex flex-col h-full">
 
@@ -126,7 +127,7 @@ export default function RestorationMapPage({ basemapAttribution, basemapMaxNativ
                       <button
                         onClick={() => setShowRasterLayer(!showRasterLayer)}
                         className="w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0"
-                        style={{ backgroundColor: showRasterLayer ? '#16A34A' : '#E5E7EB' }}
+                        style={{ backgroundColor: showRasterLayer ? "var(--brand-primary)" : "#E5E7EB" }}
                       >
                         <div className={`w-4 h-4 rounded-full bg-white shadow transform transition-transform duration-200 ${showRasterLayer ? 'translate-x-4' : 'translate-x-0'}`} />
                       </button>
@@ -155,7 +156,7 @@ export default function RestorationMapPage({ basemapAttribution, basemapMaxNativ
                         className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0 ${
                           restoreShowBoundaries ? 'bg-green-600' : 'bg-gray-200'
                         }`}
-                        style={{ backgroundColor: restoreShowBoundaries ? '#16A34A' : '#E5E7EB' }}
+                        style={{ backgroundColor: restoreShowBoundaries ? "var(--brand-primary)" : "#E5E7EB" }}
                       >
                         <div className={`w-4 h-4 rounded-full bg-white shadow transform transition-transform duration-200 ${
                           restoreShowBoundaries ? 'translate-x-4' : 'translate-x-0'
@@ -193,52 +194,37 @@ export default function RestorationMapPage({ basemapAttribution, basemapMaxNativ
                   <div className="border border-gray-100 rounded-xl p-3.5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-2.5">
                     <div className="flex items-center justify-between">
                       <div><div className="text-xs font-bold text-gray-700 leading-tight flex items-center gap-1.5">Restoration Progress {renderInfoTooltip("Restoration Progress")}</div><span className="text-[11px] text-gray-600">Area rehabilitation status</span></div>
-                      <button onClick={() => setRestoreShowProgress(!restoreShowProgress)} className="w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0" style={{ backgroundColor: restoreShowProgress ? '#16A34A' : '#E5E7EB' }}>
+                      <button onClick={() => setRestoreShowProgress(!restoreShowProgress)} className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0 ${restoreShowProgress ? "bg-green-600" : "bg-gray-200"}`}>
                         <div style={{ transform: restoreShowProgress ? 'translateX(16px)' : 'translateX(0)' }} className="w-4 h-4 rounded-full bg-white shadow transition-transform duration-200" />
                       </button>
                     </div>
                     {restoreShowProgress && (
-                      <div className="space-y-1.5 pt-1 border-t border-gray-50">
-                        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#15803d'}}/><span className="text-[11px] font-semibold text-gray-500">&gt;75% Complete</span></div>
-                        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#84cc16'}}/><span className="text-[11px] font-semibold text-gray-500">50-75%</span></div>
-                        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#fbbf24'}}/><span className="text-[11px] font-semibold text-gray-500">25-50%</span></div>
-                        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#dc2626'}}/><span className="text-[11px] font-semibold text-gray-500">&lt;25%</span></div>
-                      </div>
+                      <LayerLegend layer="restoration_progress" crop={cropType} />
                     )}
                   </div>                        <div className="border border-gray-100 rounded-xl p-3.5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-2.5">
                     <div className="flex items-center justify-between">
                       <div><div className="text-xs font-bold text-gray-700 leading-tight flex items-center gap-1.5">Survival Rate {renderInfoTooltip("Survival Rate")}</div><span className="text-[11px] text-gray-600">Planted species survival</span></div>
-                      <button onClick={() => setRestoreShowSurvival(!restoreShowSurvival)} className="w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0" style={{ backgroundColor: restoreShowSurvival ? '#16A34A' : '#E5E7EB' }}>
+                      <button onClick={() => setRestoreShowSurvival(!restoreShowSurvival)} className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0 ${restoreShowSurvival ? "bg-green-600" : "bg-gray-200"}`}>
                         <div style={{ transform: restoreShowSurvival ? 'translateX(16px)' : 'translateX(0)' }} className="w-4 h-4 rounded-full bg-white shadow transition-transform duration-200" />
                       </button>
                     </div>
                     {restoreShowSurvival && (
-                      <div className="space-y-1.5 pt-1 border-t border-gray-50">
-                        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#15803d'}}/><span className="text-[11px] font-semibold text-gray-500">&gt;85% Survival</span></div>
-                        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#84cc16'}}/><span className="text-[11px] font-semibold text-gray-500">70-85%</span></div>
-                        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#fbbf24'}}/><span className="text-[11px] font-semibold text-gray-500">50-70%</span></div>
-                        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#dc2626'}}/><span className="text-[11px] font-semibold text-gray-500">&lt;50%</span></div>
-                      </div>
+                      <LayerLegend layer="survival" crop={cropType} />
                     )}
                   </div>                        <div className="border border-gray-100 rounded-xl p-3.5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-2.5">
                     <div className="flex items-center justify-between">
                       <div><div className="text-xs font-bold text-gray-700 leading-tight flex items-center gap-1.5">Carbon Offset {renderInfoTooltip("Carbon Offset")}</div><span className="text-[11px] text-gray-600">Sequestered carbon stock</span></div>
-                      <button onClick={() => setRestoreShowCarbon(!restoreShowCarbon)} className="w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0" style={{ backgroundColor: restoreShowCarbon ? '#16A34A' : '#E5E7EB' }}>
+                      <button onClick={() => setRestoreShowCarbon(!restoreShowCarbon)} className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0 ${restoreShowCarbon ? "bg-green-600" : "bg-gray-200"}`}>
                         <div style={{ transform: restoreShowCarbon ? 'translateX(16px)' : 'translateX(0)' }} className="w-4 h-4 rounded-full bg-white shadow transition-transform duration-200" />
                       </button>
                     </div>
                     {restoreShowCarbon && (
-                      <div className="space-y-1.5 pt-1 border-t border-gray-50">
-                        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#1d4ed8'}}/><span className="text-[11px] font-semibold text-gray-500">&gt;10 t CO2e/ha</span></div>
-                        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#60a5fa'}}/><span className="text-[11px] font-semibold text-gray-500">5-10 t CO2e/ha</span></div>
-                        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#fbbf24'}}/><span className="text-[11px] font-semibold text-gray-500">2-5 t CO2e/ha</span></div>
-                        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#dc2626'}}/><span className="text-[11px] font-semibold text-gray-500">&lt;2 t CO2e/ha</span></div>
-                      </div>
+                      <LayerLegend layer="carbon" crop={cropType} />
                     )}
                   </div>                        <div className="border border-gray-100 rounded-xl p-3.5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-2.5">
                     <div className="flex items-center justify-between">
                       <div><div className="text-xs font-bold text-gray-700 leading-tight flex items-center gap-1.5">Biodiversity {renderInfoTooltip("Biodiversity")}</div><span className="text-[11px] text-gray-600">Species richness index</span></div>
-                      <button onClick={() => setRestoreShowBiodiversity(!restoreShowBiodiversity)} className="w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0" style={{ backgroundColor: restoreShowBiodiversity ? '#16A34A' : '#E5E7EB' }}>
+                      <button onClick={() => setRestoreShowBiodiversity(!restoreShowBiodiversity)} className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0 ${restoreShowBiodiversity ? "bg-green-600" : "bg-gray-200"}`}>
                         <div style={{ transform: restoreShowBiodiversity ? 'translateX(16px)' : 'translateX(0)' }} className="w-4 h-4 rounded-full bg-white shadow transition-transform duration-200" />
                       </button>
                     </div>
@@ -253,7 +239,7 @@ export default function RestorationMapPage({ basemapAttribution, basemapMaxNativ
                   </div>                        <div className="border border-gray-100 rounded-xl p-3.5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-2.5">
                     <div className="flex items-center justify-between">
                       <div><div className="text-xs font-bold text-gray-700 leading-tight flex items-center gap-1.5">AGB {renderInfoTooltip("AGB")}</div><span className="text-[11px] text-gray-600">Above-Ground Biomass</span></div>
-                      <button onClick={() => setRestoreShowAgb(!restoreShowAgb)} className="w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0" style={{ backgroundColor: restoreShowAgb ? '#16A34A' : '#E5E7EB' }}>
+                      <button onClick={() => setRestoreShowAgb(!restoreShowAgb)} className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0 ${restoreShowAgb ? "bg-green-600" : "bg-gray-200"}`}>
                         <div style={{ transform: restoreShowAgb ? 'translateX(16px)' : 'translateX(0)' }} className="w-4 h-4 rounded-full bg-white shadow transition-transform duration-200" />
                       </button>
                     </div>
@@ -268,7 +254,7 @@ export default function RestorationMapPage({ basemapAttribution, basemapMaxNativ
                   </div>                        <div className="border border-gray-100 rounded-xl p-3.5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-2.5">
                     <div className="flex items-center justify-between">
                       <div><div className="text-xs font-bold text-gray-700 leading-tight flex items-center gap-1.5">InSAR Coherence {renderInfoTooltip("InSAR Coherence")}</div><span className="text-[11px] text-gray-600">SAR interferometric coherence</span></div>
-                      <button onClick={() => setRestoreShowInSar(!restoreShowInSar)} className="w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0" style={{ backgroundColor: restoreShowInSar ? '#16A34A' : '#E5E7EB' }}>
+                      <button onClick={() => setRestoreShowInSar(!restoreShowInSar)} className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0 ${restoreShowInSar ? "bg-green-600" : "bg-gray-200"}`}>
                         <div style={{ transform: restoreShowInSar ? 'translateX(16px)' : 'translateX(0)' }} className="w-4 h-4 rounded-full bg-white shadow transition-transform duration-200" />
                       </button>
                     </div>
@@ -283,7 +269,7 @@ export default function RestorationMapPage({ basemapAttribution, basemapMaxNativ
                   </div>                        <div className="border border-gray-100 rounded-xl p-3.5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-2.5">
                     <div className="flex items-center justify-between">
                       <div><div className="text-xs font-bold text-gray-700 leading-tight flex items-center gap-1.5">GEDI Canopy {renderInfoTooltip("GEDI Canopy")}</div><span className="text-[11px] text-gray-600">LiDAR canopy height</span></div>
-                      <button onClick={() => setRestoreShowGedi(!restoreShowGedi)} className="w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0" style={{ backgroundColor: restoreShowGedi ? '#16A34A' : '#E5E7EB' }}>
+                      <button onClick={() => setRestoreShowGedi(!restoreShowGedi)} className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0 ${restoreShowGedi ? "bg-green-600" : "bg-gray-200"}`}>
                         <div style={{ transform: restoreShowGedi ? 'translateX(16px)' : 'translateX(0)' }} className="w-4 h-4 rounded-full bg-white shadow transition-transform duration-200" />
                       </button>
                     </div>
@@ -318,7 +304,7 @@ export default function RestorationMapPage({ basemapAttribution, basemapMaxNativ
                   <div className="border border-gray-100 rounded-xl p-3.5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-2.5">
                     <div className="flex items-center justify-between">
                       <div><div className="text-xs font-bold text-gray-700 leading-tight flex items-center gap-1.5">LULC {renderInfoTooltip("LULC")}</div><span className="text-[11px] text-gray-600">Land Use / Land Cover</span></div>
-                      <button onClick={() => setRestoreShowLulc(!restoreShowLulc)} className="w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0" style={{ backgroundColor: restoreShowLulc ? '#16A34A' : '#E5E7EB' }}>
+                      <button onClick={() => setRestoreShowLulc(!restoreShowLulc)} className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0 ${restoreShowLulc ? "bg-green-600" : "bg-gray-200"}`}>
                         <div style={{ transform: restoreShowLulc ? 'translateX(16px)' : 'translateX(0)' }} className="w-4 h-4 rounded-full bg-white shadow transition-transform duration-200" />
                       </button>
                     </div>
@@ -334,7 +320,7 @@ export default function RestorationMapPage({ basemapAttribution, basemapMaxNativ
                   </div>                        <div className="border border-gray-100 rounded-xl p-3.5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-2.5">
                     <div className="flex items-center justify-between">
                       <div><div className="text-xs font-bold text-gray-700 leading-tight flex items-center gap-1.5">LULC Change {renderInfoTooltip("LULC Change")}</div><span className="text-[11px] text-gray-600">ESA WorldCover, real detected transitions</span></div>
-                      <button onClick={() => setRestoreShowLulcChange(!restoreShowLulcChange)} className="w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0" style={{ backgroundColor: restoreShowLulcChange ? '#16A34A' : '#E5E7EB' }}>
+                      <button onClick={() => setRestoreShowLulcChange(!restoreShowLulcChange)} className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0 ${restoreShowLulcChange ? "bg-green-600" : "bg-gray-200"}`}>
                         <div style={{ transform: restoreShowLulcChange ? 'translateX(16px)' : 'translateX(0)' }} className="w-4 h-4 rounded-full bg-white shadow transition-transform duration-200" />
                       </button>
                     </div>
@@ -378,7 +364,7 @@ export default function RestorationMapPage({ basemapAttribution, basemapMaxNativ
                   <div className="border border-gray-100 rounded-xl p-3.5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-2.5">
                     <div className="flex items-center justify-between">
                       <div><div className="text-xs font-bold text-gray-700 leading-tight flex items-center gap-1.5">EUDR Compliance {renderInfoTooltip("EUDR Compliance")}</div><span className="text-[11px] text-gray-600">EU Deforestation Regulation status</span></div>
-                      <button onClick={() => setRestoreShowEudr(!restoreShowEudr)} className="w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0" style={{ backgroundColor: restoreShowEudr ? '#16A34A' : '#E5E7EB' }}>
+                      <button onClick={() => setRestoreShowEudr(!restoreShowEudr)} className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0 ${restoreShowEudr ? "bg-green-600" : "bg-gray-200"}`}>
                         <div style={{ transform: restoreShowEudr ? 'translateX(16px)' : 'translateX(0)' }} className="w-4 h-4 rounded-full bg-white shadow transition-transform duration-200" />
                       </button>
                     </div>

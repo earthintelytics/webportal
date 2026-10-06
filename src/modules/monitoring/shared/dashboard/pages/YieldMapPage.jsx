@@ -1,9 +1,10 @@
+import LayerLegend from '../legends/LayerLegend';
 import { ChevronDown, ChevronRight, Layers, X } from 'lucide-react';
 import { FitBoundsToPlots, FitToZarrBounds, MapPaneClipSetter, ResizeMap, SwipeSliderOverlay } from '../../dashboard/map/MapHelpers';
 import { MapContainer, Pane, TileLayer, ZoomControl } from 'react-leaflet';
 
 /** The yield map page of the crop and service dashboard (moved out of CropDashboardLayout). */
-export default function YieldMapPage({ basemapAttribution, basemapMaxNativeZoom, basemapUrl, currentTileUrl, currentTileUrlB, currentTimelineA, currentTimelineB, defaultMapCenter, effectiveSensor, farmBoundary, filterEstate, handleSplitDragStart, isCompareMode, mapOpacity, plotsData, rasterOverlayBounds, renderFloatingBasemapSelector, renderInfoTooltip, renderMapBottomPanel, renderYieldPolygons, selectedIndex, setMapOpacity, setShowRasterLayer, setYieldBoundariesOpacity, setYieldOpExpanded, setYieldProdExpanded, setYieldShowBiomass, setYieldShowBoundaries, setYieldShowGrowth, setYieldShowLayers, setYieldShowReadiness, setYieldShowYield, setYieldStatExpanded, showRasterLayer, splitPosition, tileRefreshing, yieldBoundariesOpacity, yieldOpExpanded, yieldPlotsData, yieldPlotsDataA, yieldPlotsDataB, yieldProdExpanded, yieldShowBiomass, yieldShowBoundaries, yieldShowGrowth, yieldShowLayers, yieldShowReadiness, yieldShowYield, yieldStatExpanded, zarrBounds }) {
+export default function YieldMapPage({ cropType, basemapAttribution, basemapMaxNativeZoom, basemapUrl, currentTileUrl, currentTileUrlB, currentTimelineA, currentTimelineB, defaultMapCenter, effectiveSensor, farmBoundary, filterEstate, handleSplitDragStart, isCompareMode, mapOpacity, plotsData, rasterOverlayBounds, renderFloatingBasemapSelector, renderInfoTooltip, renderMapBottomPanel, renderYieldPolygons, selectedIndex, setMapOpacity, setShowRasterLayer, setYieldBoundariesOpacity, setYieldOpExpanded, setYieldProdExpanded, setYieldShowBiomass, setYieldShowBoundaries, setYieldShowGrowth, setYieldShowLayers, setYieldShowReadiness, setYieldShowYield, setYieldStatExpanded, showRasterLayer, splitPosition, tileRefreshing, yieldBoundariesOpacity, yieldOpExpanded, yieldPlotsData, yieldPlotsDataA, yieldPlotsDataB, yieldProdExpanded, yieldShowBiomass, yieldShowBoundaries, yieldShowGrowth, yieldShowLayers, yieldShowReadiness, yieldShowYield, yieldStatExpanded, zarrBounds }) {
   return (
       <div className="flex flex-col h-full">
 
@@ -126,7 +127,7 @@ export default function YieldMapPage({ basemapAttribution, basemapMaxNativeZoom,
                       <button
                         onClick={() => setShowRasterLayer(!showRasterLayer)}
                         className="w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0"
-                        style={{ backgroundColor: showRasterLayer ? '#16A34A' : '#E5E7EB' }}
+                        style={{ backgroundColor: showRasterLayer ? "var(--brand-primary)" : "#E5E7EB" }}
                       >
                         <div className={`w-4 h-4 rounded-full bg-white shadow transform transition-transform duration-200 ${showRasterLayer ? 'translate-x-4' : 'translate-x-0'}`} />
                       </button>
@@ -155,7 +156,7 @@ export default function YieldMapPage({ basemapAttribution, basemapMaxNativeZoom,
                         className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0 ${
                           yieldShowBoundaries ? 'bg-green-600' : 'bg-gray-200'
                         }`}
-                        style={{ backgroundColor: yieldShowBoundaries ? '#16A34A' : '#E5E7EB' }}
+                        style={{ backgroundColor: yieldShowBoundaries ? "var(--brand-primary)" : "#E5E7EB" }}
                       >
                         <div className={`w-4 h-4 rounded-full bg-white shadow transform transition-transform duration-200 ${
                           yieldShowBoundaries ? 'translate-x-4' : 'translate-x-0'
@@ -193,36 +194,27 @@ export default function YieldMapPage({ basemapAttribution, basemapMaxNativeZoom,
                   <div className="border border-gray-100 rounded-xl p-3.5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-2.5">
                     <div className="flex items-center justify-between">
                       <div><div className="text-xs font-bold text-gray-700 leading-tight flex items-center gap-1.5">Yield Forecast {renderInfoTooltip("Yield Forecast")}</div><span className="text-[11px] text-gray-600">Predicted harvest volume</span></div>
-                      <button onClick={() => setYieldShowYield(!yieldShowYield)} className="w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0" style={{ backgroundColor: yieldShowYield ? '#16A34A' : '#E5E7EB' }}>
+                      <button onClick={() => setYieldShowYield(!yieldShowYield)} className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0 ${yieldShowYield ? "bg-green-600" : "bg-gray-200"}`}>
                         <div style={{ transform: yieldShowYield ? 'translateX(16px)' : 'translateX(0)' }} className="w-4 h-4 rounded-full bg-white shadow transition-transform duration-200" />
                       </button>
                     </div>
                     {yieldShowYield && (
-                      <div className="space-y-1.5 pt-1 border-t border-gray-50">
-                        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#15803d'}}/><span className="text-[11px] font-semibold text-gray-500">High</span></div>
-                        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#84cc16'}}/><span className="text-[11px] font-semibold text-gray-500">Good</span></div>
-                        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#eab308'}}/><span className="text-[11px] font-semibold text-gray-500">Average</span></div>
-                        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#dc2626'}}/><span className="text-[11px] font-semibold text-gray-500">Below average</span></div>
-                      </div>
+                      <LayerLegend layer="yield" crop={cropType} />
                     )}
                   </div>                        <div className="border border-gray-100 rounded-xl p-3.5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-2.5">
                     <div className="flex items-center justify-between">
                       <div><div className="text-xs font-bold text-gray-700 leading-tight flex items-center gap-1.5">Biomass {renderInfoTooltip("Biomass")}</div><span className="text-[11px] text-gray-600">Above-ground biomass (EVI-derived)</span></div>
-                      <button onClick={() => setYieldShowBiomass(!yieldShowBiomass)} className="w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0" style={{ backgroundColor: yieldShowBiomass ? '#16A34A' : '#E5E7EB' }}>
+                      <button onClick={() => setYieldShowBiomass(!yieldShowBiomass)} className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0 ${yieldShowBiomass ? "bg-green-600" : "bg-gray-200"}`}>
                         <div style={{ transform: yieldShowBiomass ? 'translateX(16px)' : 'translateX(0)' }} className="w-4 h-4 rounded-full bg-white shadow transition-transform duration-200" />
                       </button>
                     </div>
                     {yieldShowBiomass && (
-                      <div className="space-y-1.5 pt-1 border-t border-gray-50">
-                        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#15803d'}}/><span className="text-[11px] font-semibold text-gray-500">High</span></div>
-                        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#84cc16'}}/><span className="text-[11px] font-semibold text-gray-500">Moderate</span></div>
-                        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#fbbf24'}}/><span className="text-[11px] font-semibold text-gray-500">Low</span></div>
-                      </div>
+                      <LayerLegend layer="biomass" crop={cropType} />
                     )}
                   </div>                        <div className="border border-gray-100 rounded-xl p-3.5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-2.5">
                     <div className="flex items-center justify-between">
                       <div><div className="text-xs font-bold text-gray-700 leading-tight flex items-center gap-1.5">Harvest Readiness {renderInfoTooltip("Harvest Readiness")}</div><span className="text-[11px] text-gray-600">Crop maturity status</span></div>
-                      <button onClick={() => setYieldShowReadiness(!yieldShowReadiness)} className="w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0" style={{ backgroundColor: yieldShowReadiness ? '#16A34A' : '#E5E7EB' }}>
+                      <button onClick={() => setYieldShowReadiness(!yieldShowReadiness)} className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0 ${yieldShowReadiness ? "bg-green-600" : "bg-gray-200"}`}>
                         <div style={{ transform: yieldShowReadiness ? 'translateX(16px)' : 'translateX(0)' }} className="w-4 h-4 rounded-full bg-white shadow transition-transform duration-200" />
                       </button>
                     </div>
@@ -248,7 +240,7 @@ export default function YieldMapPage({ basemapAttribution, basemapMaxNativeZoom,
                   <div className="border border-gray-100 rounded-xl p-3.5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-2.5">
                     <div className="flex items-center justify-between">
                       <div><div className="text-xs font-bold text-gray-700 leading-tight flex items-center gap-1.5">Growth Stage {renderInfoTooltip("Growth Stage")}</div><span className="text-[11px] text-gray-600">Phenological stage classification</span></div>
-                      <button onClick={() => setYieldShowGrowth(!yieldShowGrowth)} className="w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0" style={{ backgroundColor: yieldShowGrowth ? '#16A34A' : '#E5E7EB' }}>
+                      <button onClick={() => setYieldShowGrowth(!yieldShowGrowth)} className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0 ${yieldShowGrowth ? "bg-green-600" : "bg-gray-200"}`}>
                         <div style={{ transform: yieldShowGrowth ? 'translateX(16px)' : 'translateX(0)' }} className="w-4 h-4 rounded-full bg-white shadow transition-transform duration-200" />
                       </button>
                     </div>

@@ -1,9 +1,10 @@
+import LayerLegend from '../legends/LayerLegend';
 import { ChevronDown, ChevronRight, Layers, X } from 'lucide-react';
 import { FitBoundsToPlots, FitToZarrBounds, MapPaneClipSetter, ResizeMap, SwipeSliderOverlay } from '../../dashboard/map/MapHelpers';
 import { MapContainer, Pane, TileLayer, ZoomControl } from 'react-leaflet';
 
 /** The weather and climate page of the crop and service dashboard (moved out of CropDashboardLayout). */
-export default function WeatherPage({ basemapAttribution, basemapMaxNativeZoom, basemapUrl, climateAtmExpanded, climateBioExpanded, climateBoundariesOpacity, climateOpExpanded, climatePlotsData, climatePlotsDataA, climatePlotsDataB, climateShowBoundaries, climateShowFlood, climateShowLayers, climateShowLst, climateShowRainfall, climateShowSoilTemp, climateShowVaporDeficit, currentTileUrl, currentTileUrlB, currentTimelineA, currentTimelineB, defaultMapCenter, effectiveSensor, farmBoundary, filterEstate, handleSplitDragStart, isCompareMode, mapOpacity, plotsData, rasterOverlayBounds, renderClimatePolygons, renderFloatingBasemapSelector, renderInfoTooltip, renderMapBottomPanel, selectedIndex, setClimateAtmExpanded, setClimateBioExpanded, setClimateBoundariesOpacity, setClimateOpExpanded, setClimateShowBoundaries, setClimateShowFlood, setClimateShowLayers, setClimateShowLst, setClimateShowRainfall, setClimateShowSoilTemp, setClimateShowVaporDeficit, showRasterLayer, splitPosition, tileRefreshing, zarrBounds }) {
+export default function WeatherPage({ cropType, basemapAttribution, basemapMaxNativeZoom, basemapUrl, climateAtmExpanded, climateBioExpanded, climateBoundariesOpacity, climateOpExpanded, climatePlotsData, climatePlotsDataA, climatePlotsDataB, climateShowBoundaries, climateShowFlood, climateShowLayers, climateShowLst, climateShowRainfall, climateShowSoilTemp, climateShowVaporDeficit, currentTileUrl, currentTileUrlB, currentTimelineA, currentTimelineB, defaultMapCenter, effectiveSensor, farmBoundary, filterEstate, handleSplitDragStart, isCompareMode, mapOpacity, plotsData, rasterOverlayBounds, renderClimatePolygons, renderFloatingBasemapSelector, renderInfoTooltip, renderMapBottomPanel, selectedIndex, setClimateAtmExpanded, setClimateBioExpanded, setClimateBoundariesOpacity, setClimateOpExpanded, setClimateShowBoundaries, setClimateShowFlood, setClimateShowLayers, setClimateShowLst, setClimateShowRainfall, setClimateShowSoilTemp, setClimateShowVaporDeficit, showRasterLayer, splitPosition, tileRefreshing, zarrBounds }) {
   return (
       <div className="flex flex-col h-full">
 
@@ -128,7 +129,7 @@ export default function WeatherPage({ basemapAttribution, basemapMaxNativeZoom, 
                         className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0 ${
                           climateShowBoundaries ? 'bg-green-600' : 'bg-gray-200'
                         }`}
-                        style={{ backgroundColor: climateShowBoundaries ? '#16A34A' : '#E5E7EB' }}
+                        style={{ backgroundColor: climateShowBoundaries ? "var(--brand-primary)" : "#E5E7EB" }}
                       >
                         <div className={`w-4 h-4 rounded-full bg-white shadow transform transition-transform duration-200 ${
                           climateShowBoundaries ? 'translate-x-4' : 'translate-x-0'
@@ -166,22 +167,17 @@ export default function WeatherPage({ basemapAttribution, basemapMaxNativeZoom, 
                   <div className="border border-gray-100 rounded-xl p-3.5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-2.5">
                     <div className="flex items-center justify-between">
                       <div><div className="text-xs font-bold text-gray-700 leading-tight flex items-center gap-1.5">Rainfall {renderInfoTooltip("Rainfall")}</div><span className="text-[11px] text-gray-600">Accumulated precipitation</span></div>
-                      <button onClick={() => setClimateShowRainfall(!climateShowRainfall)} className="w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0" style={{ backgroundColor: climateShowRainfall ? '#16A34A' : '#E5E7EB' }}>
+                      <button onClick={() => setClimateShowRainfall(!climateShowRainfall)} className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0 ${climateShowRainfall ? "bg-green-600" : "bg-gray-200"}`}>
                         <div style={{ transform: climateShowRainfall ? 'translateX(16px)' : 'translateX(0)' }} className="w-4 h-4 rounded-full bg-white shadow transition-transform duration-200" />
                       </button>
                     </div>
                     {climateShowRainfall && (
-                      <div className="space-y-1.5 pt-1 border-t border-gray-50">
-                        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#1d4ed8'}}/><span className="text-[11px] font-semibold text-gray-500">&gt;200 mm</span></div>
-                        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#60a5fa'}}/><span className="text-[11px] font-semibold text-gray-500">100-200 mm</span></div>
-                        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#fbbf24'}}/><span className="text-[11px] font-semibold text-gray-500">50-100 mm</span></div>
-                        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#dc2626'}}/><span className="text-[11px] font-semibold text-gray-500">&lt;50 mm</span></div>
-                      </div>
+                      <LayerLegend layer="rain" crop={cropType} />
                     )}
                   </div>                        <div className="border border-gray-100 rounded-xl p-3.5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-2.5">
                     <div className="flex items-center justify-between">
                       <div><div className="text-xs font-bold text-gray-700 leading-tight flex items-center gap-1.5">Soil Temperature {renderInfoTooltip("Soil Temperature")}</div><span className="text-[11px] text-gray-600">Near-surface soil temperature</span></div>
-                      <button onClick={() => setClimateShowSoilTemp(!climateShowSoilTemp)} className="w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0" style={{ backgroundColor: climateShowSoilTemp ? '#16A34A' : '#E5E7EB' }}>
+                      <button onClick={() => setClimateShowSoilTemp(!climateShowSoilTemp)} className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0 ${climateShowSoilTemp ? "bg-green-600" : "bg-gray-200"}`}>
                         <div style={{ transform: climateShowSoilTemp ? 'translateX(16px)' : 'translateX(0)' }} className="w-4 h-4 rounded-full bg-white shadow transition-transform duration-200" />
                       </button>
                     </div>
@@ -208,22 +204,17 @@ export default function WeatherPage({ basemapAttribution, basemapMaxNativeZoom, 
                   <div className="border border-gray-100 rounded-xl p-3.5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-2.5">
                     <div className="flex items-center justify-between">
                       <div><div className="text-xs font-bold text-gray-700 leading-tight flex items-center gap-1.5">LST {renderInfoTooltip("LST")}</div><span className="text-[11px] text-gray-600">Land surface temperature</span></div>
-                      <button onClick={() => setClimateShowLst(!climateShowLst)} className="w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0" style={{ backgroundColor: climateShowLst ? '#16A34A' : '#E5E7EB' }}>
+                      <button onClick={() => setClimateShowLst(!climateShowLst)} className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0 ${climateShowLst ? "bg-green-600" : "bg-gray-200"}`}>
                         <div style={{ transform: climateShowLst ? 'translateX(16px)' : 'translateX(0)' }} className="w-4 h-4 rounded-full bg-white shadow transition-transform duration-200" />
                       </button>
                     </div>
                     {climateShowLst && (
-                      <div className="space-y-1.5 pt-1 border-t border-gray-50">
-                        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#dc2626'}}/><span className="text-[11px] font-semibold text-gray-500">&gt;40C Extreme</span></div>
-                        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#f97316'}}/><span className="text-[11px] font-semibold text-gray-500">30-40C High</span></div>
-                        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#84cc16'}}/><span className="text-[11px] font-semibold text-gray-500">20-30C Normal</span></div>
-                        <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#1d4ed8'}}/><span className="text-[11px] font-semibold text-gray-500">&lt;20C Cool</span></div>
-                      </div>
+                      <LayerLegend layer="heat" crop={cropType} />
                     )}
                   </div>                        <div className="border border-gray-100 rounded-xl p-3.5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-2.5">
                     <div className="flex items-center justify-between">
                       <div><div className="text-xs font-bold text-gray-700 leading-tight flex items-center gap-1.5">Vapor Pressure Deficit {renderInfoTooltip("Vapor Pressure Deficit")}</div><span className="text-[11px] text-gray-600">Atmospheric dryness</span></div>
-                      <button onClick={() => setClimateShowVaporDeficit(!climateShowVaporDeficit)} className="w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0" style={{ backgroundColor: climateShowVaporDeficit ? '#16A34A' : '#E5E7EB' }}>
+                      <button onClick={() => setClimateShowVaporDeficit(!climateShowVaporDeficit)} className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0 ${climateShowVaporDeficit ? "bg-green-600" : "bg-gray-200"}`}>
                         <div style={{ transform: climateShowVaporDeficit ? 'translateX(16px)' : 'translateX(0)' }} className="w-4 h-4 rounded-full bg-white shadow transition-transform duration-200" />
                       </button>
                     </div>
@@ -237,7 +228,7 @@ export default function WeatherPage({ basemapAttribution, basemapMaxNativeZoom, 
                   </div>                        <div className="border border-gray-100 rounded-xl p-3.5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-2.5">
                     <div className="flex items-center justify-between">
                       <div><div className="text-xs font-bold text-gray-700 leading-tight flex items-center gap-1.5">Flood Risk {renderInfoTooltip("Flood Risk")}</div><span className="text-[11px] text-gray-600">Surface inundation risk</span></div>
-                      <button onClick={() => setClimateShowFlood(!climateShowFlood)} className="w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0" style={{ backgroundColor: climateShowFlood ? '#16A34A' : '#E5E7EB' }}>
+                      <button onClick={() => setClimateShowFlood(!climateShowFlood)} className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0 ${climateShowFlood ? "bg-green-600" : "bg-gray-200"}`}>
                         <div style={{ transform: climateShowFlood ? 'translateX(16px)' : 'translateX(0)' }} className="w-4 h-4 rounded-full bg-white shadow transition-transform duration-200" />
                       </button>
                     </div>
