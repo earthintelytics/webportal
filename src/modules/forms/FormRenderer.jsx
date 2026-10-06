@@ -5,7 +5,7 @@ import MapDrawInput from './inputs/MapDrawInput';
 
 const inputCls = 'w-full px-3.5 py-3 rounded-xl border border-gray-300 bg-white text-base text-gray-900 focus:border-green-600 focus:outline-none';
 
-function Input({ field, value, onChange }) {
+function Input({ field, value, onChange, near }) {
   switch (field.type) {
     case 'number':
       return <input type="number" inputMode="decimal" className={inputCls} value={value ?? ''} min={field.min ?? undefined} max={field.max ?? undefined} onChange={(e) => onChange(e.target.value)} />;
@@ -36,9 +36,9 @@ function Input({ field, value, onChange }) {
       );
     }
     case 'photo': return <PhotoInput value={value} onChange={onChange} max={field.max_photos || 1} />;
-    case 'draw_point': return <MapDrawInput shape="point" value={value} onChange={onChange} />;
-    case 'draw_line': return <MapDrawInput shape="line" value={value} onChange={onChange} />;
-    case 'draw_polygon': return <MapDrawInput shape="area" value={value} onChange={onChange} />;
+    case 'draw_point': return <MapDrawInput shape="point" value={value} onChange={onChange} near={near} />;
+    case 'draw_line': return <MapDrawInput shape="line" value={value} onChange={onChange} near={near} />;
+    case 'draw_polygon': return <MapDrawInput shape="area" value={value} onChange={onChange} near={near} />;
     case 'gps_point': return <GpsPointInput value={value} onChange={onChange} />;
     case 'boundary_walk': return <BoundaryWalkInput value={value} onChange={onChange} />;
     case 'boundary_file': return <BoundaryFileInput value={value} onChange={onChange} />;
@@ -47,6 +47,12 @@ function Input({ field, value, onChange }) {
       return <input type="text" className={inputCls} value={value ?? ''} onChange={(e) => onChange(e.target.value)} />;
   }
 }
+
+// The first other area or line already answered, so the next map opens there.
+const nearFor = (field, fields, answers) => {
+  const other = fields.find((o) => o.id !== field.id && answers[o.id]?.coordinates && answers[o.id].type !== 'Point');
+  return other ? answers[other.id] : null;
+};
 
 /**
  * Renders a form for filling in, phone-first. Used by the builder preview and
@@ -67,7 +73,7 @@ const FormRenderer = ({ fields, answers, onChange, errors = {} }) => (
         <div key={f.id} className="space-y-2">
           <p className="text-sm font-semibold text-gray-900">{f.label}{f.required && <span className="text-red-700"> *</span>}</p>
           {f.help && <p className="text-xs text-gray-500">{f.help}</p>}
-          <Input field={f} value={answers[f.id]} onChange={(v) => onChange({ ...answers, [f.id]: v })} />
+          <Input field={f} value={answers[f.id]} onChange={(v) => onChange({ ...answers, [f.id]: v })} near={nearFor(f, fields, answers)} />
           {errors[f.id] && <p className="text-xs text-red-700">{errors[f.id]}</p>}
         </div>
       );

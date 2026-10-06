@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Polygon, Polyline, CircleMarker, useMap, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Polygon, Polyline, CircleMarker, GeoJSON, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Crosshair, Trash2, Undo2, Upload } from 'lucide-react';
@@ -41,9 +41,10 @@ const ringsToLatLng = (g) => (g.type === 'Polygon' ? [g.coordinates.map((r) => r
  * Draw a point, line or area on a satellite map, or fill it from a file
  * (GeoJSON, KML, KMZ, zipped shapefile). Value: a GeoJSON geometry in
  * longitude/latitude plus `source` ("drawn" | "file" | "gps") and, for a
- * file, `file_name`. Works with a finger on a phone.
+ * file, `file_name`. Works with a finger on a phone. `near` (another map
+ * answer in the form) is where the map opens, so a gate is placed on the farm.
  */
-const MapDrawInput = ({ shape = 'area', value, onChange, allowUpload = true }) => {
+const MapDrawInput = ({ shape = 'area', value, onChange, allowUpload = true, near = null }) => {
   // A drawn answer restored from a draft keeps its corners editable.
   const [vertices, setVertices] = useState(() => {
     if (value?.source !== 'drawn' || !value.coordinates) return [];
@@ -113,7 +114,8 @@ const MapDrawInput = ({ shape = 'area', value, onChange, allowUpload = true }) =
           <TileLayer url={IMAGERY} maxZoom={19} />
           <TileLayer url={LABELS} maxZoom={19} />
           <Taps onTap={tap} />
-          <FitTo geometry={fromFile ? geometry : null} center={start} />
+          <FitTo geometry={fromFile ? geometry : (!geometry && !vertices.length && near) || null} center={start} />
+          {near && near !== geometry && <GeoJSON data={near} style={{ color: '#ffffff', weight: 2, dashArray: '4 4', fillOpacity: 0 }} interactive={false} />}
           {geometry?.type === 'Point' && <Marker position={[geometry.coordinates[1], geometry.coordinates[0]]} icon={pin} />}
           {geometry?.type === 'LineString' && <Polyline positions={geometry.coordinates.map(([lon, lat]) => [lat, lon])} pathOptions={{ color: GREEN, weight: 4 }} />}
           {(geometry?.type === 'Polygon' || geometry?.type === 'MultiPolygon') && ringsToLatLng(geometry).map((p, i) => <Polygon key={i} positions={p} pathOptions={{ color: GREEN, weight: 3, fillOpacity: 0.2 }} />)}
