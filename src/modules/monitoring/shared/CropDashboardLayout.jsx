@@ -1030,7 +1030,9 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
   const renderFloatingBasemapSelector = () => {
     const BASEMAPS = [
       { id: 'terrain',       label: 'Map',             sub: 'Roads, rivers and terrain', emoji: '' },
-      { id: 'google-hybrid', label: 'Satellite',       sub: 'Detailed photo of the area', emoji: '' },
+      { id: 'google-hybrid', label: 'Satellite (Google)', sub: 'Detailed photo of the area', emoji: '' },
+      { id: 'esri-imagery',  label: 'Satellite (Esri)', sub: 'Detailed photo, second source', emoji: '' },
+      { id: 'osm-streets',   label: 'Streets',         sub: 'OpenStreetMap roads and places', emoji: '' },
       // Live composites rendered from this tenant's own archive — move with
       // the time slider, unlike the static sources above.
       { id: 'true-color',    label: 'Latest image',    sub: 'Your farms on the chosen date', emoji: '' },
@@ -3194,6 +3196,8 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
   const basemapUrl = useMemo(() => {
     if (activeComposite) return compositeTileUrl || STATIC_BASEMAP_FALLBACK;
     if (selectedBasemap === 'terrain') return TERRAIN_BASEMAP_URL;
+    if (selectedBasemap === 'osm-streets') return 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+    if (selectedBasemap === 'esri-imagery') return STATIC_BASEMAP_FALLBACK;
     if (selectedBasemap === 'google-hybrid') {
       // lyrs=y = satellite + labels, lyrs=s = satellite only
       return `https://mt1.google.com/vt/lyrs=${showGoogleLabels ? 'y' : 's'}&x={x}&y={y}&z={z}`;
@@ -3203,7 +3207,13 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
   // OpenTopoMap's real (non-upscaled) tiles top out at z17 — the shared
   // maxNativeZoom={18} that worked fine for satellite sources requested
   // tiles one level past what terrain actually has.
-  const basemapMaxNativeZoom = selectedBasemap === 'terrain' && !activeComposite ? 17 : 18;
+  // Credit for whichever background is showing (docs/DATA_SOURCES.md, credits).
+  const basemapAttribution = activeComposite ? `Contains modified Copernicus Sentinel data ${new Date().getFullYear()}`
+    : selectedBasemap === 'google-hybrid' ? 'Imagery © Google'
+      : selectedBasemap === 'terrain' ? 'Map data © OpenStreetMap contributors, SRTM · Map style © OpenTopoMap (CC-BY-SA)'
+        : selectedBasemap === 'osm-streets' ? '© OpenStreetMap contributors'
+          : 'Imagery © Esri, Maxar, Earthstar Geographics';
+  const basemapMaxNativeZoom = (selectedBasemap === 'terrain' || selectedBasemap === 'osm-streets') && !activeComposite ? (selectedBasemap === 'terrain' ? 17 : 19) : 18;
 
   const triggerReportGeneration = async (overridePlot, overrideIndex) => {
     const targetPlot = overridePlot !== undefined ? overridePlot : reportPlot;
@@ -4359,7 +4369,7 @@ Context: ${context}.`;
                   )}
                   <MapContainer preferCanvas={true} center={defaultMapCenter} zoom={13} maxZoom={22}
                     style={{ height: '100%', width: '100%', zIndex: 1, position: 'relative', background: 'transparent' }} zoomControl={false}>
-                    <TileLayer key={basemapUrl} url={basemapUrl} attribution="&copy; ESRI & Google Satellite Imagery" maxZoom={22} maxNativeZoom={basemapMaxNativeZoom} />
+                    <TileLayer key={basemapUrl} url={basemapUrl} attribution={basemapAttribution} maxZoom={22} maxNativeZoom={basemapMaxNativeZoom} />
           {!isCompareMode && showRasterLayer && currentTileUrl && (
             <TileLayer
               key={currentTileUrl}
@@ -4581,7 +4591,7 @@ Context: ${context}.`;
                   )}
                   <MapContainer preferCanvas={true} center={defaultMapCenter} zoom={13} maxZoom={22}
                     style={{ height: '100%', width: '100%', zIndex: 1, position: 'relative', background: 'transparent' }} zoomControl={false}>
-                    <TileLayer key={basemapUrl} url={basemapUrl} attribution="&copy; ESRI & Google Satellite Imagery" maxZoom={22} maxNativeZoom={basemapMaxNativeZoom} />
+                    <TileLayer key={basemapUrl} url={basemapUrl} attribution={basemapAttribution} maxZoom={22} maxNativeZoom={basemapMaxNativeZoom} />
           {!isCompareMode && showRasterLayer && currentTileUrl && (
             <TileLayer
               key={currentTileUrl}
@@ -4790,7 +4800,7 @@ Context: ${context}.`;
                   )}
                   <MapContainer preferCanvas={true} center={defaultMapCenter} zoom={13} maxZoom={22}
                     style={{ height: '100%', width: '100%', zIndex: 1, position: 'relative', background: 'transparent' }} zoomControl={false}>
-                    <TileLayer key={basemapUrl} url={basemapUrl} attribution="&copy; ESRI & Google Satellite Imagery" maxZoom={22} maxNativeZoom={basemapMaxNativeZoom} />
+                    <TileLayer key={basemapUrl} url={basemapUrl} attribution={basemapAttribution} maxZoom={22} maxNativeZoom={basemapMaxNativeZoom} />
           {!isCompareMode && showRasterLayer && currentTileUrl && (
             <TileLayer
               key={currentTileUrl}
@@ -5062,7 +5072,7 @@ Context: ${context}.`;
                   )}
                   <MapContainer preferCanvas={true} center={defaultMapCenter} zoom={13} maxZoom={22}
                     style={{ height: '100%', width: '100%', zIndex: 1, position: 'relative', background: 'transparent' }} zoomControl={false}>
-                    <TileLayer key={basemapUrl} url={basemapUrl} attribution="&copy; ESRI & Google Satellite Imagery" maxZoom={22} maxNativeZoom={basemapMaxNativeZoom} />
+                    <TileLayer key={basemapUrl} url={basemapUrl} attribution={basemapAttribution} maxZoom={22} maxNativeZoom={basemapMaxNativeZoom} />
                     {!isCompareMode && showRasterLayer && currentTileUrl && (
                       <TileLayer
                         key={currentTileUrl}
@@ -5236,7 +5246,7 @@ Context: ${context}.`;
                   )}
                   <MapContainer preferCanvas={true} center={defaultMapCenter} zoom={13} maxZoom={22}
                     style={{ height: '100%', width: '100%', zIndex: 1, position: 'relative', background: 'transparent' }} zoomControl={false}>
-                    <TileLayer key={basemapUrl} url={basemapUrl} attribution="&copy; ESRI & Google Satellite Imagery" maxZoom={22} maxNativeZoom={basemapMaxNativeZoom} />
+                    <TileLayer key={basemapUrl} url={basemapUrl} attribution={basemapAttribution} maxZoom={22} maxNativeZoom={basemapMaxNativeZoom} />
           {!isCompareMode && showRasterLayer && currentTileUrl && (
             <TileLayer
               key={currentTileUrl}
@@ -5985,7 +5995,7 @@ Context: ${context}.`;
                   )}
                   <MapContainer preferCanvas={true} center={defaultMapCenter} zoom={13} maxZoom={22}
                     style={{ height: '100%', width: '100%', zIndex: 1, position: 'relative', background: 'transparent' }} zoomControl={false}>
-                    <TileLayer key={basemapUrl} url={basemapUrl} attribution="&copy; ESRI & Google Satellite Imagery" maxZoom={22} maxNativeZoom={basemapMaxNativeZoom} />
+                    <TileLayer key={basemapUrl} url={basemapUrl} attribution={basemapAttribution} maxZoom={22} maxNativeZoom={basemapMaxNativeZoom} />
           {!isCompareMode && showRasterLayer && currentTileUrl && (
             <TileLayer
               key={currentTileUrl}
