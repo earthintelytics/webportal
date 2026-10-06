@@ -136,6 +136,14 @@ const HubPage = () => {
   const [tenantSignedIn, setTenantSignedIn] = useState(hasTenantSession);
 
   const handleSelectModule = (moduleId) => {
+    // From the team hub, an organisation card opens that organisation's own
+    // hub (sign in with one of its accounts), not its dashboard directly.
+    if (!location.pathname.startsWith('/tenant') && moduleId.startsWith('custom-agromonitor-')) {
+      const org = moduleId.replace('custom-agromonitor-', '');
+      if (localStorage.getItem('fi_tenant') === org && hasTenantSession()) { navigate('/tenant/hub'); return; }
+      navigate(`/login?tenant=${encodeURIComponent(org)}`);
+      return;
+    }
     sessionStorage.setItem('fi_module', moduleId);
     sessionStorage.setItem('fi_from_hub', '1');
     // Remember which hub the service was opened from, so Back returns there.
@@ -333,8 +341,10 @@ const OrganizationMonitorPage = () => {
 
   // In restricted mode there is no hub to go back to
   const handleSignOut   = () => navigate('/login');
-  // Only the FarmIntelytics team has a way back to the internal hub
-  const handleBackToHub = (RESTRICTED_MODULE || !hasValidTeamSession()) ? null : () => navigate('/');
+  // Back to the hub it was opened from (the organisation hub); clients who
+  // came by the direct dashboard link have no hub to go back to.
+  const fromHub = sessionStorage.getItem('fi_hub');
+  const handleBackToHub = (RESTRICTED_MODULE || (!fromHub && !hasValidTeamSession())) ? null : () => navigate(fromHub || '/');
 
   return <ErrorBoundary><OrganizationMonitor onSignOut={handleSignOut} onBack={handleBackToHub} /></ErrorBoundary>;
 };

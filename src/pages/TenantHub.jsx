@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
+  Satellite,
   ArrowRight, 
   Globe, 
   Activity, 
@@ -283,7 +284,12 @@ const TenantHub = ({ onSelectModule, onSignOut }) => {
     return false; // nothing is shown that the organisation is not licensed for
   });
 
-  const allTiles = [...licensedModules];
+  // The organisation's own dashboard (all estates on one map), when licensed.
+  const orgDashboardId = `custom-agromonitor-${tenantInfo.tenant}`;
+  const orgDashboard = tenantInfo.tenant && allowedSet.has(orgDashboardId)
+    ? [{ id: orgDashboardId, title: `${tenantInfo.displayName} dashboard`, group: 'crops', crop: 'All your estates', description: 'Every estate and block on one map, with condition, water, weather and alerts.', icon: <Satellite /> }]
+    : [];
+  const allTiles = [...orgDashboard, ...licensedModules];
 
   const tabs = [
     { id: 'all', label: 'All Licensed Services', count: allTiles.length },
