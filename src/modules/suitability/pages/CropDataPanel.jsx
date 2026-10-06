@@ -31,7 +31,7 @@ const CropDataPanel = ({ crop }) => {
                 <p className="font-display font-semibold text-gray-900">{def.name}</p>
                 <p className="text-sm text-gray-600 mt-1">{why}</p>
               </div>
-              <StatusPill tone={level === 'most' ? 'good' : 'neutral'}>{level === 'most' ? 'Most useful' : 'Helps'}</StatusPill>
+              <span className="shrink-0 whitespace-nowrap"><StatusPill tone={level === 'most' ? 'good' : 'neutral'}>{level === 'most' ? 'Most useful' : 'Helps'}</StatusPill></span>
             </div>
             <div className="flex flex-wrap gap-1.5">
               {def.columns.filter((c) => c.required).map((c) => (
