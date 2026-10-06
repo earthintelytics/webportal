@@ -35,7 +35,8 @@ const AdminLogin = ({ onSuccess = null, context = 'admin' }) => {
         setError(res.message || 'Authentication failed');
       }
     } catch (err) {
-      setError(err.message || 'Server connection error');
+      const offline = err instanceof TypeError || /failed to fetch|networkerror|load failed/i.test(err?.message || '');
+      setError(offline ? 'FarmIntelytics could not be reached. Check your internet connection and try again in a moment.' : err.message || 'Sign-in failed. Please try again.');
     } finally {
       setLoading(false);
     }

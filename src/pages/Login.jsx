@@ -69,7 +69,12 @@ const Login = ({ onLogin, moduleId, onBack, defaultEmail = '', defaultCode = '' 
         setError(response.message || 'Authentication failed. Please check your credentials.');
       }
     } catch (err) {
-      setError(err.message || 'Server connection failed. Ensure backend is running.');
+      // A network failure ("Failed to fetch") means the server could not be
+      // reached, not that the details were wrong.
+      const offline = err instanceof TypeError || /failed to fetch|networkerror|load failed/i.test(err?.message || '');
+      setError(offline
+        ? 'FarmIntelytics could not be reached. Check your internet connection and try again in a moment.'
+        : err.message || 'Sign-in failed. Please try again.');
     } finally {
       setLoading(false);
     }
