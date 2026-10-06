@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { submitSuitabilityRun } from '../suitabilityApi';
+import { submitSuitabilityRun } from '../../../services/suitabilityApi';
 import { fetchFarms, fetchSuitabilityThresholds } from '../../../services/adminApi';
 import { boundaryCheck } from '../../../farmintelytics-admin/components/validation';
 import { Modal, Field, PrimaryButton, SecondaryButton, ErrorNote } from '../../../components/page/PageKit';

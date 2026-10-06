@@ -1,8 +1,5 @@
-import { API_BASE } from '../../services/apiBase';
 /**
- * Crop page sets — interim copy until the backend catalogue answers
- * (GET /crop-monitoring/catalogue/{crop}; admin-editable, FINDINGS G5/D11).
- * From each crop monitoring document in docs/services ("Portal pages and main page"),
+ * Crop page sets. From each crop monitoring document in docs/services ("Portal pages and main page"),
  * mapped onto the shared layout's page kinds, in farmer words without redundant map tabs.
  *
  * sidebar ids: analytics, crop-health, crop-yield, moisture-content, climate, alerts.
@@ -94,23 +91,8 @@ export const CROP_CATALOG = {
   }),
 };
 
-const BACKEND_KEY = { oil_palm: 'ffb' };
-
-/** Catalogue entry for a crop: backend first (admin-editable), interim copy otherwise. */
-export async function loadCropPages(cropType) {
-  if (!cropType) return null;
-  const token = localStorage.getItem('fi_token');
-  const cropId = BACKEND_KEY[cropType] || cropType;
-  try {
-    const res = await fetch(`${API_BASE}/crop-monitoring/catalogue/${encodeURIComponent(cropId)}`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    });
-    if (res.ok) {
-      const data = await res.json();
-      if (data && data.sidebar && data.sidebar.length > 0) return data;
-    }
-  } catch {
-    // offline or catalogue endpoint not reachable: fall through to interim copy
-  }
-  return CROP_CATALOG[cropType] || base();
-}
+/**
+ * Pages for a crop. The portal owns page structure and wording (from the
+ * crop's doc); the backend catalogue holds the science (indices, sensors).
+ */
+export const cropPagesFor = (cropType) => (cropType ? CROP_CATALOG[cropType] || base() : null);

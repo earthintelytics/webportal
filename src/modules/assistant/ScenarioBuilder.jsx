@@ -131,7 +131,7 @@ const ScenarioBuilder = ({ cropType, serviceId, estates = [], onRun }) => {
             <option value="All Estates">{estateLabel}</option>
           ) : (
             <>
-              <option value="All Estates">All Estates</option>
+              <option value="All Estates">All estates</option>
               {estates.map(e => <option key={e} value={e}>{e}</option>)}
             </>
           )}
@@ -164,10 +164,10 @@ const ScenarioBuilder = ({ cropType, serviceId, estates = [], onRun }) => {
       <div className="text-center space-y-3">
         <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold">
           <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-          <span>Agronomic AI Scenario Modeller</span>
+          <span>Agronomic AI scenario modeller</span>
         </div>
         <h3 className="text-3xl lg:text-4xl font-display font-bold text-slate-900 tracking-tight">
-          Farm AI Advisor
+          Farm AI advisor
         </h3>
         <p className="text-sm text-slate-600 max-w-2xl mx-auto leading-relaxed">
           Select a recommended what-if simulation below or define your own custom scenario. You can ingest your own ground measurements, telemetry, and field parameters to model crop responses with confidence.
@@ -179,7 +179,7 @@ const ScenarioBuilder = ({ cropType, serviceId, estates = [], onRun }) => {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <h4 className="text-base font-bold text-slate-900">Recommended Agronomic Scenarios</h4>
+              <h4 className="text-base font-bold text-slate-900">Recommended agronomic scenarios</h4>
               <p className="text-xs text-slate-500">Simulations tailored to your licensed crops and estate telemetry</p>
             </div>
             <button
@@ -187,7 +187,7 @@ const ScenarioBuilder = ({ cropType, serviceId, estates = [], onRun }) => {
               className="px-4 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs font-bold text-slate-700 flex items-center gap-1.5 transition-colors shadow-xs"
             >
               <Plus size={14} className="text-emerald-700" />
-              <span>Define Custom Scenario</span>
+              <span>Define custom scenario</span>
             </button>
           </div>
 
@@ -228,7 +228,7 @@ const ScenarioBuilder = ({ cropType, serviceId, estates = [], onRun }) => {
 
                   <div className="pt-2 flex items-center justify-end text-xs font-bold text-emerald-700">
                     <span className="flex items-center gap-1">
-                      Configure & Run
+                      Configure & run
                       <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
                     </span>
                   </div>
@@ -247,7 +247,7 @@ const ScenarioBuilder = ({ cropType, serviceId, estates = [], onRun }) => {
             <div>
               <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-emerald-50 text-emerald-800 text-[11px] font-bold">
                 <Sparkles size={12} />
-                <span>Simulation Hypothesis</span>
+                <span>Simulation hypothesis</span>
               </div>
               <h4 className="text-xl font-bold text-slate-900 mt-1.5">{active.title}</h4>
               <p className="text-xs text-slate-500 mt-0.5">{active.desc}</p>
@@ -282,7 +282,7 @@ const ScenarioBuilder = ({ cropType, serviceId, estates = [], onRun }) => {
 
           {/* 2. Simulation Parameters */}
           <div className="space-y-4">
-            <h5 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Scenario Model Parameters</h5>
+            <h5 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Scenario model parameters</h5>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {active.params.map(p => (
                 <label key={p.name} className="space-y-1.5 block">
@@ -336,7 +336,7 @@ const ScenarioBuilder = ({ cropType, serviceId, estates = [], onRun }) => {
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                Specific Field Observations & Notes
+                Specific field observations & notes
               </label>
               <textarea
                 rows={2}
@@ -350,7 +350,7 @@ const ScenarioBuilder = ({ cropType, serviceId, estates = [], onRun }) => {
 
           {/* 4. Generated Question Preview */}
           <div className="rounded-2xl bg-white border border-slate-200 p-4 space-y-2">
-            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Simulation Hypothesis Preview</span>
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Simulation hypothesis preview</span>
             <p className="text-sm font-medium text-slate-800 leading-relaxed italic">
               "{fill(active.question, values)}"
             </p>
@@ -368,7 +368,7 @@ const ScenarioBuilder = ({ cropType, serviceId, estates = [], onRun }) => {
               onClick={handleRunStandard} 
               className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-emerald-700 hover:bg-emerald-800 transition-colors shadow-xs"
             >
-              <span>Run Scenario Simulation</span>
+              <span>Run scenario simulation</span>
               <ArrowRight size={14} />
             </button>
           </div>
@@ -384,7 +384,7 @@ const ScenarioBuilder = ({ cropType, serviceId, estates = [], onRun }) => {
                 <Plus size={12} />
                 <span>Custom What-If Hypothesis</span>
               </div>
-              <h4 className="text-xl font-bold text-slate-900 mt-1.5">Define Your Custom Scenario</h4>
+              <h4 className="text-xl font-bold text-slate-900 mt-1.5">Define your custom scenario</h4>
               <p className="text-xs text-slate-500 mt-0.5">Specify any farm question, hypothesis, or planned agronomic intervention</p>
             </div>
             <button 
@@ -398,7 +398,7 @@ const ScenarioBuilder = ({ cropType, serviceId, estates = [], onRun }) => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">Scenario Title</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5">Scenario title</label>
               <input
                 type="text"
                 required
@@ -416,7 +416,7 @@ const ScenarioBuilder = ({ cropType, serviceId, estates = [], onRun }) => {
                 onChange={e => setCustomScenarioEstate(e.target.value)}
                 className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm bg-white text-slate-900 focus:border-emerald-700 focus:outline-none shadow-xs"
               >
-                <option value="All Estates">All Estates</option>
+                <option value="All Estates">All estates</option>
                 {estates.map(e => <option key={e} value={e}>{e}</option>)}
               </select>
             </div>
@@ -439,7 +439,7 @@ const ScenarioBuilder = ({ cropType, serviceId, estates = [], onRun }) => {
           {/* Custom data inputs for custom scenario */}
           <div className="p-5 bg-slate-50 border border-slate-200 rounded-2xl space-y-4">
             <h5 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-              Inject Custom Measurements & Field Notes
+              Inject custom measurements & field notes
             </h5>
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
@@ -467,7 +467,7 @@ const ScenarioBuilder = ({ cropType, serviceId, estates = [], onRun }) => {
               type="submit" 
               className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-emerald-700 hover:bg-emerald-800 transition-colors shadow-xs"
             >
-              <span>Run Custom Simulation</span>
+              <span>Run custom simulation</span>
               <Send size={14} />
             </button>
           </div>

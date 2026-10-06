@@ -76,7 +76,7 @@ export default function PlotDetailPanel({ plot, series, indexLabel = 'Index', da
             {plot.indices?.ndvi != null && <div style={fieldStyle}><span style={labelStyle}>NDVI</span><span style={valueStyle}>{plot.indices.ndvi.toFixed(3)}</span></div>}
             {plot.indices?.ndmi != null && <div style={fieldStyle}><span style={labelStyle}>NDMI</span><span style={valueStyle}>{plot.indices.ndmi.toFixed(3)}</span></div>}
             {plot.indices?.chlorophyll != null && <div style={fieldStyle}><span style={labelStyle}>Chlorophyll</span><span style={valueStyle}>{plot.indices.chlorophyll.toFixed(3)}</span></div>}
-            {plot.indices?.uas_anomaly_score != null && <div style={fieldStyle}><span style={labelStyle}>Anomaly Score</span><span style={valueStyle}>{plot.indices.uas_anomaly_score.toFixed(3)}</span></div>}
+            {plot.indices?.uas_anomaly_score != null && <div style={fieldStyle}><span style={labelStyle}>Anomaly score</span><span style={valueStyle}>{plot.indices.uas_anomaly_score.toFixed(3)}</span></div>}
           </div>
 
           {/* Action Ground Scout Button */}
@@ -112,7 +112,7 @@ export default function PlotDetailPanel({ plot, series, indexLabel = 'Index', da
           )}
 
           <div>
-            <p style={{ ...labelStyle, marginBottom: '8px' }}>Time Series</p>
+            <p style={{ ...labelStyle, marginBottom: '8px' }}>Time series</p>
             {chartData ? (
               <div style={{ height: '160px' }}>
                 <Line data={chartData} options={chartOptions} />

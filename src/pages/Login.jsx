@@ -12,278 +12,7 @@ import ForgotPasswordModal from '../components/ForgotPasswordModal';
 import { HERO_PLACEHOLDERS } from '../constants/heroPlaceholders';
 import { clearTenantAccount } from '../services/session';
 import { demoAccounts } from '../constants/demoAccounts';
-
-// ─── Crop & Subapp Design System Registry (Clean Light Theme) ────────────────
-const CROP_DESIGNS = {
-  oil_palm: {
-    key: 'oil_palm',
-    name: 'Oil Palm',
-    branding: 'Oil Palm Monitoring',
-    accentColor: '#16A34A', // Emerald Green
-    lightBg: '#F0FDF4',
-    badge: 'Oil Palm Estate Console',
-    heroImage: '/crops/oil_palm.webp',
-    title: <>Precision <span className="text-emerald-600 font-black">Oil Palm</span> Analytics</>,
-    desc: 'Real-time satellite vegetation index, estate fresh fruit bunch yield modeling, and canopy health diagnostics.',
-    features: [],
-    stats: []
-  },
-  cashew: {
-    key: 'cashew',
-    name: 'Cashew',
-    branding: 'Cashew Management',
-    accentColor: '#D35400', // Terracotta / Amber
-    lightBg: '#FFF7ED',
-    badge: 'Cashew Orchard Console',
-    heroImage: '/crops/cashew.webp',
-    title: <>High-Precision <span className="text-amber-600 font-black">Cashew Orchard</span> Intel</>,
-    desc: 'Tree count tracking, flowering stage canopy analysis, nut quality grading, and harvest scheduling.',
-    features: [],
-    stats: []
-  },
-  sugarcane: {
-    key: 'sugarcane',
-    name: 'SugarCane',
-    branding: 'Sugarcane Operations',
-    accentColor: '#059669', // Emerald
-    lightBg: '#ECFDF5',
-    badge: 'Sugarcane Field Console',
-    heroImage: '/crops/sugarcane.webp',
-    title: <>Smart <span className="text-emerald-600 font-black">Sugarcane Field</span> Operations</>,
-    desc: 'Biomass accumulation tracking, sucrose content estimation, and field productivity management.',
-    features: [],
-    stats: []
-  },
-  rice: {
-    key: 'rice',
-    name: 'Rice',
-    branding: 'Rice Paddy Portal',
-    accentColor: '#0D9488', // Teal
-    lightBg: '#F0FDFA',
-    badge: 'Rice Paddy Console',
-    heroImage: '/crops/rice.webp',
-    title: <>Multispectral <span className="text-teal-600 font-black">Rice Paddy</span> Monitoring</>,
-    desc: 'Water level sensing, paddy growth phase mapping, nutrient zoning, and yield estimation.',
-    features: [],
-    stats: []
-  },
-  cocoa: {
-    key: 'cocoa',
-    name: 'Cocoa',
-    branding: 'Cocoa Core Portal',
-    accentColor: '#B45309', // Warm Bronze
-    lightBg: '#FEF3C7',
-    badge: 'Cocoa Harvest Console',
-    heroImage: '/crops/cocoa.webp',
-    title: <>Sustainable <span className="text-amber-700 font-black">Cocoa Harvest</span> Origin</>,
-    desc: 'Shade-canopy density mapping, EUDR deforestation compliance verification, and bean traceability.',
-    features: [],
-    stats: []
-  },
-  rubber: {
-    key: 'rubber',
-    name: 'Rubber',
-    branding: 'Rubber Console',
-    accentColor: '#0E7490', // Cyan Teal
-    lightBg: '#ECFEFF',
-    badge: 'Rubber Plantation Console',
-    heroImage: '/crops/rubber.webp',
-    title: <>High-Yield <span className="text-cyan-700 font-black">Rubber & Latex</span> Monitoring</>,
-    desc: 'Latex dry rubber content analytics, tapping cycle optimization, and estate productivity logs.',
-    features: [],
-    stats: []
-  },
-  cassava: {
-    key: 'cassava',
-    name: 'Cassava',
-    branding: 'Cassava Hub',
-    accentColor: '#D97706', // Amber Gold
-    lightBg: '#FFFBEB',
-    badge: 'Cassava Tuber Console',
-    heroImage: '/crops/cassava.webp',
-    title: <>Advanced <span className="text-amber-600 font-black">Cassava Tuber</span> Analytics</>,
-    desc: 'Underground tuber growth modeling, canopy stress detection, starch yield prediction, and harvest scheduling.',
-    features: [],
-    stats: []
-  },
-  maize: {
-    key: 'maize',
-    name: 'Maize',
-    branding: 'Maize Console',
-    accentColor: '#CA8A04', // Sunburst Yellow
-    lightBg: '#FEF9C3',
-    badge: 'Maize Field Console',
-    heroImage: '/crops/maize.webp',
-    title: <>Precision <span className="text-yellow-600 font-black">Maize Crop</span> Intelligence</>,
-    desc: 'Hybrid seed variety performance tracking, pest infestation mapping, moisture stress alerts, and yield forecasts.',
-    features: [],
-    stats: []
-  },
-  organization: {
-    key: 'organization',
-    name: 'Your organisation',
-    branding: 'FarmIntelytics',
-    accentColor: '#16A34A', // Emerald Green
-    lightBg: '#F0FDF4',
-    badge: 'Organisation sign-in',
-    heroImage: '/crops/organization.webp',
-    title: <>Your farms, <span className="text-green-700">all in one place</span></>,
-    desc: 'Sign in to open the services your organisation uses: crop monitoring, sustainability, smallholder and more.',
-    features: [],
-    stats: []
-  },
-  finance: {
-    key: 'finance',
-    name: 'Central Finance',
-    branding: 'Central Finance Hub',
-    accentColor: '#059669', // Emerald Finance
-    lightBg: '#ECFDF5',
-    badge: 'Finance · Central ledger',
-    heroImage: '/crops/hero/finance.webp',
-    title: <>Farm production and payments, <span className="text-emerald-500 font-black">one ledger</span></>,
-    desc: 'Production signals per block next to the deliveries and payments recorded for each farmer.',
-    features: [],
-    stats: []
-  },
-  // ─── Sustainability, field advisory and finance services ───
-  estate_carbon: {
-    key: 'estate_carbon',
-    name: 'Estate Carbon',
-    branding: 'Estate Carbon',
-    accentColor: '#16A34A',
-    lightBg: '#F0FDF4',
-    badge: 'Sustainability · Estate carbon',
-    heroImage: '/crops/hero/estate_carbon.webp',
-    title: <>Carbon on your <span className="text-emerald-500 font-black">estate</span>, tracked from space</>,
-    desc: 'Biomass, land-use change and carbon signals for every block of the estate, ready for carbon reporting.',
-    features: [],
-    stats: []
-  },
-  group_carbon: {
-    key: 'group_carbon',
-    name: 'Group Carbon',
-    branding: 'Group Carbon',
-    accentColor: '#16A34A',
-    lightBg: '#F0FDF4',
-    badge: 'Sustainability · Group carbon',
-    heroImage: '/crops/hero/group_carbon.webp',
-    title: <>Carbon for <span className="text-emerald-500 font-black">smallholder groups</span></>,
-    desc: 'Member plots, tree cover and land-use change for each cooperative or community group.',
-    features: [],
-    stats: []
-  },
-  forestry: {
-    key: 'forestry',
-    name: 'Forestry Intelligence',
-    branding: 'Forestry Intelligence',
-    accentColor: '#16A34A',
-    lightBg: '#F0FDF4',
-    badge: 'Sustainability · Forestry',
-    heroImage: '/crops/hero/forestry.webp',
-    title: <>Know your <span className="text-emerald-500 font-black">forest</span>, every season</>,
-    desc: 'Canopy condition, moisture and forest-cover change from optical and radar satellites.',
-    features: [],
-    stats: []
-  },
-  estimator: {
-    key: 'estimator',
-    name: 'Carbon Estimator',
-    branding: 'Carbon Estimator',
-    accentColor: '#16A34A',
-    lightBg: '#F0FDF4',
-    badge: 'Sustainability · Carbon estimator',
-    heroImage: '/crops/hero/estimator.webp',
-    title: <>Estimate <span className="text-emerald-500 font-black">carbon</span> before you commit</>,
-    desc: 'Vegetation and land-cover inputs for a site, with carbon estimates and scenarios.',
-    features: [],
-    stats: []
-  },
-  restoration: {
-    key: 'restoration',
-    name: 'Land Restoration',
-    branding: 'Land Restoration',
-    accentColor: '#16A34A',
-    lightBg: '#F0FDF4',
-    badge: 'Sustainability · Land restoration',
-    heroImage: '/crops/hero/restoration.webp',
-    title: <>Watch degraded land <span className="text-emerald-500 font-black">recover</span></>,
-    desc: 'Restoration zones, vegetation recovery and moisture over time, site by site.',
-    features: [],
-    stats: []
-  },
-  eudr: {
-    key: 'eudr',
-    name: 'EUDR Check',
-    branding: 'EUDR Check',
-    accentColor: '#16A34A',
-    lightBg: '#F0FDF4',
-    badge: 'Sustainability · EUDR',
-    heroImage: '/crops/hero/eudr.webp',
-    title: <>Deforestation-free <span className="text-emerald-500 font-black">evidence</span> for EU buyers</>,
-    desc: 'Plot geolocation and forest-cover change since the 31 December 2020 cut-off, for oil palm, cocoa and rubber.',
-    features: [],
-    stats: []
-  },
-  advisor: {
-    key: 'advisor',
-    name: 'Farm AI Advisor',
-    branding: 'Farm AI Advisor',
-    accentColor: '#16A34A',
-    lightBg: '#F0FDF4',
-    badge: 'Field advisory · Farm AI Advisor',
-    heroImage: '/crops/hero/advisor.webp',
-    title: <>Advice for <span className="text-emerald-500 font-black">every field</span></>,
-    desc: 'Crop condition, water and weather turned into plain advice for each field.',
-    features: [],
-    stats: []
-  },
-  drone: {
-    key: 'drone',
-    name: 'Drone Intelligence',
-    branding: 'Drone Aerial Intelligence',
-    accentColor: '#0284C7', // Sky Blue
-    lightBg: '#F0F9FF',
-    badge: 'Drone Aerial Console',
-    heroImage: '/crops/drone.webp',
-    title: <>High-Resolution <span className="text-sky-600 font-black">Drone Aerial</span> Intel</>,
-    desc: 'High-resolution drone flight surveys, canopy gap mapping, tree counts, and field inspection telemetry.',
-    features: [],
-    stats: []
-  },
-  smallholder: {
-    key: 'smallholder',
-    name: 'Smallholder Cooperative',
-    branding: 'Smallholder Cooperative Portal',
-    accentColor: '#16A34A', // Emerald
-    lightBg: '#F0FDF4',
-    badge: 'Farmer Cooperative Console',
-    heroImage: '/crops/smallholder.webp',
-    title: <>Empowering <span className="text-emerald-600 font-black">Smallholder Farmer</span> Communities</>,
-    desc: 'Unified farmer profiling, multi-crop parcel tracking, cooperative registry, and group compliance auditing.',
-    features: [],
-    stats: []
-  }
-};
-
-// ─── Sign-in design per module ───────────────────────────────────────────────
-// Chosen by module id (src/modules/registry.js), never by guessing from the
-// display name, so every service gets its own design and an unknown id gets
-// the neutral organisation design instead of another service's.
-const DESIGN_BY_ID = {
-  'rs-ffb': 'oil_palm', 'rs-cashew': 'cashew', 'rs-sugarcane': 'sugarcane', 'rs-rice': 'rice',
-  'rs-cocoa': 'cocoa', 'rs-rubber': 'rubber', 'rs-cassava': 'cassava', 'rs-maize': 'maize',
-  'rs-drone': 'drone',
-  'carbon-ffb': 'estate_carbon', 'forestry-intel': 'forestry', 'carbon-estimator': 'estimator',
-  'land-restoration': 'restoration', 'eudr-check': 'eudr', advisor: 'advisor',
-  'smallholder-hub': 'smallholder', 'group-management': 'smallholder', 'smallholder-members': 'smallholder',
-  'smallholder-forms': 'smallholder', 'group-monitoring': 'smallholder', 'carbon-groups': 'group_carbon',
-  'smallholder-eudr': 'eudr',
-};
-
-function resolveCropDesign(moduleId) {
-  const key = DESIGN_BY_ID[moduleId];
-  return (key && CROP_DESIGNS[key]) || CROP_DESIGNS.organization;
-}
+import { signInDesignFor } from './login/signInDesigns';
 
 // ─── Main Login Component (Clean White Background Theme) ─────────────────────
 const Login = ({ onLogin, moduleId, onBack, defaultEmail = '', defaultCode = '' }) => {
@@ -295,7 +24,7 @@ const Login = ({ onLogin, moduleId, onBack, defaultEmail = '', defaultCode = '' 
   const [heroLoaded, setHeroLoaded] = useState(false);
   const [forgotModalOpen, setForgotModalOpen] = useState(false);
 
-  const currentDesign = resolveCropDesign(moduleId);
+  const currentDesign = signInDesignFor(moduleId);
   const demos = demoAccounts('tenant');
 
   useEffect(() => {
@@ -351,11 +80,11 @@ const Login = ({ onLogin, moduleId, onBack, defaultEmail = '', defaultCode = '' 
       {/* ── Left: crop photograph, full height, caption on a soft gradient ── */}
       <aside
         className="relative lg:w-1/2 min-h-[260px] lg:min-h-screen overflow-hidden bg-slate-100 bg-cover bg-center"
-        style={{ backgroundImage: HERO_PLACEHOLDERS[currentDesign.heroImage] ? `url(${HERO_PLACEHOLDERS[currentDesign.heroImage]})` : undefined }}
+        style={{ backgroundImage: HERO_PLACEHOLDERS[currentDesign.image] ? `url(${HERO_PLACEHOLDERS[currentDesign.image]})` : undefined }}
       >
-        {currentDesign.heroImage.startsWith('/crops/hero/') && (
+        {currentDesign.image.startsWith('/crops/hero/') && (
           <img
-            src={currentDesign.heroImage.replace('/crops/hero/', '/crops/')}
+            src={currentDesign.image.replace('/crops/hero/', '/crops/')}
             alt=""
             aria-hidden="true"
             className="absolute inset-0 w-full h-full object-cover object-center saturate-[0.85]"
@@ -363,7 +92,7 @@ const Login = ({ onLogin, moduleId, onBack, defaultEmail = '', defaultCode = '' 
           />
         )}
         <img
-          src={currentDesign.heroImage}
+          src={currentDesign.image}
           alt={currentDesign.name}
           className={`absolute inset-0 w-full h-full object-cover object-center saturate-[0.85] transition-opacity duration-500 ${heroLoaded ? 'opacity-100' : 'opacity-0'}`}
           fetchpriority="high"
@@ -372,13 +101,13 @@ const Login = ({ onLogin, moduleId, onBack, defaultEmail = '', defaultCode = '' 
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-950/20 to-transparent" />
         <div className="relative h-full flex flex-col justify-end p-8 lg:p-14 text-white">
           <span className="self-start mb-4 px-3 py-1 rounded-full bg-white/15 border border-white/25 text-xs font-medium">
-            {currentDesign.badge}
+            {currentDesign.group}
           </span>
           <h1 className="font-display text-3xl lg:text-4xl font-semibold leading-tight max-w-lg">
             {currentDesign.title}
           </h1>
           <p className="mt-3 text-sm lg:text-base text-white/85 leading-relaxed max-w-lg">
-            {currentDesign.desc}
+            {currentDesign.text}
           </p>
         </div>
       </aside>
@@ -390,7 +119,7 @@ const Login = ({ onLogin, moduleId, onBack, defaultEmail = '', defaultCode = '' 
             <img src="/farmintelytics-logo.png" alt="FarmIntelytics" className="h-9 w-9 object-contain" width="36" height="36" />
             <div className="leading-tight">
               <p className="font-display text-sm font-semibold">FarmIntelytics</p>
-              <p className="text-xs text-[var(--text-muted)]">{currentDesign.branding}</p>
+              <p className="text-xs text-[var(--text-muted)]">{currentDesign.name}</p>
             </div>
           </div>
           {onBack && (
@@ -408,7 +137,7 @@ const Login = ({ onLogin, moduleId, onBack, defaultEmail = '', defaultCode = '' 
             <p className="text-sm font-medium text-[var(--brand-primary)]">Authorised portal</p>
             <h2 className="font-display text-3xl font-semibold mt-1">Sign in</h2>
             <p className="text-sm text-[var(--text-muted)] mt-2 leading-relaxed">
-              Use your organisation credentials to open the <span className="font-medium text-[var(--text-main)]">{currentDesign.name}</span> console.
+              Use your organisation's email and password to open <span className="font-medium text-[var(--text-main)]">{currentDesign.name}</span>.
             </p>
 
             {error && (

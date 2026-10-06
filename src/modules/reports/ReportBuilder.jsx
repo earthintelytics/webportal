@@ -36,11 +36,11 @@ const DEFAULT_TYPES = [
 ];
 
 const FOCUS_AREAS = [
-  { id: 'general', label: 'All Agronomics' },
-  { id: 'irrigation', label: 'Irrigation & Water' },
-  { id: 'nutrition', label: 'Nutrient & Fertilizer' },
-  { id: 'canopy', label: 'Canopy & Replanting' },
-  { id: 'risk', label: 'Risk & Drought Defense' },
+  { id: 'general', label: 'All agronomics' },
+  { id: 'irrigation', label: 'Irrigation & water' },
+  { id: 'nutrition', label: 'Nutrient & fertilizer' },
+  { id: 'canopy', label: 'Canopy & replanting' },
+  { id: 'risk', label: 'Risk & drought defense' },
 ];
 
 const iso = (d) => d.toISOString().slice(0, 10);
@@ -244,7 +244,7 @@ export default function ReportBuilder({ plots, alerts, estates, tenant, orgName,
       recommendations = [
         {
           priority: 'High (Immediate 24-48h)',
-          title: 'Targeted Moisture Deficit Mitigation',
+          title: 'Targeted moisture deficit mitigation',
           action: `Dispatch field scouting to flagged anomaly plots (${scopedAlerts.slice(0, 2).map(a => a.plot).join(', ') || 'low-lying blocks'}) to verify root-zone soil moisture before the next Sentinel overpass.`,
           impact: 'Prevents localized moisture stress induced canopy abortion and stabilizes leaf water potential.',
           responsible: 'Estate Agronomist & Field Scouts',
@@ -258,7 +258,7 @@ export default function ReportBuilder({ plots, alerts, estates, tenant, orgName,
         },
         {
           priority: 'Strategic (30-90 Days)',
-          title: 'Canopy Management & Calibration',
+          title: 'Canopy management & calibration',
           action: 'Calibrate seasonal yield models using actual field operations and harvest bunch weights logged in the Client Datasets portal.',
           impact: 'Refines estate-level carbon stock and yield forecasting accuracy from indicative proxy to calibrated baseline.',
           responsible: 'Planning & Farm Management',
@@ -379,7 +379,7 @@ export default function ReportBuilder({ plots, alerts, estates, tenant, orgName,
             <span className="w-9 h-9 rounded-xl bg-green-50 border border-green-200 flex items-center justify-center text-green-700">
               <BrainCircuit size={20} />
             </span>
-            <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Reports & Decision Intelligence</h2>
+            <h2 className="text-3xl font-bold text-gray-900 tracking-tight">Reports & decision intelligence</h2>
           </div>
           <p className="text-sm text-gray-500 font-medium mt-2 max-w-2xl">
             Choose what, where and when on the left; your report appears on the right, in plain language, ready to download or share.
@@ -482,7 +482,7 @@ export default function ReportBuilder({ plots, alerts, estates, tenant, orgName,
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <Chip on={periodKind === 'month'} onClick={() => setPeriodKind('month')}>A month</Chip>
-                <Chip on={periodKind === 'range'} onClick={() => setPeriodKind('range')}>Custom Dates</Chip>
+                <Chip on={periodKind === 'range'} onClick={() => setPeriodKind('range')}>Custom dates</Chip>
                 {periodKind === 'month' ? (
                   <input type="month" className={selectCls} value={month} onChange={e => setMonth(e.target.value)} />
                 ) : (
@@ -599,7 +599,7 @@ export default function ReportBuilder({ plots, alerts, estates, tenant, orgName,
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-base font-bold text-gray-900">
                 <Sparkles size={18} className="text-green-700" />
-                Executive Agronomic Summary
+                Executive agronomic summary
               </div>
               <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-green-100 text-green-800 flex items-center gap-1.5">
                 <BrainCircuit size={12} /> {report.summary?.engine || 'Grounded Decision Engine'}
@@ -636,7 +636,7 @@ export default function ReportBuilder({ plots, alerts, estates, tenant, orgName,
               <div>
                 <h4 className="text-lg font-bold text-gray-900 flex items-center gap-2">
                   <Activity size={18} className="text-green-700" />
-                  Prioritized Agronomic Actions & Decisions
+                  Prioritized agronomic actions & decisions
                 </h4>
                 <p className="text-xs text-gray-500 mt-1">
                   Concrete operational interventions ranked by immediacy and expected agronomic yield impact.
@@ -692,7 +692,7 @@ export default function ReportBuilder({ plots, alerts, estates, tenant, orgName,
             <Card className="p-6 space-y-4">
               <div className="flex items-center gap-2 text-sm font-bold text-gray-900">
                 <AlertTriangle size={16} className="text-amber-600" />
-                Agronomic Risk Matrix
+                Agronomic risk matrix
               </div>
               <div className="space-y-3">
                 {(report.risks || []).map((r, i) => (
@@ -721,7 +721,7 @@ export default function ReportBuilder({ plots, alerts, estates, tenant, orgName,
             <Card className="p-6 space-y-4">
               <div className="flex items-center gap-2 text-sm font-bold text-gray-900">
                 <Droplets size={16} className="text-blue-600" />
-                Key Grounded Findings
+                Key grounded findings
               </div>
               <ul className="space-y-2.5 text-xs text-gray-700">
                 {(report.findings || []).map((f, i) => (
@@ -739,7 +739,7 @@ export default function ReportBuilder({ plots, alerts, estates, tenant, orgName,
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm font-bold text-gray-900">
                 <AlertTriangle size={16} className="text-amber-600" />
-                Management Blocks Flagged for Action
+                Management blocks flagged for action
               </div>
               <span className="text-xs text-gray-500 font-medium">{report.actions.length} blocks identified</span>
             </div>
@@ -754,8 +754,8 @@ export default function ReportBuilder({ plots, alerts, estates, tenant, orgName,
                     <tr>
                       <th className="py-2.5 px-3">Block ID</th>
                       <th className="py-2.5 px-3">Estate</th>
-                      <th className="py-2.5 px-3">Observed Anomaly</th>
-                      <th className="py-2.5 px-3">Recommended Operational Action</th>
+                      <th className="py-2.5 px-3">Observed anomaly</th>
+                      <th className="py-2.5 px-3">Recommended operational action</th>
                       <th className="py-2.5 px-3">Priority</th>
                       <th className="py-2.5 px-3">Since</th>
                     </tr>
@@ -806,7 +806,7 @@ export default function ReportBuilder({ plots, alerts, estates, tenant, orgName,
           <Card className="p-6 border-green-200 bg-gray-50/60 space-y-4 no-print">
             <div className="flex items-center gap-2 text-sm font-bold text-gray-900">
               <BrainCircuit size={16} className="text-green-700" />
-              Ask AI Agronomist About This Report
+              Ask AI agronomist about this report
             </div>
             <p className="text-xs text-gray-600">
               Ask follow-up questions regarding water management, fertilizer schedules, or specific block anomalies from this report.

@@ -284,15 +284,6 @@ export function geoJsonToLeaflet(geoJsonRing) {
 }
 
 /**
- * GET /tenants
- * Returns list of dynamic tenants/organizations.
- * @returns {Promise<Array<{id: string, title: string, crop: string, active: boolean}>>}
- */
-export async function fetchTenants() {
-  return apiFetch('/tenants');
-}
-
-/**
  * GET /crop-monitoring/config
  * Returns active tenant crop permissions and map settings.
  * @returns {Promise<{tenant: string, display_name: string, allowed_crops: string[], map_center: [number, number], modules: string[]}>}

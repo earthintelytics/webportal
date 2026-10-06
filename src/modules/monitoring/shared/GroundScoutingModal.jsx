@@ -186,7 +186,7 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="font-bold text-sm tracking-wide">Plot Anomaly Action Hub</span>
+                <span className="font-bold text-sm tracking-wide">Plot anomaly action hub</span>
                 <span className="text-[11px] px-2 py-0.5 rounded-full font-semibold uppercase bg-slate-800 text-slate-300 border border-slate-700">
                   {alert.alert_id}
                 </span>
@@ -340,7 +340,7 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
                 onClick={handleDismiss}
                 className="text-xs text-red-600 hover:text-red-700 font-medium"
               >
-                Dismiss False Alarm
+                Dismiss false alarm
               </button>
               <button
                 type="submit"
@@ -359,21 +359,21 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
           <form onSubmit={handleLogObservation} className="p-6 space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Crop Growth Stage</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Crop growth stage</label>
                 <select
                   value={cropStage}
                   onChange={(e) => setCropStage(e.target.value)}
                   className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
                 >
                   <option value="Emergence">Emergence / Seedling</option>
-                  <option value="Vegetative">Vegetative Growth</option>
+                  <option value="Vegetative">Vegetative growth</option>
                   <option value="Flowering">Flowering / Booting</option>
                   <option value="Grain/Fruit Filling">Grain / Fruit Filling</option>
                   <option value="Maturity / Harvest">Maturity / Harvest</option>
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Primary Finding</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Primary finding</label>
                 <select
                   value={findingType}
                   onChange={(e) => setFindingType(e.target.value)}
@@ -383,7 +383,7 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
                   <option value="fungal_disease">Fungal / Foliar Blight</option>
                   <option value="nitrogen_deficiency">Nitrogen / Chlorosis Deficiency</option>
                   <option value="water_stress">Severe Moisture Deficit / Wilting</option>
-                  <option value="weed_competition">High Weed Density</option>
+                  <option value="weed_competition">High weed density</option>
                   <option value="healthy_normal">Healthy / Normal (False Alarm)</option>
                 </select>
               </div>
@@ -418,7 +418,7 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Field Notes & Ground Evidence</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Field notes & ground evidence</label>
               <textarea
                 rows={3}
                 placeholder="Describe leaf symptoms, soil condition, or estimated affected percentage..."
@@ -445,7 +445,7 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
         {activeTab === 'resolve' && (
           <form onSubmit={handleResolve} className="p-6 space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Verified Ground Truth Category</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Verified ground truth category</label>
               <select
                 value={resolveCategory}
                 onChange={(e) => setResolveCategory(e.target.value)}
@@ -461,7 +461,7 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Resolution Summary & Agronomic Actions Taken</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Resolution summary & agronomic actions taken</label>
               <textarea
                 rows={4}
                 required
@@ -500,7 +500,7 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
             ) : pastObservations.length === 0 ? (
               <div className="text-center py-10">
                 <FileText size={32} className="mx-auto text-slate-300 mb-2" />
-                <p className="text-xs font-semibold text-slate-700">No Ground Observations Yet</p>
+                <p className="text-xs font-semibold text-slate-700">No ground observations yet</p>
                 <p className="text-[11px] text-slate-500 max-w-xs mx-auto mt-1">
                   Field scouts have not yet recorded direct observations for Plot #{alert.plot_id}. Use Tab 1 or 2 to log one.
                 </p>

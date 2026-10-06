@@ -1,22 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ShieldCheck, Lightbulb, ArrowRight, Info } from 'lucide-react';
-import { NotConnectedError } from '../../services/datasetsApi';
-import { API_BASE } from '../../services/apiBase';
+import { serviceCall } from '../../services/serviceClient';
 
 /**
  * Service page kinds: Check, Log, Advice (docs/services/00-shared-principles.md).
  * Same design as every page. Each reads its backend endpoint from the shared
  * contract (docs/WORK_SPLIT.md) and says so honestly until it exists.
  */
-async function getJson(path) {
-  const token = localStorage.getItem('fi_token');
-  let res;
-  try { res = await fetch(`${API_BASE}${path}`, { cache: 'no-store', headers: token ? { Authorization: `Bearer ${token}` } : {} }); }
-  catch { throw new NotConnectedError(); }
-  if (res.status === 404 || res.status === 405 || !(res.headers.get('content-type') || '').includes('json')) throw new NotConnectedError();
-  if (!res.ok) throw new Error(`Error ${res.status}`);
-  return res.json();
-}
+const getJson = (path) => serviceCall(path);
 
 const Header = ({ title, text, icon }) => (
   <div className="flex items-start gap-4">

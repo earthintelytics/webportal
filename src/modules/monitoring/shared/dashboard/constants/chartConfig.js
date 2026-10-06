@@ -29,8 +29,8 @@ export const MONTH_NAMES = [
 // Lowercase crop ids (as passed by the per-crop Monitoring wrappers) → display labels
 export const CROP_CONFIG_KEYS = {
   rice: 'Rice', maize: 'Maize', cashew: 'Cashew', cocoa: 'Cocoa',
-  ffb: 'Oil Palm', oil_palm: 'Oil Palm', rubber: 'Rubber',
-  cassava: 'Cassava', sugarcane: 'SugarCane',
+  ffb: 'Oil palm', oil_palm: 'Oil palm', rubber: 'Rubber',
+  cassava: 'Cassava', sugarcane: 'Sugarcane',
 };
 
 /**

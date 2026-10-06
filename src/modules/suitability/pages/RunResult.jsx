@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { ArrowLeft, FileDown, RefreshCw } from 'lucide-react';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { fetchSuitabilityRun, generateReportPdf } from '../suitabilityApi';
+import { fetchSuitabilityRun, generateReportPdf } from '../../../services/suitabilityApi';
 import { fetchSuitabilityThresholds } from '../../../services/adminApi';
 import { Card, StatusPill, SecondaryButton, ErrorNote, EmptyState } from '../../../components/page/PageKit';
 import { CLASSES, classLabel, classTone, runStatus, isFinished, cropName, adviceFor, CROPS } from '../suitabilityLabels';

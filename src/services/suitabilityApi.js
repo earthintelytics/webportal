@@ -3,9 +3,10 @@
  * Suitability is a FarmIntelytics team tool: every call uses the team
  * (superadmin) token. Failures are thrown, never replaced by invented results.
  */
-import { NotConnectedError } from '../../services/datasetsApi';
+import { NotConnectedError } from './datasetsApi';
+import { API_BASE } from './apiBase';
 
-const BASE_URL = '/farmintelytics-engine/agromonitoring/suitability';
+const BASE_URL = `${API_BASE}/suitability`;
 
 const authHeaders = () => {
   const token = localStorage.getItem('fi_admin_token');

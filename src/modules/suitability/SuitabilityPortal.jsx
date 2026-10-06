@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, Plus } from 'lucide-react';
-import { fetchCompanies, fetchSuitabilityRuns } from './suitabilityApi';
+import { fetchCompanies, fetchSuitabilityRuns } from '../../services/suitabilityApi';
 import { HERO_PLACEHOLDERS } from '../../constants/heroPlaceholders';
 import { Card, StatusPill, PrimaryButton, NotConnectedNote, ErrorNote, EmptyState } from '../../components/page/PageKit';
 import { useLoader } from '../../components/page/useLoader';

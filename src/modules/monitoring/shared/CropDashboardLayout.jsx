@@ -1,4 +1,3 @@
-import { CROP_META } from '../../../services/cropMonitoringApi';
 import PlotDetailPanel from './PlotDetailPanel';
 import PlotSearchSelector from './PlotSearchSelector';
 import React, { useState, useMemo, useEffect, useRef } from 'react';
@@ -64,7 +63,7 @@ import { fetchEstates } from '../../../services/estatesApi';
 import FarmDataPage from '../../data/FarmDataPage';
 import DataNeededDialog from '../../data/DataNeededDialog';
 import RegisterPage from '../../services/RegisterPage';
-import { CROP_CATALOG, loadCropPages } from '../cropCatalog';
+import { cropPagesFor } from '../cropCatalog';
 import CropGlossary from './CropGlossary';
 import ReportBuilder from '../../reports/ReportBuilder';
 import VerificationPage from '../../reports/VerificationPage';
@@ -117,7 +116,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
   const pick = (defaults, list) => !list ? (service ? [] : defaults) : list
     .map(s => { const d = defaults.find(x => x.id === s.id); return d ? { ...d, label: s.label || d.label } : null; })
     .filter(Boolean);
-  const cropLabel = isOrg ? '' : (CROP_META[cropType]?.label || CROP_CONFIG_KEYS[cropType] || cropType);
+  const cropLabel = isOrg ? '' : (CROP_CONFIG_KEYS[cropType] || cropType);
   // Tenant identity comes strictly from the authenticated session — no default
   // organization. Without a session, bounce straight back to login.
   const tenant = localStorage.getItem('fi_tenant');
@@ -165,16 +164,8 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
   }, [filterEstate]);
   // Settings → Farm data: which dataset to open (set by the sign-in "Data needed" dialog)
   const [dataFocus, setDataFocus] = useState(null);
-  // Page set: a service's catalogue entry, or the crop's (backend catalogue,
-  // admin-editable; interim copy from docs/services/*-monitoring.md until it is deployed).
-  const [cropPages, setCropPages] = useState(() => (service ? null : CROP_CATALOG[cropType] || null));
-  useEffect(() => {
-    if (service || mode === 'organization') return undefined;
-    let active = true;
-    loadCropPages(cropType).then(pgs => { if (active && pgs) setCropPages(pgs); });
-    return () => { active = false; };
-  }, [cropType, service, mode]);
-  const pageSet = service || cropPages;
+  // Page set: the service's catalogue entry, or the crop's (cropCatalog.js).
+  const pageSet = service || cropPagesFor(cropType);
   // Glossary entry to open (links from farmer words on screen)
   const [glossaryFocus, setGlossaryFocus] = useState(null);
   const openGlossary = (key) => { setGlossaryFocus(key); setActiveTab('monitor'); setActiveSidebarItem('help'); };
@@ -1255,7 +1246,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
               <div onClick={() => toggleLegendKey(entry.key)} style={{ cursor: 'pointer' }}>
                 <div className="text-xs font-bold text-gray-700 leading-tight flex items-center gap-1.5">
                   {entry.title} {renderInfoTooltip(entry.tooltip)}
-                  {isOnMap && <span className="text-[11px] font-bold text-green-700 bg-green-50 border border-green-200 rounded-full px-1.5 py-0.5">On Map</span>}
+                  {isOnMap && <span className="text-[11px] font-bold text-green-700 bg-green-50 border border-green-200 rounded-full px-1.5 py-0.5">On map</span>}
                 </div>
                 <span className="text-[11px] text-gray-600">
                   <button type="button" onClick={(ev) => { ev.stopPropagation(); openGlossary(entry.key); }} className="underline decoration-dotted hover:text-green-700">What is this?</button>{!entry.hasData && <span className="text-gray-500"> · no clear view yet</span>}
@@ -1286,7 +1277,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
                 {isOnMap && (
                   <div className="pt-1.5 border-t border-gray-50">
                     <div className="flex items-center justify-between text-[11px] text-gray-600 font-bold">
-                      <span>Layer Transparency</span>
+                      <span>Layer transparency</span>
                       <span>{mapOpacity}%</span>
                     </div>
                     <input type="range" min="10" max="100" value={mapOpacity}
@@ -1333,7 +1324,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
               >
                 {isOpen ? <ChevronDown size={12} /> : <ChevronRight size={12} />} {name}
                 <span className="font-semibold normal-case tracking-normal text-gray-500">({entries.length})</span>
-                {onMapCount > 0 && <span className="text-[11px] font-bold text-green-700 bg-green-50 border border-green-200 rounded-full px-1.5 py-0.5">On Map</span>}
+                {onMapCount > 0 && <span className="text-[11px] font-bold text-green-700 bg-green-50 border border-green-200 rounded-full px-1.5 py-0.5">On map</span>}
               </div>
               {isOpen && <div className="space-y-3">{entries.map(entry => renderLegendCard(entry))}</div>}
             </div>
@@ -2324,7 +2315,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
                 ) : (
                   currentTimeline && (
                     <div className="flex flex-col gap-0.5">
-                      <div className="text-[11px] font-semibold text-gray-600">Selected Acquisition Pass</div>
+                      <div className="text-[11px] font-semibold text-gray-600">Selected acquisition pass</div>
                       <div className="flex items-center gap-1 flex-wrap">
                         <span className="text-[11px] font-bold text-gray-800 tracking-tight">{currentTimeline.label?.split(',')[0]}</span>
                         <span className="text-[11px] font-bold text-green-700 bg-green-50 px-1.5 py-0.5 rounded-full border border-green-200">
@@ -2352,7 +2343,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
                   <>
                     <div className="h-px bg-gray-100" />
                     <div className="flex flex-col gap-1.5">
-                      <span className="text-[11px] font-semibold text-gray-600">Recent Passes</span>
+                      <span className="text-[11px] font-semibold text-gray-600">Recent passes</span>
                       <div className="flex flex-col gap-1">
                         {calendarDates.slice(-5).reverse().map(d => {
                           const isActive = currentTimeline?.date === d.date;
@@ -2440,7 +2431,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
       hasData: [ndvi, ndre, ndmi, evi, reci, lswi].some(v => v != null),
       labels: ['Crop health', 'Leaf greenness', 'Leaf water', 'Canopy density', 'Leaf colour', 'Canopy water'],
       datasets: [{
-        label: 'Farm Index Profile',
+        label: 'Farm index profile',
         data: [
           norm(ndvi,  -0.2, 1.0),
           norm(ndre,  -0.1, 0.8),
@@ -2697,7 +2688,7 @@ Context: ${context}.`;
             {showNotifications && (
               <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-gray-200 rounded-2xl shadow-2xl z-[500] overflow-hidden">
                 <div className="px-4 py-3.5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                  <div className="text-xs font-bold text-gray-700">Live Alerts Feed</div>
+                  <div className="text-xs font-bold text-gray-700">Live alerts feed</div>
                   <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${'bg-green-50 text-green-700'}`}>
                     {alerts.filter(a => a.status === 'Active').length} Active
                   </span>
@@ -2793,13 +2784,13 @@ Context: ${context}.`;
               <div className="space-y-1">
                 <div className="text-[11px] font-bold text-gray-600 px-3 mb-3">Main</div>
                 {pick([
-                  { id: 'analytics',           label: 'Analytics Hub',       icon: <LayoutDashboard size={17} /> },
+                  { id: 'analytics',           label: 'Analytics hub',       icon: <LayoutDashboard size={17} /> },
                   { id: 'intelligence-layers', label: 'Map',                 icon: <MapIcon size={17} /> },
-                  { id: 'crop-health',         label: 'Crop Health',         icon: <Activity size={17} /> },
-                  { id: 'crop-yield',          label: 'Crop Yield',          icon: <TrendingUp size={17} /> },
-                  { id: 'moisture-content',    label: 'Moisture Content',    icon: <Droplets size={17} /> },
+                  { id: 'crop-health',         label: 'Crop health',         icon: <Activity size={17} /> },
+                  { id: 'crop-yield',          label: 'Crop yield',          icon: <TrendingUp size={17} /> },
+                  { id: 'moisture-content',    label: 'Moisture content',    icon: <Droplets size={17} /> },
                   { id: 'climate',             label: 'Climate',             icon: <CloudRain size={17} /> },
-                  { id: 'land-restoration',    label: 'Land Restoration',    icon: <Leaf size={17} /> },
+                  { id: 'land-restoration',    label: 'Land restoration',    icon: <Leaf size={17} /> },
                   { id: 'alerts',              label: 'Alerts',              icon: <AlertTriangle size={17} />, badge: alerts.filter(a => a.status === 'Active').length },
                   // Service-only page kinds: pick() keeps them only when the service lists them
                   ...(service ? [{ id: 'register', label: 'Register', icon: <RegisterIcon size={17} /> }, { id: 'check', label: 'Check', icon: <CheckIcon size={17} /> }, { id: 'advice', label: 'Advice', icon: <AdviceIcon size={17} /> },
@@ -2834,8 +2825,8 @@ Context: ${context}.`;
                 <div className="text-[11px] font-bold text-gray-600 px-3 mb-3">Tools</div>
                 {[
                   { id: 'calendar-tool', label: 'Calendar',     icon: <CalendarIcon size={17} />, active: showCalendarTool, toggle: () => setShowCalendarTool(!showCalendarTool) },
-                  { id: 'slider-tool',   label: 'Time Slider',  icon: <SlidersHorizontal size={17} />, active: showTimeSliderTool, toggle: () => setShowTimeSliderTool(!showTimeSliderTool) },
-                  { id: 'compare-tool',  label: 'Split Comparison', icon: <Columns size={17} />, active: isCompareMode, toggle: () => {
+                  { id: 'slider-tool',   label: 'Time slider',  icon: <SlidersHorizontal size={17} />, active: showTimeSliderTool, toggle: () => setShowTimeSliderTool(!showTimeSliderTool) },
+                  { id: 'compare-tool',  label: 'Split comparison', icon: <Columns size={17} />, active: isCompareMode, toggle: () => {
                     const nextVal = !isCompareMode;
                     setIsCompareMode(nextVal);
                     if (nextVal) {
@@ -2871,7 +2862,7 @@ Context: ${context}.`;
 
                 {isCompareMode && (
                   <div className="px-3 py-2.5 bg-green-50/40 rounded-xl mt-1.5 space-y-2 border border-green-100/50">
-                    <div className="text-[11px] font-bold text-green-700 px-1">Active Date Slot</div>
+                    <div className="text-[11px] font-bold text-green-700 px-1">Active date slot</div>
                     <div className="grid grid-cols-2 gap-1.5">
                       <button
                         onClick={() => setActiveDateSlot('A')}
@@ -2936,11 +2927,11 @@ Context: ${context}.`;
           {activeSidebarItem === 'analytics' && activeTab === 'monitor' && (() => {
             const ANALYTICS_SUBPAGES = pick([
               { id: 'overview', label: 'Overview', icon: <LayoutDashboard size={15} /> },
-              { id: 'vigor-health', label: 'Vigor & Phenology', icon: <TrendingUp size={15} /> },
+              { id: 'vigor-health', label: 'Vigor & phenology', icon: <TrendingUp size={15} /> },
               { id: 'moisture-et', label: 'Moisture & ET', icon: <Droplets size={15} /> },
               { id: 'et-log', label: 'ET Historical Log', icon: <Clock size={15} /> },
-              { id: 'water-management', label: 'Water Management', icon: <Waves size={15} /> },
-              { id: 'soil-nutrients', label: 'Soil & Nutrients', icon: <Sun size={15} /> },
+              { id: 'water-management', label: 'Water management', icon: <Waves size={15} /> },
+              { id: 'soil-nutrients', label: 'Soil & nutrients', icon: <Sun size={15} /> },
             ], pageSet?.analytics);
             return (
               <div className="p-10 space-y-10">
@@ -3014,7 +3005,7 @@ Context: ${context}.`;
                         onChange={e => handlePlotFilterChange(e.target.value)}
                         className="bg-transparent text-xs font-bold text-gray-700 outline-none cursor-pointer pr-1"
                       >
-                        <option value="All">All Plots</option>
+                        <option value="All">All plots</option>
                         {plotsData.slice(0, 50).map(p => (
                           <option key={p.id} value={p.id}>{p.id}</option>
                         ))}
@@ -3029,7 +3020,7 @@ Context: ${context}.`;
                         onChange={e => setFilterDate(e.target.value)}
                         className="bg-transparent text-xs font-bold text-gray-700 outline-none cursor-pointer pr-1"
                       >
-                        <option value="All">All Pass Dates</option>
+                        <option value="All">All pass dates</option>
                         {TIMELINE_DATA.map(t => (
                           <option key={t.date} value={t.date}>{t.label}</option>
                         ))}
@@ -3042,7 +3033,7 @@ Context: ${context}.`;
                         onClick={() => { setFilterEstate('All'); setFilterPlot('All'); setFilterDate('All'); }}
                         className="text-xs font-bold text-green-700 hover:text-green-800 transition-colors flex items-center gap-1.5 px-3 py-2 bg-green-50 hover:bg-green-100/70 rounded-xl"
                       >
-                        <X size={14} /> Clear Filters
+                        <X size={14} /> Clear filters
                       </button>
                     )}
                   </div>
@@ -3169,13 +3160,13 @@ Context: ${context}.`;
                               </div>
                             </div>
                             <div className="border border-gray-100 rounded-xl p-4 bg-white shadow-sm">
-                              <div className="text-[11px] font-bold text-gray-600 mb-1">Cumulative Rainfall</div>
+                              <div className="text-[11px] font-bold text-gray-600 mb-1">Cumulative rainfall</div>
                               <div className="text-2xl font-bold text-gray-800">
                                 {farm.cumulative_rainfall_mm != null ? farm.cumulative_rainfall_mm.toFixed(1) : '—'} <span className="text-xs font-semibold text-gray-600">mm</span>
                               </div>
                             </div>
                             <div className="border border-gray-100 rounded-xl p-4 bg-white shadow-sm">
-                              <div className="text-[11px] font-bold text-gray-600 mb-1">Irrigation Efficiency</div>
+                              <div className="text-[11px] font-bold text-gray-600 mb-1">Irrigation efficiency</div>
                               <div className="text-2xl font-bold text-gray-800">
                                 {farm.irrigation_efficiency != null ? `${(farm.irrigation_efficiency * 100).toFixed(0)}%` : '—'}
                               </div>
@@ -3246,7 +3237,7 @@ Context: ${context}.`;
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
                           {/* Parameters Table/List */}
                           <div className="space-y-3">
-                            <h4 className="text-[11px] font-semibold text-gray-600">Diagnostic Metrics</h4>
+                            <h4 className="text-[11px] font-semibold text-gray-600">Diagnostic metrics</h4>
                             {[
                               { name: 'Soil pH', value: '—', status: '—', color: 'text-gray-500' },
                               { name: 'Organic Carbon', value: '—', status: '—', color: 'text-gray-500' },
@@ -3263,7 +3254,7 @@ Context: ${context}.`;
 
                           {/* Actionable Recommendations */}
                           <div className="space-y-3">
-                            <h4 className="text-[11px] font-semibold text-gray-600">Agronomic Recommendations</h4>
+                            <h4 className="text-[11px] font-semibold text-gray-600">Agronomic recommendations</h4>
                             <div className="bg-green-50/50 border border-green-100 p-4 rounded-xl space-y-3">
                               <p className="text-xs text-gray-500 font-semibold leading-relaxed">
                                 Soil chemistry data not yet connected. Upload soil sample results to generate agronomic recommendations for this plot.
@@ -3395,7 +3386,7 @@ Context: ${context}.`;
                     style={{ zIndex: 40000 }}
                   >
                     <Layers size={16} className={intelShowLayers ? 'text-green-600' : 'text-gray-600'} />
-                    Map Layers
+                    Map layers
                   </button>
 
                   {/* Plot detail panel (over map) */}
@@ -3409,7 +3400,7 @@ Context: ${context}.`;
                     <div className="px-4 py-4 border-b border-gray-100 flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Layers size={18} className="text-green-600" />
-                        <span className="text-base font-bold text-gray-800 font-sans">Map Layers</span>
+                        <span className="text-base font-bold text-gray-800 font-sans">Map layers</span>
                       </div>
                       <button onClick={() => setIntelShowLayers(false)} className="p-1 hover:bg-gray-100 rounded-lg text-gray-600 hover:text-gray-650 transition-all">
                         <X size={18} />
@@ -3432,7 +3423,7 @@ Context: ${context}.`;
                         <div className="border border-gray-100 rounded-xl p-3.5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-2.5">
                           <div className="flex items-center justify-between">
                             <div>
-                              <div className="text-xs font-bold text-gray-700 leading-tight flex items-center gap-1.5">Satellite Index Raster</div>
+                              <div className="text-xs font-bold text-gray-700 leading-tight flex items-center gap-1.5">Satellite index raster</div>
                               <span className="text-[11px] text-gray-600">Raw pixel layer from zarr</span>
                             </div>
                             <button
@@ -3583,7 +3574,7 @@ Context: ${context}.`;
                     style={{ zIndex: 40000 }}
                   >
                     <Layers size={16} className={healthShowLayers ? 'text-green-600' : 'text-gray-600'} />
-                    Map Layers
+                    Map layers
                   </button>
 
                   {/* Plot detail panel (over map) */}
@@ -3597,7 +3588,7 @@ Context: ${context}.`;
                     <div className="px-4 py-4 border-b border-gray-100 flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Layers size={18} className="text-green-600" />
-                        <span className="text-base font-bold text-gray-800 font-sans">Map Layers</span>
+                        <span className="text-base font-bold text-gray-800 font-sans">Map layers</span>
                       </div>
                       <button onClick={() => setHealthShowLayers(false)} className="p-1 hover:bg-gray-100 rounded-lg text-gray-600 hover:text-gray-655 transition-all">
                         <X size={18} />
@@ -3620,7 +3611,7 @@ Context: ${context}.`;
                         <div className="border border-gray-100 rounded-xl p-3.5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-2.5">
                           <div className="flex items-center justify-between">
                             <div>
-                              <div className="text-xs font-bold text-gray-700 leading-tight flex items-center gap-1.5">Satellite Index Raster</div>
+                              <div className="text-xs font-bold text-gray-700 leading-tight flex items-center gap-1.5">Satellite index raster</div>
                               <span className="text-[11px] text-gray-600">Raw pixel layer from zarr</span>
                             </div>
                             <button
@@ -3792,7 +3783,7 @@ Context: ${context}.`;
                     style={{ zIndex: 40000 }}
                   >
                     <Layers size={16} className={yieldShowLayers ? 'text-green-600' : 'text-gray-600'} />
-                    Map Layers
+                    Map layers
                   </button>
 
                   {/* Plot detail panel (over map) */}
@@ -3806,7 +3797,7 @@ Context: ${context}.`;
                     <div className="px-4 py-4 border-b border-gray-100 flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Layers size={18} className="text-green-600" />
-                        <span className="text-base font-bold text-gray-800 font-sans">Map Layers</span>
+                        <span className="text-base font-bold text-gray-800 font-sans">Map layers</span>
                       </div>
                       <button onClick={() => setYieldShowLayers(false)} className="p-1 hover:bg-gray-100 rounded-lg text-gray-600 hover:text-gray-650 transition-all">
                         <X size={18} />
@@ -3829,7 +3820,7 @@ Context: ${context}.`;
                         <div className="border border-gray-100 rounded-xl p-3.5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-2.5">
                           <div className="flex items-center justify-between">
                             <div>
-                              <div className="text-xs font-bold text-gray-700 leading-tight flex items-center gap-1.5">Satellite Index Raster</div>
+                              <div className="text-xs font-bold text-gray-700 leading-tight flex items-center gap-1.5">Satellite index raster</div>
                               <span className="text-[11px] text-gray-600">Raw pixel layer from zarr</span>
                             </div>
                             <button
@@ -3911,7 +3902,7 @@ Context: ${context}.`;
                               <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#15803d'}}/><span className="text-[11px] font-semibold text-gray-500">High</span></div>
                               <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#84cc16'}}/><span className="text-[11px] font-semibold text-gray-500">Good</span></div>
                               <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#eab308'}}/><span className="text-[11px] font-semibold text-gray-500">Average</span></div>
-                              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#dc2626'}}/><span className="text-[11px] font-semibold text-gray-500">Below Average</span></div>
+                              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#dc2626'}}/><span className="text-[11px] font-semibold text-gray-500">Below average</span></div>
                             </div>
                           )}
                         </div>                        <div className="border border-gray-100 rounded-xl p-3.5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-2.5">
@@ -3937,9 +3928,9 @@ Context: ${context}.`;
                           </div>
                           {yieldShowReadiness && (
                             <div className="space-y-1.5 pt-1 border-t border-gray-50">
-                              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#15803d'}}/><span className="text-[11px] font-semibold text-gray-500">Ready to Harvest</span></div>
+                              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#15803d'}}/><span className="text-[11px] font-semibold text-gray-500">Ready to harvest</span></div>
                               <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#fbbf24'}}/><span className="text-[11px] font-semibold text-gray-500">2-4 Weeks</span></div>
-                              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#dc2626'}}/><span className="text-[11px] font-semibold text-gray-500">Not Ready</span></div>
+                              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#dc2626'}}/><span className="text-[11px] font-semibold text-gray-500">Not ready</span></div>
                             </div>
                           )}
                         </div>
@@ -4061,7 +4052,7 @@ Context: ${context}.`;
                     style={{ zIndex: 40000 }}
                   >
                     <Layers size={16} className={moistureShowLayers ? 'text-green-600' : 'text-gray-600'} />
-                    Map Layers
+                    Map layers
                   </button>
                 </div>
 
@@ -4071,7 +4062,7 @@ Context: ${context}.`;
                     <div className="px-4 py-4 border-b border-gray-100 flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Layers size={18} className="text-green-600" />
-                        <span className="text-base font-bold text-gray-800 font-sans">Map Layers</span>
+                        <span className="text-base font-bold text-gray-800 font-sans">Map layers</span>
                       </div>
                       <button onClick={() => setMoistureShowLayers(false)} className="p-1 hover:bg-gray-100 rounded-lg text-gray-600 hover:text-gray-655 transition-all">
                         <X size={18} />
@@ -4091,7 +4082,7 @@ Context: ${context}.`;
                             <div className="border border-gray-100 rounded-xl p-3.5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-2.5">
                               <div className="flex items-center justify-between">
                                 <div>
-                                  <div className="text-xs font-bold text-gray-700 leading-tight flex items-center gap-1.5">Moisture Index Raster</div>
+                                  <div className="text-xs font-bold text-gray-700 leading-tight flex items-center gap-1.5">Moisture index raster</div>
                                   <span className="text-[11px] text-gray-600">Raw SMI pixels from Zarr</span>
                                 </div>
                                 <button
@@ -4118,7 +4109,7 @@ Context: ${context}.`;
                             <div className="border border-gray-100 rounded-xl p-3.5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-2.5">
                               <div className="flex items-center justify-between">
                                 <div>
-                                  <div className="text-xs font-bold text-gray-700 leading-tight flex items-center gap-1.5">Farm Boundaries</div>
+                                  <div className="text-xs font-bold text-gray-700 leading-tight flex items-center gap-1.5">Farm boundaries</div>
                                   <span className="text-[11px] text-gray-600">Plot perimeter outlines</span>
                                 </div>
                                 <button
@@ -4238,7 +4229,7 @@ Context: ${context}.`;
                     style={{ zIndex: 40000 }}
                   >
                     <Layers size={16} className={restoreShowLayers ? 'text-green-600' : 'text-gray-600'} />
-                    Map Layers
+                    Map layers
                   </button>
 
                   {/* Plot detail panel (over map) */}
@@ -4252,7 +4243,7 @@ Context: ${context}.`;
                     <div className="px-4 py-4 border-b border-gray-100 flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Layers size={18} className="text-green-600" />
-                        <span className="text-base font-bold text-gray-800 font-sans">Map Layers</span>
+                        <span className="text-base font-bold text-gray-800 font-sans">Map layers</span>
                       </div>
                       <button onClick={() => setRestoreShowLayers(false)} className="p-1 hover:bg-gray-100 rounded-lg text-gray-600 hover:text-gray-655 transition-all">
                         <X size={18} />
@@ -4275,7 +4266,7 @@ Context: ${context}.`;
                         <div className="border border-gray-100 rounded-xl p-3.5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-2.5">
                           <div className="flex items-center justify-between">
                             <div>
-                              <div className="text-xs font-bold text-gray-700 leading-tight flex items-center gap-1.5">Satellite Index Raster</div>
+                              <div className="text-xs font-bold text-gray-700 leading-tight flex items-center gap-1.5">Satellite index raster</div>
                               <span className="text-[11px] text-gray-600">Raw pixel layer from zarr</span>
                             </div>
                             <button
@@ -4402,7 +4393,7 @@ Context: ${context}.`;
                               <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#15803d'}}/><span className="text-[11px] font-semibold text-gray-500">High</span></div>
                               <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#84cc16'}}/><span className="text-[11px] font-semibold text-gray-500">Moderate</span></div>
                               <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#fbbf24'}}/><span className="text-[11px] font-semibold text-gray-500">Low</span></div>
-                              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#dc2626'}}/><span className="text-[11px] font-semibold text-gray-500">Very Low</span></div>
+                              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#dc2626'}}/><span className="text-[11px] font-semibold text-gray-500">Very low</span></div>
                             </div>
                           )}
                         </div>                        <div className="border border-gray-100 rounded-xl p-3.5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-2.5">
@@ -4540,7 +4531,7 @@ Context: ${context}.`;
                           {restoreShowEudr && (
                             <div className="space-y-1.5 pt-1 border-t border-gray-50">
                               <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#15803d'}}/><span className="text-[11px] font-semibold text-gray-500">Compliant</span></div>
-                              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#fbbf24'}}/><span className="text-[11px] font-semibold text-gray-500">At Risk</span></div>
+                              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#fbbf24'}}/><span className="text-[11px] font-semibold text-gray-500">At risk</span></div>
                               <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#dc2626'}}/><span className="text-[11px] font-semibold text-gray-500">Non-Compliant</span></div>
                             </div>
                           )}
@@ -4661,7 +4652,7 @@ Context: ${context}.`;
                     style={{ zIndex: 40000 }}
                   >
                     <Layers size={16} className={climateShowLayers ? 'text-green-600' : 'text-gray-600'} />
-                    Map Layers
+                    Map layers
                   </button>
 
                   {/* Plot detail panel (over map) */}
@@ -4675,7 +4666,7 @@ Context: ${context}.`;
                     <div className="px-4 py-4 border-b border-gray-100 flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Layers size={18} className="text-green-600" />
-                        <span className="text-base font-bold text-gray-800 font-sans">Map Layers</span>
+                        <span className="text-base font-bold text-gray-800 font-sans">Map layers</span>
                       </div>
                       <button onClick={() => setClimateShowLayers(false)} className="p-1 hover:bg-gray-100 rounded-lg text-gray-600 hover:text-gray-655 transition-all">
                         <X size={18} />
@@ -4785,7 +4776,7 @@ Context: ${context}.`;
                           <div className="space-y-3">
                         <div className="border border-gray-100 rounded-xl p-3.5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-2.5">
                           <div className="flex items-center justify-between">
-                            <div><div className="text-xs font-bold text-gray-700 leading-tight flex items-center gap-1.5">LST {renderInfoTooltip("LST")}</div><span className="text-[11px] text-gray-600">Land Surface Temperature</span></div>
+                            <div><div className="text-xs font-bold text-gray-700 leading-tight flex items-center gap-1.5">LST {renderInfoTooltip("LST")}</div><span className="text-[11px] text-gray-600">Land surface temperature</span></div>
                             <button onClick={() => setClimateShowLst(!climateShowLst)} className="w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0" style={{ backgroundColor: climateShowLst ? '#16A34A' : '#E5E7EB' }}>
                               <div style={{ transform: climateShowLst ? 'translateX(16px)' : 'translateX(0)' }} className="w-4 h-4 rounded-full bg-white shadow transition-transform duration-200" />
                             </button>
@@ -4821,10 +4812,10 @@ Context: ${context}.`;
                           </div>
                           {climateShowFlood && (
                             <div className="space-y-1.5 pt-1 border-t border-gray-50">
-                              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#dc2626'}}/><span className="text-[11px] font-semibold text-gray-500">High Risk</span></div>
-                              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#f97316'}}/><span className="text-[11px] font-semibold text-gray-500">Moderate Risk</span></div>
-                              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#fbbf24'}}/><span className="text-[11px] font-semibold text-gray-500">Low Risk</span></div>
-                              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#15803d'}}/><span className="text-[11px] font-semibold text-gray-500">No Risk</span></div>
+                              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#dc2626'}}/><span className="text-[11px] font-semibold text-gray-500">High risk</span></div>
+                              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#f97316'}}/><span className="text-[11px] font-semibold text-gray-500">Moderate risk</span></div>
+                              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#fbbf24'}}/><span className="text-[11px] font-semibold text-gray-500">Low risk</span></div>
+                              <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-sm shrink-0" style={{backgroundColor:'#15803d'}}/><span className="text-[11px] font-semibold text-gray-500">No risk</span></div>
                             </div>
                           )}
                         </div>
@@ -4874,7 +4865,7 @@ Context: ${context}.`;
                     <Sparkles size={16} />
                   </div>
                   <div>
-                    <span className="text-sm font-bold text-gray-900">Farm AI Advisor</span>
+                    <span className="text-sm font-bold text-gray-900">Farm AI advisor</span>
                   </div>
                 </div>
 
@@ -4887,7 +4878,7 @@ Context: ${context}.`;
                     className="px-3.5 py-1.5 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 text-xs font-bold text-gray-700 transition-colors shadow-xs flex items-center gap-1.5"
                   >
                     <SlidersHorizontal size={13} className="text-green-700" />
-                    <span>Back to Scenario Modeller</span>
+                    <span>Back to scenario modeller</span>
                   </button>
                 )}
               </div>

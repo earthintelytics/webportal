@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ShieldCheck, Download, Info, ChevronDown } from 'lucide-react';
-import { API_BASE } from '../../services/apiBase';
+import { fetchVerification } from '../../services/verificationApi';
 
 /**
  * Verification page (design: docs/services/reports-and-verification.md):
@@ -48,10 +48,7 @@ export default function VerificationPage({ plots, serviceId, onOpenData }) {
   const [open, setOpen] = useState(null);
   useEffect(() => {
     let active = true;
-    const token = localStorage.getItem('fi_token');
-    fetch(`${API_BASE}/verification?kind=${kind}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
-      .then(r => (r.ok && (r.headers.get('content-type') || '').includes('json') ? r.json() : null))
-      .then(d => { if (active) setRemote(d); }).catch(() => { if (active) setRemote(null); });
+    fetchVerification(kind).then(d => { if (active) setRemote(d); });
     return () => { active = false; };
   }, [kind]);
   const checks = useMemo(() => remote?.checks || localChecks(kind, plots || []), [remote, kind, plots]);

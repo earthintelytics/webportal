@@ -85,7 +85,7 @@ const ForgotPasswordModal = ({ isOpen, onClose, initialEmail = '', onSuccess }) 
             <KeyRound size={20} />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-slate-900">Reset Password</h3>
+            <h3 className="text-lg font-bold text-slate-900">Reset password</h3>
             <p className="text-xs text-slate-500">
               {step === 'email' ? 'Enter email to receive reset code' : `Code sent to ${email}`}
             </p>
@@ -108,7 +108,7 @@ const ForgotPasswordModal = ({ isOpen, onClose, initialEmail = '', onSuccess }) 
         {step === 'email' ? (
           <form onSubmit={handleRequestCode} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Account Email</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Account email</label>
               <div className="relative">
                 <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
@@ -132,7 +132,7 @@ const ForgotPasswordModal = ({ isOpen, onClose, initialEmail = '', onSuccess }) 
         ) : (
           <form onSubmit={handleReset} className="space-y-3.5">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Verification Code</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Verification code</label>
               <input
                 type="text"
                 required
@@ -143,7 +143,7 @@ const ForgotPasswordModal = ({ isOpen, onClose, initialEmail = '', onSuccess }) 
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">New Password</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">New password</label>
               <div className="relative">
                 <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
@@ -158,7 +158,7 @@ const ForgotPasswordModal = ({ isOpen, onClose, initialEmail = '', onSuccess }) 
               </div>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Confirm New Password</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Confirm new password</label>
               <div className="relative">
                 <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
