@@ -5,14 +5,22 @@ import { useConfirm } from '../components/ConfirmProvider';
 import ErrorBanner from '../components/ErrorBanner';
 import { boundaryCheck } from '../components/validation';
 import { CROP_LABELS } from '../components/orgConstants';
-import { Button, IconButton, Pill, Loading, Empty } from '../components/ui';
+import { Button, IconButton, Pill, Loading, Empty, Tabs } from '../components/ui';
 import AddEstateForm from './organisation/AddEstateForm';
 import EstateConfigModal from './organisation/EstateConfigModal';
 import BoundaryModal from './organisation/BoundaryModal';
 import EstateDetailsModal from './organisation/EstateDetailsModal';
+import OrgPeople from './organisation/OrgPeople';
+import OrgLicence from './organisation/OrgLicence';
+import OrgPipeline from './organisation/OrgPipeline';
 
-/** One organisation's estates: add, boundary (view, replace), details, pipeline settings, delete. */
-const OrgDetailPanel = ({ org, onClose }) => {
+/**
+ * One organisation in one place: its estates, its people (roles and the
+ * account limit of its licence), its licence, and its data pipeline.
+ */
+const OrgDetailPanel = ({ org: initialOrg, onClose }) => {
+  const [org, setOrg] = useState(initialOrg);
+  const [tab, setTab] = useState('estates');
   const confirm = useConfirm();
   const [farms, setFarms] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -35,7 +43,7 @@ const OrgDetailPanel = ({ org, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-[1000] bg-slate-900/30 flex justify-end" onClick={onClose}>
-      <aside className="w-full max-w-xl h-full bg-white border-l border-gray-200 flex flex-col" onClick={(e) => e.stopPropagation()}>
+      <aside className="w-full max-w-2xl h-full bg-white border-l border-gray-200 flex flex-col" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-start gap-3 px-6 py-5 border-b border-gray-100">
           <span className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center overflow-hidden shrink-0">
             {org.logo_url ? <img src={org.logo_url} alt="" className="w-full h-full object-contain p-1" /> : <Building2 size={18} className="text-gray-400" />}
@@ -46,7 +54,14 @@ const OrgDetailPanel = ({ org, onClose }) => {
           </div>
           <IconButton label="Close" onClick={onClose}><X size={18} /></IconButton>
         </div>
+        <div className="px-6 pt-4">
+          <Tabs value={tab} onChange={setTab} tabs={[{ id: 'estates', label: 'Estates', count: farms.length }, { id: 'people', label: 'People' }, { id: 'licence', label: 'Licence' }, { id: 'pipeline', label: 'Pipeline' }]} />
+        </div>
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
+          {tab === 'people' && <OrgPeople org={org} />}
+          {tab === 'licence' && <OrgLicence org={org} onSaved={setOrg} />}
+          {tab === 'pipeline' && <OrgPipeline org={org} />}
+          {tab === 'estates' && <>
           <ErrorBanner message={error} onDismiss={() => setError('')} onRetry={load} />
           <div className="flex items-center justify-between">
             <p className="text-sm font-semibold text-gray-800">Estates and boundaries</p>
@@ -55,6 +70,7 @@ const OrgDetailPanel = ({ org, onClose }) => {
           {loading ? <Loading /> : farms.length === 0 ? <Empty>No estates yet. Add one with its boundary.</Empty> : (
             <ul className="space-y-2.5">{farms.map((f) => <EstateRow key={f.farm_id} farm={f} onDelete={remove} onReplace={replaceBoundary} />)}</ul>
           )}
+          </>}
         </div>
       </aside>
       {adding && <AddEstateForm org={org} farms={farms} onClose={() => setAdding(false)} onSaved={() => { setAdding(false); load(); }} />}
