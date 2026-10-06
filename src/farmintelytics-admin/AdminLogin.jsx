@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { Lock, Mail, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { adminLogin } from '../services/adminApi';
 import { clearStoredAccounts } from '../services/session';
+import { demoAccounts } from '../constants/demoAccounts';
+
+const TEAM_DEMOS = demoAccounts('team');
 
 // Also used as the gate for the internal platform hub (`/`): pass onSuccess
 // to stay on the current page instead of opening the admin console.
@@ -96,6 +99,18 @@ const AdminLogin = ({ onSuccess = null, context = 'admin' }) => {
                 : <>Sign in <ArrowRight size={16} /></>}
             </button>
           </form>
+
+          {TEAM_DEMOS.length > 0 && (
+            <div className="mt-6 flex flex-wrap items-center gap-2 text-sm text-[var(--text-muted)]">
+              <span>Demo account:</span>
+              {TEAM_DEMOS.map((d) => (
+                <button key={d.email} type="button" onClick={() => { setEmail(d.email); setCode(d.code); setError(''); }}
+                  className="px-3 py-1.5 rounded-lg border border-[var(--border-light)] bg-white hover:bg-[var(--bg-main)] text-[var(--text-main)] font-medium">
+                  {d.label || d.email}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <p className="text-center text-xs text-slate-400 mt-6">© {new Date().getFullYear()} FarmIntelytics</p>

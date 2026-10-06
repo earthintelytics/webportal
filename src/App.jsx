@@ -211,6 +211,7 @@ const LoginPage = () => {
   return (
     <Login
       onLogin={handleLogin}
+      moduleId={moduleId}
       moduleName={moduleName}
       onBack={handleBack}
     />

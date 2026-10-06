@@ -13,6 +13,9 @@ COPY package*.json ./
 RUN npm install --legacy-peer-deps
 
 COPY . .
+# Demo server only: accounts for the sign-in "Demo account" buttons (empty in production)
+ARG VITE_DEMO_ACCOUNTS=""
+ENV VITE_DEMO_ACCOUNTS=$VITE_DEMO_ACCOUNTS
 RUN npm run build
 
 # Stage 2: Production Web Server

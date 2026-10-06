@@ -145,12 +145,30 @@ function ProvidersTab({ settings, setSettings, connected }) {
   const [keys, setKeys] = useState({});
   const [msg, setMsg] = useState({});
   const [busy, setBusy] = useState('');
+  // Providers with changes not yet saved (key typed, model or switch changed).
+  const [dirty, setDirty] = useState({});
+  const anyDirty = Object.values(dirty).some(Boolean);
+  useEffect(() => {
+    if (!anyDirty) return undefined;
+    const warn = (e) => { e.preventDefault(); e.returnValue = ''; };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [anyDirty]);
   const prov = (id) => settings?.providers?.find(p => p.id === id) || { id, configured: false, enabled: false, models: [], default_model: '' };
   const saveKey = async (id) => {
     const key = (keys[id] || '').trim();
     if (key && key.length < 20) return setMsg(m => ({ ...m, [id]: 'This key looks too short.' }));
     setBusy(id);
-    try { const r = await saveAiProvider(id, { ...(key ? { api_key: key } : {}), enabled: prov(id).enabled, default_model: prov(id).default_model }); setSettings(s => ({ ...s, providers: (s?.providers || []).filter(p => p.id !== id).concat(r) })); setKeys(k => ({ ...k, [id]: '' })); setMsg(m => ({ ...m, [id]: 'Saved.' })); }
+    try {
+      await saveAiProvider(id, { ...(key ? { api_key: key } : {}), enabled: prov(id).enabled, default_model: prov(id).default_model });
+      // Show what the server now holds, not what was typed.
+      const fresh = await fetchAiSettings();
+      setSettings(fresh);
+      const saved = fresh?.providers?.find(p => p.id === id);
+      setKeys(k => ({ ...k, [id]: '' }));
+      setDirty(d => ({ ...d, [id]: false }));
+      setMsg(m => ({ ...m, [id]: key && !saved?.configured ? 'Saved, but the server does not report the key as set. Check the server logs.' : `Saved${saved?.key_last4 ? `: key ···${saved.key_last4}` : ''}.` }));
+    }
     catch (e) { setMsg(m => ({ ...m, [id]: e instanceof AiNotConnected ? 'Not connected yet.' : e.message })); }
     finally { setBusy(''); }
   };
@@ -160,7 +178,7 @@ function ProvidersTab({ settings, setSettings, connected }) {
     catch (e) { setMsg(m => ({ ...m, [id]: e instanceof AiNotConnected ? 'Not connected yet.' : e.message })); }
     finally { setBusy(''); }
   };
-  const updateProv = (id, patch) => setSettings(s => ({ ...s, providers: [...(s?.providers || []).filter(p => p.id !== id), { ...prov(id), ...patch }] }));
+  const updateProv = (id, patch) => { setDirty(d => ({ ...d, [id]: true })); setSettings(s => ({ ...s, providers: [...(s?.providers || []).filter(p => p.id !== id), { ...prov(id), ...patch }] })); };
   const saveGeneral = async () => {
     try { await saveAiSettings({ default_provider: settings.default_provider, fallback_provider: settings.fallback_provider, features: settings.features }); setMsg(m => ({ ...m, general: 'Saved.' })); }
     catch (e) { setMsg(m => ({ ...m, general: e instanceof AiNotConnected ? 'Not connected yet.' : e.message })); }
@@ -178,17 +196,18 @@ function ProvidersTab({ settings, setSettings, connected }) {
                 <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${s.configured ? 'bg-green-50 text-green-800 border-green-200' : 'bg-gray-50 text-gray-600 border-gray-200'}`}>{s.configured ? `Key set ···${s.key_last4 || ''}` : 'No key'}</span>
               </div>
               <label className="block space-y-1.5"><span className="text-xs font-semibold text-gray-700">{s.configured ? 'Replace key' : 'API key'}</span>
-                <input type="password" autoComplete="off" className={inputCls} value={keys[p.id] || ''} onChange={e => setKeys(k => ({ ...k, [p.id]: e.target.value }))} placeholder={p.hint} />
+                <input type="password" autoComplete="off" className={inputCls} value={keys[p.id] || ''} onChange={e => { setKeys(k => ({ ...k, [p.id]: e.target.value })); setDirty(d => ({ ...d, [p.id]: Boolean(e.target.value) || d[p.id] })); }} placeholder={p.hint} />
               </label>
               <label className="block space-y-1.5"><span className="text-xs font-semibold text-gray-700">Default model</span>
                 <ModelSelector provider={p.id} value={s.default_model || ''} serverModels={s.models} onChange={val => updateProv(p.id, { default_model: val })} />
               </label>
               <label className="flex items-center gap-2 text-sm text-gray-800"><input type="checkbox" className="w-4 h-4 accent-green-700" checked={Boolean(s.enabled)} onChange={e => updateProv(p.id, { enabled: e.target.checked })} />Allowed</label>
               <div className="flex gap-2">
-                <button onClick={() => saveKey(p.id)} disabled={busy === p.id || !connected} className="px-4 py-2 rounded-xl bg-green-700 text-white text-sm font-semibold disabled:bg-gray-200 disabled:text-gray-500">Save</button>
+                <button onClick={() => saveKey(p.id)} disabled={busy === p.id || !connected} className="px-4 py-2 rounded-xl bg-green-700 text-white text-sm font-semibold disabled:bg-gray-200 disabled:text-gray-500">{busy === p.id ? 'Saving…' : 'Save'}</button>
                 <button onClick={() => test(p.id)} disabled={busy === p.id || !s.configured || !connected} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-gray-300 text-sm font-semibold text-gray-700 disabled:opacity-50"><PlugZap size={14} />Test</button>
               </div>
-              {msg[p.id] && <div className="text-xs text-gray-600">{msg[p.id]}</div>}
+              {dirty[p.id] && <div className="text-xs font-medium text-amber-800">Not saved yet: press Save on this card.</div>}
+              {msg[p.id] && !dirty[p.id] && <div className="text-xs text-gray-600">{msg[p.id]}</div>}
             </Card>
           );
         })}

@@ -6,6 +6,7 @@ import { login, fetchCropMonitoringConfig } from '../services/organizationMonito
 import ForgotPasswordModal from '../components/ForgotPasswordModal';
 import { HERO_PLACEHOLDERS } from '../constants/heroPlaceholders';
 import { clearStoredAccounts } from '../services/session';
+import { demoAccounts } from '../constants/demoAccounts';
 
 // ─── Crop & Subapp Design System Registry (Clean Light Theme) ────────────────
 const CROP_DESIGNS = {
@@ -259,38 +260,28 @@ const CROP_DESIGNS = {
   }
 };
 
-// ─── Helper function to match module name to crop design ─────────────────────
-function resolveCropDesign(moduleName) {
-  if (!moduleName) return CROP_DESIGNS.oil_palm;
-  const lower = moduleName.toLowerCase();
+// ─── Sign-in design per module ───────────────────────────────────────────────
+// Chosen by module id (src/modules/registry.js), never by guessing from the
+// display name, so every service gets its own design and an unknown id gets
+// the neutral organisation design instead of another service's.
+const DESIGN_BY_ID = {
+  'rs-ffb': 'oil_palm', 'rs-cashew': 'cashew', 'rs-sugarcane': 'sugarcane', 'rs-rice': 'rice',
+  'rs-cocoa': 'cocoa', 'rs-rubber': 'rubber', 'rs-cassava': 'cassava', 'rs-maize': 'maize',
+  'rs-drone': 'drone',
+  'carbon-ffb': 'estate_carbon', 'forestry-intel': 'forestry', 'carbon-estimator': 'estimator',
+  'land-restoration': 'restoration', 'eudr-check': 'eudr', advisor: 'advisor',
+  'smallholder-hub': 'smallholder', 'group-management': 'smallholder', 'smallholder-members': 'smallholder',
+  'smallholder-forms': 'smallholder', 'group-monitoring': 'smallholder', 'carbon-groups': 'group_carbon',
+  'smallholder-eudr': 'eudr',
+};
 
-  // Services first: their names contain crop/group words ("Group Carbon").
-  if (lower.includes('estate carbon')) return CROP_DESIGNS.estate_carbon;
-  if (lower.includes('group carbon')) return CROP_DESIGNS.group_carbon;
-  if (lower.includes('forestry')) return CROP_DESIGNS.forestry;
-  if (lower.includes('carbon estimator')) return CROP_DESIGNS.estimator;
-  if (lower.includes('restoration')) return CROP_DESIGNS.restoration;
-  if (lower.includes('eudr')) return CROP_DESIGNS.eudr;
-  if (lower.includes('advisor')) return CROP_DESIGNS.advisor;
-  if (lower.includes('ledger') || lower.includes('finance')) return CROP_DESIGNS.finance;
-  if (lower.includes('oil palm') || lower.includes('ffb') || lower.includes('rs-ffb')) return CROP_DESIGNS.oil_palm;
-  if (lower.includes('cashew')) return CROP_DESIGNS.cashew;
-  if (lower.includes('sugarcane') || lower.includes('cane')) return CROP_DESIGNS.sugarcane;
-  if (lower.includes('rice') || lower.includes('paddy')) return CROP_DESIGNS.rice;
-  if (lower.includes('cocoa')) return CROP_DESIGNS.cocoa;
-  if (lower.includes('rubber') || lower.includes('latex')) return CROP_DESIGNS.rubber;
-  if (lower.includes('cassava') || lower.includes('tuber')) return CROP_DESIGNS.cassava;
-  if (lower.includes('maize') || lower.includes('corn')) return CROP_DESIGNS.maize;
-  if (lower.includes('drone')) return CROP_DESIGNS.drone;
-  if (lower.includes('smallholder') || lower.includes('cooperative') || lower.includes('group')) return CROP_DESIGNS.smallholder;
-  if (lower.includes('organization') || lower.includes('organion') || lower.includes('olam') || lower.includes('okomu') || lower.includes('agromonitor')) return CROP_DESIGNS.organization;
-  if (lower.includes('finance') || lower.includes('ledger') || lower.includes('payment')) return CROP_DESIGNS.finance;
-
-  return CROP_DESIGNS.oil_palm; // fallback
+function resolveCropDesign(moduleId) {
+  const key = DESIGN_BY_ID[moduleId];
+  return (key && CROP_DESIGNS[key]) || CROP_DESIGNS.organization;
 }
 
 // ─── Main Login Component (Clean White Background Theme) ─────────────────────
-const Login = ({ onLogin, moduleName, onBack, defaultEmail = '', defaultCode = '' }) => {
+const Login = ({ onLogin, moduleId, onBack, defaultEmail = '', defaultCode = '' }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState(defaultEmail);
@@ -299,7 +290,8 @@ const Login = ({ onLogin, moduleName, onBack, defaultEmail = '', defaultCode = '
   const [heroLoaded, setHeroLoaded] = useState(false);
   const [forgotModalOpen, setForgotModalOpen] = useState(false);
 
-  const currentDesign = resolveCropDesign(moduleName);
+  const currentDesign = resolveCropDesign(moduleId);
+  const demos = demoAccounts('tenant');
 
   useEffect(() => {
     setEmail(defaultEmail);
@@ -477,6 +469,18 @@ const Login = ({ onLogin, moduleName, onBack, defaultEmail = '', defaultCode = '
                 )}
               </button>
             </form>
+
+            {demos.length > 0 && (
+              <div className="mt-6 flex flex-wrap items-center gap-2 text-sm text-[var(--text-muted)]">
+                <span>Demo account:</span>
+                {demos.map((d) => (
+                  <button key={d.email} type="button" onClick={() => { setEmail(d.email); setAccessCode(d.code); setError(''); }}
+                    className="px-3 py-1.5 rounded-lg border border-[var(--border-light)] bg-white hover:bg-[var(--bg-main)] text-[var(--text-main)] font-medium">
+                    {d.label || d.email}
+                  </button>
+                ))}
+              </div>
+            )}
 
           </div>
         </div>
