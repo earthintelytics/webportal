@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { MapPin, Plus, Undo2 } from 'lucide-react';
-import { ringAreaHa } from '../geo';
-import { boundaryCheck } from '../../../farmintelytics-admin/components/validation';
+import { ringAreaHa, readGeoFile } from '../geo';
 
 const readPosition = () => new Promise((resolve, reject) => {
   if (!navigator.geolocation) { reject(new Error('This phone cannot share its location.')); return; }
@@ -55,31 +54,31 @@ export const BoundaryWalkInput = ({ value, onChange }) => {
   );
 };
 
-const BROWSER_READABLE = /\.(geo)?json$/i;
-
 /**
- * A boundary file. GeoJSON is checked here (polygons, longitude/latitude);
- * KML, KMZ and zipped shapefiles are sent as they are and checked after
- * sending. Value: { file, geojson?, note?, error? }.
+ * A boundary file, read on the phone: GeoJSON, KML, KMZ or a zipped
+ * shapefile become one checked area in longitude/latitude before sending.
+ * Value: { file_name, geometry, note } or { file_name, error }.
  */
 export const BoundaryFileInput = ({ value, onChange }) => {
+  const [busy, setBusy] = useState(false);
   const pick = async (e) => {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) { onChange(null); return; }
-    if (!BROWSER_READABLE.test(file.name)) { onChange({ file, note: 'Read and checked after sending.' }); return; }
+    setBusy(true);
     try {
-      const geojson = JSON.parse(await file.text());
-      const check = boundaryCheck(geojson, file.size);
-      onChange(check.error ? { file, error: check.error } : { file, geojson, note: `${check.polygons} polygon${check.polygons > 1 ? 's' : ''} read.` });
-    } catch {
-      onChange({ file, error: 'The file is not valid GeoJSON.' });
-    }
+      const { geometry, note } = await readGeoFile(file, 'area');
+      onChange({ file_name: file.name, geometry, note });
+    } catch (err) {
+      onChange({ file_name: file.name, error: err.message });
+    } finally { setBusy(false); }
   };
   return (
     <div className="space-y-2">
-      <input type="file" accept=".geojson,.json,.kml,.kmz,.zip" onChange={pick} className="block w-full text-sm text-gray-700 file:mr-3 file:px-3 file:py-2 file:rounded-lg file:border file:border-gray-300 file:bg-white file:text-sm" />
-      {value?.file && <p className="text-xs text-gray-600">{value.file.name}{value.note ? ` · ${value.note}` : ''}</p>}
+      <input type="file" accept=".geojson,.json,.kml,.kmz,.zip" onChange={pick} disabled={busy} className="block w-full text-sm text-gray-700 file:mr-3 file:px-3 file:py-2 file:rounded-lg file:border file:border-gray-300 file:bg-white file:text-sm" />
+      <p className="text-xs text-gray-500">GeoJSON, KML, KMZ, or a zipped shapefile (.shp, .shx, .dbf and .prj in one zip).</p>
+      {busy && <p className="text-xs text-gray-600">Reading the file…</p>}
+      {value?.file_name && !value.error && <p className="text-xs text-gray-700">{value.file_name} · {value.note}</p>}
     </div>
   );
 };

@@ -3,6 +3,8 @@ import { fetchForms, fetchSubmissions, reviewSubmission } from '../../services/f
 import { PageHeader, Card, NotConnectedNote, ErrorNote, EmptyState, StatusPill, Modal, PrimaryButton, SecondaryButton } from '../../components/page/PageKit';
 import { inputCls, useLoader } from '../../components/page/useLoader';
 import { typeInfo } from './fieldTypes';
+import { geometryAreaHa, lineLengthM, toServerGeometry } from './geo';
+import GeometryPreview from './inputs/GeometryPreview';
 
 const STATUS = {
   new: ['To review', 'info'],
@@ -11,10 +13,22 @@ const STATUS = {
   changes_requested: ['Changes asked', 'warning'],
 };
 
+// A geometry answer as GeoJSON, also for older answers kept as {lat, lon} or corner lists.
+const geometryOf = (field, v) => {
+  if (!typeInfo(field.type).geo || v == null) return null;
+  if (v.type && v.coordinates) return v;
+  return toServerGeometry(v) || null;
+};
+
 const answerText = (field, v) => {
   if (v == null || v === '') return '—';
-  if (field.type === 'gps_point') return `${v.lat?.toFixed(6)}, ${v.lon?.toFixed(6)}`;
-  if (field.type === 'boundary_walk') return `${v.length} corners`;
+  const g = geometryOf(field, v);
+  if (g) {
+    const from = g.source === 'file' && g.file_name ? ` · from ${g.file_name}` : g.source === 'gps' ? ' · phone location' : '';
+    if (g.type === 'Point') return `${g.coordinates[1].toFixed(6)}, ${g.coordinates[0].toFixed(6)}${g.accuracy_m ? ` (± ${g.accuracy_m} m)` : ''}${from}`;
+    if (g.type === 'LineString') return `Line of about ${Math.round(lineLengthM(g))} m${from}`;
+    return `Area of about ${geometryAreaHa(g).toFixed(2)} ha${from}`;
+  }
   if (field.type === 'signature') return 'Signed';
   return Array.isArray(v) ? v.join(', ') : String(v);
 };
@@ -113,7 +127,11 @@ const SubmissionDialog = ({ form, submission, onClose, onDone }) => {
         {form.fields.filter((f) => !typeInfo(f.type).noAnswer && f.type !== 'photo').map((f) => (
           <div key={f.id} className="px-4 py-2.5 grid grid-cols-2 gap-4 text-sm">
             <dt className="text-gray-500">{f.label}</dt>
-            <dd className="text-gray-900">{answerText(f, submission.answers?.[f.id])}{f.maps_to && <span className="block text-xs text-gray-500">Goes to the register</span>}</dd>
+            <dd className="text-gray-900">
+              {answerText(f, submission.answers?.[f.id])}
+              {f.maps_to && <span className="block text-xs text-gray-500">Goes to the register</span>}
+              {geometryOf(f, submission.answers?.[f.id]) && <GeometryPreview geometry={geometryOf(f, submission.answers?.[f.id])} />}
+            </dd>
           </div>
         ))}
       </dl>

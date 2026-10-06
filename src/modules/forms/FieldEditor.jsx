@@ -44,6 +44,13 @@ const FieldEditor = ({ field, fields, onChange }) => {
         </div>
       )}
 
+      {info.area && (
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Smallest area (ha)" hint="Optional"><input className={inputCls} type="number" min={0} step="any" value={field.min ?? ''} onChange={(e) => set('min', num(e.target.value))} /></Field>
+          <Field label="Largest area (ha)" hint="Optional"><input className={inputCls} type="number" min={0} step="any" value={field.max ?? ''} onChange={(e) => set('max', num(e.target.value))} /></Field>
+        </div>
+      )}
+
       {info.photos && (
         <Field label="Photos allowed"><input className={inputCls} type="number" min={1} max={10} value={field.max_photos ?? 1} onChange={(e) => set('max_photos', Math.min(10, Math.max(1, Number(e.target.value) || 1)))} /></Field>
       )}

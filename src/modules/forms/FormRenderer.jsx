@@ -1,6 +1,7 @@
 import { isShown, typeInfo } from './fieldTypes';
 import { GpsPointInput, BoundaryWalkInput, BoundaryFileInput } from './inputs/GpsInputs';
 import { PhotoInput, SignatureInput } from './inputs/MediaInputs';
+import MapDrawInput from './inputs/MapDrawInput';
 
 const inputCls = 'w-full px-3.5 py-3 rounded-xl border border-gray-300 bg-white text-base text-gray-900 focus:border-green-600 focus:outline-none';
 
@@ -35,6 +36,9 @@ function Input({ field, value, onChange }) {
       );
     }
     case 'photo': return <PhotoInput value={value} onChange={onChange} max={field.max_photos || 1} />;
+    case 'draw_point': return <MapDrawInput shape="point" value={value} onChange={onChange} />;
+    case 'draw_line': return <MapDrawInput shape="line" value={value} onChange={onChange} />;
+    case 'draw_polygon': return <MapDrawInput shape="area" value={value} onChange={onChange} />;
     case 'gps_point': return <GpsPointInput value={value} onChange={onChange} />;
     case 'boundary_walk': return <BoundaryWalkInput value={value} onChange={onChange} />;
     case 'boundary_file': return <BoundaryFileInput value={value} onChange={onChange} />;
