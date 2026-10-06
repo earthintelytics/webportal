@@ -6428,7 +6428,6 @@ Context: ${context}.`;
                   { id: 'profile', label: 'User Profile', icon: <User size={15} /> },
                   { id: 'branding', label: 'Platform Mode', icon: <Globe size={15} /> },
                   { id: 'map', label: 'Map Configuration', icon: <MapIcon size={15} /> },
-                  { id: 'users', label: 'Team Access', icon: <Users size={15} /> }
                 ].map(tab => (
                   <button
                     key={tab.id}
@@ -6558,87 +6557,6 @@ Context: ${context}.`;
                   </div>
                 )}
                 
-                {settingsTab === 'users' && (
-                  <div className="space-y-4">
-                    <div className="text-xs font-bold text-gray-600">Team Access Management</div>
-                    <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                      {settingsUsers.map(user => (
-                        <div key={user.id} className="flex items-center justify-between p-2.5 border border-gray-100 rounded-xl bg-gray-50/30">
-                          <div>
-                            <div className="text-xs font-bold text-gray-900">{user.name}</div>
-                            <div className="text-[11px] text-gray-600 mt-0.5">{user.email} · {user.role}</div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span 
-                              onClick={() => {
-                                setSettingsUsers(prev => prev.map(u => u.id === user.id ? { ...u, status: u.status === 'Active' ? 'Offline' : 'Active' } : u));
-                              }}
-                              className={`text-[11px] font-bold px-2 py-0.5 rounded cursor-pointer transition-colors ${user.status === 'Active' ? 'bg-green-50 text-green-700 hover:bg-green-100' : 'bg-gray-150 text-gray-500 hover:bg-gray-200'}`}
-                            >
-                              {user.status}
-                            </span>
-                            <button 
-                              onClick={() => setSettingsUsers(prev => prev.filter(u => u.id !== user.id))}
-                              className="p-1 hover:bg-green-50 text-gray-600 hover:text-green-700 rounded"
-                            >
-                              <Trash2 size={13} />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    
-                    {/* Add User mini-form */}
-                    <div className="pt-2 border-t border-gray-100 space-y-2">
-                      <div className="text-[11px] font-bold text-gray-600">Add Team Member</div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <input 
-                          id="new-user-name"
-                          type="text" 
-                          placeholder="Name" 
-                          className="bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1.5 text-[11px] font-bold outline-none focus:bg-white" 
-                        />
-                        <input 
-                          id="new-user-email"
-                          type="email" 
-                          placeholder="Email" 
-                          className="bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1.5 text-[11px] font-bold outline-none focus:bg-white" 
-                        />
-                        <input 
-                          id="new-user-role"
-                          type="text" 
-                          placeholder="Role (e.g. Field Agent)" 
-                          className="bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1.5 text-[11px] font-bold outline-none focus:bg-white col-span-2" 
-                        />
-                      </div>
-                      <button 
-                        onClick={() => {
-                          const nameEl = document.getElementById('new-user-name');
-                          const emailEl = document.getElementById('new-user-email');
-                          const roleEl = document.getElementById('new-user-role');
-                          if (nameEl && emailEl && roleEl && nameEl.value && emailEl.value) {
-                            const newUser = {
-                              id: `USER-${Date.now()}`,
-                              name: nameEl.value,
-                              email: emailEl.value,
-                              role: roleEl.value || 'Viewer',
-                              status: 'Active'
-                            };
-                            setSettingsUsers(prev => [...prev, newUser]);
-                            nameEl.value = '';
-                            emailEl.value = '';
-                            roleEl.value = '';
-                          }
-                        }}
-                        className={`w-full py-2 rounded-lg text-xs font-bold text-white transition-all ${
-                          brandingMode === 'AM' ? 'bg-green-600 hover:bg-green-700' : 'bg-green-600 hover:bg-green-700'
-                        }`}
-                      >
-                        Add Member
-                      </button>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
             

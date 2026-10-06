@@ -115,6 +115,10 @@ const hasValidTeamSession = () => {
   }
 };
 
+// The hub to go back to: the one the service was opened from; otherwise the
+// client's hub for a client and the team hub for the team.
+const backHub = () => sessionStorage.getItem('fi_hub') || (hasTenantSession() ? '/tenant/hub' : '/');
+
 const hasTenantSession = () => {
   try {
     const token = localStorage.getItem('fi_token');
@@ -134,6 +138,8 @@ const HubPage = () => {
   const handleSelectModule = (moduleId) => {
     sessionStorage.setItem('fi_module', moduleId);
     sessionStorage.setItem('fi_from_hub', '1');
+    // Remember which hub the service was opened from, so Back returns there.
+    sessionStorage.setItem('fi_hub', location.pathname.startsWith('/tenant') ? '/tenant/hub' : '/');
     if (moduleId.startsWith('custom-agromonitor')) {
       navigate(AGROMONITOR_PATH);
     } else {
@@ -198,6 +204,7 @@ const LoginPage = () => {
     if (directModule) {
       navigate(`/portal/${encodeURIComponent(directModule)}`);
     } else if (directTenant || localStorage.getItem('fi_tenant')) {
+      sessionStorage.setItem('fi_hub', '/tenant/hub');
       navigate('/tenant/hub');
     } else if (moduleId && moduleId.startsWith('custom-agromonitor')) {
       navigate(AGROMONITOR_PATH);
@@ -209,7 +216,7 @@ const LoginPage = () => {
   };
 
   const cameFromHub = hasValidTeamSession() || hasTenantSession() || sessionStorage.getItem('fi_from_hub') === '1';
-  const handleBack = (RESTRICTED_MODULE || ((directTenant || directModule) && !cameFromHub)) ? null : () => navigate(hasValidTeamSession() ? '/' : '/tenant/hub');
+  const handleBack = (RESTRICTED_MODULE || ((directTenant || directModule) && !cameFromHub)) ? null : () => navigate(backHub());
 
   return (
     <Login
@@ -257,7 +264,7 @@ const PortalPage = () => {
   // Back goes to where the user came from: a Smallholder service to the
   // Smallholder hub, the team to the team hub, a client to its own hub.
   const handleBackToHub = () => navigate(
-    SMALLHOLDER_SERVICES.includes(moduleId) ? '/portal/smallholder-hub' : hasValidTeamSession() ? '/' : '/tenant/hub',
+    SMALLHOLDER_SERVICES.includes(moduleId) ? '/portal/smallholder-hub' : backHub(),
   );
 
   if (!moduleId) return <Navigate to="/" replace />;

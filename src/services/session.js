@@ -9,7 +9,7 @@ export const TENANT_KEYS = [
 export const TEAM_KEYS = ['fi_admin_token', 'fi_admin_email'];
 
 // Per-session navigation state that must not carry over to another account.
-const SESSION_KEYS = ['fi_module', 'fi_target_tenant', 'fi_from_hub', 'fi_data_needed_snoozed', 'fi_estates_unavailable'];
+const SESSION_KEYS = ['fi_module', 'fi_target_tenant', 'fi_from_hub', 'fi_hub', 'fi_data_needed_snoozed', 'fi_estates_unavailable'];
 
 /** Keys namespaced by tenant (offline caches): `${base}:${tenant}`. */
 export const tenantKey = (base) => `${base}:${localStorage.getItem('fi_tenant') || 'none'}`;
