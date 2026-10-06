@@ -79,7 +79,10 @@ const GroupRows = ({ group, open, onToggle }) => (
       <tr key={m.id} className="bg-gray-50/50">
         <td className="pl-12 pr-5 py-2.5 text-gray-700">{m.name}</td>
         <td className="px-5 py-2.5 font-mono text-gray-600">{ha(m.area_ha)}</td>
-        <td className="px-5 py-2.5 font-mono text-gray-700">{range(m.carbon_t)}</td>
+        <td className="px-5 py-2.5 font-mono text-gray-700">
+          {range(m.carbon_t)}
+          {!m.carbon_t && m.note && <span className="block font-sans text-xs text-gray-500">{m.note}</span>}
+        </td>
       </tr>
     ))}
   </>
