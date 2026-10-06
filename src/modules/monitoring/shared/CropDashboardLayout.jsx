@@ -104,6 +104,7 @@ import { ShieldCheck as CheckIcon, Lightbulb as AdviceIcon } from 'lucide-react'
 import { Table2 as RegisterIcon, Users as MembersIcon, FileText as FormsIcon, Inbox as AnswersIcon, Leaf as CarbonIcon, BadgeCheck as PassportIcon } from 'lucide-react';
 import MembersPage from '../../smallholder/pages/MembersPage';
 import KpiCards from './dashboard/KpiCards';
+import NewResultsBanner from './dashboard/NewResultsBanner';
 import { UNIT_LABEL } from './dashboard/kpiCatalog';
 import GroupCarbonPage from '../../smallholder/pages/GroupCarbonPage';
 import EudrPassportPage from '../../smallholder/pages/EudrPassportPage';
@@ -3639,6 +3640,7 @@ Context: ${context}.`;
           </div>
         </div>
       </header>
+      {hasSession && <NewResultsBanner />}
 
       {/* ── MAIN WORKSPACE ─────────────────────────────────────────────────── */}
       <div className="flex-1 flex overflow-hidden">
