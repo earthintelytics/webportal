@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useCallback, useState, useMemo, useEffect, useRef } from 'react';
 import {
   Satellite,
   Map as MapIcon,
@@ -243,6 +243,12 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
   const [stats, setStats] = useState(null);
   const [plots, setPlots] = useState([]);
   const [restorationZones, setRestorationZones] = useState([]);
+  // Data that could not be loaded, shown in one note instead of an empty page.
+  const [loadIssues, setLoadIssues] = useState([]);
+  const noteLoadIssue = useCallback((what, err) => {
+    console.warn(`Could not load ${what}:`, err);
+    setLoadIssues((l) => (l.includes(what) ? l : [...l, what]));
+  }, []);
   const [alerts, setAlerts] = useState([]);
   const [landUseChange, setLandUseChange] = useState(null);
   const [landUseChangeLoading, setLandUseChangeLoading] = useState(false);
@@ -254,51 +260,53 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
     if (!hasSession) return; // no authenticated session — redirect effect handles it
     let active = true;
     async function loadBackendData() {
+      // Each part loads on its own: one refused or failed request (e.g. restoration
+      // zones for an organisation without that service) never blanks the others.
+      const [statsRes, plotsRes, zonesRes, alertsRes] = await Promise.allSettled([
+        api.fetchDashboardStats(tenant),
+        api.fetchPlotsIntelligence(tenant),
+        api.fetchRestorationZones(tenant),
+        api.fetchAlerts(tenant),
+      ]);
+      if (!active) return;
+      const ok = (r, what, optional = false) => {
+        if (r.status === 'fulfilled') return r.value;
+        // A service this organisation does not have is not a failure to report.
+        if (!(optional && /\b403\b/.test(String(r.reason?.message)))) noteLoadIssue(what, r.reason);
+        return null;
+      };
+      const statsVal = ok(statsRes, 'summary figures');
+      if (statsVal) setStats(statsVal);
+      const plotsVal = ok(plotsRes, 'blocks');
+      if (plotsVal) setPlots(plotsVal);
+      setRestorationZones(ok(zonesRes, 'restoration zones', true) || []);
+      const alertsVal = ok(alertsRes, 'alerts');
       try {
-        // Run independent requests concurrently — previously these awaited
-        // sequentially, so one slow endpoint delayed every other panel even
-        // though its data had already arrived.
-        const [statsRes, plotsRes, zonesRes, alertsRes] = await Promise.all([
-          api.fetchDashboardStats(tenant),
-          api.fetchPlotsIntelligence(tenant),
-          api.fetchRestorationZones(tenant),
-          api.fetchAlerts(tenant),
-        ]);
-
-        if (active) {
-          setStats(statsRes);
-          setPlots(plotsRes);
-          setRestorationZones(zonesRes);
-          // Always fetch the farm boundary — used as overall outline for all tenants
-          try {
-            const boundary = await api.fetchFarmBoundary();
-            if (active && boundary && boundary.geometry) setFarmBoundary(boundary);
-          } catch (e) {
-            console.warn('Failed to fetch farm boundary:', e);
-          }
-          // Map backend alert items to frontend structure
-          const mappedAlerts = (alertsRes.feed || []).map(a => ({
-            id: a.alert_id,
-            estate: `${tenantDisplayName} Estate`,
-            plot: a.plot_id,
-            category: a.type,
-            severity: a.severity,
-            desc: a.message,
-            date: a.timestamp.split(' ')[0],
-            time: a.timestamp.split(' ')[1] || '00:00',
-            status: a.acknowledged ? 'Acknowledged' : 'Active'
-          }));
-          setAlerts(mappedAlerts);
-        }
-      } catch (err) {
-        console.error("Failed to fetch dashboard data from backend:", err);
-        if (active) {
-        }
+        const boundary = await api.fetchFarmBoundary();
+        if (active && boundary && boundary.geometry) setFarmBoundary(boundary);
+      } catch (e) {
+        noteLoadIssue('farm outline', e);
+      }
+      if (alertsVal) {
+        // Workflow status from the server: seen, scout sent, resolved or dismissed all count as handled.
+        const handled = (a) => a.acknowledged || ['scout_assigned', 'resolved', 'dismissed'].includes(a.status);
+        setAlerts((alertsVal.feed || []).map(a => ({
+          id: a.alert_id,
+          plot: a.plot_id,
+          category: a.type,
+          severity: a.severity,
+          desc: a.message,
+          date: (a.timestamp || '').split(' ')[0],
+          time: (a.timestamp || '').split(' ')[1] || '',
+          status: handled(a) ? 'Acknowledged' : 'Active',
+          workflow: a.status || 'open',
+          module: a.module || '',
+        })));
       }
     }
     loadBackendData();
     return () => { active = false; };
-  }, [tenant]);
+  }, [tenant, noteLoadIssue]);
   const [selectedBasemap, setSelectedBasemap] = useState('terrain');
   // Google's hybrid tile layer (lyrs=y) bakes place-name/road labels into the
   // imagery; lyrs=s is the same satellite imagery with no labels. Only
@@ -329,11 +337,11 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
         const data = await api.fetchRasterIndices();
         if (data?.indices?.length) setAvailableIndices(data.indices);
       } catch (err) {
-        console.error('Failed to fetch raster indices:', err);
+        noteLoadIssue('satellite layers', err);
       }
     }
     loadIndices();
-  }, [tenant]);
+  }, [tenant, noteLoadIssue]);
 
   useEffect(() => {
     async function loadFilterConfig() {
@@ -341,11 +349,11 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
         const cfg = await api.fetchCropMonitoringConfig();
         setDashboardFilterKeys(cfg?.dashboard_filter_keys || []);
       } catch (err) {
-        console.error('Failed to fetch crop monitoring config:', err);
+        noteLoadIssue('dashboard settings', err);
       }
     }
     loadFilterConfig();
-  }, [tenant]);
+  }, [tenant, noteLoadIssue]);
 
   // Fetch the composite's own timeline + tile URLs (same {date: url} shape as
   // the index slider) whenever a composite basemap is selected. Cleared when
@@ -359,13 +367,13 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
         const data = await api.fetchCompositeSlider({ farm: tenant || 'farm_1', composite: activeComposite });
         if (active) setCompositeSliderData(data);
       } catch (err) {
-        console.error('Failed to fetch composite slider:', err);
+        noteLoadIssue('satellite pictures', err);
         if (active) setCompositeSliderData(null);
       }
     }
     loadCompositeSlider();
     return () => { active = false; };
-  }, [activeComposite, tenant]);
+  }, [activeComposite, tenant, noteLoadIssue]);
 
   // ── Water Management (FAO-56 ETc + irrigation efficiency) ────────────────
   // Fetched only while that sidebar section is open — same real-data-only
@@ -381,7 +389,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
         const data = await api.fetchPlotsWaterDemand({});
         if (active) setWaterDemandData(data);
       } catch (err) {
-        console.error('Failed to fetch water demand:', err);
+        noteLoadIssue('water figures', err);
         if (active) setWaterDemandData(null);
       } finally {
         if (active) setWaterDemandLoading(false);
@@ -389,7 +397,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
     }
     loadWaterDemand();
     return () => { active = false; };
-  }, [activeSidebarItem, activeTab, activeAnalyticsSubpage, tenant]);
+  }, [activeSidebarItem, activeTab, activeAnalyticsSubpage, tenant, noteLoadIssue]);
 
   // ── Climate telemetry (real per-plot LST from the Landsat thermal band;
   // soil temp/rainfall/VPD have no real per-plot source and stay null —
@@ -402,13 +410,13 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
         const data = await api.fetchPlotsTelemetry({});
         if (active) setPlotsTelemetry(data);
       } catch (err) {
-        console.error('Failed to fetch plot telemetry:', err);
+        noteLoadIssue('weather per block', err);
         if (active) setPlotsTelemetry(null);
       }
     }
     loadTelemetry();
     return () => { active = false; };
-  }, [activeSidebarItem, tenant]);
+  }, [activeSidebarItem, tenant, noteLoadIssue]);
 
   // ── ESA WorldCover land-use-change (Land Restoration tab) ────────────────
   useEffect(() => {
@@ -420,7 +428,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
         const data = await api.fetchLandUseChange();
         if (active) setLandUseChange(data && Object.keys(data).length ? data : null);
       } catch (err) {
-        console.error('Failed to fetch land-use-change:', err);
+        noteLoadIssue('land cover change', err);
         if (active) setLandUseChange(null);
       } finally {
         if (active) setLandUseChangeLoading(false);
@@ -428,7 +436,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
     }
     loadLandUseChange();
     return () => { active = false; };
-  }, [activeSidebarItem, tenant]);
+  }, [activeSidebarItem, tenant, noteLoadIssue]);
 
   // ── Crop-specific index profile (from /crop-monitoring/indices) ──────────
   // Ordered by agronomic priority, each entry carries the crop-specific label,
@@ -539,7 +547,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
         // Keep zarr bounds in sync when index changes (SAR vs optical extents may differ)
         if (data?.zarr_bounds) setZarrBounds(data.zarr_bounds);
       } catch (err) {
-        console.error("Failed to fetch timeseries slider data:", err);
+        noteLoadIssue('satellite dates', err);
       } finally {
         setTimelineLoading(false);
       }
@@ -548,7 +556,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
     // NOTE: selectedPlot is deliberately NOT a dependency — clicking a plot
     // fetches its pixel timeseries separately and must not reload (and blink)
     // the whole farm raster.
-  }, [selectedIndex, tenant, refreshSlider, selectedSensor]);
+  }, [selectedIndex, tenant, refreshSlider, selectedSensor, noteLoadIssue]);
 
   // Click handler to fetch Zarr pixel timeseries
   const handlePlotClick = async (plot, lat, lng) => {
@@ -568,7 +576,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
         setPixelTimeseries(null);
       }
     } catch (err) {
-      console.error("Failed to fetch pixel timeseries:", err);
+      noteLoadIssue("the block's history", err);
       setPixelTimeseries(null);
     }
   };
@@ -587,12 +595,12 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
         const data = await api.fetchTimeseriesCalendar({ farm: tenant || 'farm_1' });
         if (active) setCalendarDates(data?.dates || []);
       } catch (err) {
-        console.error('Failed to fetch imagery calendar:', err);
+        noteLoadIssue('the image calendar', err);
       }
     }
     loadCalendarDates();
     return () => { active = false; };
-  }, [tenant]);
+  }, [tenant, noteLoadIssue]);
   const SENSOR_DOT_COLOR = { 'sentinel-2': '#16a34a', 'landsat': '#d97706', 'sentinel-1': '#2563eb' };
   // (timelineLoading, zarrBounds, calendarMonth, calendarYear, selectedTimelineIndex
   // are declared earlier — see note above the slider-fetching effect)
@@ -2789,6 +2797,15 @@ Context: ${context}.`;
 
         {/* ── WORKSPACE CONTENT ── */}
         <main className={`flex-1 flex flex-col relative bg-gray-50 ${['intelligence-layers', 'crop-health', 'crop-yield', 'moisture-content', 'climate', 'land-restoration'].includes(activeSidebarItem) ? 'overflow-hidden' : 'overflow-y-auto'}`}>
+          {loadIssues.length > 0 && (
+            <div role="alert" className="shrink-0 mx-4 mt-3 px-4 py-2.5 rounded-xl border border-amber-200 bg-amber-50 text-sm text-amber-900 flex items-center justify-between gap-3 z-[1100]">
+              <span>Could not load {loadIssues.join(', ')}. What is shown may be incomplete.</span>
+              <span className="flex gap-2 shrink-0">
+                <button type="button" onClick={() => window.location.reload()} className="font-semibold underline">Try again</button>
+                <button type="button" onClick={() => setLoadIssues([])} className="font-semibold">Close</button>
+              </span>
+            </div>
+          )}
 
           {/* ══════════════════════════════════════════════════════════════
               DASHBOARD — MONITOR

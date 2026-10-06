@@ -24,7 +24,7 @@ import * as api from '../../services/organizationMonitorApi';
 
 /**
  * Reports & AI Decision Intelligence Engine (design: docs/services/reports-and-verification.md).
- * Grounded in spatial boundaries, multidimensional Zarr indices, weather telemetry,
+ * Built by the server from stored results (POST /reports, report_builder.py),
  * and live active alerts to provide actionable agronomic guidance.
  */
 const DEFAULT_TYPES = [
@@ -67,7 +67,6 @@ const shift = ({ from, to }, kind) => {
   return { from: iso(f), to: iso(t) };
 };
 const fmtDate = (s) => new Date(s).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
-const avg = (pts) => (pts.length ? pts.reduce((a, p) => a + p.mean, 0) / pts.length : null);
 const HEALTH_WORD = (v) => (v == null ? 'no clear images' : v >= 0.7 ? 'strong' : v >= 0.55 ? 'good' : v >= 0.4 ? 'weaker than usual' : 'poor');
 
 const Chip = ({ on, children, ...rest }) => (
@@ -90,7 +89,7 @@ const Card = ({ className = '', children }) => (
 
 const selectCls = 'px-3 py-2 rounded-xl border border-gray-200 bg-white text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-green-600';
 
-export default function ReportBuilder({ plots, alerts, estates, tenant, orgName, subject, cropType }) {
+export default function ReportBuilder({ plots, estates, tenant, orgName, subject, cropType }) {
   const [typesList] = useState(DEFAULT_TYPES);
   const [type, setType] = useState('monthly');
   const [level, setLevel] = useState('organisation');
@@ -107,6 +106,12 @@ export default function ReportBuilder({ plots, alerts, estates, tenant, orgName,
   const [report, setReport] = useState(null);
   const [history, setHistory] = useState([]);
   const [historyTab, setHistoryTab] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+  // A block's estate from the blocks list (the report rows carry only the block id).
+  const estateOf = (blockId) => {
+    const p = (plots || []).find((x) => String(x.id) === String(blockId));
+    return p?.subfarm || p?.division || '—';
+  };
 
   // Interactive AI Assistant State
   const [aiQuestion, setAiQuestion] = useState('');
@@ -117,23 +122,37 @@ export default function ReportBuilder({ plots, alerts, estates, tenant, orgName,
   useEffect(() => {
     let active = true;
     api.fetchReportsHistory().then((res) => {
-      if (active && Array.isArray(res)) setHistory(res);
+      if (active && Array.isArray(res)) {
+        setHistory(res.map(h => ({
+          ...h,
+          where: h.numbers?.where || h.where || 'All areas',
+          actions: h.actions || (h.blocks_action || []).map(b => ({
+            block: b.field_id,
+            estate: '',
+            problem: b.problem,
+            action: b.action,
+            priority: b.priority,
+            since: b.since,
+          })),
+          summary: typeof h.summary === 'string' ? { text: h.summary } : (h.summary || { text: '' }),
+          created: h.created_at || h.created || new Date(),
+        })));
+      }
     }).catch(() => {});
     return () => { active = false; };
   }, [tenant]);
 
   const period = periodKind === 'month' ? monthRange(month) : range;
-  const scopePlots = useMemo(() => (plots || []).filter(p =>
-    level === 'organisation' ? true : level === 'estate' ? p.subfarm === estate : blocks.includes(p.id)), [plots, level, estate, blocks]);
   const blockList = useMemo(() => (plots || []).filter(p => !blockQuery || `${p.name} ${p.id} ${p.subfarm || ''}`.toLowerCase().includes(blockQuery.toLowerCase())).slice(0, 200), [plots, blockQuery]);
   const where = level === 'organisation' ? `all of ${orgName}` : level === 'estate' ? estate : `${blocks.length} block${blocks.length === 1 ? '' : 's'}`;
   const canCreate = level !== 'blocks' || blocks.length > 0;
 
   const create = async () => {
     setBusy(true);
+    setErrorMsg('');
     const cmp = type === 'compare' && compare === 'estate' ? null : shift(period, compare === 'last_year' ? 'last_year' : 'previous');
 
-    // 1. Fetch timeseries data
+    // 1. Fetch timeseries data for the chart
     const series = async (index, p) => {
       try {
         const r = await api.fetchTimeseriesSlider({ farm: tenant, index, start: p.from, end: p.to, cropType });
@@ -147,144 +166,7 @@ export default function ReportBuilder({ plots, alerts, estates, tenant, orgName,
       cmp ? series('ndmi', cmp) : [],
     ]);
 
-    const status = {
-      healthy: scopePlots.filter(p => p.health !== 'Stressed').length,
-      action: scopePlots.filter(p => p.health === 'Stressed').length,
-    };
-    const plotIds = new Set(scopePlots.map(p => p.id));
-    const scopedAlerts = (alerts || []).filter(a => level === 'organisation' || plotIds.has(a.plot));
-
-    const actions = [
-      ...scopePlots.filter(p => p.health === 'Stressed').map(p => ({
-        block: p.name || p.id,
-        estate: p.subfarm || '—',
-        problem: 'Crop health is low on the latest clear image',
-        action: 'Scout the block: check water, pests and nutrition',
-        priority: 'HIGH',
-        since: 'latest image',
-      })),
-      ...scopedAlerts.slice(0, 20).map(a => ({
-        block: a.plot,
-        estate: a.estate || '—',
-        problem: a.desc,
-        action: a.category === 'Water Stress' ? 'Check water and irrigation lines' : 'Inspect and record findings in field log',
-        priority: a.severity || 'MEDIUM',
-        since: a.date,
-      })),
-    ].slice(0, 30);
-
-    const h = avg(health), hc = avg(healthCmp), w = avg(water), wc = avg(waterCmp);
-    const change = h != null && hc != null ? Math.round(((h - hc) / hc) * 100) : null;
-    const numbers = {
-      where,
-      period,
-      compare: cmp,
-      crop_health_avg: h,
-      crop_health_compare_avg: hc,
-      change_pct: change,
-      leaf_water_avg: w,
-      leaf_water_compare_avg: wc,
-      blocks_total: scopePlots.length,
-      blocks_needing_action: status.action,
-      images_in_period: health.length,
-      alerts: scopedAlerts.length,
-    };
-
-    // Default template summary
-    const template = [
-      `Between ${fmtDate(period.from)} and ${fmtDate(period.to)}, crop health across ${where} was ${HEALTH_WORD(h)}${change != null ? `, ${change >= 0 ? 'up' : 'down'} ${Math.abs(change)}% on the comparison period` : ''}.`,
-      health.length ? `${health.length} clear satellite image${health.length > 1 ? 's were' : ' was'} used.` : 'No clear satellite images were available for this period (cloud), so the figures below are limited.',
-      status.action ? `${status.action} of ${scopePlots.length} blocks need a closer look; prioritized interventions are listed below.` : scopePlots.length ? 'No blocks need urgent action on the latest image.' : '',
-    ].filter(Boolean).join(' ');
-
-    let summary = { text: template, ai: false, engine: 'Grounded Engine' };
-    let recommendations = [];
-    let findings = [];
-    let risks = [];
-    let limits = [
-      'All recommendations are decision-support proxies and do not replace certified on-site agronomist inspections.',
-      'Biomass carbon metrics carry an indicative ±40% uncertainty range prior to field allometric calibration.',
-    ];
-    let data_used = {
-      sources: ['Sentinel-2 10m Multi-Spectral Zarr Store', 'Sentinel-1 SAR Structure', 'Open-Meteo Telemetry'],
-      dates: [`${period.from} to ${period.to}`],
-    };
-
-    // 2. Query AI Report Recommendations from Backend
-    try {
-      const recs = await api.fetchAiReportRecommendations({
-        scope: where,
-        plot_id: level === 'blocks' && blocks[0] ? blocks[0] : null,
-        crop: cropType,
-        service: subject,
-        focus_area: focusArea !== 'general' ? focusArea : null,
-      });
-      if (recs && recs.summary) {
-        summary = { text: recs.summary, ai: true, engine: recs.engine || 'Grounded Agronomy Decision Engine' };
-        recommendations = recs.recommendations || [];
-        findings = recs.findings || [];
-        risks = recs.risks || [];
-        if (recs.limits) limits = recs.limits;
-        if (recs.data_used) data_used.sources = recs.data_used;
-      }
-    } catch {
-      // Fallback to queryAiAgent if specific endpoint is unavailable
-      try {
-        const r = await api.queryAiAgent(`Write a 3 to 5 sentence plain-language farm report summary for a farm manager who does not know GIS. Use only these numbers, do not add any other numbers, no index names (say crop health, leaf water), no certification claims. Subject: ${subject}. Data: ${JSON.stringify(numbers)}`);
-        if (r?.response && !/unavailable|error/i.test(r.response)) {
-          summary = { text: r.response, ai: true, engine: 'AI Advisor' };
-        }
-      } catch {
-        /* Keep template */
-      }
-    }
-
-    // If backend recommendations were empty, provide standard structured recommendations
-    if (!recommendations.length) {
-      recommendations = [
-        {
-          priority: 'High (Immediate 24-48h)',
-          title: 'Targeted moisture deficit mitigation',
-          action: `Dispatch field scouting to flagged anomaly plots (${scopedAlerts.slice(0, 2).map(a => a.plot).join(', ') || 'low-lying blocks'}) to verify root-zone soil moisture before the next Sentinel overpass.`,
-          impact: 'Prevents localized moisture stress induced canopy abortion and stabilizes leaf water potential.',
-          responsible: 'Estate Agronomist & Field Scouts',
-        },
-        {
-          priority: 'Medium (7-14 Days)',
-          title: 'Optimized Nutrient Top-Dressing',
-          action: 'Align secondary nutrient top-dressing with forecasted rainfall windows. Avoid application during high convective downpour days.',
-          impact: 'Maximizes nutrient uptake efficiency and prevents nitrogen leaching into boundary buffers.',
-          responsible: 'Operations & Fertilizer Gang',
-        },
-        {
-          priority: 'Strategic (30-90 Days)',
-          title: 'Canopy management & calibration',
-          action: 'Calibrate seasonal yield models using actual field operations and harvest bunch weights logged in the Client Datasets portal.',
-          impact: 'Refines estate-level carbon stock and yield forecasting accuracy from indicative proxy to calibrated baseline.',
-          responsible: 'Planning & Farm Management',
-        },
-      ];
-    }
-
-    if (!risks.length) {
-      risks = [
-        { risk: 'Dry Spell Moisture Stress', level: w < 0.25 ? 'High' : 'Moderate', mitigation: 'Ensure drip/furrow irrigation infrastructure is operational on low-lying blocks.' },
-        { risk: 'Canopy Chlorophyll Anomaly', level: 'Low (Active)', mitigation: 'Cross-reference leaf tissue laboratory assays with RECI optical index maps.' },
-        { risk: 'Runoff Leaching Risk', level: 'Moderate', mitigation: 'Maintain ground cover vegetation and avoid chemical dispersal during storm fronts.' },
-      ];
-    }
-
-    if (!findings.length) {
-      findings = [
-        `Spatial Acreage: ${scopePlots.length} management blocks evaluated across ${where}.`,
-        `Canopy Baseline: Overall vigour is ${HEALTH_WORD(h)} across the selected observation window.`,
-        `Hydration Status: Leaf water retention average is ${w != null ? w.toFixed(2) : '—'}, with ${scopedAlerts.length} active alerts logged.`,
-      ];
-    }
-
-    let savedReportId = `REP-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-
-    // Persist report to backend
+    // 2. Build and persist grounded report on backend
     try {
       const saved = await api.createReport({
         type,
@@ -295,38 +177,45 @@ export default function ReportBuilder({ plots, alerts, estates, tenant, orgName,
         service: subject,
         focus_area: focusArea !== 'general' ? focusArea : null,
       });
-      if (saved?.report_id) {
-        savedReportId = saved.report_id;
-      }
+
+      const reportObj = {
+        report_id: saved.report_id,
+        type: saved.type || type,
+        title: saved.title || `${subject}: ${where}`,
+        where: saved.numbers?.where || where,
+        period: saved.period || period,
+        cmp: saved.compare || cmp,
+        health,
+        water,
+        healthCmp,
+        waterCmp,
+        status: saved.status || null,
+        actions: (saved.blocks_action || []).map(b => ({
+          block: b.field_id,
+          estate: estateOf(b.field_id),
+          problem: b.problem,
+          action: b.action,
+          priority: b.priority,
+          since: b.since,
+        })),
+        summary: typeof saved.summary === 'string' ? { text: saved.summary } : (saved.summary || { text: '' }),
+        numbers: saved.numbers || {},
+        recommendations: saved.recommendations || [],
+        risks: saved.risks || [],
+        findings: saved.findings || [],
+        limits: saved.limits || [],
+        data_used: saved.data_used || { sources: [], dates: [] },
+        created: new Date(saved.created_at || Date.now()),
+      };
+
+      setReport(reportObj);
+      setHistory(prev => [reportObj, ...prev.filter(r => r.report_id !== reportObj.report_id).slice(0, 19)]);
+      setHistoryTab(false);
     } catch (err) {
-      console.warn('Report backend persist error (client copy maintained):', err);
+      setErrorMsg(`Could not generate report: ${err.message || 'Server error'}`);
+    } finally {
+      setBusy(false);
     }
-
-    const reportObj = {
-      report_id: savedReportId,
-      type,
-      where,
-      period,
-      cmp,
-      health,
-      water,
-      healthCmp,
-      waterCmp,
-      status,
-      actions,
-      summary,
-      numbers,
-      recommendations,
-      risks,
-      findings,
-      limits,
-      data_used,
-      created: new Date(),
-    };
-
-    setReport(reportObj);
-    setHistory(prev => [reportObj, ...prev.slice(0, 19)]);
-    setBusy(false);
   };
 
   // Ask AI about this specific report
@@ -551,6 +440,12 @@ export default function ReportBuilder({ plots, alerts, estates, tenant, orgName,
 
       {/* RIGHT: results */}
       <section className="min-w-0 space-y-8">
+      {errorMsg && (
+        <div role="alert" className="p-4 rounded-xl border border-red-200 bg-red-50 text-sm text-red-800 flex items-center justify-between gap-3">
+          <span>{errorMsg}</span>
+          <button type="button" onClick={() => setErrorMsg('')} className="font-semibold text-red-900 shrink-0">Close</button>
+        </div>
+      )}
       {historyTab && (
         <Card className="p-6 space-y-4 no-print">
           <h3 className="text-lg font-bold text-gray-900">Past reports</h3>
@@ -599,26 +494,20 @@ export default function ReportBuilder({ plots, alerts, estates, tenant, orgName,
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-base font-bold text-gray-900">
                 <Sparkles size={18} className="text-green-700" />
-                Executive agronomic summary
+                Summary
               </div>
-              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-green-100 text-green-800 flex items-center gap-1.5">
-                <BrainCircuit size={12} /> {report.summary?.engine || 'Grounded Decision Engine'}
-              </span>
+              {report.summary?.ai && <span className="text-xs font-medium text-gray-500">Written by the AI assistant from the figures below</span>}
             </div>
-            <p className="text-base text-gray-800 leading-relaxed">{report.summary?.text}</p>
-            <div className="flex items-center justify-between pt-2 border-t border-green-100/80 text-xs text-gray-500">
-              <span>Synthesized strictly from satellite time-series, weather forecasts, and field observations.</span>
-              <span className="italic">No unverified legal certifications.</span>
-            </div>
+            <p className="text-base text-gray-800 leading-relaxed">{report.summary?.text || 'No written summary: the AI assistant was not available for this report. The figures below are complete.'}</p>
           </Card>
 
           {/* SECTION 2: Metric Overview Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              ['Blocks Evaluated', report.numbers?.blocks_total || '—', <Layers key="1" size={16} className="text-blue-600" />],
-              ['Action Required', report.status?.action || 0, <AlertTriangle key="2" size={16} className="text-amber-600" />],
-              ['Crop Vigour Status', HEALTH_WORD(report.numbers?.crop_health_avg), <Sprout key="3" size={16} className="text-green-600" />],
-              ['Canopy Change', report.numbers?.change_pct == null ? '—' : `${report.numbers.change_pct >= 0 ? '+' : ''}${report.numbers.change_pct}%`, <TrendingUp key="4" size={16} className="text-emerald-600" />],
+              ['Blocks in this report', report.numbers?.blocks_total ?? '—', <Layers key="1" size={16} className="text-blue-600" />],
+              ['Need action now', report.status?.action ?? '—', <AlertTriangle key="2" size={16} className="text-amber-600" />],
+              ['Crop health', report.numbers?.crop_health_avg == null ? 'No clear image' : HEALTH_WORD(report.numbers.crop_health_avg), <Sprout key="3" size={16} className="text-green-600" />],
+              ['Change on the comparison period', report.numbers?.change_pct == null ? '—' : `${report.numbers.change_pct >= 0 ? '+' : ''}${report.numbers.change_pct}%`, <TrendingUp key="4" size={16} className="text-emerald-600" />],
             ].map(([k, v, icon]) => (
               <Card key={k} className="px-5 py-4">
                 <div className="flex items-center justify-between text-xs font-semibold text-gray-500">
@@ -636,10 +525,10 @@ export default function ReportBuilder({ plots, alerts, estates, tenant, orgName,
               <div>
                 <h4 className="text-lg font-bold text-gray-900 flex items-center gap-2">
                   <Activity size={18} className="text-green-700" />
-                  Prioritized agronomic actions & decisions
+                  What to do
                 </h4>
                 <p className="text-xs text-gray-500 mt-1">
-                  Concrete operational interventions ranked by immediacy and expected agronomic yield impact.
+                  Most urgent first.
                 </p>
               </div>
             </div>
@@ -692,7 +581,7 @@ export default function ReportBuilder({ plots, alerts, estates, tenant, orgName,
             <Card className="p-6 space-y-4">
               <div className="flex items-center gap-2 text-sm font-bold text-gray-900">
                 <AlertTriangle size={16} className="text-amber-600" />
-                Agronomic risk matrix
+                Risks
               </div>
               <div className="space-y-3">
                 {(report.risks || []).map((r, i) => (
@@ -739,23 +628,23 @@ export default function ReportBuilder({ plots, alerts, estates, tenant, orgName,
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm font-bold text-gray-900">
                 <AlertTriangle size={16} className="text-amber-600" />
-                Management blocks flagged for action
+                Blocks needing action
               </div>
-              <span className="text-xs text-gray-500 font-medium">{report.actions.length} blocks identified</span>
+              <span className="text-xs text-gray-500 font-medium">{report.actions.length} {report.actions.length === 1 ? 'block' : 'blocks'}</span>
             </div>
             {report.actions.length === 0 ? (
               <div className="flex items-center gap-2 text-sm text-green-700 py-3">
-                <CheckCircle2 size={16} /> All management blocks reflect stable canopy vigour and soil hydration.
+                <CheckCircle2 size={16} /> No open alerts for these blocks in this period.
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                   <thead className="border-b border-gray-200 text-gray-500 font-semibold bg-gray-50/50">
                     <tr>
-                      <th className="py-2.5 px-3">Block ID</th>
+                      <th className="py-2.5 px-3">Block</th>
                       <th className="py-2.5 px-3">Estate</th>
-                      <th className="py-2.5 px-3">Observed anomaly</th>
-                      <th className="py-2.5 px-3">Recommended operational action</th>
+                      <th className="py-2.5 px-3">Problem</th>
+                      <th className="py-2.5 px-3">What to do</th>
                       <th className="py-2.5 px-3">Priority</th>
                       <th className="py-2.5 px-3">Since</th>
                     </tr>
@@ -764,7 +653,7 @@ export default function ReportBuilder({ plots, alerts, estates, tenant, orgName,
                     {report.actions.map((a, i) => (
                       <tr key={i} className="hover:bg-gray-50/60">
                         <td className="py-2.5 px-3 font-bold text-gray-900">{a.block}</td>
-                        <td className="py-2.5 px-3 text-gray-600">{a.estate}</td>
+                        <td className="py-2.5 px-3 text-gray-600">{a.estate || estateOf(a.block)}</td>
                         <td className="py-2.5 px-3 text-gray-800 font-medium">{a.problem}</td>
                         <td className="py-2.5 px-3 text-green-800">{a.action}</td>
                         <td className="py-2.5 px-3">
@@ -859,7 +748,7 @@ export default function ReportBuilder({ plots, alerts, estates, tenant, orgName,
           <Card className="p-6 space-y-4 bg-gray-50/60">
             <div className="text-sm font-bold text-gray-900">Technical appendix</div>
             <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3 text-xs text-gray-700">
-              <div><dt className="font-semibold text-gray-900">Imagery</dt><dd>{(report.data_used?.sources || []).map(s => s.replace(/\s*Zarr Store/i, '').replace(/10m/i, '10 m').replace(/SAR Structure/i, 'radar (cloud-independent)')).join('; ') || 'Sentinel-2 (ESA Copernicus), 10 m'}</dd></div>
+              <div><dt className="font-semibold text-gray-900">Imagery</dt><dd>{(report.data_used?.sources || []).join('; ') || 'Not recorded for this report'}</dd></div>
               <div><dt className="font-semibold text-gray-900">Measures behind the words</dt><dd>Crop health = NDVI (vegetation index); Leaf water = NDMI (moisture index). Farm averages per clear view.</dd></div>
               <div><dt className="font-semibold text-gray-900">Period</dt><dd>{report.period.from} to {report.period.to}{report.cmp ? `; comparison ${report.cmp.from} to ${report.cmp.to}` : ''}</dd></div>
               <div><dt className="font-semibold text-gray-900">Clear-view dates</dt><dd>{report.health.map(d => d.date).join(', ') || 'none'}</dd></div>

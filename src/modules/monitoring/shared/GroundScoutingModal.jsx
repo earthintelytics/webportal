@@ -30,6 +30,7 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
   const [pendingSync, setPendingSync] = useState(getPendingSyncCount());
   const [submitting, setSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
   const [pastObservations, setPastObservations] = useState([]);
   const [loadingPast, setLoadingPast] = useState(false);
 
@@ -40,8 +41,9 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
   const [dispatchNotes, setDispatchNotes] = useState(alert?.scouting_notes || '');
 
   // Observation form state
-  const [cropStage, setCropStage] = useState('Vegetative');
-  const [canopyScore, setCanopyScore] = useState(5);
+  // Nothing assumed: stage and score stay empty until the scout sets them.
+  const [cropStage, setCropStage] = useState('');
+  const [canopyScore, setCanopyScore] = useState(null);
   const [pestDetected, setPestDetected] = useState(false);
   const [findingType, setFindingType] = useState('pest_infestation');
   const [obsNotes, setObsNotes] = useState('');
@@ -57,7 +59,7 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
         .then((res) => {
           setPastObservations(Array.isArray(res) ? res : []);
         })
-        .catch((e) => console.warn('Could not load past observations:', e))
+        .catch((e) => setErrorMsg(`Past observations could not be loaded: ${e.message}`))
         .finally(() => setLoadingPast(false));
     }
   }, [activeTab, alert?.plot_id, alert?.alert_id]);
@@ -75,13 +77,15 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
 
   const handleSyncNow = async () => {
     setSubmitting(true);
+    setErrorMsg('');
     try {
       const res = await syncOfflineQueue();
       setPendingSync(getPendingSyncCount());
-      setSuccessMsg(`Synced ${res.syncedCount} queued items successfully.`);
+      setSuccessMsg(`${res.syncedCount} sent.${res.remaining ? ` ${res.remaining} still waiting for a connection.` : ''}`);
+      if (res.refused.length) setErrorMsg(`Not accepted: ${res.refused.join(' · ')}`);
       setTimeout(() => setSuccessMsg(''), 3500);
     } catch (e) {
-      console.error(e);
+      setErrorMsg(e.message);
     } finally {
       setSubmitting(false);
     }
@@ -91,6 +95,7 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
     e.preventDefault();
     if (!scoutName.trim()) return;
     setSubmitting(true);
+    setErrorMsg('');
     try {
       const res = await assignScout(alert.alert_id, {
         scoutName,
@@ -103,7 +108,7 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
       if (onAlertUpdated) onAlertUpdated();
       setTimeout(() => setSuccessMsg(''), 3000);
     } catch (err) {
-      console.error(err);
+      setErrorMsg(err.message);
     } finally {
       setSubmitting(false);
     }
@@ -112,11 +117,12 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
   const handleLogObservation = async (e) => {
     e.preventDefault();
     setSubmitting(true);
+    setErrorMsg('');
     try {
       await submitScoutingObservation({
         plotId: alert.plot_id,
         alertId: alert.alert_id,
-        scoutName: scoutName || 'Field Scout',
+        scoutName,
         scoutContact,
         cropStage,
         canopyHealthScore: canopyScore,
@@ -132,7 +138,7 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
         setActiveTab('resolve');
       }, 1500);
     } catch (err) {
-      console.error(err);
+      setErrorMsg(err.message);
     } finally {
       setSubmitting(false);
     }
@@ -141,6 +147,7 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
   const handleResolve = async (e) => {
     e.preventDefault();
     setSubmitting(true);
+    setErrorMsg('');
     try {
       const res = await resolveAlert(alert.alert_id, {
         groundTruthCategory: resolveCategory,
@@ -153,7 +160,7 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
         onClose();
       }, 1800);
     } catch (err) {
-      console.error(err);
+      setErrorMsg(err.message);
     } finally {
       setSubmitting(false);
     }
@@ -164,12 +171,13 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
     // Two clicks instead of a browser pop-up: the button asks first.
     if (!confirmDismiss) { setConfirmDismiss(true); return; }
     setSubmitting(true);
+    setErrorMsg('');
     try {
       await dismissAlert(alert.alert_id);
       if (onAlertUpdated) onAlertUpdated();
       onClose();
     } catch (err) {
-      console.error(err);
+      setErrorMsg(err.message);
     } finally {
       setSubmitting(false);
     }
@@ -271,6 +279,13 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
           </button>
         </div>
 
+        {errorMsg && (
+          <div role="alert" className="mx-6 mt-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs flex items-start justify-between gap-3">
+            <span>{errorMsg}</span>
+            <button type="button" onClick={() => setErrorMsg('')} className="font-semibold shrink-0">Close</button>
+          </div>
+        )}
+
         {/* Feedback Message */}
         {successMsg && (
           <div className="mx-6 mt-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center space-x-2 animate-fade-in">
@@ -358,6 +373,7 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
                   onChange={(e) => setCropStage(e.target.value)}
                   className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
                 >
+                  <option value="">Not noted</option>
                   <option value="Emergence">Emergence / Seedling</option>
                   <option value="Vegetative">Vegetative growth</option>
                   <option value="Flowering">Flowering / Booting</option>
@@ -385,13 +401,13 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
             <div>
               <div className="flex justify-between items-center mb-1">
                 <label className="text-xs font-semibold text-gray-700">Canopy Health Score (1 = Dead, 10 = Optimal)</label>
-                <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">{canopyScore}/10</span>
+                <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">{canopyScore == null ? 'Not scored' : `${canopyScore}/10`}</span>
               </div>
               <input
                 type="range"
                 min="1"
                 max="10"
-                value={canopyScore}
+                value={canopyScore ?? 5}
                 onChange={(e) => setCanopyScore(Number(e.target.value))}
                 className="w-full accent-emerald-600 cursor-pointer"
               />
