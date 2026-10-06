@@ -29,16 +29,3 @@ export const ALL_RS_INDICES = [
 
 export const slugify = (text) => (text || '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
 
-// Organisation view = one dashboard for the company; crop view = a portal per licensed crop.
-export const modulesForAccessModel = (model, crops, slug) => {
-  const orgModules = slug ? [`custom-agromonitor-${slug}`] : [];
-  const cropModules = (crops || []).map((c) => `rs-${c}`);
-  if (model === 'organization') return orgModules;
-  if (model === 'crop') return cropModules;
-  return [...orgModules, ...cropModules];
-};
-
-export const ACCESS_MODELS = [
-  { id: 'organization', label: 'Organisation dashboard', desc: 'One dashboard for the whole company, across its estates' },
-  { id: 'crop', label: 'Crop portals', desc: 'A monitoring portal for each licensed crop' },
-];

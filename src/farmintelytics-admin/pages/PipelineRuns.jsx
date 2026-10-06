@@ -3,7 +3,7 @@ import { RefreshCw, RotateCcw } from 'lucide-react';
 import { fetchAdminJobs, retryAdminJob, fetchOrganizations } from '../../services/adminApi';
 import ErrorBanner from '../components/ErrorBanner';
 import { inputCls } from '../components/formHelpers';
-import { Page, Button, IconButton, Chip, Pill, Table, Td, Empty, Loading, Stat } from '../components/ui';
+import { Page, Button, IconButton, Chip, Pill, Table, Td, Empty, Loading, Stat, Note } from '../components/ui';
 
 const KINDS = {
   monitoring_run: 'Satellite monitoring', suitability_run: 'Suitability analysis', boundary_ingest: 'Boundary upload',
@@ -26,10 +26,13 @@ const PipelineRuns = () => {
   const [status, setStatus] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [offline, setOffline] = useState(false);
   const [open, setOpen] = useState(null);
 
   const load = async () => {
-    try { setJobs(await fetchAdminJobs({ companyId: company, status })); setError(''); } catch (e) { setError(e.message); } finally { setLoading(false); }
+    try { setJobs(await fetchAdminJobs({ companyId: company, status })); setError(''); setOffline(false); } catch (e) {
+      if (e.code === 'NOT_CONNECTED') setOffline(true); else setError(e.message);
+    } finally { setLoading(false); }
   };
   useEffect(() => { fetchOrganizations().then((o) => setOrgs(Array.isArray(o) ? o : o?.items || [])).catch(() => {}); }, []);
   useEffect(() => { setLoading(true); load(); }, [company, status]); // eslint-disable-line react-hooks/set-state-in-effect, react-hooks/exhaustive-deps
@@ -54,6 +57,9 @@ const PipelineRuns = () => {
     >
       <ErrorBanner message={error} onDismiss={() => setError('')} onRetry={load} />
 
+      {offline ? (
+        <Note>The pipeline jobs service is not running on this server yet, so runs cannot be listed here. It goes live with the jobs update (G27, deployed by G43). The Monitoring schedule still shows each schedule's last run.</Note>
+      ) : (<>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Stat label="Waiting" value={counts.queued || 0} />
         <Stat label="Running" value={counts.running || 0} />
@@ -99,6 +105,7 @@ const PipelineRuns = () => {
           })}
         </Table>
       )}
+      </>)}
     </Page>
   );
 };

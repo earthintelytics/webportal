@@ -64,7 +64,7 @@ const ErrorBanner = ({ message, onDismiss, onRetry }) => {
           cursor: 'pointer', color: '#b91c1c', fontSize: '11px', fontWeight: 700, flexShrink: 0,
         }}
       >
-        {copied ? <Check size={12} color="#16a34a" /> : <Copy size={12} />}
+        {copied ? <Check size={12} color="#3F8432" /> : <Copy size={12} />}
         {copied ? 'Copied' : 'Copy'}
       </button>
       {onRetry && (

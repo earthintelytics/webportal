@@ -7,8 +7,23 @@
 
 /* Clean, Simplified Design Tokens */
 :root {
-  --brand-primary: #16A34A;
-  --brand-primary-dark: #15803D;
+  /* The logo greens (leaf #5AA041, forest #034321) and the scale between them.
+     Channels only, so Tailwind opacity (bg-green-50/70) works. */
+  --green-50: 243 248 239;
+  --green-100: 227 240 218;
+  --green-200: 199 226 181;
+  --green-300: 162 206 138;
+  --green-400: 125 184 98;
+  --green-500: 90 160 65;
+  --green-600: 63 132 50;
+  --green-700: 45 106 44;
+  --green-800: 23 85 43;
+  --green-900: 3 67 33;
+  --green-950: 2 43 22;
+  --brand-primary: #3F8432;
+  --brand-primary-dark: #2D6A2C;
+  --brand-leaf: #5AA041;
+  --brand-forest: #034321;
   --bg-main: #f8fafc;
   --bg-card: #ffffff;
   --text-main: #0f172a;

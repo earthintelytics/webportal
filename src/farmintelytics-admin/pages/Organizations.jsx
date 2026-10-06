@@ -32,7 +32,7 @@ const Organizations = () => {
     try { await deleteOrganization(org.id); await load(); } catch (e) { setError(e.message); }
   };
   const copyLink = async (schema) => {
-    try { await navigator.clipboard.writeText(`${window.location.origin}/login?tenant=${schema}`); setCopied(schema); setTimeout(() => setCopied(null), 2000); } catch { setError('Copy failed: select the link and copy it.'); }
+    try { await navigator.clipboard.writeText(`${window.location.origin}/org/${schema}/login`); setCopied(schema); setTimeout(() => setCopied(null), 2000); } catch { setError('Copy failed: select the link and copy it.'); }
   };
 
   const shown = useMemo(() => {
@@ -64,7 +64,7 @@ const Organizations = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {shown.map((org) => {
             const crops = org.allowed_crops || [];
-            const services = (org.allowed_modules || []).filter((m) => !m.startsWith('rs-') && !m.startsWith('custom-agromonitor'));
+            const services = (org.allowed_modules || []).filter((m) => !m.startsWith('rs-'));
             return (
               <Card key={org.id} className="flex flex-col hover:border-gray-300 transition-colors">
                 <button type="button" onClick={() => setDetail(org)} className="text-left p-6 flex-1 space-y-4">
@@ -85,7 +85,7 @@ const Organizations = () => {
                   </div>
                 </button>
                 <div className="px-6 pb-3 flex items-center gap-2">
-                  <code className="flex-1 min-w-0 truncate text-xs text-gray-600 bg-gray-50 border border-gray-200 px-2.5 py-1.5 rounded-lg">/login?tenant={org.schema_name}</code>
+                  <code className="flex-1 min-w-0 truncate text-xs text-gray-600 bg-gray-50 border border-gray-200 px-2.5 py-1.5 rounded-lg">/org/{org.schema_name}/login</code>
                   <IconButton label="Copy sign-in link" onClick={() => copyLink(org.schema_name)}>{copied === org.schema_name ? <Check size={15} /> : <Copy size={15} />}</IconButton>
                 </div>
                 <div className="flex items-center justify-between gap-2 px-6 py-3 border-t border-gray-100">

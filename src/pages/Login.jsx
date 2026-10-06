@@ -116,14 +116,14 @@ const CROP_DESIGNS = {
   },
   organization: {
     key: 'organization',
-    name: 'Organization Monitoring',
-    branding: 'Organization Monitoring',
+    name: 'Your organisation',
+    branding: 'FarmIntelytics',
     accentColor: '#16A34A', // Emerald Green
     lightBg: '#F0FDF4',
-    badge: 'Organization Command Console',
+    badge: 'Organisation sign-in',
     heroImage: '/crops/organization.webp',
-    title: <>Precision <span className="text-emerald-600 font-black">Agricultural Organization</span> Console</>,
-    desc: 'Central command console for corporate agricultural organizations, managing multi-tenant farm portfolios, aggregated satellite coverage, and user roles.',
+    title: <>Your farms, <span className="text-green-700">all in one place</span></>,
+    desc: 'Sign in to open the services your organisation uses: crop monitoring, sustainability, smallholder and more.',
     features: [],
     stats: []
   },
@@ -322,6 +322,8 @@ const Login = ({ onLogin, moduleId, onBack, defaultEmail = '', defaultCode = '' 
           if (Array.isArray(config?.modules)) localStorage.setItem('fi_allowed_modules', JSON.stringify(config.modules));
           if (Array.isArray(config?.allowed_crops)) localStorage.setItem('fi_allowed_crops', JSON.stringify(config.allowed_crops));
           if (Array.isArray(config?.map_center)) localStorage.setItem('fi_map_center', JSON.stringify(config.map_center));
+          if (config?.max_accounts != null) localStorage.setItem('fi_max_accounts', String(config.max_accounts));
+          else localStorage.removeItem('fi_max_accounts');
         } catch (_) {
           localStorage.removeItem('fi_display_name');
           localStorage.removeItem('fi_allowed_modules');

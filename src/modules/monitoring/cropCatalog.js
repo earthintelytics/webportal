@@ -93,20 +93,6 @@ export const CROP_CATALOG = {
   }),
 };
 
-// Organisation dashboards (all crops and estates in one view)
-export const ORGANISATION_PAGES = {
-  overviewTitle: 'Organisation overview',
-  overviewText: 'How every estate is doing, what changed and which blocks need action.',
-  sidebar: [
-    { id: 'analytics', label: 'Overview' }, { id: 'crop-health', label: 'Crop health' },
-    { id: 'moisture-content', label: 'Water' }, { id: 'crop-yield', label: 'Yield trend' }, { id: 'climate', label: 'Weather' }, { id: 'alerts', label: 'Alerts' },
-  ],
-  analytics: [
-    { id: 'overview', label: 'Overview' }, { id: 'vigor-health', label: 'Crop health' }, { id: 'moisture-et', label: 'Water' },
-    { id: 'water-management', label: 'Irrigation' }, { id: 'soil-nutrients', label: 'Soil' },
-  ],
-};
-
 const BACKEND_KEY = { oil_palm: 'ffb' };
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/farmintelytics-engine/agromonitoring';
 

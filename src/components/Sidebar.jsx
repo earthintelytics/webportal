@@ -6,7 +6,7 @@ import {
 
 const Sidebar = ({ activeSection, setActiveSection, currentCrop, onSignOut }) => {
   const menuItems = currentCrop.menu || [];
-  const primaryColor = currentCrop.primaryColor || '#16A34A';
+  const primaryColor = currentCrop.primaryColor || '#3F8432';
 
   return (
     <nav className="w-64 bg-white border-r border-gray-100 flex flex-col h-screen shrink-0 z-50">

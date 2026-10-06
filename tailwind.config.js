@@ -1,5 +1,11 @@
 import tailwindAnimate from "tailwindcss-animate"
 
+// One green: the FarmIntelytics logo. Leaf #5AA041 is 500 and forest #034321
+// is 900; every other shade sits between them. Emerald points at the same
+// scale so no second green can creep in. Values live in src/index.css.
+const SHADES = ["50", "100", "200", "300", "400", "500", "600", "700", "800", "900", "950"]
+const logoGreen = Object.fromEntries(SHADES.map((k) => [k, `rgb(var(--green-${k}) / <alpha-value>)`]))
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
@@ -9,6 +15,9 @@ export default {
   theme: {
     extend: {
       colors: {
+        green: logoGreen,
+        emerald: logoGreen,
+        brand: { DEFAULT: "rgb(var(--green-600) / <alpha-value>)", leaf: "rgb(var(--green-500) / <alpha-value>)", forest: "rgb(var(--green-900) / <alpha-value>)" },
         border: "var(--border)",
         input: "var(--input)",
         ring: "var(--ring)",

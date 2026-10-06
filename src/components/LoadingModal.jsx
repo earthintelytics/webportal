@@ -115,7 +115,7 @@ const LoadingModal = ({ isLoading = false, progress = 0, message = 'Loading data
           <div
             style={{
               height: '100%',
-              background: 'linear-gradient(90deg, #16A34A, #22c55e)',
+              background: '#3F8432',
               width: `${displayProgress}%`,
               transition: 'width 0.3s ease-out',
               borderRadius: '4px',

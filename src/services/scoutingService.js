@@ -1,3 +1,4 @@
+import { redirectToTenantSignIn } from './session';
 /**
  * scoutingService.js
  * Offline-first ground scouting and closed-loop anomaly management service.
@@ -14,12 +15,7 @@ const OFFLINE_QUEUE = 'fi_scouting_offline_queue';
 const OFFLINE_OBSERVATIONS = 'fi_scouting_local_cache';
 
 function handleTenantAuthFailure() {
-  localStorage.removeItem('fi_token');
-  localStorage.removeItem('fi_user');
-  localStorage.removeItem('fi_tenant');
-  if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
-    window.location.href = '/login';
-  }
+  redirectToTenantSignIn();
 }
 
 async function apiFetch(path, options = {}) {

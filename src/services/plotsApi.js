@@ -1,3 +1,4 @@
+import { redirectToTenantSignIn } from './session';
 /**
  * plotsApi.js
  * ─────────────────────────────────────────────────────────────────────────────
@@ -21,12 +22,7 @@ const API_BASE =
 function handleAuthFailure() {
   const isAdmin = Boolean(localStorage.getItem('fi_admin_token'));
   if (isAdmin) return;
-  localStorage.removeItem('fi_token');
-  localStorage.removeItem('fi_user');
-  localStorage.removeItem('fi_tenant');
-  if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
-    window.location.href = '/login';
-  }
+  redirectToTenantSignIn();
 }
 
 async function apiFetch(path, options = {}) {

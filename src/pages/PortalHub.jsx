@@ -43,7 +43,7 @@ const CARD_PHOTOS = {
   'suitability-tool': '/crops/suitability.webp',
   'advisor': '/crops/advisor.webp',
 };
-const photoFor = (id) => CARD_PHOTOS[id] || (id?.startsWith('custom-agromonitor') ? '/crops/organization.webp' : null);
+const photoFor = (id) => CARD_PHOTOS[id] || (id?.startsWith('org:') ? '/crops/organization.webp' : null);
 
 const ModuleCard = ({ title, crop, id, icon, active, onSelect, logoUrl }) => {
   const photo = photoFor(id);
@@ -98,8 +98,9 @@ const PortalHub = ({ onSelectModule, onSignOut, onOpenAdmin }) => {
       try {
         const tenants = await fetchTenants();
         if (tenants && Array.isArray(tenants)) {
+          // Each card opens that organisation's own hub (/org/<slug>).
           const mapped = tenants.map(t => ({
-            id: t.id,
+            id: `org:${String(t.id).replace(/^custom-agromonitor-/, '')}`,
             title: t.title,
             crop: t.crop,
             icon: <Satellite />,
@@ -168,7 +169,7 @@ const PortalHub = ({ onSelectModule, onSignOut, onOpenAdmin }) => {
     {
       id: 'custom',
       title: 'Organisations',
-      description: "Each client organisation's own dashboard, as set up in the admin console.",
+      description: "Each client organisation's own hub, with the services it was given at onboarding.",
       modules: filterModules(customModules),
     },
   ];

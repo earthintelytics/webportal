@@ -75,7 +75,6 @@ const RubberMonitoring = lazyWithReload(() => import('./modules/monitoring/rubbe
 
 // === Cooperative & Group Management ===
 
-const OrganizationMonitor = lazyWithReload(() => import('./modules/organization-monitor/OrganizationMonitor'));
 
 // === Super Admin Portal ===
 import AdminLogin from './farmintelytics-admin/AdminLogin';
@@ -94,11 +93,11 @@ const RouteLoading = () => (
 // the hub and locks users into that single module.
 const RESTRICTED_MODULE = import.meta.env.VITE_RESTRICT_TO_MODULE || null;
 
-// The URL path used for the restricted module's portal
-const AGROMONITOR_PATH = '/farmintelytics-engine/agromonitoring';
-
-
-import TenantHub from './pages/TenantHub';
+import OrgShell from './pages/org/OrgShell';
+import OrgServicesPage from './pages/org/OrgServicesPage';
+import OrgSettingsPage from './pages/org/OrgSettingsPage';
+import { readOrgProfile } from './pages/org/orgProfile';
+import { paths, sessionTenant } from './routes/paths';
 import { clearTenantSession, clearTeamSession } from './services/session';
 
 // ─── Hub page ────────────────────────────────────────────────────────────────
@@ -116,43 +115,25 @@ const hasValidTeamSession = () => {
 };
 
 // The hub to go back to: the one the service was opened from; otherwise the
-// client's hub for a client and the team hub for the team.
-const backHub = () => sessionStorage.getItem('fi_hub') || (hasTenantSession() ? '/tenant/hub' : '/');
+// organisation's hub for a client and the team hub for the team.
+const backHub = (tenant) => sessionStorage.getItem('fi_hub') || (tenant ? paths.orgHub(tenant) : '/');
 
-const hasTenantSession = () => {
-  try {
-    const token = localStorage.getItem('fi_token');
-    const tenant = localStorage.getItem('fi_tenant');
-    return Boolean(token && tenant);
-  } catch {
-    return false;
-  }
-};
-
+// "/" is the team hub. A client who lands here goes to its own hub.
 const HubPage = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [teamSignedIn, setTeamSignedIn] = useState(hasValidTeamSession);
-  const [tenantSignedIn, setTenantSignedIn] = useState(hasTenantSession);
 
-  const handleSelectModule = (moduleId) => {
-    // From the team hub, an organisation card opens that organisation's own
-    // hub (sign in with one of its accounts), not its dashboard directly.
-    if (!location.pathname.startsWith('/tenant') && moduleId.startsWith('custom-agromonitor-')) {
-      const org = moduleId.replace('custom-agromonitor-', '');
-      if (localStorage.getItem('fi_tenant') === org && hasTenantSession()) { navigate('/tenant/hub'); return; }
-      navigate(`/login?tenant=${encodeURIComponent(org)}`);
+  const handleSelectModule = (id) => {
+    // Organisation cards open that organisation's own hub (signing in with
+    // one of its accounts if needed).
+    if (id.startsWith('org:')) {
+      const org = id.slice(4);
+      navigate(sessionTenant() === org ? paths.orgHub(org) : paths.orgLogin(org));
       return;
     }
-    sessionStorage.setItem('fi_module', moduleId);
     sessionStorage.setItem('fi_from_hub', '1');
-    // Remember which hub the service was opened from, so Back returns there.
-    sessionStorage.setItem('fi_hub', location.pathname.startsWith('/tenant') ? '/tenant/hub' : '/');
-    if (moduleId.startsWith('custom-agromonitor')) {
-      navigate(AGROMONITOR_PATH);
-    } else {
-      navigate(`/portal/${encodeURIComponent(moduleId)}`);
-    }
+    sessionStorage.setItem('fi_hub', '/');
+    navigate(paths.service(id, sessionTenant()));
   };
 
   const handleTeamSignOut = () => {
@@ -160,77 +141,72 @@ const HubPage = () => {
     setTeamSignedIn(false);
   };
 
-  const handleTenantSignOut = () => {
-    clearTenantSession();
-    setTenantSignedIn(false);
-    navigate('/login');
-  };
-
-  // "/" is the team hub; "/tenant/hub" is the client's own hub. A team member
-  // who also signed in to a client account keeps the team hub at "/".
-  const isClientHub = location.pathname.startsWith('/tenant');
-  const teamHub = <PortalHub onSelectModule={handleSelectModule} onSignOut={handleTeamSignOut} onOpenAdmin={() => navigate('/admin/organizations')} />;
-  const clientHub = <TenantHub onSelectModule={handleSelectModule} onSignOut={handleTenantSignOut} />;
-  if (isClientHub) {
-    if (tenantSignedIn) return clientHub;
-    return teamSignedIn ? <Navigate to="/" replace /> : <Navigate to="/login" replace />;
-  }
-  if (teamSignedIn) return teamHub;
-  if (tenantSignedIn) return <Navigate to="/tenant/hub" replace />;
-
-  // Otherwise prompt admin login or redirect to login
+  if (teamSignedIn) return <PortalHub onSelectModule={handleSelectModule} onSignOut={handleTeamSignOut} onOpenAdmin={() => navigate('/admin/organizations')} />;
+  const tenant = sessionTenant();
+  if (tenant) return <Navigate to={paths.orgHub(tenant)} replace />;
   return <AdminLogin context="hub" onSuccess={() => setTeamSignedIn(true)} />;
+};
+
+// /org/<tenant> and /org/<tenant>/settings. The URL names the organisation;
+// a session for another organisation (or none) goes to this one's sign-in.
+const OrgPage = ({ view }) => {
+  const { tenant } = useParams();
+  const navigate = useNavigate();
+  const [profile, setProfile] = useState(readOrgProfile);
+  if (sessionTenant() !== tenant) return <Navigate to={paths.orgLogin(tenant)} replace />;
+  const signOut = () => { clearTenantSession(); navigate(paths.orgLogin(tenant)); };
+  return (
+    <OrgShell profile={profile} onSignOut={signOut}>
+      {view === 'settings' ? <OrgSettingsPage profile={profile} onProfile={setProfile} /> : <OrgServicesPage profile={profile} />}
+    </OrgShell>
+  );
+};
+
+// Old addresses → the new ones (paths.js).
+const LegacyTenantHub = () => {
+  const tenant = sessionTenant();
+  return <Navigate to={tenant ? paths.orgHub(tenant) : '/login'} replace />;
+};
+const LegacyPortal = () => {
+  const { moduleId } = useParams();
+  return <Navigate to={paths.service(canonicalModuleId(moduleId), sessionTenant())} replace />;
 };
 
 
 // ─── Login page ──────────────────────────────────────────────────────────────
+// /org/<tenant>/login signs in to one organisation; /login?module=<id> signs
+// in from a service link. After sign-in the person lands on the organisation
+// hub, or on the service they came for (?next=<id>).
 const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-
+  const { tenant: urlTenant } = useParams();
   const searchParams = new URLSearchParams(location.search);
-  const directTenant = searchParams.get('tenant') || searchParams.get('org') || null;
-  const directModule = searchParams.get('module') || null;
+  const legacyTenant = searchParams.get('tenant') || searchParams.get('org');
+  const directModule = searchParams.get('module') || searchParams.get('next') || null;
+  const moduleId = RESTRICTED_MODULE || directModule;
 
   useEffect(() => {
-    if (directTenant) {
-      sessionStorage.setItem('fi_module', `custom-agromonitor-${directTenant}`);
-      sessionStorage.setItem('fi_target_tenant', directTenant);
-    } else if (directModule) {
-      sessionStorage.setItem('fi_module', directModule);
-    }
-  }, [directTenant, directModule]);
+    if (urlTenant) sessionStorage.setItem('fi_target_tenant', urlTenant);
+  }, [urlTenant]);
 
-  const moduleId = RESTRICTED_MODULE
-    || (directTenant ? `custom-agromonitor-${directTenant}` : null)
-    || directModule
-    || sessionStorage.getItem('fi_module');
-  
-  const moduleName = moduleDisplayName(moduleId) || moduleId;
+  if (!urlTenant && legacyTenant) return <Navigate to={paths.orgLogin(legacyTenant)} replace />;
 
   const handleLogin = () => {
-    if (directModule) {
-      navigate(`/portal/${encodeURIComponent(directModule)}`);
-    } else if (directTenant || localStorage.getItem('fi_tenant')) {
-      sessionStorage.setItem('fi_hub', '/tenant/hub');
-      navigate('/tenant/hub');
-    } else if (moduleId && moduleId.startsWith('custom-agromonitor')) {
-      navigate(AGROMONITOR_PATH);
-    } else if (moduleId) {
-      navigate(`/portal/${encodeURIComponent(moduleId)}`);
-    } else {
-      navigate('/tenant/hub');
-    }
+    const tenant = sessionTenant();
+    if (!tenant) return;
+    sessionStorage.setItem('fi_hub', paths.orgHub(tenant));
+    navigate(moduleId ? paths.service(moduleId, tenant) : paths.orgHub(tenant), { replace: true });
   };
 
-  const cameFromHub = hasValidTeamSession() || hasTenantSession() || sessionStorage.getItem('fi_from_hub') === '1';
-  const handleBack = (RESTRICTED_MODULE || ((directTenant || directModule) && !cameFromHub)) ? null : () => navigate(backHub());
+  const cameFromHub = hasValidTeamSession() || sessionStorage.getItem('fi_from_hub') === '1';
+  const handleBack = (RESTRICTED_MODULE || !cameFromHub) ? null : () => navigate(sessionStorage.getItem('fi_hub') || '/');
 
   return (
     <Login
       onLogin={handleLogin}
       moduleId={moduleId}
-      moduleName={moduleName}
+      moduleName={moduleDisplayName(moduleId) || moduleId}
       onBack={handleBack}
     />
   );
@@ -257,46 +233,47 @@ const PortalMessage = ({ title, text, action }) => (
   </div>
 );
 
+// /org/<tenant>/<service> for an organisation's service, /tools/<id> for a
+// team-only tool. The URL is checked against the session before anything
+// renders, so one organisation's page never opens with another's sign-in.
 const PortalPage = () => {
   const navigate = useNavigate();
-  const { moduleId: moduleFromUrl } = useParams();
-  const rawId = moduleFromUrl || sessionStorage.getItem('fi_module');
-  const moduleId = canonicalModuleId(rawId);
+  const { tenant, moduleId: moduleFromUrl } = useParams();
+  const moduleId = canonicalModuleId(moduleFromUrl);
+  const isToolRoute = !tenant;
   useEffect(() => { if (moduleId) sessionStorage.setItem('fi_module', moduleId); }, [moduleId]);
 
   const handleSignOut = () => {
+    if (isToolRoute) { clearTeamSession(); navigate('/'); return; }
     clearTenantSession();
-    navigate(`/login?module=${encodeURIComponent(moduleId || '')}`);
+    navigate(`${paths.orgLogin(tenant)}?next=${encodeURIComponent(moduleId || '')}`);
   };
-  // Smallholder services go back to the Smallholder hub; everything else to the hub.
-  // Back goes to where the user came from: a Smallholder service to the
-  // Smallholder hub, the team to the team hub, a client to its own hub.
+  // Back: a Smallholder service to the Smallholder hub, otherwise the hub it
+  // was opened from (the organisation hub, or the team hub for the team).
   const handleBackToHub = () => navigate(
-    SMALLHOLDER_SERVICES.includes(moduleId) ? '/portal/smallholder-hub' : backHub(),
+    SMALLHOLDER_SERVICES.includes(moduleId) && tenant ? paths.service('smallholder-hub', tenant) : backHub(tenant),
   );
 
   if (!moduleId) return <Navigate to="/" replace />;
-  if (moduleFromUrl !== moduleId) return <Navigate to={`/portal/${encodeURIComponent(moduleId)}`} replace />;
-
   const team = hasValidTeamSession();
+  const preMod = resolveModule(moduleId);
+  // Each kind of page has one address: tools under /tools, services under /org.
+  if (moduleFromUrl !== moduleId || (preMod?.teamOnly && !isToolRoute) || (preMod && !preMod.teamOnly && isToolRoute)) {
+    return <Navigate to={paths.service(moduleId, tenant || sessionTenant())} replace />;
+  }
+  if (isToolRoute && !team) return <Navigate to="/" replace />;
+  if (!isToolRoute && sessionTenant() !== tenant) {
+    return <Navigate to={`${paths.orgLogin(tenant)}?next=${encodeURIComponent(moduleId)}`} replace />;
+  }
+
   const backButton = (label, onClick) => (
     <button onClick={onClick} className="mt-8 px-6 py-3 bg-white text-[var(--text-main)] border border-[var(--border-light)] rounded-xl font-semibold text-sm hover:bg-[var(--bg-main)] transition-colors">{label}</button>
   );
-  // Clients arrive by direct link and never see the internal hub: send them
-  // back to their own sign-in; the team goes back to the hub.
-  const exitAction = team ? backButton('Back to hub', handleBackToHub) : backButton('Back to sign in', handleSignOut);
+  const exitAction = backButton(isToolRoute ? 'Back to hub' : 'Back to your services', () => navigate(isToolRoute ? '/' : paths.orgHub(tenant)));
 
   const mod = resolveModule(moduleId);
   if (!mod) {
     return <PortalMessage title="Not available" text="This link does not open a FarmIntelytics service." action={exitAction} />;
-  }
-
-  // Every service except the team-only tools shows a client's data, so it
-  // needs a client sign-in (the team signs in with a client account, e.g. the
-  // demo account). Go straight to that service's sign-in instead of opening
-  // the page and bouncing out of it.
-  if (!hasTenantSession() && !(team && mod.teamOnly)) {
-    return <Navigate to={`/login?module=${encodeURIComponent(moduleId)}`} replace />;
   }
 
   // Licensing: the admin portal assigns each organisation its modules
@@ -335,21 +312,6 @@ const PortalPage = () => {
 };
 
 
-// ─── Organization Monitor page (dedicated URL) ──────────────────────────────
-const OrganizationMonitorPage = () => {
-  const navigate = useNavigate();
-
-  // In restricted mode there is no hub to go back to
-  const handleSignOut   = () => navigate('/login');
-  // Back to the hub it was opened from (the organisation hub); clients who
-  // came by the direct dashboard link have no hub to go back to.
-  const fromHub = sessionStorage.getItem('fi_hub');
-  const handleBackToHub = (RESTRICTED_MODULE || (!fromHub && !hasValidTeamSession())) ? null : () => navigate(fromHub || '/');
-
-  return <ErrorBoundary><OrganizationMonitor onSignOut={handleSignOut} onBack={handleBackToHub} /></ErrorBoundary>;
-};
-
-
 // ─── Root App ────────────────────────────────────────────────────────────────
 const App = () => {
   // In restricted mode, always start at /login regardless of entered URL
@@ -358,7 +320,8 @@ const App = () => {
       <React.Suspense fallback={<RouteLoading />}>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
-          <Route path={AGROMONITOR_PATH} element={<OrganizationMonitorPage />} />
+          <Route path="/org/:tenant/login" element={<LoginPage />} />
+          <Route path="/org/:tenant/:moduleId" element={<PortalPage />} />
           {/* Redirect everything else to /login */}
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
@@ -369,14 +332,19 @@ const App = () => {
   return (
     <React.Suspense fallback={<RouteLoading />}>
       <Routes>
-        <Route path="/"                       element={<HubPage />} />
-        <Route path="/hub"                    element={<HubPage />} />
-        <Route path="/tenant/hub"             element={<HubPage />} />
-        <Route path="/login"                  element={<LoginPage />} />
-        <Route path="/f/:token"               element={<PublicFormPage />} />
-        <Route path="/portal"                 element={<PortalPage />} />
-        <Route path="/portal/:moduleId"       element={<PortalPage />} />
-        <Route path={AGROMONITOR_PATH}        element={<OrganizationMonitorPage />} />
+        <Route path="/"                         element={<HubPage />} />
+        <Route path="/login"                    element={<LoginPage />} />
+        <Route path="/f/:token"                 element={<PublicFormPage />} />
+        <Route path="/tools/:moduleId"          element={<PortalPage />} />
+        <Route path="/org/:tenant"              element={<OrgPage view="services" />} />
+        <Route path="/org/:tenant/settings"     element={<OrgPage view="settings" />} />
+        <Route path="/org/:tenant/login"        element={<LoginPage />} />
+        <Route path="/org/:tenant/:moduleId"    element={<PortalPage />} />
+        {/* Old addresses */}
+        <Route path="/hub"                      element={<Navigate to="/" replace />} />
+        <Route path="/tenant/hub"               element={<LegacyTenantHub />} />
+        <Route path="/portal/:moduleId"         element={<LegacyPortal />} />
+        <Route path="/portal"                   element={<Navigate to="/" replace />} />
         <Route path="/admin/login"            element={<AdminLogin />} />
         <Route path="/admin/*"               element={<AdminPortal />} />
         {/* Catch-all: back to hub */}

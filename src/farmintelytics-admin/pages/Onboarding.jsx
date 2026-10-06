@@ -8,7 +8,7 @@ import {
   createOrganization, createCredential, createFarm, uploadBoundary, generateFarmConfig, generateParentConfig,
   createSchedulerJob, uploadOrganizationLogo, getBoundaryProperties, updateOrganization, runSchedulerJob,
 } from '../../services/adminApi';
-import { slugify, modulesForAccessModel, ACCESS_MODELS, ALL_RS_INDICES } from '../components/orgConstants';
+import { slugify, ALL_RS_INDICES } from '../components/orgConstants';
 import ErrorBanner from '../components/ErrorBanner';
 import { SENSOR_OPTIONS, ALL_CROPS, toggleInList } from '../components/formHelpers';
 import { WEEKDAYS, cronFor, cronError, scheduleText as scheduleWords } from '../components/schedule';
@@ -134,7 +134,6 @@ const Onboarding = () => {
   const [company, setCompany] = useState({ company_name: '', schema_name: '' });
   const slug = company.schema_name.trim() || slugify(company.company_name);
   // 2. Crops and services
-  const [accessModel, setAccessModel] = useState('organization');
   const [crops, setCrops] = useState([]);
   const [services, setServices] = useState([]);
   const [allowedIndices, setAllowedIndices] = useState([]);
@@ -185,7 +184,8 @@ const Onboarding = () => {
     return max;
   }, [estates]);
 
-  const allowedModules = useMemo(() => [...new Set([...modulesForAccessModel(accessModel, crops, slug), ...services])], [accessModel, crops, slug, services]);
+  // Exactly what was chosen: a monitoring service per crop, plus the services.
+  const allowedModules = useMemo(() => [...new Set([...crops.map((c) => `rs-${c}`), ...services])], [crops, services]);
   const datasetsAsked = useMemo(() => {
     const keys = [...crops.map(c => `crop:${CROP_KEY[c] || c}`), ...services.map(s => `service:${s}`)];
     return datasetsForScope(DATASET_DEFINITIONS, keys);
@@ -201,8 +201,8 @@ const Onboarding = () => {
 
   const canNext = [
     company.company_name.trim() && !slugErr,
-    (accessModel === 'organization' || crops.length > 0),
-    estates.length > 0 && estates.every(e => e.farm_name.trim() && e.boundaryFile && e.geojson && !e.boundaryError && !estateErr(e) && (accessModel !== 'crop' || e.crop || crops.length <= 1)),
+    crops.length > 0 || services.length > 0,
+    estates.length > 0 && estates.every(e => e.farm_name.trim() && e.boundaryFile && e.geojson && !e.boundaryError && !estateErr(e) && (e.crop || crops.length <= 1)),
     true,
     cred.email.trim() && !emailErr && !codeErr,
     true,
@@ -304,20 +304,20 @@ const Onboarding = () => {
   const copy = (text) => { navigator.clipboard?.writeText(text); setCopied(text); setTimeout(() => setCopied(''), 1500); };
   const restart = () => {
     setStep(0); setDone({ org: null, credential: null, farms: [], boundaries: [], configs: [], schedulers: [] });
-    setCompany({ company_name: '', schema_name: '' }); setAccessModel('organization'); setCrops([]); setServices([]); setAllowedIndices([]);
+    setCompany({ company_name: '', schema_name: '' }); setCrops([]); setServices([]); setAllowedIndices([]);
     setEstates([blankEstate()]); setGrouped(false); setPropOptions([]); setBlockKey(''); setEstateKey(''); setFilterKeys([]);
     setThresholds(DEFAULT_ALERT_THRESHOLDS); setFfill(false); setCred({ full_name: '', email: '', access_code: '', role: 'admin', label: 'Primary' });
     setLogoUrl('');
   };
 
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
-  // One link per entry point: the organisation dashboard, each crop portal and
-  // service, and one Smallholder hub link for all smallholder services.
+  // The organisation's own address (its hub with every service), then one
+  // link per service, and one Smallholder hub link for all smallholder services.
   const hasSmallholder = allowedModules.some(m => SMALLHOLDER_SERVICES.includes(m));
   const clientLinks = [
-    ...(accessModel === 'organization' ? [{ label: `${company.company_name} dashboard`, url: `${origin}/login?tenant=${slug}` }] : []),
+    { label: `${company.company_name}: all services`, url: `${origin}/org/${slug}/login` },
     ...allowedModules
-      .filter(m => !m.startsWith('custom-agromonitor') && !SMALLHOLDER_SERVICES.includes(m) && resolveModule(m))
+      .filter(m => !SMALLHOLDER_SERVICES.includes(m) && resolveModule(m))
       .map(m => ({ label: moduleName(m), url: `${origin}/login?module=${m}` })),
     ...(hasSmallholder ? [{ label: 'Smallholder (members, forms, monitoring, carbon, EUDR)', url: `${origin}/login?module=smallholder-hub` }] : []),
   ];
@@ -372,23 +372,11 @@ const Onboarding = () => {
         {step === 1 && (
           <Card>
             <div className="space-y-3">
-              <h2 className="text-lg font-semibold text-gray-900">How will {company.company_name} see the platform?</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {ACCESS_MODELS.map(m => (
-                  <button key={m.id} type="button" onClick={() => setAccessModel(m.id)} className={`text-left p-4 rounded-2xl border ${accessModel === m.id ? 'border-green-600 ring-1 ring-green-600 bg-green-50/40' : 'border-gray-200 hover:border-gray-300'}`}>
-                    <div className="text-sm font-semibold text-gray-900">{m.id === 'organization' ? 'One organisation dashboard' : 'A portal per crop'}</div>
-                    <div className="text-xs text-gray-500 mt-1">{m.id === 'organization' ? 'All estates and crops in one dashboard, like Okomu and Olam.' : 'A separate monitoring portal for each crop they grow.'}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-3">
               <h2 className="text-lg font-semibold text-gray-900">Crops</h2>
-              <p className="text-sm text-gray-500 -mt-1">{accessModel === 'crop' ? 'Each crop gets its own portal.' : 'Optional: the crops they grow (used for wording, indices and the data they will be asked for).'}</p>
+              <p className="text-sm text-gray-500 -mt-1">Each crop chosen becomes a monitoring service on their hub. Choose at least one crop or one service below.</p>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {ALL_CROPS.map(c => (
-                  <PhotoCard key={c} photo={CROP_PHOTOS[c]} title={CROP_LABELS[c]} on={crops.includes(c)} onClick={() => setCrops(l => toggleInList(l, c))} pages={accessModel === 'crop' ? CROP_PAGES : null} />
+                  <PhotoCard key={c} photo={CROP_PHOTOS[c]} title={CROP_LABELS[c]} on={crops.includes(c)} onClick={() => setCrops(l => toggleInList(l, c))} pages={CROP_PAGES} />
                 ))}
               </div>
             </div>
@@ -467,7 +455,7 @@ const Onboarding = () => {
                       {e.geojson ? (
                         <MapContainer preferCanvas center={[6.43, 5.27]} zoom={11} style={{ width: '100%', height: '100%' }} zoomControl={false} attributionControl={false}>
                           <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" maxZoom={19} />
-                          <GeoJSON data={e.geojson} style={{ color: '#16a34a', weight: 2, fillColor: '#22c55e', fillOpacity: 0.2 }} />
+                          <GeoJSON data={e.geojson} style={{ color: '#3F8432', weight: 2, fillColor: '#22c55e', fillOpacity: 0.2 }} />
                           <FitToBounds data={e.geojson} />
                         </MapContainer>
                       ) : <div className="h-full flex items-center justify-center text-xs text-gray-500">Map preview appears here</div>}
@@ -624,7 +612,7 @@ const Onboarding = () => {
               </div>
               <ul className="space-y-2 text-sm text-gray-700">
                 {[
-                  `${accessModel === 'organization' ? 'Organisation dashboard' : `${crops.length} crop portal${crops.length !== 1 ? 's' : ''}`}${services.length ? ` and ${services.length} service${services.length > 1 ? 's' : ''}` : ''}`,
+                  `${crops.length} crop monitoring service${crops.length !== 1 ? 's' : ''}${services.length ? ` and ${services.length} other service${services.length > 1 ? 's' : ''}` : ''}`,
                   `${done.farms.length} estate${done.farms.length !== 1 ? 's' : ''} with boundaries${grouped ? ', processed as one site' : ''}`,
                   blockKey ? `Blocks identified by "${blockKey}"${estateKey ? `, estates by "${estateKey}"` : ''}` : 'Blocks numbered automatically',
                   `Login: ${done.credential?.email || cred.email}${done.credential?.access_code ? ` · access code ${done.credential.access_code}` : ''}`,

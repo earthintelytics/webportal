@@ -95,7 +95,7 @@ import { fetchEstates } from '../../../services/estatesApi';
 import FarmDataPage from '../../data/FarmDataPage';
 import DataNeededDialog from '../../data/DataNeededDialog';
 import RegisterPage from '../../services/RegisterPage';
-import { CROP_CATALOG, ORGANISATION_PAGES, loadCropPages } from '../cropCatalog';
+import { CROP_CATALOG, loadCropPages } from '../cropCatalog';
 import CropGlossary from './CropGlossary';
 import ReportBuilder from '../../reports/ReportBuilder';
 import VerificationPage from '../../reports/VerificationPage';
@@ -192,8 +192,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
   const [dataFocus, setDataFocus] = useState(null);
   // Page set: a service's catalogue entry, or the crop's (backend catalogue,
   // admin-editable; interim copy from docs/services/*-monitoring.md until it is deployed).
-  // Organisation dashboards get the organisation page set (farmer wording, no service pages).
-  const [cropPages, setCropPages] = useState(() => (service ? null : mode === 'organization' ? ORGANISATION_PAGES : CROP_CATALOG[cropType] || null));
+  const [cropPages, setCropPages] = useState(() => (service ? null : CROP_CATALOG[cropType] || null));
   useEffect(() => {
     if (service || mode === 'organization') return undefined;
     let active = true;
@@ -1434,7 +1433,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
                 disabled={!entry.hasData}
                 title={!entry.hasData ? 'Not available for this farm yet' : isOnMap ? 'Hide from map' : 'Show on map'}
                 className="w-9 h-5 rounded-full p-0.5 transition-colors duration-200 shrink-0"
-                style={{ backgroundColor: isOnMap ? '#16A34A' : '#E5E7EB', cursor: entry.hasData ? 'pointer' : 'not-allowed' }}
+                style={{ backgroundColor: isOnMap ? '#3F8432' : '#E5E7EB', cursor: entry.hasData ? 'pointer' : 'not-allowed' }}
               >
                 <div style={{ transform: isOnMap ? 'translateX(16px)' : 'translateX(0)' }} className="w-4 h-4 rounded-full bg-white shadow transition-transform duration-200" />
               </button>
@@ -1920,7 +1919,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
     return (
       <Polygon
         positions={positions}
-        pathOptions={{ color: '#16A34A', weight: 2.5, fillColor: '#16A34A', fillOpacity: 0.08, dashArray: '6 4' }}
+        pathOptions={{ color: '#3F8432', weight: 2.5, fillColor: '#3F8432', fillOpacity: 0.08, dashArray: '6 4' }}
       />
     );
   };
@@ -2586,7 +2585,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
               onClick={togglePlay}
               title={isPlaying ? 'Pause' : 'Play'}
               className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-white shadow-sm transition-all hover:scale-105 active:scale-95"
-              style={{ backgroundColor: isCompareMode ? (activeDateSlot === 'A' ? '#16A34A' : '#2563EB') : '#16A34A' }}
+              style={{ backgroundColor: isCompareMode ? (activeDateSlot === 'A' ? '#3F8432' : '#2563EB') : '#3F8432' }}
             >
               {isPlaying ? <Pause size={14} /> : <Play size={15} />}
             </button>
@@ -2718,9 +2717,9 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
                     let btnClass = '';
 
                     if (isSelA && isSelB) {
-                      btnStyle = { background: 'linear-gradient(135deg, #16A34A 50%, #2563EB 50%)', color: '#FFFFFF' };
+                      btnStyle = { background: 'linear-gradient(135deg, #3F8432 50%, #2563EB 50%)', color: '#FFFFFF' };
                     } else if (isSelA) {
-                      btnStyle = { backgroundColor: '#16A34A', color: '#FFFFFF' };
+                      btnStyle = { backgroundColor: '#3F8432', color: '#FFFFFF' };
                     } else if (isSelB) {
                       btnStyle = { backgroundColor: '#2563EB', color: '#FFFFFF' };
                     } else if (isHL) {
@@ -3506,7 +3505,7 @@ Context: ${context}.`;
             <ArrowLeft size={17} />
           </button>
           <div className="flex items-center gap-3.5">
-            <div className={`w-11 h-11 rounded-xl flex items-center justify-center shadow-md ring-4 transition-all ${brandingMode === 'AM' ? 'ring-green-50' : 'ring-green-50'}`} style={{ backgroundColor: brandingMode === 'AM' ? '#16A34A' : '#2563EB' }}>
+            <div className={`w-11 h-11 rounded-xl flex items-center justify-center shadow-md ring-4 transition-all ${brandingMode === 'AM' ? 'ring-green-50' : 'ring-green-50'}`} style={{ backgroundColor: brandingMode === 'AM' ? '#3F8432' : '#2563EB' }}>
               <Satellite className="text-white" size={21} />
             </div>
             <div>
@@ -3620,7 +3619,7 @@ Context: ${context}.`;
             {showUserMenu && (
               <div className="absolute right-0 top-full mt-2.5 w-64 bg-white border border-gray-200 rounded-2xl shadow-2xl z-[500] overflow-hidden">
                 <div className="p-4 bg-gray-50/50 flex flex-col items-center text-center border-b border-gray-100">
-                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center font-bold text-white text-xl shadow-md mb-2.5" style={{ backgroundColor: brandingMode === 'AM' ? '#16A34A' : '#2563EB' }}>
+                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center font-bold text-white text-xl shadow-md mb-2.5" style={{ backgroundColor: brandingMode === 'AM' ? '#3F8432' : '#2563EB' }}>
                     {brandingMode === 'AM' ? 'AM' : 'FT'}
                   </div>
                   <div className="text-sm font-semibold text-gray-950">{profileName}</div>
@@ -3690,7 +3689,7 @@ Context: ${context}.`;
                         ? 'text-white shadow-sm'
                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                     }`}
-                    style={{ backgroundColor: activeSidebarItem === item.id ? (brandingMode === 'AM' ? '#16A34A' : '#2563EB') : undefined }}
+                    style={{ backgroundColor: activeSidebarItem === item.id ? (brandingMode === 'AM' ? '#3F8432' : '#2563EB') : undefined }}
                   >
                     <span className={activeSidebarItem === item.id ? 'text-white' : 'text-gray-600'}>
                       {item.icon}
@@ -3789,7 +3788,7 @@ Context: ${context}.`;
                         ? 'text-white shadow-sm'
                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                     }`}
-                    style={{ backgroundColor: activeSidebarItem === item.id ? (brandingMode === 'AM' ? '#16A34A' : '#2563EB') : undefined }}
+                    style={{ backgroundColor: activeSidebarItem === item.id ? (brandingMode === 'AM' ? '#3F8432' : '#2563EB') : undefined }}
                   >
                     <span className={activeSidebarItem === item.id ? 'text-white' : 'text-gray-600'}>
                       {item.icon}

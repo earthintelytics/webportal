@@ -35,7 +35,7 @@ async function adminFetch(path, options = {}) {
   if (res.status === 401) handleAdminAuthFailure();
   if (!res.ok) {
     const text = await res.text();
-    let msg = '';
+    let msg;
     let code = 'ERROR';
     try {
       const parsed = JSON.parse(text);
@@ -58,7 +58,16 @@ async function adminFetch(path, options = {}) {
         msg = text;
       }
     } catch {
-      msg = text || `Request failed with status ${res.status}`;
+      // An HTML page (proxy or server "Not Found") is never shown to the user.
+      const isHtml = /^\s*<(!doctype|html)/i.test(text);
+      if (res.status === 404 || res.status === 405) {
+        msg = 'This part of the backend is not available on this server yet.';
+        code = 'NOT_CONNECTED';
+      } else if (isHtml || !text) {
+        msg = `The server could not complete the request (error ${res.status}). Try again in a moment.`;
+      } else {
+        msg = text;
+      }
     }
     const err = new Error(msg);
     err.status = res.status;

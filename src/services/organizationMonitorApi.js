@@ -1,3 +1,4 @@
+import { redirectToTenantSignIn } from './session';
 /**
  * organizationMonitorApi.js
  * ─────────────────────────────────────────────────────────────────────────────
@@ -17,12 +18,7 @@ function handleTenantAuthFailure() {
     // Do not wipe admin sessions or redirect if an auxiliary tenant data call fails
     return;
   }
-  localStorage.removeItem('fi_token');
-  localStorage.removeItem('fi_user');
-  localStorage.removeItem('fi_tenant');
-  if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
-    window.location.href = '/login';
-  }
+  redirectToTenantSignIn();
 }
 
 /** Generic fetch helper with JSON parsing and error handling */

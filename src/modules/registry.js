@@ -1,5 +1,6 @@
 /**
- * The one place that says what each module ID opens (`/portal/<id>`).
+ * The one place that says what each module ID opens (`/org/<tenant>/<id>`,
+ * or `/tools/<id>` for team-only tools; URLs are built in src/routes/paths.js).
  *
  * Every portal is resolved here and nowhere else, so a page can never fall
  * through to another kind of page: an ID that is not listed opens nothing.
@@ -46,12 +47,7 @@ export function resolveModule(rawId) {
   return null;
 }
 
-/** Display name for sign-in pages; organisation dashboards get their own name. */
+/** Display name for sign-in pages. */
 export function moduleName(id) {
-  if (!id) return null;
-  if (id.startsWith('custom-agromonitor-')) {
-    const words = id.replace('custom-agromonitor-', '').split(/[_-]+/).filter(Boolean);
-    return `${words.map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')} monitoring`;
-  }
-  return resolveModule(id)?.name || null;
+  return id ? resolveModule(id)?.name || null : null;
 }

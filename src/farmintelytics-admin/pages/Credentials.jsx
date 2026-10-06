@@ -53,7 +53,7 @@ const Credentials = () => {
   };
 
   const grouped = useMemo(() => creds.reduce((acc, c) => { (acc[c.company_id] ||= []).push(c); return acc; }, {}), [creds]);
-  const link = (companyId) => `${window.location.origin}/login?tenant=${companyId}`;
+  const link = (companyId) => `${window.location.origin}/org/${companyId}/login`;
 
   return (
     <Page

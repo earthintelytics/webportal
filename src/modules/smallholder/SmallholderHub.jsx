@@ -2,10 +2,11 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { HERO_PLACEHOLDERS } from '../../constants/heroPlaceholders';
 import { SMALLHOLDER_SERVICES } from '../registry';
+import { serviceUrl } from '../../routes/paths';
 
 /**
  * Smallholder hub: the co-operative's services as photo cards. Each card opens
- * its service in the standard portal layout (`/portal/<id>`). A client sees
+ * its service in the standard portal layout (`/org/<tenant>/<id>`). A client sees
  * only the services its organisation is licensed for; the team sees all.
  */
 const SMALLHOLDER_CARDS = [
@@ -26,7 +27,7 @@ const SmallholderHub = ({ onBack, onSignOut }) => {
 
   const open = (id) => {
     sessionStorage.setItem('fi_smallholder_hub', '1');
-    navigate(`/portal/${id}`);
+    navigate(serviceUrl(id));
   };
 
   return (

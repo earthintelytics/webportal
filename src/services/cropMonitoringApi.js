@@ -1,3 +1,4 @@
+import { redirectToTenantSignIn } from './session';
 /**
  * cropMonitoringApi.js
  * API client for the crop-specific monitoring endpoints.
@@ -11,12 +12,7 @@
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '/farmintelytics-engine/agromonitoring';
 
 function handleTenantAuthFailure() {
-  localStorage.removeItem('fi_token');
-  localStorage.removeItem('fi_user');
-  localStorage.removeItem('fi_tenant');
-  if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
-    window.location.href = '/login';
-  }
+  redirectToTenantSignIn();
 }
 
 async function apiFetch(path, options = {}) {
