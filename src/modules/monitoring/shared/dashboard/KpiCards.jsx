@@ -1,8 +1,8 @@
 import { KPI_DEFS, kpisFor } from './kpiCatalog';
 
 /** The Overview KPI cards for one crop or service, from real data only. */
-const KpiCards = ({ serviceId, ctx }) => {
-  const kpis = kpisFor(serviceId);
+const KpiCards = ({ serviceId, cropType, ctx }) => {
+  const kpis = kpisFor(serviceId, cropType);
   return (
     <div className={`grid grid-cols-1 sm:grid-cols-2 ${kpis.length >= 4 ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-6`}>
       {kpis.map(({ id, label }) => {

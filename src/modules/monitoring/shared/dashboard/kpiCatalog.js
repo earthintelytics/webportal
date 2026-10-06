@@ -50,7 +50,7 @@ export const KPI_DEFS = {
     compute: (ctx) => {
       const s = classShares(ctx, ctx.waterKey);
       if (!s) return { missing: ctx.waterKey ? 'Waiting for the first satellite results' : 'No water layer for this crop' };
-      return { value: `${s.worst} of ${s.total}`, sub: s.worst ? 'Check irrigation, drainage or rainfall' : 'No block short of water' };
+      return { value: `${s.worst} of ${s.total}`, sub: s.worst ? 'Check irrigation, drainage or rainfall' : `None of your ${ctx.unitLabel} is short of water` };
     },
   },
   alerts: {
@@ -119,7 +119,22 @@ export const UNIT_LABEL = {
   'smallholder-eudr': 'parcels',
 };
 
-export function kpisFor(serviceId) {
-  const list = (serviceId && SERVICE_KPIS[serviceId]) || CROP_KPIS;
+// Each crop asks its own questions (docs/services/<crop>-monitoring.md).
+export const CROP_KPIS_BY_CROP = {
+  oil_palm: ['area', { id: 'condition', label: 'Blocks with a healthy canopy' }, { id: 'water', label: 'Blocks short of water' }, { id: 'alerts', label: 'Blocks to inspect' }],
+  cocoa: ['area', { id: 'condition', label: 'Farms with a healthy canopy' }, { id: 'water', label: 'Farms in dry-season stress' }, { id: 'alerts', label: 'Farms to visit' }],
+  rubber: ['area', { id: 'condition', label: 'Blocks in full leaf' }, { id: 'water', label: 'Blocks short of water' }, { id: 'alerts', label: 'Blocks to check' }],
+  cashew: ['area', { id: 'condition', label: 'Orchards in good condition' }, { id: 'water', label: 'Orchards short of water' }, { id: 'alerts', label: 'Orchards to check' }],
+  maize: ['area', { id: 'condition', label: 'Fields growing well' }, { id: 'water', label: 'Fields short of water' }, { id: 'alerts', label: 'Fields to act on' }],
+  rice: ['area', { id: 'condition', label: 'Fields growing well' }, { id: 'water', label: 'Fields without enough water' }, { id: 'alerts', label: 'Fields to act on' }],
+  cassava: ['area', { id: 'condition', label: 'Fields with good leaf cover' }, { id: 'water', label: 'Fields in drought' }, { id: 'alerts', label: 'Fields to visit' }],
+  sugarcane: ['area', { id: 'condition', label: 'Fields growing on track' }, { id: 'water', label: 'Fields to irrigate' }, { id: 'alerts', label: 'Fields to act on' }],
+};
+CROP_KPIS_BY_CROP.ffb = CROP_KPIS_BY_CROP.oil_palm;
+
+export const CROP_UNIT = { cocoa: 'farms', cashew: 'orchards', maize: 'fields', rice: 'fields', cassava: 'fields', sugarcane: 'fields' };
+
+export function kpisFor(serviceId, cropType) {
+  const list = (serviceId && SERVICE_KPIS[serviceId]) || CROP_KPIS_BY_CROP[cropType] || CROP_KPIS;
   return list.map((k) => (typeof k === 'string' ? { id: k } : k)).filter((k) => KPI_DEFS[k.id]);
 }

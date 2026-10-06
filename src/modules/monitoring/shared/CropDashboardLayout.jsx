@@ -105,7 +105,13 @@ import { Table2 as RegisterIcon, Users as MembersIcon, FileText as FormsIcon, In
 import MembersPage from '../../smallholder/pages/MembersPage';
 import KpiCards from './dashboard/KpiCards';
 import NewResultsBanner from './dashboard/NewResultsBanner';
-import { UNIT_LABEL } from './dashboard/kpiCatalog';
+import { UNIT_LABEL, CROP_UNIT } from './dashboard/kpiCatalog';
+import { Link } from 'react-router-dom';
+import AlertsPage from './dashboard/alerts/AlertsPage';
+import OverviewCharts from './dashboard/charts/OverviewCharts';
+import { chartsFor, healthChartsFor, waterChartsFor } from './dashboard/charts/chartCatalog';
+import { paths } from '../../../routes/paths';
+import { roleLabel } from '../../../pages/org/orgProfile';
 import GroupCarbonPage from '../../smallholder/pages/GroupCarbonPage';
 import EudrPassportPage from '../../smallholder/pages/EudrPassportPage';
 import FormsPage from '../../forms/FormsPage';
@@ -1149,12 +1155,6 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
 
 
   // Alerts Command Center redesigned states
-  const [alertsFilterSeverity, setAlertsFilterSeverity] = useState('All');
-  const [alertsFilterPlot, setAlertsFilterPlot] = useState('All');
-  const [alertsFilterCategory, setAlertsFilterCategory] = useState('All');
-  const [alertsFilterActiveOnly, setAlertsFilterActiveOnly] = useState(true);
-  const [selectedAlertPlot, setSelectedAlertPlot] = useState(null);
-  const [alertsSearch, setAlertsSearch] = useState('');
 
   // Dropdown layout states
   const [showEstateDropdown, setShowEstateDropdown] = useState(false);
@@ -1292,23 +1292,12 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
   const [moistureOpExpanded, setMoistureOpExpanded] = useState(true);
   const [moistureBioExpanded, setMoistureBioExpanded] = useState(true);
 
-  // New Settings Center states — profile comes from the authenticated session
-  const [profileName, setProfileName] = useState(() =>
-    localStorage.getItem('fi_full_name') || (localStorage.getItem('fi_email') || 'Account').split('@')[0]);
-  const [profileEmail, setProfileEmail] = useState(() => localStorage.getItem('fi_email') || '');
-  const [profileRole, setProfileRole] = useState(() => {
-    const r = localStorage.getItem('fi_role') || 'admin';
-    return r.charAt(0).toUpperCase() + r.slice(1);
-  });
-  const [brandingMode, setBrandingMode] = useState('AM'); // 'AM' or 'FT'
+  // The signed-in person, read-only here; it is changed at /org/<tenant>/settings.
+  const profileEmail = localStorage.getItem('fi_email') || '';
+  const profileName = localStorage.getItem('fi_full_name') || profileEmail.split('@')[0] || 'Account';
+  const profileRole = roleLabel(localStorage.getItem('fi_role') || 'admin');
+  const profileInitials = profileName.split(/[\s._-]+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase() || '?';
   const [showNotifications, setShowNotifications] = useState(false);
-  const [showSettingsModal, setShowSettingsModal] = useState(false);
-  const [settingsTab, setSettingsTab] = useState('profile');
-  const [defaultLat, setDefaultLat] = useState(7.145);
-  const [defaultLng, setDefaultLng] = useState(3.355);
-  const [defaultMapZoom, setDefaultMapZoom] = useState(14);
-  const [glassmorphismEnabled, setGlassmorphismEnabled] = useState(true);
-  const [showProfileSaved, setShowProfileSaved] = useState(false);
 
   // Collapsible sidebar section groups states (collapsed/false by default)
   const [intelOpExpanded, setIntelOpExpanded] = useState(false);
@@ -1536,7 +1525,6 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
   const [isFlushingCache, setIsFlushingCache] = useState(false);
   const [isCheckingSystem, setIsCheckingSystem] = useState(false);
 
-  const cardStyle = glassmorphismEnabled ? 'glass shadow-premium border border-white/20' : 'bg-white border border-gray-100 shadow-sm';
 
   const getHealthPlotStyleOutline = (plot) => {
     let color = '#000000';
@@ -2109,13 +2097,6 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
     });
   };
 
-  const handleAcknowledgeAllPlotAlerts = (plotId) => {
-    const idsToAck = alerts.filter(a => a.plot === plotId && a.status !== 'Acknowledged').map(a => a.id);
-    setAlerts(prev => prev.map(a => a.plot === plotId ? { ...a, status: 'Acknowledged' } : a));
-    Promise.all(idsToAck.map(id => api.acknowledgeAlert(id))).catch(err => {
-      console.error('Failed to acknowledge one or more alerts:', err);
-    });
-  };
 
   const handleProfileSave = (e) => {
     e.preventDefault();
@@ -2953,114 +2934,16 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
       classify,
       primaryKey: cropPrimaryIndex || keys[0] || null,
       waterKey: ['ndmi', 'lswi', 'smi'].find(k => keys.includes(k)) || null,
-      unitLabel: UNIT_LABEL[service?.id] || 'blocks',
+      unitLabel: UNIT_LABEL[service?.id] || (service ? null : CROP_UNIT[cropType]) || 'blocks',
       latestPass: currentTimeline?.label || null,
     };
-  }, [plotsData, stats, alerts, cropProfileEntries, cropPrimaryIndex, service?.id, currentTimeline]);
+  }, [plotsData, stats, alerts, cropProfileEntries, cropPrimaryIndex, service, cropType, currentTimeline]);
 
-  const yieldTrendsData = useMemo(() => {
-    // Real NDVI farm-average time series, one point per observation date —
-    // see overviewTrends above for why this no longer reads off TIMELINE_DATA/plots.
-    const series = overviewTrends.ndvi;
-    if (!series || series.length === 0) return { labels: [], datasets: [] };
-    return {
-      labels: series.map(t => t.label || t.date),
-      datasets: [{
-        label: 'NDVI (Farm Average)',
-        data: series.map(t => t.mean),
-        borderColor: '#16A34A',
-        backgroundColor: 'rgba(22, 163, 74, 0.06)',
-        tension: 0.4,
-        fill: true,
-        pointRadius: 4,
-        pointBackgroundColor: '#16A34A',
-      }]
-    };
-  }, [overviewTrends.ndvi]);
 
-  const ndmiTrendsData = useMemo(() => {
-    const series = overviewTrends.ndmi;
-    if (!series || series.length === 0) return { labels: [], datasets: [] };
-    return {
-      labels: series.map(t => t.label || t.date),
-      datasets: [{
-        label: 'NDMI (Farm Average)',
-        data: series.map(t => t.mean),
-        borderColor: '#0284C7',
-        backgroundColor: 'rgba(2, 132, 199, 0.06)',
-        tension: 0.4,
-        fill: true,
-        pointRadius: 4,
-        pointBackgroundColor: '#0284C7',
-      }]
-    };
-  }, [overviewTrends.ndmi]);
 
-  const rviTrendsData = useMemo(() => {
-    const series = overviewTrends.evi;
-    if (!series || series.length === 0) return { labels: [], datasets: [] };
-    return {
-      labels: series.map(t => t.label || t.date),
-      datasets: [{
-        label: 'EVI (Farm Average)',
-        data: series.map(t => t.mean),
-        borderColor: '#8B5CF6',
-        backgroundColor: 'rgba(139, 92, 246, 0.06)',
-        tension: 0.4,
-        fill: true,
-        pointRadius: 4,
-        pointBackgroundColor: '#8B5CF6',
-      }]
-    };
-  }, [overviewTrends.evi]);
 
-  const sarRviTrendsData = useMemo(() => {
-    // Was previously the EVI series mislabeled as "SAR RVI" on the
-    // Vigor & Phenology page — this is the actual Sentinel-1 RVI trend.
-    const series = overviewTrends.rvi;
-    if (!series || series.length === 0) return { labels: [], datasets: [] };
-    return {
-      labels: series.map(t => t.label || t.date),
-      datasets: [{
-        label: 'RVI (Farm Average, Sentinel-1)',
-        data: series.map(t => t.mean),
-        borderColor: '#2563EB',
-        backgroundColor: 'rgba(37, 99, 235, 0.06)',
-        tension: 0.4,
-        fill: true,
-        pointRadius: 4,
-        pointBackgroundColor: '#2563EB',
-      }]
-    };
-  }, [overviewTrends.rvi]);
 
-  const soilTempTrendsData = useMemo(() => {
-    // True soil temperature has no real per-plot source anywhere in the
-    // pipeline (see get_plots_telemetry). LST (surface temperature, from
-    // the Landsat thermal band) is the closest real measurement actually
-    // available — the card below is relabeled to say so rather than
-    // implying a soil-specific reading that doesn't exist.
-    const series = overviewTrends.lst;
-    if (!series || series.length === 0) return { labels: [], datasets: [] };
-    return {
-      labels: series.map(t => t.label || t.date),
-      datasets: [{
-        label: 'LST (Farm Average)',
-        data: series.map(t => t.mean),
-        borderColor: '#EA580C',
-        backgroundColor: 'rgba(234, 88, 12, 0.06)',
-        tension: 0.4,
-        fill: true,
-        pointRadius: 4,
-        pointBackgroundColor: '#EA580C',
-      }]
-    };
-  }, [overviewTrends.lst]);
 
-  const vpdTrendsData = useMemo(() => {
-    // VPD sensor data not yet connected — chart shows no data
-    return { labels: [], datasets: [] };
-  }, []);
 
   const moistureRetentionData = useMemo(() => {
     // Use real NDMI from plotsData — group into buckets by health classification
@@ -3137,48 +3020,9 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropSumm
     };
   }, [plotsData]);
 
-  const gddReferenceData = useMemo(() => {
-    // GDD accumulation sensor data not yet connected
-    return { labels: [], datasets: [] };
-  }, []);
 
-  const gddCompletionData = useMemo(() => {
-    // Use real NDVI from plotsData to show vegetation health completion proxy
-    if (!plotsData || plotsData.length === 0) return { labels: [], datasets: [{ data: [], backgroundColor: [], borderRadius: 8 }] };
-    const sample = plotsData.slice(0, 20);
-    return {
-      labels: sample.map(p => p.id),
-      datasets: [{
-        label: 'NDVI Score',
-        data: sample.map(p => Math.round((p.ndvi ?? 0) * 100)),
-        backgroundColor: sample.map(p => {
-          const v = p.ndvi ?? 0;
-          return v > 0.6 ? '#16A34A' : v > 0.4 ? '#EAB308' : '#EF4444';
-        }),
-        borderRadius: 4,
-      }]
-    };
-  }, [plotsData]);
 
-  const etTimeSeriesData = useMemo(() => {
-    // ET sensor data not yet connected
-    return { labels: [], datasets: [] };
-  }, []);
 
-  const alertsByCategoryData = useMemo(() => {
-    const categories = ['Water Stress', 'Pest Infestation', 'Growth Deficit', 'Cloud Cover'];
-    const counts = categories.map(cat => alerts.filter(a => a.category === cat).length);
-    return {
-      labels: categories,
-      datasets: [{
-        label: 'Alerts',
-        data: counts,
-        backgroundColor: ['#3b82f6', '#ef4444', '#f59e0b', '#10b981'],
-        borderWidth: 0,
-        borderRadius: 6
-      }]
-    };
-  }, [alerts]);
 
   const getPolygonColor = (plot, indexName) => blockColour(plot, String(indexName).toLowerCase()) || 'transparent';
 
@@ -3505,17 +3349,15 @@ Context: ${context}.`;
             <ArrowLeft size={17} />
           </button>
           <div className="flex items-center gap-3.5">
-            <div className={`w-11 h-11 rounded-xl flex items-center justify-center shadow-md ring-4 transition-all ${brandingMode === 'AM' ? 'ring-green-50' : 'ring-green-50'}`} style={{ backgroundColor: brandingMode === 'AM' ? '#3F8432' : '#2563EB' }}>
+            <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-green-700">
               <Satellite className="text-white" size={21} />
             </div>
             <div>
               <h1 className="text-base font-bold tracking-tight text-gray-900 leading-none flex items-center gap-1.5">
-                {tenantDisplayName} {service ? service.title : isOrg
-                  ? (brandingMode === 'AM' ? 'Agro Monitoring' : 'Farm Tools')
-                  : <>{cropLabel} {brandingMode === 'AM' ? 'Monitoring' : 'Farm Tools'}</>}
+                {service ? service.title : `${cropLabel} monitoring`}
               </h1>
-              <p className={`text-[11px] font-semibold mt-1 leading-none ${brandingMode === 'AM' ? 'text-green-600' : 'text-green-600'}`}>
-                {service ? service.subtitle : brandingMode === 'AM' ? 'Farm Intelligences' : 'Agricultural Operations Hub'}
+              <p className="text-xs font-medium mt-1 leading-none text-gray-500">
+                {tenantDisplayName}
               </p>
             </div>
           </div>
@@ -3575,7 +3417,7 @@ Context: ${context}.`;
               <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-gray-200 rounded-2xl shadow-2xl z-[500] overflow-hidden">
                 <div className="px-4 py-3.5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                   <div className="text-xs font-bold text-gray-700">Live Alerts Feed</div>
-                  <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${brandingMode === 'AM' ? 'bg-green-50 text-green-700' : 'bg-green-50 text-green-700'}`}>
+                  <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${'bg-green-50 text-green-700'}`}>
                     {alerts.filter(a => a.status === 'Active').length} Active
                   </span>
                 </div>
@@ -3610,38 +3452,40 @@ Context: ${context}.`;
             >
               <div className="text-right">
                 <div className="text-sm font-bold text-gray-900 leading-none">{profileName}</div>
-                <div className={`text-[11px] font-semibold mt-1 ${brandingMode === 'AM' ? 'text-green-600' : 'text-green-600'}`}>{profileRole}</div>
+                <div className="text-xs font-medium mt-1 text-gray-500">{profileRole}</div>
               </div>
-              <div className={`w-11 h-11 rounded-xl flex items-center justify-center font-bold text-sm shadow-sm border transition-all ${brandingMode === 'AM' ? 'text-green-700 border-green-200 bg-green-50' : 'text-green-700 border-green-200 bg-green-50'}`}>
-                {brandingMode === 'AM' ? 'AM' : 'FT'}
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center font-semibold text-sm border text-green-800 border-green-200 bg-green-50">
+                {profileInitials}
               </div>
             </button>
             {showUserMenu && (
               <div className="absolute right-0 top-full mt-2.5 w-64 bg-white border border-gray-200 rounded-2xl shadow-2xl z-[500] overflow-hidden">
                 <div className="p-4 bg-gray-50/50 flex flex-col items-center text-center border-b border-gray-100">
-                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center font-bold text-white text-xl shadow-md mb-2.5" style={{ backgroundColor: brandingMode === 'AM' ? '#3F8432' : '#2563EB' }}>
-                    {brandingMode === 'AM' ? 'AM' : 'FT'}
+                  <div className="w-14 h-14 rounded-2xl flex items-center justify-center font-semibold text-white text-lg mb-2.5 bg-green-700">
+                    {profileInitials}
                   </div>
                   <div className="text-sm font-semibold text-gray-950">{profileName}</div>
                   <div className="text-[11px] font-semibold text-gray-600 mt-0.5">{profileEmail}</div>
-                  <span className={`inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full mt-2 border ${brandingMode === 'AM' ? 'bg-green-50 text-green-700 border-green-150' : 'bg-green-50 text-green-700 border-green-100'}`}>
+                  <span className={`inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full mt-2 border bg-green-50 text-green-800 border-green-200`}>
                     {profileRole}
                   </span>
                 </div>
                 <div className="p-1.5 space-y-0.5">
-                  <button
-                    onClick={() => { setShowUserMenu(false); setShowSettingsModal(true); }}
-                    className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm font-bold text-gray-700 hover:bg-gray-50 rounded-xl transition-all"
-                  >
-                    <Settings2 size={15} className="text-gray-600" />
-                    Settings Center
-                  </button>
+                  {tenant && (
+                    <Link
+                      to={paths.orgSettings(tenant)}
+                      className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 rounded-xl"
+                    >
+                      <Settings2 size={15} className="text-gray-500" />
+                      Settings
+                    </Link>
+                  )}
                   <button
                     onClick={() => { setShowUserMenu(false); onSignOut(); }}
-                    className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm font-bold text-green-700 hover:bg-green-50 rounded-xl transition-all"
+                    className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 rounded-xl"
                   >
-                    <LogOut size={15} />
-                    Sign Out
+                    <LogOut size={15} className="text-gray-500" />
+                    Sign out
                   </button>
                 </div>
               </div>
@@ -3689,7 +3533,7 @@ Context: ${context}.`;
                         ? 'text-white shadow-sm'
                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                     }`}
-                    style={{ backgroundColor: activeSidebarItem === item.id ? (brandingMode === 'AM' ? '#3F8432' : '#2563EB') : undefined }}
+                    style={{ backgroundColor: activeSidebarItem === item.id ? ('#3F8432') : undefined }}
                   >
                     <span className={activeSidebarItem === item.id ? 'text-white' : 'text-gray-600'}>
                       {item.icon}
@@ -3788,7 +3632,7 @@ Context: ${context}.`;
                         ? 'text-white shadow-sm'
                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                     }`}
-                    style={{ backgroundColor: activeSidebarItem === item.id ? (brandingMode === 'AM' ? '#3F8432' : '#2563EB') : undefined }}
+                    style={{ backgroundColor: activeSidebarItem === item.id ? ('#3F8432') : undefined }}
                   >
                     <span className={activeSidebarItem === item.id ? 'text-white' : 'text-gray-600'}>
                       {item.icon}
@@ -3927,239 +3771,43 @@ Context: ${context}.`;
                 {activeAnalyticsSubpage === 'overview' && (
                   <div className="space-y-10">
                     {/* KPI cards: chosen per crop or service (dashboard/kpiCatalog.js) */}
-                    <KpiCards serviceId={service?.id} ctx={kpiContext} />
+                    <KpiCards serviceId={service?.id} cropType={cropType} ctx={kpiContext} />
 
-                    {/* 4-Chart Overview Grid */}
-                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
-                      {/* Vegetation Vigor & Health Trends */}
-                      <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm space-y-5">
-                        <div className="flex justify-between items-center">
-                          <h3 className="text-base font-bold text-gray-900 flex items-center gap-2.5">
-                            <TrendingUp size={18} className="text-green-600" />
-                            Geospatial Vegetation Vigor & Health Trends {renderInfoTooltip("Geospatial Vegetation Vigor & Health Trends")}
-                          </h3>
-                          <span className="text-xs bg-green-50 text-green-700 font-bold px-3 py-1 rounded-full tracking-wide">
-                            NDVI
-                          </span>
-                        </div>
-                        <div className="h-[280px]">
-                          <Line data={yieldTrendsData} options={{ ...CHART_DEFAULTS, scales: { ...CHART_DEFAULTS.scales, y: { ...CHART_DEFAULTS.scales.y, min: 0.2, max: 1.0 } } }} />
-                        </div>
-                      </div>
-
-                      {/* Moisture Retention (NDMI) Trends */}
-                      <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm space-y-5">
-                        <div className="flex justify-between items-center">
-                          <h3 className="text-base font-bold text-gray-900 flex items-center gap-2.5">
-                            <Droplets size={18} className="text-green-600" />
-                            Canopy Moisture Retention (NDMI) Trends {renderInfoTooltip("Moisture Retention (NDMI)")}
-                          </h3>
-                          <span className="text-xs bg-green-50 text-green-700 font-bold px-3 py-1 rounded-full tracking-wide">
-                            NDMI
-                          </span>
-                        </div>
-                        <div className="h-[280px]">
-                          <Line data={ndmiTrendsData} options={{ ...CHART_DEFAULTS, scales: { ...CHART_DEFAULTS.scales, y: { ...CHART_DEFAULTS.scales.y, min: 0.1, max: 0.7 } } }} />
-                        </div>
-                      </div>
-
-                      {/* Land Surface Temperature Trends */}
-                      <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm space-y-5">
-                        <div className="flex justify-between items-center">
-                          <h3 className="text-base font-bold text-gray-900 flex items-center gap-2.5">
-                            <Thermometer size={18} className="text-green-600" />
-                            Land Surface Temperature Trends {renderInfoTooltip("Land Surface Temperature Trends")}
-                          </h3>
-                          <span className="text-xs bg-green-50 text-green-700 font-bold px-3 py-1 rounded-full tracking-wide">
-                            LST °C
-                          </span>
-                        </div>
-                        <div className="h-[280px] relative">
-                          {soilTempTrendsData.labels.length === 0 ? (
-                            <div className="absolute inset-0 flex items-center justify-center text-xs text-gray-500 font-medium text-center px-6">
-                              No Landsat thermal-band imagery in the archive yet for this farm.
-                            </div>
-                          ) : (
-                            <Line data={soilTempTrendsData} options={{ ...CHART_DEFAULTS, scales: { ...CHART_DEFAULTS.scales, y: { ...CHART_DEFAULTS.scales.y, min: 15, max: 45 } } }} />
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Vapor Pressure Deficit Stress Trends */}
-                      <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm space-y-5">
-                        <div className="flex justify-between items-center">
-                          <h3 className="text-base font-bold text-gray-900 flex items-center gap-2.5">
-                            <Wind size={18} className="text-purple-500" />
-                            Vapor Pressure Deficit (VPD) Stress Trends {renderInfoTooltip("Vapor Pressure Deficit (VPD)")}
-                          </h3>
-                          <span className="text-xs bg-green-50 text-green-700 font-bold px-3 py-1 rounded-full tracking-wide">
-                            VPD kPa
-                          </span>
-                        </div>
-                        <div className="h-[280px] relative">
-                          <div className="absolute inset-0 flex items-center justify-center text-xs text-gray-500 font-medium text-center px-6">
-                            No VPD source connected yet — this needs a humidity feed the pipeline doesn't fetch today.
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                    {/* Charts chosen per crop or service (dashboard/charts/chartCatalog.js) */}
+                    <OverviewCharts
+                      charts={chartsFor(service?.id, cropType)}
+                      trends={overviewTrends}
+                      plots={plotsData}
+                      classify={kpiContext.classify}
+                      valueOf={blockValue}
+                      primaryKey={kpiContext.primaryKey}
+                      unitLabel={kpiContext.unitLabel}
+                    />
                   </div>
                 )}
 
                 {activeAnalyticsSubpage === 'vigor-health' && (
-                  <div className="space-y-10">
-                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-                      {/* Crop Yield & Health Trends */}
-                      <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm space-y-5">
-                        <div className="flex justify-between items-center">
-                          <h3 className="text-base font-bold text-gray-900 flex items-center gap-2.5">
-                            <TrendingUp size={18} className="text-green-600" />
-                            Geospatial Vegetation Vigor & Health Trends {renderInfoTooltip("Geospatial Vegetation Vigor & Health Trends")}</h3>
-                          <span className="text-xs bg-green-50 text-green-700 font-bold px-3 py-1 rounded-full tracking-wide">
-                            NDVI Normalized
-                          </span>
-                        </div>
-                        <div className="h-[300px]">
-                          <Line
-                            data={yieldTrendsData}
-                            options={{ ...CHART_DEFAULTS, scales: { ...CHART_DEFAULTS.scales, y: { ...CHART_DEFAULTS.scales.y, min: 0.2, max: 1.0 } } }}
-                          />
-                        </div>
-                      </div>
-
-                      {/* GDD Reference Curve */}
-                      <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm space-y-5">
-                        <div className="flex justify-between items-center">
-                          <h3 className="text-base font-bold text-gray-900 flex items-center gap-2.5">
-                            <Activity size={18} className="text-green-600" />
-                            Seasonal Trajectory vs GDD Reference Curve {renderInfoTooltip("Seasonal Trajectory vs GDD Reference Curve")}</h3>
-                          <span className="text-xs bg-green-50 text-green-700 font-bold px-3 py-1 rounded-full tracking-wide">
-                            GDD Model
-                          </span>
-                        </div>
-                        <div className="h-[300px]">
-                          <Line
-                            data={gddReferenceData}
-                            options={CHART_DEFAULTS}
-                          />
-                        </div>
-                      </div>
-
-                      {/* Radar Vegetation Index (RVI) Growth Trends */}
-                      <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm space-y-5">
-                        <div className="flex justify-between items-center">
-                          <h3 className="text-base font-bold text-gray-900 flex items-center gap-2.5">
-                            <TrendingUp size={18} className="text-green-600" />
-                            Radar Vegetation Index (RVI) Growth Trends {renderInfoTooltip("Radar Vegetation Index (RVI)")}</h3>
-                          <span className="text-xs bg-green-50 text-green-700 font-bold px-3 py-1 rounded-full tracking-wide">
-                            SAR RVI
-                          </span>
-                        </div>
-                        <div className="h-[300px]">
-                          <Line
-                            data={sarRviTrendsData}
-                            options={{ ...CHART_DEFAULTS, scales: { ...CHART_DEFAULTS.scales, y: { ...CHART_DEFAULTS.scales.y, min: 0.0, max: 2.0 } } }}
-                          />
-                        </div>
-                      </div>
-
-                      {/* GDD Completion Rate */}
-                      <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm space-y-5">
-                        <div className="flex justify-between items-center">
-                          <h3 className="text-base font-bold text-gray-900 flex items-center gap-2.5">
-                            <Activity size={18} className="text-green-600" />
-                            Plot-by-Plot Growing Degree Days (GDD) Completion Rate {renderInfoTooltip("Plot-by-Plot Growing Degree Days (GDD) Completion Rate")}</h3>
-                          <span className="text-xs bg-green-50 text-green-700 font-bold px-3 py-1 rounded-full tracking-wide">
-                            Thermal Units
-                          </span>
-                        </div>
-                        <div className="h-[300px]">
-                          <Bar
-                            data={gddCompletionData}
-                            options={CHART_DEFAULTS}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <OverviewCharts
+                    charts={healthChartsFor(service?.id, cropType)}
+                    trends={overviewTrends}
+                    plots={plotsData}
+                    classify={kpiContext.classify}
+                    valueOf={blockValue}
+                    primaryKey={kpiContext.primaryKey}
+                    unitLabel={kpiContext.unitLabel}
+                  />
                 )}
 
                 {activeAnalyticsSubpage === 'moisture-et' && (
-                  <div className="space-y-10">
-                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-                      {/* ET Time Series Chart */}
-                      <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm space-y-5">
-                        <div className="flex justify-between items-center">
-                          <h3 className="text-base font-bold text-gray-900 flex items-center gap-2.5">
-                            <Droplets size={18} className="text-green-600" />
-                            FAO-56 Evapotranspiration Model {renderInfoTooltip("FAO-56 Evapotranspiration Model")}</h3>
-                          <span className="text-xs bg-green-50 text-green-700 font-bold px-3 py-1 rounded-full tracking-wide">
-                            ETc vs ETa
-                          </span>
-                        </div>
-                        <div className="h-[300px]">
-                          <Line
-                            data={etTimeSeriesData}
-                            options={CHART_DEFAULTS}
-                          />
-                        </div>
-                      </div>
-
-                      {/* Canopy Moisture Retention (NDMI) Trends */}
-                      <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm space-y-5">
-                        <div className="flex justify-between items-center">
-                          <h3 className="text-base font-bold text-gray-900 flex items-center gap-2.5">
-                            <Droplets size={18} className="text-green-600" />
-                            Canopy Moisture Retention (NDMI) Trends {renderInfoTooltip("Moisture Retention (NDMI)")}</h3>
-                          <span className="text-xs bg-green-50 text-green-700 font-bold px-3 py-1 rounded-full tracking-wide">
-                            NDMI
-                          </span>
-                        </div>
-                        <div className="h-[300px]">
-                          <Line
-                            data={ndmiTrendsData}
-                            options={{ ...CHART_DEFAULTS, scales: { ...CHART_DEFAULTS.scales, y: { ...CHART_DEFAULTS.scales.y, min: 0.1, max: 0.7 } } }}
-                          />
-                        </div>
-                      </div>
-
-                      {/* Soil Temperature Trends */}
-                      <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm space-y-5">
-                        <div className="flex justify-between items-center">
-                          <h3 className="text-base font-bold text-gray-900 flex items-center gap-2.5">
-                            <Sun size={18} className="text-green-600" />
-                            Soil Temperature Trends {renderInfoTooltip("Soil Temp")}</h3>
-                          <span className="text-xs bg-green-50 text-green-700 font-bold px-3 py-1 rounded-full tracking-wide">
-                            Soil Temp
-                          </span>
-                        </div>
-                        <div className="h-[300px]">
-                          <Line
-                            data={soilTempTrendsData}
-                            options={CHART_DEFAULTS}
-                          />
-                        </div>
-                      </div>
-
-                      {/* VPD Stress Trends */}
-                      <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm space-y-5">
-                        <div className="flex justify-between items-center">
-                          <h3 className="text-base font-bold text-gray-900 flex items-center gap-2.5">
-                            <Activity size={18} className="text-green-600" />
-                            Vapor Pressure Deficit (VPD) Stress Trends {renderInfoTooltip("VPD Stress")}</h3>
-                          <span className="text-xs bg-green-50 text-green-700 font-bold px-3 py-1 rounded-full tracking-wide">
-                            VPD Index
-                          </span>
-                        </div>
-                        <div className="h-[300px]">
-                          <Line
-                            data={vpdTrendsData}
-                            options={CHART_DEFAULTS}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <OverviewCharts
+                    charts={waterChartsFor(service?.id, cropType)}
+                    trends={overviewTrends}
+                    plots={plotsData}
+                    classify={kpiContext.classify}
+                    valueOf={blockValue}
+                    primaryKey={kpiContext.primaryKey}
+                    unitLabel={kpiContext.unitLabel}
+                  />
                 )}
 
                 {activeAnalyticsSubpage === 'et-log' && (
@@ -5636,341 +5284,15 @@ Context: ${context}.`;
               ALERTS COMMAND CENTER
           ══════════════════════════════════════════════════════════════ */}
           {activeSidebarItem === 'alerts' && (
-            <div className="flex flex-col h-full relative" style={{ minHeight: 0 }}>
-              <style>{`
-                /* Solid severity border instead of a pulsing glow — a whole
-                   list of glowing cards competed with the map for attention. */
-                .pulse-critical { border-color: var(--status-critical); border-width: 2px; }
-                .pulse-warning  { border-color: var(--status-warning); border-width: 2px; }
-                .alerts-list-scroll::-webkit-scrollbar { width: 4px; }
-                .alerts-list-scroll::-webkit-scrollbar-track { background: transparent; }
-                .alerts-list-scroll::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
-                .alerts-detail-scroll::-webkit-scrollbar { width: 4px; }
-                .alerts-detail-scroll::-webkit-scrollbar-track { background: transparent; }
-                .alerts-detail-scroll::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
-              `}</style>
-
-              {/* ── TOP HEADER BAR ── */}
-              <div className="px-8 pt-7 pb-5 border-b border-gray-100 flex items-center justify-between gap-4 shrink-0 bg-white">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: '#FEF2F2', border: '1px solid #FCA5A5' }}>
-                    <AlertTriangle size={18} className="text-green-700" />
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-bold text-gray-900 tracking-tight leading-none">Alerts Command Center</h2>
-                    <p className="text-[11px] font-bold text-green-600 mt-0.5">Live Anomaly Intelligence · Farmintelytics Agro Node</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 shrink-0">
-                  <div className="bg-white px-4 py-2 rounded-xl border border-gray-200 shadow-sm flex items-center gap-2.5">
-                    <span className="w-2 h-2 rounded-full bg-status-live animate-pulse shrink-0" />
-                    <div>
-                      <span className="text-[11px] font-bold text-gray-600 block">Operational Status</span>
-                      <span className="text-xs font-bold text-gray-800">{alerts.filter(a => a.status === 'Active').length} Active Anomalies</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* ── MAIN TWO-COLUMN BODY ── */}
-              <div className="flex flex-1 min-h-0 overflow-hidden">
-
-                {/* ═══ LEFT COLUMN: Search + Plot Issue List ═══ */}
-                <div className="w-[270px] shrink-0 bg-gray-50 border-r border-gray-150 flex flex-col">
-
-                  {/* Search bar */}
-                  <div className="p-4 border-b border-gray-150 space-y-3">
-                    <div className="relative">
-                      <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600 pointer-events-none" />
-                      <input
-                        id="alerts-search-input"
-                        type="text"
-                        value={alertsSearch}
-                        onChange={e => setAlertsSearch(e.target.value)}
-                        placeholder="Search plots..."
-                        className="w-full pl-8 pr-3 py-2 text-xs font-medium text-gray-700 bg-white border border-gray-200 rounded-xl outline-none focus:border-red-300 focus:ring-2 focus:ring-red-50 transition-all placeholder-gray-400"
-                      />
-                      {alertsSearch && (
-                        <button onClick={() => setAlertsSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-800 transition-colors">
-                          <X size={12} />
-                        </button>
-                      )}
-                    </div>
-
-                    {/* Severity mini-filters */}
-                    <div className="flex items-center gap-1.5">
-                      {['All', 'Critical', 'Warning', 'Info'].map(sev => {
-                        const activeColor = sev === 'Critical' ? 'bg-green-600 text-white' : sev === 'Warning' ? 'bg-green-500 text-white' : sev === 'Info' ? 'bg-green-500 text-white' : 'bg-gray-800 text-white';
-                        return (
-                          <button
-                            key={sev}
-                            onClick={() => setAlertsFilterSeverity(sev)}
-                            className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${alertsFilterSeverity === sev ? activeColor : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-100'}`}
-                          >
-                            {sev}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Plots with issues list */}
-                  <div className="flex-1 overflow-y-auto alerts-list-scroll p-3 space-y-2">
-                    {(() => {
-                      // Use real plots from backend instead of hardcoded fake plot names
-                      const PLOT_DEFS = plotsData.map(p => ({
-                        id: p.id,
-                        name: p.name || p.id,
-                        estate: p.subfarm || tenantDisplayName,
-                        ndvi: p.ndvi ?? 0
-                      }));
-
-                      const searchLower = alertsSearch.toLowerCase();
-
-                      const plotsWithIssues = PLOT_DEFS
-                        .map(p => {
-                          const rawAlerts = alerts.filter(a => a.plot === p.id);
-                          const active = rawAlerts.filter(a => {
-                            if (a.status !== 'Active') return false;
-                            if (alertsFilterSeverity !== 'All' && a.severity !== alertsFilterSeverity) return false;
-                            return true;
-                          });
-                          const critCount = rawAlerts.filter(a => a.status === 'Active' && a.severity === 'Critical').length;
-                          const warnCount = rawAlerts.filter(a => a.status === 'Active' && a.severity === 'Warning').length;
-                          const infoCount = rawAlerts.filter(a => a.status === 'Active' && a.severity === 'Info').length;
-                          return { ...p, active, critCount, warnCount, infoCount, total: active.length };
-                        })
-                        .filter(p => p.total > 0)
-                        .filter(p => !searchLower || p.name.toLowerCase().includes(searchLower) || p.id.toLowerCase().includes(searchLower));
-
-                      if (plotsWithIssues.length === 0) {
-                        return (
-                          <div className="flex flex-col items-center justify-center h-full py-12 text-center px-4">
-                            <div className="w-12 h-12 rounded-full bg-green-50 border border-green-200 flex items-center justify-center mb-3">
-                              <CheckCircle2 size={20} className="text-green-600" />
-                            </div>
-                            <p className="text-xs font-bold text-gray-500">No issues found</p>
-                            <p className="text-[11px] text-gray-600 mt-1">All plots are operating normally</p>
-                          </div>
-                        );
-                      }
-
-                      return plotsWithIssues.map(p => {
-                        const isCrit = p.critCount > 0;
-                        const isWarn = p.warnCount > 0 && !isCrit;
-                        const isSelected = selectedAlertPlot === p.id;
-
-                        const dotColor = isCrit ? 'bg-status-critical' : isWarn ? 'bg-status-warning' : 'bg-status-info';
-                        const badgeBg = isCrit ? 'bg-white text-status-critical border-status-critical' : isWarn ? 'bg-white text-status-warning border-status-warning' : 'bg-white text-status-info border-status-info';
-
-                        return (
-                          <button
-                            key={p.id}
-                            id={`alert-plot-row-${p.id.toLowerCase()}`}
-                            onClick={() => setSelectedAlertPlot(isSelected ? null : p.id)}
-                            className={`w-full text-left bg-white rounded-xl border border-gray-200 p-3.5 transition-all hover:shadow-md active:scale-[0.98] ${isSelected ? 'ring-2 ring-gray-900 ring-offset-1 shadow-md' : 'shadow-sm hover:border-gray-300'}`}
-                          >
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="flex items-start gap-2.5 min-w-0">
-                                <div className={`w-2 h-2 rounded-full mt-1 shrink-0 ${dotColor} ${isCrit || isWarn ? 'animate-pulse' : ''}`} />
-                                <div className="min-w-0">
-                                  <div className="text-xs font-semibold text-gray-900 leading-tight truncate">{p.name}</div>
-                                  <div className="text-[11px] text-gray-600 font-bold mt-0.5 truncate">{p.id} · {p.estate}</div>
-                                </div>
-                              </div>
-                              <div className={`shrink-0 text-[11px] font-bold px-2 py-0.5 rounded-full border ${badgeBg}`}>
-                                {p.total} {p.total === 1 ? 'issue' : 'issues'}
-                              </div>
-                            </div>
-
-                            {/* Mini severity badges */}
-                            <div className="flex items-center gap-1.5 mt-2.5 pl-4.5">
-                              {p.critCount > 0 && <span className="text-[11px] font-bold bg-green-50 text-green-700 border border-green-200 px-1.5 py-0.5 rounded-full">{p.critCount} Critical</span>}
-                              {p.warnCount > 0 && <span className="text-[11px] font-bold bg-green-50 text-green-700 border border-green-200 px-1.5 py-0.5 rounded-full">{p.warnCount} Warning</span>}
-                              {p.infoCount > 0 && <span className="text-[11px] font-bold bg-green-50 text-green-700 border border-green-200 px-1.5 py-0.5 rounded-full">{p.infoCount} Info</span>}
-                            </div>
-                          </button>
-                        );
-                      });
-                    })()}
-                  </div>
-
-
-                </div>
-
-                {/* ═══ RIGHT COLUMN: Full Detail Report ═══ */}
-                <div className="flex-1 min-w-0 overflow-y-auto alerts-detail-scroll bg-white">
-                  {selectedAlertPlot === null ? (
-                    /* Empty state – no plot selected */
-                    <div className="flex flex-col items-center justify-center h-full text-center px-8">
-                      <div className="w-20 h-20 rounded-2xl bg-gray-50 border border-gray-150 flex items-center justify-center mb-5 shadow-sm">
-                        <AlertTriangle size={32} className="text-gray-500" />
-                      </div>
-                      <h3 className="text-base font-bold text-gray-700 mb-1.5">Select a plot to view the full incident report</h3>
-                      <p className="text-sm text-gray-600 font-medium max-w-sm leading-relaxed">
-                        Click any plot row on the left to load its chronological anomaly log, response protocols, and remediation actions.
-                      </p>
-                    </div>
-                  ) : (
-                    /* Detail report */
-                    (() => {
-                      // Look up real plot from plotsData
-                      const realPlot = plotsData.find(p => p.id === selectedAlertPlot);
-                      const meta = realPlot
-                        ? { name: realPlot.name || realPlot.id, estate: realPlot.subfarm || tenantDisplayName, ndvi: realPlot.ndvi ?? 0 }
-                        : { name: selectedAlertPlot, estate: tenantDisplayName, ndvi: 0 };
-                      const plotAlerts = alerts.filter(a => a.plot === selectedAlertPlot);
-                      const activePlotAlerts = plotAlerts.filter(a => a.status === 'Active');
-                      const critCount = activePlotAlerts.filter(a => a.severity === 'Critical').length;
-                      const warnCount = activePlotAlerts.filter(a => a.severity === 'Warning').length;
-                      const ndviColor = meta.ndvi > 0.7 ? '#10B981' : meta.ndvi > 0.5 ? '#F59E0B' : '#EF4444';
-
-                      return (
-                        <div className="p-7 space-y-6 animate-in slide-in-from-right duration-300">
-                          {/* Detail header */}
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="space-y-1">
-                              <div className="flex items-center gap-2">
-                                {critCount > 0 ? (
-                                  <span className="w-2.5 h-2.5 rounded-full bg-status-live animate-pulse shrink-0" />
-                                ) : warnCount > 0 ? (
-                                  <span className="w-2.5 h-2.5 rounded-full bg-status-live animate-pulse shrink-0" />
-                                ) : (
-                                  <span className="w-2.5 h-2.5 rounded-full bg-green-400 shrink-0" />
-                                )}
-                                <h3 className="text-xl font-semibold text-gray-950 tracking-tight leading-tight">{meta.name}</h3>
-                              </div>
-                              <span className="text-[11px] text-gray-600 font-bold block">{meta.estate}</span>
-                            </div>
-                            <button
-                              id="alerts-close-detail"
-                              onClick={() => setSelectedAlertPlot(null)}
-                              className="p-2 rounded-xl hover:bg-gray-100 text-gray-600 hover:text-gray-700 transition-all"
-                            >
-                              <X size={16} />
-                            </button>
-                          </div>
-
-                          {/* Stats row */}
-                          <div className="grid grid-cols-4 gap-3">
-                            {[
-                              { label: 'Active Incidents', value: activePlotAlerts.length, color: activePlotAlerts.length > 0 ? 'text-green-700' : 'text-gray-600', bg: activePlotAlerts.length > 0 ? 'bg-green-50/70 border-green-100' : 'bg-gray-50/50 border-gray-150' },
-                              { label: 'Critical', value: critCount, color: critCount > 0 ? 'text-green-700' : 'text-gray-600', bg: critCount > 0 ? 'bg-green-50/70 border-green-100' : 'bg-gray-50/50 border-gray-150' },
-                              { label: 'Warning', value: warnCount, color: warnCount > 0 ? 'text-green-700' : 'text-gray-600', bg: warnCount > 0 ? 'bg-green-50/70 border-green-100' : 'bg-gray-50/50 border-gray-150' },
-                              { label: 'Acknowledged', value: plotAlerts.length - activePlotAlerts.length, color: (plotAlerts.length - activePlotAlerts.length) > 0 ? 'text-green-700' : 'text-gray-600', bg: (plotAlerts.length - activePlotAlerts.length) > 0 ? 'bg-green-50/70 border-green-100' : 'bg-gray-50/50 border-gray-150' }
-                            ].map((s, i) => (
-                              <div key={i} className={`${s.bg} border rounded-xl p-3 text-center`}>
-                                <div className={`text-xl font-bold ${s.color}`}>{s.value}</div>
-                                <div className="text-[11px] font-bold text-gray-600 mt-0.5">{s.label}</div>
-                              </div>
-                            ))}
-                          </div>
-
-                          {/* NDVI bar */}
-                          <div className="bg-gray-50 rounded-xl p-4 border border-gray-100 space-y-2">
-                            <div className="flex justify-between items-center text-xs font-bold">
-                              <span className="text-gray-500">Current Crop Vigor (NDVI)</span>
-                              <span style={{ color: ndviColor }}>{meta.ndvi}</span>
-                            </div>
-                            <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                              <div className="h-full rounded-full transition-all duration-700" style={{ width: `${meta.ndvi * 100}%`, backgroundColor: ndviColor }} />
-                            </div>
-                            <div className="flex justify-between text-[11px] text-gray-600 font-bold">
-                              <span>0.0 — Poor</span>
-                              <span>0.5 — Moderate</span>
-                              <span>1.0 — Excellent</span>
-                            </div>
-                          </div>
-
-                          {/* Action buttons */}
-                          <div className="flex items-center gap-3">
-                            <button
-                              onClick={() => {
-                                setActiveSidebarItem('intelligence-layers');
-                                setSelectedPlot(selectedAlertPlot);
-                              }}
-                              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-xs font-bold text-gray-700 transition-all shadow-sm active:scale-95"
-                            >
-                              <MapPin size={13} className="text-green-600" /> Locate on Map
-                            </button>
-                            {activePlotAlerts.length > 0 && (
-                              <button
-                                onClick={() => handleAcknowledgeAllPlotAlerts(selectedAlertPlot)}
-                                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-xs font-bold text-white transition-all shadow-md active:scale-95"
-                              >
-                                <CheckCircle2 size={13} /> Acknowledge All Issues
-                              </button>
-                            )}
-                          </div>
-
-                          {/* Timeline */}
-                          <div className="space-y-3">
-                            <h4 className="text-[11px] font-semibold text-gray-600 flex items-center gap-2">
-                              <span>Chronological Incident Log</span>
-                              <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-[11px]">{plotAlerts.length} entries</span>
-                            </h4>
-
-                            <div className="relative border-l border-gray-200 pl-6 ml-2 space-y-5">
-                              {plotAlerts.map((alert) => {
-                                const isActive = alert.status === 'Active';
-                                const isCrit = alert.severity === 'Critical';
-                                let severityColor = 'bg-green-50 text-green-700 border-green-200';
-                                let dotColor = isCrit ? 'bg-status-critical' : alert.severity === 'Warning' ? 'bg-status-warning' : 'bg-status-info';
-                                if (isCrit) severityColor = 'bg-white text-status-critical border-status-critical';
-                                else if (alert.severity === 'Warning') severityColor = 'bg-white text-status-warning border-status-warning';
-
-                                return (
-                                  <div key={alert.id} className="relative">
-                                    {/* Dot */}
-                                    <div className="absolute -left-[31px] top-1.5 w-4 h-4 rounded-full border-2 border-white bg-white flex items-center justify-center shadow-sm ring-1 ring-gray-100">
-                                      {isActive ? (
-                                        <div className={`w-2.5 h-2.5 rounded-full ${dotColor} ${isCrit || alert.severity === 'Warning' ? 'animate-pulse' : ''}`} />
-                                      ) : (
-                                        <Check size={8} className="text-gray-500 font-bold" />
-                                      )}
-                                    </div>
-
-                                    <div className={`p-4 rounded-2xl border transition-colors ${isActive ? 'bg-white border-gray-150 hover:bg-gray-50/50' : 'bg-gray-50/30 border-gray-100'}`}>
-                                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-                                        <div className="flex items-center gap-2 flex-wrap">
-                                          <span className="text-xs font-bold text-gray-800 tabular-nums">{alert.id}</span>
-                                          <span className="text-[11px] text-gray-500">•</span>
-                                          <span className="text-xs text-gray-600 font-semibold">{alert.date} at {alert.time}</span>
-                                        </div>
-                                        <div className="flex items-center gap-1.5">
-                                          <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${severityColor}`}>{alert.severity}</span>
-                                          <span className="text-[11px] font-semibold bg-gray-100 text-gray-700 border border-gray-200 px-2 py-0.5 rounded-full">{alert.category}</span>
-                                          {!isActive && <span className="text-[11px] font-semibold bg-green-50 text-green-600 border border-green-200 px-2 py-0.5 rounded-full">Acked</span>}
-                                        </div>
-                                      </div>
-
-                                      <p className="text-xs text-gray-700 font-semibold leading-relaxed">{alert.desc}</p>
-
-
-
-                                      {isActive && (
-                                        <div className="mt-3 flex justify-end">
-                                          <button
-                                            onClick={() => handleAcknowledgeAlert(alert.id)}
-                                            className="text-[11px] font-bold text-green-600 hover:text-green-700 border border-green-200 hover:bg-green-50 px-3 py-1.5 rounded-lg flex items-center gap-1 transition-all"
-                                          >
-                                            <Check size={11} /> Mark Acknowledged
-                                          </button>
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })()
-                  )}
-                </div>
-              </div>
-            </div>
+            <AlertsPage
+              alerts={alerts}
+              places={plotsData}
+              serviceId={service?.id}
+              cropType={cropType}
+              onAcknowledge={handleAcknowledgeAlert}
+              onAcknowledgeAll={(ids) => ids.forEach(handleAcknowledgeAlert)}
+              onLocate={(plotId) => { setActiveSidebarItem('intelligence-layers'); setSelectedPlot(plotId); }}
+            />
           )}
 
           {/* ══════════════════════════════════════════════════════════════
@@ -6401,189 +5723,6 @@ Context: ${context}.`;
           )}
         </main>
       </div>
-
-      {/* Settings Modal */}
-      {showSettingsModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[9999]">
-          <div className="bg-white rounded-3xl border border-gray-200 shadow-2xl w-[640px] h-[480px] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
-            {/* Header */}
-            <div className="px-6 py-4.5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-              <div className="flex items-center gap-2.5">
-                <Settings2 className={brandingMode === 'AM' ? 'text-green-600' : 'text-green-600'} size={19} />
-                <span className="text-base font-semibold text-gray-950">Settings Center</span>
-              </div>
-              <button 
-                onClick={() => setShowSettingsModal(false)}
-                className="p-1.5 hover:bg-gray-100 rounded-full text-gray-600 hover:text-gray-700 transition-all"
-              >
-                <X size={17} />
-              </button>
-            </div>
-            
-            {/* Split Body */}
-            <div className="flex-1 flex overflow-hidden">
-              {/* Left Tabs */}
-              <div className="w-[180px] bg-gray-50/50 border-r border-gray-100 p-3 space-y-1">
-                {[
-                  { id: 'profile', label: 'User Profile', icon: <User size={15} /> },
-                  { id: 'branding', label: 'Platform Mode', icon: <Globe size={15} /> },
-                  { id: 'map', label: 'Map Configuration', icon: <MapIcon size={15} /> },
-                ].map(tab => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setSettingsTab(tab.id)}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-bold text-left transition-all ${
-                      settingsTab === tab.id
-                        ? (brandingMode === 'AM' ? 'bg-green-50 text-green-700 font-semibold' : 'bg-green-50 text-green-700 font-semibold')
-                        : 'text-gray-600 hover:bg-gray-100'
-                    }`}
-                  >
-                    {tab.icon}
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-              
-              {/* Right Content Pane */}
-              <div className="flex-1 p-6 overflow-y-auto space-y-5">
-                {settingsTab === 'profile' && (
-                  <div className="space-y-4">
-                    <div className="text-xs font-bold text-gray-600">User Profile Settings</div>
-                    <div className="space-y-3">
-                      <div>
-                        <label className="text-[11px] font-bold text-gray-600 block mb-1">Full Name</label>
-                        <input 
-                          type="text" 
-                          value={profileName} 
-                          onChange={e => setProfileName(e.target.value)} 
-                          className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs font-bold focus:bg-white focus:border-green-600 outline-none" 
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[11px] font-bold text-gray-600 block mb-1">Active Role</label>
-                        <input 
-                          type="text" 
-                          value={profileRole} 
-                          onChange={e => setProfileRole(e.target.value)} 
-                          className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs font-bold focus:bg-white focus:border-green-600 outline-none" 
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[11px] font-bold text-gray-600 block mb-1">Email Identity</label>
-                        <input 
-                          type="email" 
-                          value={profileEmail} 
-                          onChange={e => setProfileEmail(e.target.value)} 
-                          className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs font-bold focus:bg-white focus:border-green-600 outline-none" 
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-                
-                {settingsTab === 'branding' && (
-                  <div className="space-y-4">
-                    <div className="text-xs font-bold text-gray-600">Platform System Mode</div>
-                    <div className="grid grid-cols-1 gap-3">
-                      <div 
-                        onClick={() => setBrandingMode('AM')}
-                        className={`border rounded-2xl p-4 flex items-center justify-between cursor-pointer transition-all hover:border-green-500/50 ${
-                          brandingMode === 'AM' ? 'border-green-600 bg-green-50/20 shadow-sm' : 'border-gray-200'
-                        }`}
-                      >
-                        <div>
-                          <div className="text-xs font-semibold text-gray-900 flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-green-600" />
-                            AgroMonitor Mode (AM)
-                          </div>
-                          <div className="text-[11px] text-gray-600 mt-1">Satellite analysis, green theme interface, default AM initials.</div>
-                        </div>
-                        {brandingMode === 'AM' && <CheckCircle2 size={16} className="text-green-600" />}
-                      </div>
-                      
-                      <div 
-                        onClick={() => setBrandingMode('FT')}
-                        className={`border rounded-2xl p-4 flex items-center justify-between cursor-pointer transition-all hover:border-green-500/50 ${
-                          brandingMode === 'FT' ? 'border-green-600 bg-green-50/20 shadow-sm' : 'border-gray-200'
-                        }`}
-                      >
-                        <div>
-                          <div className="text-xs font-semibold text-gray-900 flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-green-600" />
-                            Farm Tools Harvest Mode (FT)
-                          </div>
-                          <div className="text-[11px] text-gray-600 mt-1">Operational harvest tools, blue/orange branding, FT initials.</div>
-                        </div>
-                        {brandingMode === 'FT' && <CheckCircle2 size={16} className="text-green-600" />}
-                      </div>
-                    </div>
-                  </div>
-                )}
-                
-                {settingsTab === 'map' && (
-                  <div className="space-y-4">
-                    <div className="text-xs font-bold text-gray-600">Map Default Configuration</div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-[11px] font-bold text-gray-600 block mb-1">Center Latitude</label>
-                        <input 
-                          type="number" 
-                          step="0.0001" 
-                          value={defaultLat} 
-                          onChange={e => setDefaultLat(parseFloat(e.target.value))} 
-                          className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs font-bold outline-none focus:bg-white" 
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[11px] font-bold text-gray-600 block mb-1">Center Longitude</label>
-                        <input 
-                          type="number" 
-                          step="0.0001" 
-                          value={defaultLng} 
-                          onChange={e => setDefaultLng(parseFloat(e.target.value))} 
-                          className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs font-bold outline-none focus:bg-white" 
-                        />
-                      </div>
-                      <div className="col-span-2">
-                        <label className="text-[11px] font-bold text-gray-600 block mb-1">Initial Zoom level</label>
-                        <input 
-                          type="number" 
-                          value={defaultMapZoom} 
-                          onChange={e => setDefaultMapZoom(parseInt(e.target.value))} 
-                          className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs font-bold outline-none focus:bg-white" 
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-                
-              </div>
-            </div>
-            
-            {/* Footer */}
-            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex justify-end gap-2.5">
-              <button 
-                onClick={() => setShowSettingsModal(false)}
-                className="px-4.5 py-2 rounded-xl text-xs font-bold text-gray-600 hover:bg-gray-100 transition-all"
-              >
-                Close
-              </button>
-              <button 
-                onClick={() => {
-                  setShowSettingsModal(false);
-                  setShowProfileSaved(true);
-                  setTimeout(() => setShowProfileSaved(false), 2000);
-                }}
-                className={`px-4.5 py-2 rounded-xl text-xs font-bold text-white shadow-sm transition-all hover:scale-102 active:scale-98 ${
-                  brandingMode === 'AM' ? 'bg-green-600 hover:bg-green-700' : 'bg-green-600 hover:bg-green-700'
-                }`}
-              >
-                Save Changes
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Resizing and dragging overlay helper */}
       {(activeResizeType || isDraggingSplit) && (
