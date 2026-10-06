@@ -33,7 +33,7 @@ export const SERVICE_GROUPS = [
   ] },
   { id: 'smallholder', label: 'Smallholder', services: [
     { id: 'smallholder-members', label: 'Members and parcels', desc: 'Registration forms the co-op designs, the member and parcel register, parcel checks' },
-    { id: 'group-monitoring', label: 'Field monitoring', desc: 'Member farms from satellite' },
+    { id: 'group-monitoring', label: 'Farm monitoring', desc: 'Each member farm from satellite' },
     { id: 'carbon-groups', label: 'Group carbon', desc: 'Carbon estimate per group and member' },
     { id: 'smallholder-eudr', label: 'EUDR passport', desc: 'Location and deforestation check per member' },
   ] },

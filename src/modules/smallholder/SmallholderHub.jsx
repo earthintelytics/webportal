@@ -10,9 +10,9 @@ import { SMALLHOLDER_SERVICES } from '../registry';
  */
 const SMALLHOLDER_CARDS = [
   { id: 'smallholder-members', title: 'Members and parcels', text: 'Design your registration form, send it to farmers or fill it yourself, and keep one register of members and their land.', photo: '/crops/smallholder.webp' },
-  { id: 'group-monitoring', title: 'Field monitoring', text: 'How member farms are doing, from satellite, and which need a visit.', photo: '/crops/advisor.webp' },
-  { id: 'carbon-groups', title: 'Group carbon', text: 'Estimated carbon in member farms, per group and per member.', photo: '/crops/group_carbon.webp' },
-  { id: 'smallholder-eudr', title: 'EUDR passport', text: 'Location and deforestation check per member, for EU buyers.', photo: '/crops/eudr.webp' },
+  { id: 'group-monitoring', title: 'Farm monitoring', text: 'How each member farm is doing, from satellite, and which need a visit.', photo: '/crops/advisor.webp' },
+  { id: 'carbon-groups', title: 'Group carbon', text: 'Carbon estimated for each member farm, added up per group, all in one table.', photo: '/crops/group_carbon.webp' },
+  { id: 'smallholder-eudr', title: 'EUDR passport', text: 'The deforestation check for each member farm, managed for the whole group in one place.', photo: '/crops/eudr.webp' },
 ];
 
 const isTeam = () => Boolean(localStorage.getItem('fi_admin_token')) && !localStorage.getItem('fi_token');

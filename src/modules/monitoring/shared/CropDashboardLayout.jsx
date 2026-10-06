@@ -3670,6 +3670,7 @@ Context: ${context}.`;
                 <div className="text-[11px] font-bold text-gray-600 px-3 mb-3">Main</div>
                 {pick([
                   { id: 'analytics',           label: 'Analytics Hub',       icon: <LayoutDashboard size={17} /> },
+                  { id: 'intelligence-layers', label: 'Map',                 icon: <MapIcon size={17} /> },
                   { id: 'crop-health',         label: 'Crop Health',         icon: <Activity size={17} /> },
                   { id: 'crop-yield',          label: 'Crop Yield',          icon: <TrendingUp size={17} /> },
                   { id: 'moisture-content',    label: 'Moisture Content',    icon: <Droplets size={17} /> },
