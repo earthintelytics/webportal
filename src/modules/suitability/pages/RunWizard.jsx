@@ -17,7 +17,8 @@ const STRICTNESS = [
  * actually sent), crop, and the questions that change the result. Starts a
  * real run; progress comes from the run status, nothing is simulated.
  */
-const RunWizard = ({ company, initialCrop, onClose, onStarted }) => {
+const RunWizard = ({ orgs, initialCrop, onClose, onStarted }) => {
+  const [companyId, setCompanyId] = useState(orgs.length === 1 ? orgs[0].company_id : '');
   const [farms, setFarms] = useState([]);
   const [crop, setCrop] = useState(initialCrop || CROPS[0].id);
   const [variants, setVariants] = useState([]);
@@ -31,19 +32,20 @@ const RunWizard = ({ company, initialCrop, onClose, onStarted }) => {
 
   useEffect(() => {
     let live = true;
-    fetchFarms(company.company_id).then((f) => { if (live) setFarms(Array.isArray(f) ? f : []); }).catch(() => {});
+    if (!companyId) return undefined;
+    fetchFarms(companyId).then((f) => { if (live) setFarms(Array.isArray(f) ? f : []); }).catch(() => {});
     return () => { live = false; };
-  }, [company.company_id]);
+  }, [companyId]);
 
   // Variants come from the admin's suitability settings for the crop.
   useEffect(() => {
     let live = true;
     const admin = CROPS.find((c) => c.id === crop)?.admin || crop;
-    fetchSuitabilityThresholds(admin, company.company_id)
+    fetchSuitabilityThresholds(admin, companyId)
       .then((d) => { if (live) setVariants(Array.isArray(d?.variants) ? d.variants : []); })
       .catch(() => { if (live) setVariants([]); });
     return () => { live = false; };
-  }, [crop, company.company_id]);
+  }, [crop, companyId]);
 
   const pick = async (e) => {
     const f = e.target.files?.[0];
@@ -55,17 +57,17 @@ const RunWizard = ({ company, initialCrop, onClose, onStarted }) => {
     setGeojson(parsed); setFileNote(`${check.polygons} polygon${check.polygons > 1 ? 's' : ''} read.`);
   };
 
-  const areaReady = form.area === 'estate' ? true : Boolean(geojson);
+  const areaReady = Boolean(companyId) && (form.area === 'estate' ? true : Boolean(geojson));
   const start = async () => {
     setBusy(true); setError('');
     try {
       const run = await submitSuitabilityRun({
-        crop, company_id: company.company_id,
+        crop, company_id: companyId,
         farm_id: form.area === 'estate' ? form.farm_id || null : null,
         area: form.area === 'upload' ? { geojson } : null,
         variant: form.variant || null, irrigated: form.irrigated, strictness: form.strictness, use_soil_samples: form.use_soil_samples,
       });
-      onStarted(run);
+      onStarted(run, companyId);
     } catch (e) { setError(e.message); setBusy(false); }
   };
 
@@ -73,7 +75,13 @@ const RunWizard = ({ company, initialCrop, onClose, onStarted }) => {
     <Modal wide title="New analysis" onClose={onClose}
       footer={<><SecondaryButton onClick={onClose}>Cancel</SecondaryButton><PrimaryButton onClick={start} disabled={busy || !areaReady}>{busy ? 'Starting…' : 'Start the analysis'}</PrimaryButton></>}>
       {error && <ErrorNote message={error} />}
-      <p className="text-sm text-gray-600">For <strong>{company.company_name || company.company_id}</strong>. Rainfall, temperature, terrain, soil, flooding, forest in 2020 and protected areas are fetched by the pipeline.</p>
+      <Field label="Organisation">
+        <select className={inputCls} value={companyId} onChange={(e) => { setCompanyId(e.target.value); setFarms([]); set('farm_id', ''); }}>
+          <option value="" disabled>Select</option>
+          {orgs.map((o) => <option key={o.company_id} value={o.company_id}>{o.company_name || o.company_id}</option>)}
+        </select>
+      </Field>
+      <p className="text-sm text-gray-600">Rainfall, temperature, terrain, soil, flooding, forest in 2020 and protected areas are fetched by the pipeline.</p>
 
       <Field label="Crop">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
