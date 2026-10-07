@@ -26,7 +26,7 @@ const OrgShell = ({ profile, onSignOut, children }) => {
             </div>
           </div>
           <nav className="flex items-center gap-1">
-            <InstallAppButton className="mr-1" />
+            {hasField && <InstallAppButton className="mr-1" />}
             <NavLink end to={paths.orgHub(profile.tenant)} className={link}><LayoutGrid size={16} /><span className="hidden sm:inline">Services</span></NavLink>
             {hasField && <NavLink to={paths.orgField(profile.tenant)} className={link}><MapPin size={16} /><span className="hidden sm:inline">Field</span></NavLink>}
             <NavLink to={paths.orgSettings(profile.tenant)} className={link}><Settings size={16} /><span className="hidden sm:inline">Settings</span></NavLink>

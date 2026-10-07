@@ -314,6 +314,8 @@ const AppRoutes = () => {
         <Route path="/org/:tenant"              element={<OrgPage view="services" />} />
         <Route path="/org/:tenant/settings"     element={<OrgPage view="settings" />} />
         <Route path="/org/:tenant/field"        element={<OrgPage view="field" />} />
+        {/* The installed phone app opens here: the signed-in organisation's Field page. */}
+        <Route path="/field"                    element={<Navigate to={sessionTenant() ? paths.orgField(sessionTenant()) : '/login'} replace />} />
         <Route path="/org/:tenant/login"        element={<LoginPage />} />
         <Route path="/org/:tenant/:moduleId"    element={<PortalPage />} />
         {/* Old addresses */}
