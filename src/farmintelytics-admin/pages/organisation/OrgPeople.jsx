@@ -5,6 +5,7 @@ import { useConfirm } from '../../components/ConfirmProvider';
 import { emailError, accessCodeError } from '../../components/validation';
 import { inputCls } from '../../components/formHelpers';
 import { Button, IconButton, Field, Pill, Loading, Empty, Note } from '../../components/ui';
+import { copyText } from '../../../utils/copyText';
 
 const ROLES = [
   { id: 'admin', label: 'Admin', text: 'Everything the organisation is licensed for, and its team' },
@@ -55,7 +56,7 @@ const OrgPeople = ({ org }) => {
     if (!(await confirm(`Issue a new access code for ${p.email}? The current one stops working.`))) return;
     try { const c = await rotateCredential(p.id); if (c?.access_code) setRevealed((r) => ({ ...r, [p.id]: c.access_code })); } catch (e) { setError(e.message); }
   };
-  const copy = async (t) => { try { await navigator.clipboard.writeText(t); setCopied(t); setTimeout(() => setCopied(''), 1500); } catch { /* clipboard blocked */ } };
+  const copy = async (t) => { try { await copyText(t); setCopied(t); setTimeout(() => setCopied(''), 1500); } catch { /* clipboard blocked */ } };
 
   return (
     <div className="space-y-4">

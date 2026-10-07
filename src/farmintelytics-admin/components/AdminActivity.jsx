@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { CheckCircle2, AlertTriangle, X } from 'lucide-react';
 import { onAdminActivity } from './activityBus';
 import { API_BASE, ADMIN_API_BASE } from '../../services/apiBase';
+import { copyText } from '../../utils/copyText';
 
 // Sends a problem report to the FarmIntelytics team (POST /support/reports,
 // FINDINGS G61). Until that endpoint exists the details are copied instead.
@@ -15,7 +16,7 @@ async function sendReport(report) {
     });
     if (res.ok) return 'sent';
   } catch { /* offline or not built yet */ }
-  try { await navigator.clipboard.writeText(JSON.stringify(report, null, 2)); return 'copied'; } catch { return 'failed'; }
+  try { await copyText(JSON.stringify(report, null, 2)); return 'copied'; } catch { return 'failed'; }
 }
 
 /**

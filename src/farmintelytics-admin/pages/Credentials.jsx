@@ -6,6 +6,7 @@ import ErrorBanner from '../components/ErrorBanner';
 import { emailError, accessCodeError } from '../components/validation';
 import { inputCls } from '../components/formHelpers';
 import { Page, Card, Button, IconButton, Field, Pill, Modal, Empty, Loading } from '../components/ui';
+import { copyText } from '../../utils/copyText';
 
 const ROLES = [
   { id: 'admin', label: 'Admin', text: 'Everything the organisation is licensed for' },
@@ -39,7 +40,7 @@ const Credentials = () => {
   useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/set-state-in-effect
 
   const copy = async (text, id) => {
-    try { await navigator.clipboard.writeText(text); setCopied(id); setTimeout(() => setCopied(''), 2000); } catch { setError('Copy failed: select the text and copy it.'); }
+    try { await copyText(text); setCopied(id); setTimeout(() => setCopied(''), 2000); } catch { setError('Copy failed: select the text and copy it.'); }
   };
 
   const rotate = async (id) => {

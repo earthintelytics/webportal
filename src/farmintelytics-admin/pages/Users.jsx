@@ -6,6 +6,7 @@ import ErrorBanner from '../components/ErrorBanner';
 import { emailError } from '../components/validation';
 import { inputCls } from '../components/formHelpers';
 import { Page, Button, IconButton, Field, Pill, Modal, Table, Td, Empty, Loading, Note } from '../components/ui';
+import { copyText } from '../../utils/copyText';
 
 const ACCOUNT_TYPES = [
   { value: 'platform_admin', label: 'Platform admin', tone: 'info' },
@@ -47,7 +48,7 @@ const UsersPage = () => {
   }, [typeFilter, search, page]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const flash = (msg) => { setNotice(msg); setTimeout(() => setNotice(''), 4000); };
-  const copy = async (text) => { try { await navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch { setError('Copy failed: select the password and copy it.'); } };
+  const copy = async (text) => { try { await copyText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch { setError('Copy failed: select the password and copy it.'); } };
 
   const toggle = async (user) => {
     try { const res = await toggleUserActive(user.id); flash(`${res.email} is now ${res.is_active ? 'enabled' : 'disabled'}.`); await load(); } catch (e) { setError(e.message); }

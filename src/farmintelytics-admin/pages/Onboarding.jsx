@@ -20,6 +20,7 @@ import { HERO_PLACEHOLDERS } from '../../constants/heroPlaceholders';
 import { SERVICE_CATALOG } from '../../modules/services/serviceCatalog';
 import { SMALLHOLDER_SERVICES, resolveModule, moduleName } from '../../modules/registry';
 import { DATASET_DEFINITIONS, datasetsForScope } from '../../modules/data/datasetDefinitions';
+import { copyText } from '../../utils/copyText';
 
 /**
  * Onboard an organisation — one flow, dynamic by design (docs/FINDINGS.md,
@@ -320,7 +321,7 @@ const Onboarding = () => {
     try { setLogoUrl((await uploadOrganizationLogo(done.org.id, file)).logo_url || ''); } catch (err) { setError(err.message); }
     finally { setLogoBusy(false); if (logoRef.current) logoRef.current.value = ''; }
   };
-  const copy = (text) => { navigator.clipboard?.writeText(text); setCopied(text); setTimeout(() => setCopied(''), 1500); };
+  const copy = (text) => { copyText(text); setCopied(text); setTimeout(() => setCopied(''), 1500); };
   const restart = () => {
     setStep(0); setDone({ org: null, credential: null, farms: [], boundaries: [], configs: [], schedulers: [] });
     setCompany({ company_name: '', schema_name: '' }); setCrops([]); setServices([]); setAllowedIndices([]);

@@ -3,6 +3,7 @@ import { Copy, Check } from 'lucide-react';
 import { Modal, Button, Pill, Tabs } from '../../components/ui';
 import ErrorBox from './ErrorBox';
 import { statusOf, logStatus, fmtTime } from './logHelpers';
+import { copyText } from '../../../utils/copyText';
 
 const MAIN = ['job_name', 'timestamp', 'duration', 'plots_processed', 'error', 'status'];
 
@@ -12,7 +13,7 @@ const RunLogModal = ({ log, onClose }) => {
   const [copied, setCopied] = useState(false);
   const record = Object.fromEntries(Object.entries(log).filter(([k]) => k !== '_minio_path'));
   const [label, tone] = statusOf(logStatus(log));
-  const copy = () => navigator.clipboard.writeText(JSON.stringify(record, null, 2)).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); }).catch(() => {});
+  const copy = () => copyText(JSON.stringify(record, null, 2)).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); }).catch(() => {});
 
   return (
     <Modal size="lg" title={log.job_name || 'Pipeline run'} text={log._minio_path} onClose={onClose}

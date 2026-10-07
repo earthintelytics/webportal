@@ -7,6 +7,7 @@ import ErrorBanner from '../components/ErrorBanner';
 import { emailError } from '../components/validation';
 import { inputCls } from '../components/formHelpers';
 import { Page, Card, CardHeader, Button, IconButton, Field, Pill, Modal, Toggle, Loading, Note } from '../components/ui';
+import { copyText } from '../../utils/copyText';
 
 const fmt = (d) => (d ? new Date(d).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) : 'Never');
 const ME = () => (localStorage.getItem('fi_admin_email') || '').toLowerCase();
@@ -51,7 +52,7 @@ const TeamAccounts = () => {
     if (!(await confirm(`Remove ${a.email} from the team? They can no longer sign in.`))) return;
     try { await deleteTeamAccount(a.id); setData((d) => ({ ...d, accounts: d.accounts.filter((x) => x.id !== a.id) })); } catch (e) { setError(e.message); }
   };
-  const copy = async () => { try { await navigator.clipboard.writeText(issued.access_code); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch { /* clipboard blocked */ } };
+  const copy = async () => { try { await copyText(issued.access_code); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch { /* clipboard blocked */ } };
 
   const problem = adding && (emailError(adding.email) || null);
 

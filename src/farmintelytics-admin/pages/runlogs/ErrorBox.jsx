@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { AlertTriangle, Copy, Check } from 'lucide-react';
 import { parseError } from './logHelpers';
+import { copyText } from '../../../utils/copyText';
 
 /** An error: the one line that matters, and the full text to copy or expand. */
 const ErrorBox = ({ error, compact = false }) => {
@@ -9,7 +10,7 @@ const ErrorBox = ({ error, compact = false }) => {
   if (!e) return null;
   const copy = (ev) => {
     ev.stopPropagation();
-    navigator.clipboard.writeText(e.full).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); }).catch(() => {});
+    copyText(e.full).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); }).catch(() => {});
   };
   const copyBtn = (
     <button type="button" onClick={copy} className="shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded-md border border-red-200 bg-white text-xs font-semibold text-red-700">

@@ -7,6 +7,7 @@ import ErrorBanner from '../components/ErrorBanner';
 import { inputCls } from '../components/formHelpers';
 import { Page, Card, CardHeader, Button, IconButton, Field, Pill, Tabs, Table, Td, Empty, Loading, Note, Stat, Modal } from '../components/ui';
 import { isViewable, isExecutionLog, formatSize, TYPE_COLOURS, typeShares, SYNC_STATUS, registryVsStorage } from './inventory/inventoryHelpers';
+import { copyText } from '../../utils/copyText';
 
 /**
  * Storage: what the pipeline and onboarding have written to object storage,
@@ -183,7 +184,7 @@ function FileViewer({ file, onClose }) {
   }, [file.key]);
   return (
     <Modal size="xl" title={file.key.split('/').pop()} text={file.key} onClose={onClose}
-      footer={<><Button variant="secondary" onClick={() => navigator.clipboard.writeText(content)} disabled={!content}>Copy</Button><Button onClick={onClose}>Close</Button></>}>
+      footer={<><Button variant="secondary" onClick={() => copyText(content)} disabled={!content}>Copy</Button><Button onClick={onClose}>Close</Button></>}>
       {state === 'loading' && <Loading />}
       {state === 'error' && <p className="text-sm text-red-800">{error}</p>}
       {state === 'ready' && <pre className="text-xs font-mono text-gray-800 bg-gray-50 border border-gray-200 rounded-xl p-4 max-h-[60vh] overflow-auto whitespace-pre-wrap">{content}</pre>}

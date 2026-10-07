@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { AlertCircle, RefreshCw, X, Copy, Check } from 'lucide-react';
+import { copyText } from '../../utils/copyText';
 
 /** One error message for the admin pages: what went wrong, copy, try again, close. */
 const ErrorBanner = ({ message, onDismiss, onRetry }) => {
@@ -19,7 +20,7 @@ const ErrorBanner = ({ message, onDismiss, onRetry }) => {
   }
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(reqId ? `${text} (Request ID: ${reqId})` : text);
+    copyText(reqId ? `${text} (Request ID: ${reqId})` : text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };

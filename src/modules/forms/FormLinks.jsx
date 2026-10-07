@@ -4,8 +4,14 @@ import { Copy, Link2, QrCode } from 'lucide-react';
 import { fetchLinks, createLink, updateLink } from '../../services/formsApi';
 import { Card, Field, PrimaryButton, SecondaryButton, StatusPill, ErrorNote, Modal } from '../../components/page/PageKit';
 import { inputCls, stateFromError } from '../../components/page/useLoader';
+import { copyText } from '../../utils/copyText';
 
-const publicUrl = (link) => link.url || `${window.location.origin}/f/${link.token}`;
+// Always the page farmers open (/f/<token>) on this site. The server's `url`
+// is its own API address (/public/forms/<token>), which opens nothing on a phone.
+const publicUrl = (link) => {
+  const token = link.token || String(link.url || '').split('/').filter(Boolean).pop();
+  return `${window.location.origin}/f/${token}`;
+};
 
 /** Links farmers open on their phones; the co-op can close a link at any time. */
 const FormLinks = ({ form }) => {
@@ -39,7 +45,7 @@ const FormLinks = ({ form }) => {
     try { await updateLink(link.id, { open: !link.open }); load(); } catch (e) { setError(e.message); }
   };
   const copy = async (link) => {
-    try { await navigator.clipboard.writeText(publicUrl(link)); setCopied(link.id); setTimeout(() => setCopied(null), 1500); } catch { setError('Copy failed: select the link and copy it.'); }
+    try { await copyText(publicUrl(link)); setCopied(link.id); setTimeout(() => setCopied(null), 1500); } catch { setError('Copy failed: select the link and copy it.'); }
   };
   const showQr = async (link) => setQr({ link, src: await QRCode.toDataURL(publicUrl(link), { width: 320, margin: 1 }) });
 

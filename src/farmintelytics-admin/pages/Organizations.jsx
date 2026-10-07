@@ -9,6 +9,7 @@ import { ALL_CROPS, inputCls, toggleInList } from '../components/formHelpers';
 import { CROP_LABELS } from '../components/orgConstants';
 import { Page, Card, Button, IconButton, Field, Chip, Pill, Modal, Empty, Loading } from '../components/ui';
 import OrgDetailPanel from './OrganizationFarms';
+import { copyText } from '../../utils/copyText';
 
 /** Client organisations: what each is licensed for, its sign-in link, and its estates. */
 const Organizations = () => {
@@ -32,7 +33,7 @@ const Organizations = () => {
     try { await deleteOrganization(org.id); await load(); } catch (e) { setError(e.message); }
   };
   const copyLink = async (schema) => {
-    try { await navigator.clipboard.writeText(`${window.location.origin}/org/${schema}/login`); setCopied(schema); setTimeout(() => setCopied(null), 2000); } catch { setError('Copy failed: select the link and copy it.'); }
+    try { await copyText(`${window.location.origin}/org/${schema}/login`); setCopied(schema); setTimeout(() => setCopied(null), 2000); } catch { setError('Copy failed: select the link and copy it.'); }
   };
 
   const shown = useMemo(() => {
