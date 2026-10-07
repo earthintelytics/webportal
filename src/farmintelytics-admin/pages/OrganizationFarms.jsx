@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Plus, Trash2, X, Building2, UploadCloud, RefreshCw, Settings, Eye, Sprout } from 'lucide-react';
+import { Plus, Trash2, X, Building2, UploadCloud, RefreshCw, Settings, Eye } from 'lucide-react';
 import { fetchFarms, deleteFarm, uploadBoundary } from '../../services/adminApi';
 import { useConfirm } from '../components/ConfirmProvider';
 import ErrorBanner from '../components/ErrorBanner';
@@ -9,7 +9,6 @@ import { Button, IconButton, Pill, Loading, Empty, Tabs } from '../components/ui
 import AddEstateForm from './organisation/AddEstateForm';
 import EstateConfigModal from './organisation/EstateConfigModal';
 import BoundaryModal from './organisation/BoundaryModal';
-import EstateDetailsModal from './organisation/EstateDetailsModal';
 import OrgPeople from './organisation/OrgPeople';
 import OrgLicence from './organisation/OrgLicence';
 import OrgPipeline from './organisation/OrgPipeline';
@@ -80,7 +79,7 @@ const OrgDetailPanel = ({ org: initialOrg, onClose }) => {
 
 function EstateRow({ farm, onDelete, onReplace }) {
   const fileRef = useRef(null);
-  const [info, setInfo] = useState(farm);
+  const info = farm;
   const [open, setOpen] = useState(null); // config | boundary | details
   const [uploading, setUploading] = useState(false);
   const [fileError, setFileError] = useState('');
@@ -103,22 +102,20 @@ function EstateRow({ farm, onDelete, onReplace }) {
         <div className="min-w-0">
           <p className="font-semibold text-gray-900">{farm.farm_name}</p>
           <p className="text-xs font-mono text-gray-500">{farm.farm_id}</p>
-          <p className="text-xs text-gray-600 mt-1">{details || 'Estate details not set'}</p>
+          {details && <p className="text-xs text-gray-600 mt-1">{details}</p>}
           {fileError && <p className="text-xs text-red-700 mt-1">{fileError}</p>}
         </div>
         <Pill tone={farm.boundary_uploaded ? 'good' : 'critical'}>{farm.boundary_uploaded ? 'Boundary' : 'No boundary'}</Pill>
       </div>
-      <div className="flex flex-wrap gap-2 mt-3">
-        {farm.boundary_uploaded && <button type="button" className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-gray-300 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50" onClick={() => setOpen('boundary')}><Eye size={14} />View boundary</button>}
-        <button type="button" className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-gray-300 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50" onClick={() => setOpen('details')}><Sprout size={14} />Crop and dates</button>
-        <button type="button" className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-gray-300 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50" onClick={() => setOpen('config')}><Settings size={14} />Pipeline settings</button>
-        <button type="button" className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-gray-300 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50" disabled={uploading} onClick={() => fileRef.current?.click()}>{uploading ? <RefreshCw size={14} className="animate-spin" /> : <UploadCloud size={14} />}{farm.boundary_uploaded ? 'Replace boundary' : 'Upload boundary'}</button>
+      <div className="flex flex-wrap gap-1 mt-2 -ml-2">
+        {farm.boundary_uploaded && <IconButton label="View boundary" onClick={() => setOpen('boundary')}><Eye size={15} /></IconButton>}
+        <IconButton label="Pipeline settings" onClick={() => setOpen('config')}><Settings size={15} /></IconButton>
+        <IconButton label={farm.boundary_uploaded ? 'Replace boundary' : 'Upload boundary'} disabled={uploading} onClick={() => fileRef.current?.click()}>{uploading ? <RefreshCw size={15} className="animate-spin" /> : <UploadCloud size={15} />}</IconButton>
         <input ref={fileRef} type="file" accept=".geojson,.json,application/geo+json" className="hidden" onChange={pick} />
-        <button type="button" className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-gray-300 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50 !text-red-700 hover:!bg-red-50" onClick={() => onDelete(farm)}><Trash2 size={14} />Delete</button>
+        <IconButton label="Delete estate" danger onClick={() => onDelete(farm)}><Trash2 size={15} /></IconButton>
       </div>
       {open === 'config' && <EstateConfigModal farm={farm} onClose={() => setOpen(null)} />}
       {open === 'boundary' && <BoundaryModal farm={farm} onClose={() => setOpen(null)} />}
-      {open === 'details' && <EstateDetailsModal farm={info} onClose={() => setOpen(null)} onSaved={(f) => { setInfo(f); setOpen(null); }} />}
     </li>
   );
 }
