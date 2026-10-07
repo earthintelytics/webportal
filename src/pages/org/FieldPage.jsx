@@ -76,16 +76,16 @@ const FieldPage = () => {
       </div>
       {pending.length > 0 && <p className="text-sm rounded-xl border border-amber-200 bg-amber-50 text-amber-900 px-4 py-3">{pending.length} parcel update{pending.length > 1 ? 's' : ''} saved on this phone, sent when the connection allows.</p>}
       <div className="flex gap-2">
-        <label className="flex-1 flex items-center gap-2 px-3.5 rounded-xl border border-gray-300 bg-white">
+        <label className="flex-1 min-w-0 flex items-center gap-2 px-3.5 rounded-xl border border-gray-300 bg-white">
           <Search size={16} className="text-gray-400" />
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Member, group or crop" className="flex-1 py-3 text-base outline-none bg-transparent" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Member, group or crop" className="flex-1 min-w-0 py-3 text-base outline-none bg-transparent" />
         </label>
-        <button type="button" onClick={locate} className={`${btn} border border-gray-300 bg-white text-gray-800`}><Crosshair size={16} />Nearest</button>
+        <button type="button" onClick={locate} aria-label="Sort by nearest to me" className={`${btn} shrink-0 border border-gray-300 bg-white text-gray-800`}><Crosshair size={16} /><span className="hidden sm:inline">Nearest</span></button>
       </div>
       {error && <p className="text-sm text-red-700">{error}</p>}
       {!parcels && !error && <p className="text-sm text-gray-500">Loading parcels…</p>}
       {parcels && parcels.length === 0 && <p className="text-sm text-gray-500 border border-dashed border-gray-300 rounded-xl p-5 text-center">No parcels yet. They are added from the registration form or Members and parcels.</p>}
-      <ul className="divide-y divide-gray-100 border border-gray-200 rounded-xl bg-white">
+      {list.length > 0 && <ul className="divide-y divide-gray-100 border border-gray-200 rounded-xl bg-white">
         {list.map(({ f, d }) => (
           <li key={f.properties.id}>
             <button type="button" onClick={() => setOpen(f)} className="w-full text-left px-4 py-3.5 flex items-center gap-3 active:bg-gray-50">
@@ -98,7 +98,7 @@ const FieldPage = () => {
             </button>
           </li>
         ))}
-      </ul>
+      </ul>}
     </div>
   );
 };
