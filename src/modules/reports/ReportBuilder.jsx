@@ -293,7 +293,9 @@ export default function ReportBuilder({ plots, estates, tenant, orgName, subject
 
       <div className="grid grid-cols-1 xl:grid-cols-[380px_minmax(0,1fr)] gap-8 items-start">
       {/* LEFT: settings */}
-      <aside className="xl:sticky xl:top-6 space-y-4 no-print">
+      {/* Settings scroll on their own; the report beside them stays where it is. */}
+      <aside className="xl:sticky xl:top-6 xl:max-h-[calc(100vh-8rem)] xl:overflow-y-auto xl:overscroll-contain xl:pr-1 space-y-4 no-print">
+
       {/* History View */}
       {/* Report Generator Config Card */}
       {!showSettings && report && (

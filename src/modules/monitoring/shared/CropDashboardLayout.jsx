@@ -587,7 +587,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
     loadCalendarDates();
     return () => { active = false; };
   }, [tenant, noteLoadIssue]);
-  const SENSOR_DOT_COLOR = { 'sentinel-2': '#16a34a', 'landsat': '#d97706', 'sentinel-1': '#2563eb' };
+  const SENSOR_DOT_COLOR = { 'sentinel-2': 'var(--brand-primary)', 'landsat': 'var(--status-warning)', 'sentinel-1': 'var(--status-info)' };
   // (timelineLoading, zarrBounds, calendarMonth, calendarYear, selectedTimelineIndex
   // are declared earlier — see note above the slider-fetching effect)
 
@@ -1613,7 +1613,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
 
 
 
-  const renderMapBottomPanel = (...args) => renderMapBottomPanelImpl({ canPrevCal, canNextCal, SENSOR_DOT_COLOR, TIMELINE_DATA, activeDateSlot, bottomPanelHeight, calDaysInMonth, calFirstDay, calTrailing, calendarDates, calendarMonth, calendarYear, compareTimelineIndex, currentTimeline, currentTimelineA, currentTimelineB, effectiveSensor, isBottomPanelMinimized, isCompareMode, isPlaying, nextCalMonth, prevCalMonth, satellitePicker, selectDateWithSensor, selectedIndex, selectedTimelineIndex, setCompareTimelineIndex, setIsBottomPanelMinimized, setRefreshSlider, setSatellitePicker, setSelectedTimelineIndex, showCalendarTool, showTimeSliderTool, sliderPending, startBottomPanelResize, timelineLoading, togglePlay }, ...args);
+  const renderMapBottomPanel = (...args) => renderMapBottomPanelImpl({ latestCalDate, jumpToLatestMonth, setCalendarYear, setCalendarMonth,canPrevCal, canNextCal, SENSOR_DOT_COLOR, TIMELINE_DATA, activeDateSlot, bottomPanelHeight, calDaysInMonth, calFirstDay, calTrailing, calendarDates, calendarMonth, calendarYear, compareTimelineIndex, currentTimeline, currentTimelineA, currentTimelineB, effectiveSensor, isBottomPanelMinimized, isCompareMode, isPlaying, nextCalMonth, prevCalMonth, satellitePicker, selectDateWithSensor, selectedIndex, selectedTimelineIndex, setCompareTimelineIndex, setIsBottomPanelMinimized, setRefreshSlider, setSatellitePicker, setSelectedTimelineIndex, showCalendarTool, showTimeSliderTool, sliderPending, startBottomPanelResize, timelineLoading, togglePlay }, ...args);
 
   // Dynamic Dashboard Calculations — real data only, no mock fallback
 
@@ -1846,6 +1846,18 @@ Context: ${context}.`;
     if (!canNextCal) return;
     if (calendarMonth === 11) { setCalendarMonth(0); setCalendarYear(y => y + 1); }
     else setCalendarMonth(m => m + 1);
+  };
+
+  // Newest picture we hold, so the calendar can jump straight to it.
+  const latestCalDate = useMemo(() => {
+    const dates = [...(calendarDates || []).map(d => d.date), ...(TIMELINE_DATA || []).map(t => t.date)].filter(Boolean).sort();
+    return dates.length ? dates[dates.length - 1] : null;
+  }, [calendarDates, TIMELINE_DATA]);
+  const jumpToLatestMonth = () => {
+    if (!latestCalDate) return;
+    const [y, m] = latestCalDate.split('-').map(Number);
+    setCalendarYear(y);
+    setCalendarMonth(m - 1);
   };
 
   // Calendar computed values

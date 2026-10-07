@@ -16,6 +16,20 @@ export const ResizeMap = ({ trigger }) => {
       clearTimeout(timer4);
     };
   }, [trigger, map]);
+
+  // Outlines thin out when zoomed out, so hundreds of black block outlines
+  // read as outlines rather than one solid black shape (see index.css).
+  useEffect(() => {
+    const el = map.getContainer();
+    const apply = () => {
+      const z = map.getZoom();
+      el.classList.toggle('fi-map-far', z <= 12);
+      el.classList.toggle('fi-map-mid', z > 12 && z <= 14);
+    };
+    apply();
+    map.on('zoomend', apply);
+    return () => { map.off('zoomend', apply); };
+  }, [map]);
   return null;
 };
 

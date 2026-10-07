@@ -1,369 +1,281 @@
 /**
  * The panel under every map: image calendar, time slider, play, split comparison and the selected index.
- * Moved out of CropDashboardLayout.jsx unchanged: each function receives the
- * layout's state and helpers it uses as `ctx`.
+ * Each function receives the layout's state and helpers it uses as `ctx`.
  */
-import { RefreshCw, ChevronDown, ChevronUp, Play, Pause, ChevronLeft, ChevronRight } from 'lucide-react';
+import { RefreshCw, ChevronDown, ChevronUp, Play, Pause, ChevronLeft, ChevronRight, CalendarDays, Satellite } from 'lucide-react';
 import { MONTH_NAMES } from '../constants/chartConfig';
 
-export function renderMapBottomPanel(ctx, indexValue, centerContent = null, hideCalendarAndSlider = false) {
-  const { canPrevCal, canNextCal, SENSOR_DOT_COLOR, TIMELINE_DATA, activeDateSlot, bottomPanelHeight, calDaysInMonth, calFirstDay, calTrailing, calendarDates, calendarMonth, calendarYear, compareTimelineIndex, currentTimeline, currentTimelineA, currentTimelineB, effectiveSensor, isBottomPanelMinimized, isCompareMode, isPlaying, nextCalMonth, prevCalMonth, satellitePicker, selectDateWithSensor, selectedIndex, selectedTimelineIndex, setCompareTimelineIndex, setIsBottomPanelMinimized, setRefreshSlider, setSatellitePicker, setSelectedTimelineIndex, showCalendarTool, showTimeSliderTool, sliderPending, startBottomPanelResize, timelineLoading, togglePlay } = ctx;
+// Plain names for the satellites behind each picture.
+const SENSOR_NAME = { 'sentinel-2': 'Clear-sky picture', landsat: 'Landsat picture', 'sentinel-1': 'Radar picture' };
+const SENSOR_HINT = { 'sentinel-2': 'Sharp colour picture, blocked by cloud', landsat: 'Older, coarser picture', 'sentinel-1': 'Sees through cloud' };
+const sensorName = (s) => SENSOR_NAME[s] || s;
+const longDate = (d) => new Date(d).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' });
+const shortDate = (d) => new Date(d).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
 
-    if (!showTimeSliderTool && !showCalendarTool) {
-      return null;
-    }
-    return (
-      <div style={{ height: isBottomPanelMinimized ? '52px' : `${bottomPanelHeight}px` }} className="bg-white border-t border-gray-200 shrink-0 flex flex-col relative overflow-hidden transition-all duration-300">
-        {/* Draggable horizontal divider */}
-        <div 
-          onMouseDown={startBottomPanelResize} 
-          className="absolute top-[-4px] left-0 right-0 h-2 cursor-row-resize hover:bg-green-500/55 active:bg-green-500 transition-colors z-50"
-        />
-        {/* Slider + Play row */}
-        {!hideCalendarAndSlider && showTimeSliderTool && (
-          <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-4">
-            <button
-              onClick={togglePlay}
-              title={isPlaying ? 'Pause' : 'Play'}
-              className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-white shadow-sm transition-all hover:scale-105 active:scale-95"
-              style={{ backgroundColor: isCompareMode ? (activeDateSlot === 'A' ? '#3F8432' : '#2563EB') : '#3F8432' }}
-            >
-              {isPlaying ? <Pause size={14} /> : <Play size={15} />}
+export function renderMapBottomPanel(ctx, indexValue, centerContent = null, hideCalendarAndSlider = false) {
+  const { latestCalDate, jumpToLatestMonth, canPrevCal, canNextCal, SENSOR_DOT_COLOR, TIMELINE_DATA, activeDateSlot, bottomPanelHeight, calDaysInMonth, calFirstDay, calTrailing, calendarDates, calendarMonth, calendarYear, compareTimelineIndex, currentTimeline, currentTimelineA, currentTimelineB, effectiveSensor, isBottomPanelMinimized, isCompareMode, isPlaying, nextCalMonth, prevCalMonth, satellitePicker, selectDateWithSensor, selectedIndex, selectedTimelineIndex, setCompareTimelineIndex, setIsBottomPanelMinimized, setRefreshSlider, setSatellitePicker, setSelectedTimelineIndex, showCalendarTool, showTimeSliderTool, sliderPending, startBottomPanelResize, timelineLoading, togglePlay } = ctx;
+
+  if (!showTimeSliderTool && !showCalendarTool) return null;
+
+  const measure = (selectedIndex || 'NDVI').toUpperCase();
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const monthPrefix = `${calendarYear}-${String(calendarMonth + 1).padStart(2, '0')}`;
+  const picturesThisMonth = (calendarDates || []).filter((d) => d.date.startsWith(monthPrefix)).length;
+  const latestPrefix = latestCalDate ? latestCalDate.slice(0, 7) : null;
+  const sensorsSeen = [...new Set((calendarDates || []).flatMap((d) => d.sensors))];
+  const hasPictures = (calendarDates || []).length > 0 || TIMELINE_DATA.length > 0;
+
+  return (
+    <div style={{ height: isBottomPanelMinimized ? '52px' : `${bottomPanelHeight}px` }} className="bg-white border-t border-gray-200 shrink-0 flex flex-col relative overflow-hidden transition-all duration-300">
+      {/* Draggable horizontal divider */}
+      <div onMouseDown={startBottomPanelResize} className="absolute top-[-4px] left-0 right-0 h-2 cursor-row-resize hover:bg-green-500/55 active:bg-green-500 transition-colors z-50" />
+
+      {/* Slider + play row */}
+      {!hideCalendarAndSlider && showTimeSliderTool && (
+        <div className="px-5 py-2.5 border-b border-gray-100 flex items-center gap-4">
+          <button
+            onClick={togglePlay}
+            disabled={TIMELINE_DATA.length < 2}
+            title={isPlaying ? 'Pause' : 'Play through the pictures'}
+            className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-white transition-colors disabled:bg-gray-200 disabled:text-gray-400 ${isCompareMode && activeDateSlot === 'B' ? 'bg-[var(--status-info)]' : 'bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)]'}`}
+          >
+            {isPlaying ? <Pause size={14} /> : <Play size={15} />}
+          </button>
+          <div className="flex-1 relative min-w-0">
+            {timelineLoading ? (
+              <div className="flex items-center gap-2 h-8 text-sm text-gray-600">
+                <RefreshCw size={14} className="animate-spin text-[var(--brand-primary)]" /> Loading the pictures…
+              </div>
+            ) : TIMELINE_DATA.length === 0 ? (
+              <div className="flex items-center gap-2 h-8 text-sm text-gray-600">
+                <span>No satellite pictures yet. They appear after the first monitoring run.</span>
+              </div>
+            ) : (
+              <>
+                <input type="range" min="0" max={TIMELINE_DATA.length - 1}
+                  value={Math.min(isCompareMode ? (activeDateSlot === 'A' ? selectedTimelineIndex : compareTimelineIndex) : selectedTimelineIndex, TIMELINE_DATA.length - 1)}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value);
+                    if (isCompareMode && activeDateSlot === 'B') setCompareTimelineIndex(val);
+                    else setSelectedTimelineIndex(val);
+                  }}
+                  aria-label="Picture date"
+                  className={`w-full h-2 bg-gray-100 rounded-full appearance-none cursor-pointer ${isCompareMode && activeDateSlot === 'B' ? 'accent-blue-600' : 'accent-green-700'}`} />
+                <div className="flex justify-between px-0.5 mt-1">
+                  {TIMELINE_DATA.map((t, i) => {
+                    const isActive = isCompareMode ? (activeDateSlot === 'A' ? i === selectedTimelineIndex : i === compareTimelineIndex) : i === selectedTimelineIndex;
+                    return <span key={i} className={`text-[11px] transition-colors ${isActive ? 'text-green-700 font-bold' : 'text-gray-500 font-medium'}`}>{t.label.split(',')[0]}</span>;
+                  })}
+                </div>
+              </>
+            )}
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {!timelineLoading && TIMELINE_DATA.length > 0 && (
+              <span className="px-2.5 py-1 rounded-full text-xs font-semibold border whitespace-nowrap tabular-nums bg-green-50 text-green-800 border-green-200">
+                {sliderPending ? (TIMELINE_DATA[Math.min(selectedTimelineIndex, TIMELINE_DATA.length - 1)]?.label ?? '…') : (currentTimeline?.label ?? '…')}
+              </span>
+            )}
+            <button onClick={() => setRefreshSlider((n) => n + 1)} disabled={timelineLoading} title="Look for new pictures" aria-label="Look for new pictures"
+              className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-800 transition-colors disabled:opacity-40">
+              <RefreshCw size={14} className={timelineLoading ? 'animate-spin' : ''} />
             </button>
-            <div className="flex-1 relative">
-              {timelineLoading ? (
-                <div className="flex items-center gap-2 h-8 text-xs text-gray-600">
-                  <svg className="animate-spin h-4 w-4 text-green-500 shrink-0" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
-                  </svg>
-                  Loading satellite timeline…
-                </div>
-              ) : TIMELINE_DATA.length === 0 ? (
-                <div className="flex items-center gap-2 h-8 text-xs text-gray-600">
-                  <span>No imagery yet for {selectedIndex?.toUpperCase() || 'this index'} — pipeline may still be writing data.</span>
-                  <button
-                    onClick={() => setRefreshSlider(n => n + 1)}
-                    title="Retry loading"
-                    className="ml-1 p-1 hover:bg-gray-100 rounded text-gray-600 hover:text-green-600 transition-colors"
-                  ><RefreshCw size={12} /></button>
-                </div>
-              ) : (
-                <>
-                  <input type="range" min="0" max={TIMELINE_DATA.length - 1}
-                    value={Math.min(
-                      isCompareMode ? (activeDateSlot === 'A' ? selectedTimelineIndex : compareTimelineIndex) : selectedTimelineIndex,
-                      TIMELINE_DATA.length - 1
-                    )}
-                    onChange={e => {
-                      const val = parseInt(e.target.value);
-                      if (isCompareMode) {
-                        if (activeDateSlot === 'A') setSelectedTimelineIndex(val);
-                        else setCompareTimelineIndex(val);
-                      } else {
-                        setSelectedTimelineIndex(val);
-                      }
-                    }}
-                    className={`w-full h-2 bg-gray-100 rounded-full appearance-none cursor-pointer ${
-                      isCompareMode && activeDateSlot === 'B' ? 'accent-blue-600' : 'accent-green-600'
-                    }`} />
-                  <div className="flex justify-between px-0.5 mt-1">
-                    {TIMELINE_DATA.map((t, i) => {
-                      const isActive = isCompareMode
-                        ? (activeDateSlot === 'A' ? i === selectedTimelineIndex : i === compareTimelineIndex)
-                        : i === selectedTimelineIndex;
-                      return (
-                        <span key={i} className={`text-[11px] font-semibold transition-colors ${
-                          isActive
-                            ? (isCompareMode && activeDateSlot === 'B' ? 'text-green-600 font-bold' : 'text-green-600 font-bold')
-                            : 'text-gray-600'
-                        }`}>
-                          {t.label.split(',')[0]}
-                        </span>
-                      );
-                    })}
-                  </div>
-                </>
-              )}
+            <button
+              onClick={() => setIsBottomPanelMinimized(!isBottomPanelMinimized)}
+              aria-label={isBottomPanelMinimized ? 'Open calendar and time slider' : 'Close calendar and time slider'}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-dark)] text-white text-xs font-semibold"
+            >
+              {isBottomPanelMinimized ? <ChevronUp size={16} strokeWidth={2.5} /> : <ChevronDown size={16} strokeWidth={2.5} />}
+              {isBottomPanelMinimized ? 'Open' : 'Close'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="flex min-h-0 flex-1 bg-white">
+        {/* Calendar */}
+        {!hideCalendarAndSlider && showCalendarTool && (
+          <div className="shrink-0 w-[360px] border-r border-gray-100 overflow-y-auto px-5 py-4">
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div>
+                <p className="font-display text-base font-semibold text-gray-900 leading-tight">{MONTH_NAMES[calendarMonth]} {calendarYear}</p>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {picturesThisMonth ? `${picturesThisMonth} ${picturesThisMonth === 1 ? 'picture' : 'pictures'} this month` : 'No pictures this month'}
+                </p>
+              </div>
+              <div className="flex items-center gap-1.5">
+                {latestPrefix && latestPrefix !== monthPrefix && (
+                  <button onClick={jumpToLatestMonth} className="px-2.5 h-8 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50">Latest</button>
+                )}
+                <button onClick={prevCalMonth} disabled={!canPrevCal} aria-label="Previous month" title={canPrevCal ? 'Previous month' : 'No pictures before this month'}
+                  className="w-8 h-8 inline-flex items-center justify-center rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed">
+                  <ChevronLeft size={16} />
+                </button>
+                <button onClick={nextCalMonth} disabled={!canNextCal} aria-label="Next month" title={canNextCal ? 'Next month' : 'No future months'}
+                  className="w-8 h-8 inline-flex items-center justify-center rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed">
+                  <ChevronRight size={16} />
+                </button>
+              </div>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
-              {/* Current acquisition date pill — shows pending state while waiting 10s */}
-              {!timelineLoading && TIMELINE_DATA.length > 0 && (
-                <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold border whitespace-nowrap tabular-nums transition-colors ${
-                  sliderPending
-                    ? 'bg-green-100 text-green-600 border-green-200'
-                    : 'bg-green-50 text-green-700 border-green-100'
-                }`}>
-                  {sliderPending
-                    ? (TIMELINE_DATA[Math.min(selectedTimelineIndex, TIMELINE_DATA.length - 1)]?.label ?? '…')
-                    : (currentTimeline?.label ?? '…')}
-                  {sliderPending && <span className="ml-1 opacity-70">↻</span>}
+
+            <div className="grid grid-cols-7 gap-1 text-center">
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
+                <span key={d} className="text-[11px] font-medium text-gray-400 h-6 flex items-center justify-center">{d}</span>
+              ))}
+              {Array.from({ length: calFirstDay }).map((_, i) => <span key={`pad-${i}`} />)}
+              {Array.from({ length: calDaysInMonth }, (_, i) => {
+                const day = i + 1;
+                const dateStr = `${monthPrefix}-${String(day).padStart(2, '0')}`;
+                const matchIdx = TIMELINE_DATA.findIndex((t) => t.date === dateStr);
+                const isHL = matchIdx !== -1;
+                const isSelA = isHL && matchIdx === selectedTimelineIndex;
+                const isSelB = isCompareMode && isHL && matchIdx === compareTimelineIndex;
+                const dayCoverage = (calendarDates || []).find((d) => d.date === dateStr);
+                const isFuture = dateStr > todayStr;
+                const isToday = dateStr === todayStr;
+                const hasPicture = isHL || !!dayCoverage;
+                const dayClickable = isCompareMode ? isHL : hasPicture;
+
+                let cls = 'text-gray-500';
+                if (isSelA && isSelB) cls = 'bg-gradient-to-br from-[var(--brand-primary)] from-50% to-[var(--status-info)] to-50% text-white';
+                else if (isSelA) cls = 'bg-[var(--brand-primary)] text-white';
+                else if (isSelB) cls = 'bg-[var(--status-info)] text-white';
+                else if (hasPicture) cls = 'bg-green-50 text-green-800 hover:bg-green-100 font-semibold';
+                else if (isFuture) cls = 'text-gray-300';
+                if (isToday && !isSelA && !isSelB) cls += ' ring-1 ring-inset ring-gray-300';
+
+                const showCallout = satellitePicker?.date === dateStr;
+                const openUpward = Math.floor((calFirstDay + day - 1) / 7) >= 3;
+                return (
+                  <div key={dateStr} className="relative">
+                    <button disabled={!dayClickable}
+                      title={dayCoverage ? dayCoverage.sensors.map(sensorName).join(', ') : isFuture ? 'Not yet' : 'No picture this day'}
+                      aria-label={`${longDate(dateStr)}${hasPicture ? ', picture available' : ''}`}
+                      onClick={() => {
+                        if (isCompareMode) {
+                          if (activeDateSlot === 'A') setSelectedTimelineIndex(matchIdx);
+                          else setCompareTimelineIndex(matchIdx);
+                          return;
+                        }
+                        if (!dayCoverage) { if (isHL) setSelectedTimelineIndex(matchIdx); return; }
+                        if (dayCoverage.sensors.length > 1) setSatellitePicker(showCallout ? null : { date: dateStr, sensors: dayCoverage.sensors });
+                        else selectDateWithSensor(dateStr, dayCoverage.sensors[0]);
+                      }}
+                      className={`h-9 w-full rounded-lg text-xs flex flex-col items-center justify-center gap-0.5 transition-colors disabled:cursor-default ${cls}`}>
+                      <span className="tabular-nums">{day}</span>
+                      {dayCoverage && (
+                        <span className="flex items-center gap-0.5 leading-none">
+                          {dayCoverage.sensors.map((s) => (
+                            <span key={s} className="w-1 h-1 rounded-full" style={{ backgroundColor: (isSelA || isSelB) ? '#FFFFFF' : SENSOR_DOT_COLOR[s] }} />
+                          ))}
+                        </span>
+                      )}
+                    </button>
+                    {showCallout && (
+                      <div className={`absolute z-50 left-1/2 -translate-x-1/2 bg-white border border-gray-200 rounded-xl shadow-sm p-2.5 flex flex-col gap-1.5 w-max ${openUpward ? 'bottom-full mb-1' : 'top-full mt-1'}`} onClick={(e) => e.stopPropagation()}>
+                        <span className="text-xs font-semibold text-gray-700 whitespace-nowrap">Which picture?</span>
+                        {satellitePicker.sensors.map((s) => (
+                          <button key={s} onClick={() => { selectDateWithSensor(dateStr, s); setSatellitePicker(null); }}
+                            className="flex items-center gap-2 text-xs font-medium px-2.5 py-1.5 rounded-lg text-gray-700 border border-gray-200 hover:bg-gray-50 whitespace-nowrap text-left">
+                            <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: SENSOR_DOT_COLOR[s] }} />
+                            {sensorName(s)}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+              {Array.from({ length: Math.max(0, calTrailing) % 7 }).map((_, i) => <span key={`trail-${i}`} />)}
+            </div>
+
+            {/* What the dots mean */}
+            <div className="mt-4 pt-3 border-t border-gray-100 flex flex-wrap gap-x-4 gap-y-1.5">
+              {(sensorsSeen.length ? sensorsSeen : ['sentinel-2', 'sentinel-1']).map((s) => (
+                <span key={s} className="inline-flex items-center gap-1.5 text-[11px] text-gray-600" title={SENSOR_HINT[s]}>
+                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: SENSOR_DOT_COLOR[s] }} />{sensorName(s)}
                 </span>
-              )}
-              {/* Sensor + index are now chosen from the Map Layers legend
-                  (renderLegendCards) rather than duplicated here. */}
-              <button
-                onClick={() => setRefreshSlider(n => n + 1)}
-                disabled={timelineLoading}
-                title="Refresh timeline data"
-                className="p-1.5 rounded-full hover:bg-green-50 text-green-400 hover:text-green-600 transition-colors disabled:opacity-40"
-              >
-                <RefreshCw size={13} className={timelineLoading ? 'animate-spin' : ''} />
-              </button>
-              <button
-                onClick={() => setIsBottomPanelMinimized(!isBottomPanelMinimized)}
-                title={isBottomPanelMinimized ? "Expand bottom panel" : "Minimize bottom panel"}
-                aria-label={isBottomPanelMinimized ? 'Open calendar and time slider' : 'Close calendar and time slider'}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-700 hover:bg-green-800 text-white text-xs font-semibold"
-              >
-                {isBottomPanelMinimized ? <ChevronUp size={16} strokeWidth={2.5} /> : <ChevronDown size={16} strokeWidth={2.5} />}
-                {isBottomPanelMinimized ? 'Open' : 'Close'}
-              </button>
+              ))}
+              <span className="inline-flex items-center gap-1.5 text-[11px] text-gray-600"><span className="w-3 h-3 rounded ring-1 ring-inset ring-gray-300" />Today</span>
             </div>
           </div>
         )}
 
-        <div className="flex divide-x divide-gray-100 bg-gray-50/30 min-h-0 flex-1">
-          {/* Mini Calendar (Enlarged) */}
-          {!hideCalendarAndSlider && showCalendarTool && (
-            <div className="py-2 px-3 shrink-0 w-[352px] bg-white flex flex-col justify-between overflow-y-auto">
-              <div>
-
-
-                <div className="flex items-center justify-between mb-3">
-                  <button onClick={prevCalMonth} disabled={!canPrevCal} aria-label="Previous month" title={canPrevCal ? 'Previous month' : 'No images before this month'}
-                    className="w-8 h-8 inline-flex items-center justify-center rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed">
-                    <ChevronLeft size={16} />
-                  </button>
-                  <span className="font-display text-sm font-semibold text-gray-900">
-                    {MONTH_NAMES[calendarMonth]} {calendarYear}
-                  </span>
-                  <button onClick={nextCalMonth} disabled={!canNextCal} aria-label="Next month" title={canNextCal ? 'Next month' : 'No future months'}
-                    className="w-8 h-8 inline-flex items-center justify-center rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed">
-                    <ChevronRight size={16} />
-                  </button>
-                </div>
-                
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '3px', textAlign: 'center', alignContent: 'start' }}>
-                  {['S','M','T','W','T','F','S'].map((d, i) => (
-                    <span key={i} className="text-[11px] font-semibold text-gray-600 h-4 flex items-center justify-center">{d}</span>
-                  ))}
-                  {Array.from({ length: calFirstDay }).map((_, i) => <span key={`pad-${i}`} className="h-5" />)}
-                  {Array.from({ length: calDaysInMonth }, (_, i) => {
-                    const day = i + 1;
-                    const dateStr = `${calendarYear}-${String(calendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                    const matchIdx = TIMELINE_DATA.findIndex(t => t.date === dateStr);
-                    const isHL = matchIdx !== -1;
-                    const isSelA = matchIdx === selectedTimelineIndex;
-                    const isSelB = isCompareMode && (matchIdx === compareTimelineIndex);
-                    const dayCoverage = calendarDates.find(d => d.date === dateStr);
-
-                    let btnStyle = {};
-                    let btnClass = '';
-
-                    if (isSelA && isSelB) {
-                      btnStyle = { background: 'linear-gradient(135deg, #3F8432 50%, #2563EB 50%)', color: '#FFFFFF' };
-                    } else if (isSelA) {
-                      btnStyle = { backgroundColor: '#3F8432', color: '#FFFFFF' };
-                    } else if (isSelB) {
-                      btnStyle = { backgroundColor: '#2563EB', color: '#FFFFFF' };
-                    } else if (isHL) {
-                      btnClass = 'text-green-700 bg-green-50 hover:bg-green-100 font-bold border border-green-100';
-                    } else if (dayCoverage) {
-                      btnClass = 'text-gray-500 hover:bg-gray-50 font-semibold';
-                    } else {
-                      btnClass = 'text-gray-500 cursor-default';
-                    }
-
-                    const dayClickable = isCompareMode ? isHL : (isHL || !!dayCoverage);
-
-                    // Multi-sensor days used to only surface the satellite
-                    // choice in a separate panel elsewhere on screen — you'd
-                    // click a date up here, then have to look away to find
-                    // where to actually pick the satellite. Anchoring it as
-                    // a callout right on the clicked cell keeps the choice
-                    // and its trigger in the same place.
-                    const showCallout = satellitePicker?.date === dateStr;
-                    // Rows near the bottom of the grid have no room for a
-                    // downward callout before the calendar's own overflow
-                    // boundary clips it — flip those upward instead.
-                    const dayRow = Math.floor((calFirstDay + day - 1) / 7);
-                    const openUpward = dayRow >= 3;
-                    return (
-                      <div key={i} className="relative">
-                        <button disabled={!dayClickable}
-                          title={dayCoverage ? `Imagery from: ${dayCoverage.sensors.map(s => s === 'sentinel-2' ? 'Sentinel-2' : s === 'landsat' ? 'Landsat' : 'Sentinel-1').join(', ')}` : undefined}
-                          onClick={() => {
-                            if (isCompareMode) {
-                              // Compare mode keeps the simpler current-sensor-only
-                              // behavior — picking a satellite for slot A vs B
-                              // independently gets confusing fast.
-                              if (isHL) {
-                                if (activeDateSlot === 'A') setSelectedTimelineIndex(matchIdx);
-                                else setCompareTimelineIndex(matchIdx);
-                              }
-                              return;
-                            }
-                            if (!dayCoverage) return;
-                            if (dayCoverage.sensors.length > 1) {
-                              setSatellitePicker(showCallout ? null : { date: dateStr, sensors: dayCoverage.sensors });
-                            } else {
-                              selectDateWithSensor(dateStr, dayCoverage.sensors[0]);
-                            }
-                          }}
-                          className={`h-6 w-full rounded-md text-[11px] font-bold flex flex-col items-center justify-center gap-0.5 transition-all ${btnClass}`}
-                          style={btnStyle}>
-                          <span>{day}</span>
-                          {dayCoverage && (
-                            <span className="flex items-center gap-0.5 leading-none">
-                              {dayCoverage.sensors.map(s => (
-                                <span key={s} className="w-1 h-1 rounded-full" style={{ backgroundColor: (isSelA || isSelB) ? '#FFFFFF' : SENSOR_DOT_COLOR[s] }} />
-                              ))}
-                            </span>
-                          )}
-                        </button>
-                        {showCallout && (
-                          <div
-                            className={`absolute z-50 left-1/2 -translate-x-1/2 bg-white border border-gray-200 rounded-lg shadow-lg p-2 flex flex-col gap-1 w-max ${
-                              openUpward ? 'bottom-full mb-1' : 'top-full mt-1'
-                            }`}
-                            onClick={e => e.stopPropagation()}
-                          >
-                            <div className={`w-2 h-2 bg-white border-gray-200 rotate-45 absolute left-1/2 -translate-x-1/2 ${
-                              openUpward ? 'border-r border-b -bottom-1' : 'border-l border-t -top-1'
-                            }`} />
-                            <span className="text-[11px] font-bold text-gray-600 whitespace-nowrap">Choose satellite</span>
-                            <div className="flex gap-1">
-                              {satellitePicker.sensors.map(s => (
-                                <button
-                                  key={s}
-                                  onClick={() => { selectDateWithSensor(dateStr, s); setSatellitePicker(null); }}
-                                  className="text-[11px] font-bold px-2 py-1 rounded-full text-gray-700 bg-gray-100 border border-gray-200 hover:bg-gray-200 whitespace-nowrap"
-                                >
-                                  {s === 'sentinel-2' ? 'Sentinel-2' : s === 'landsat' ? 'Landsat' : 'Sentinel-1'}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                  {Array.from({ length: calTrailing < 0 ? 0 : calTrailing }).map((_, i) => (
-                    <span key={`trail-${i}`} className="h-5" />
-                  ))}
-                </div>
-              </div>
-
-
-            </div>
-          )}
-
-          {/* Vertical key for what each calendar dot color means — the
-              calendar itself only shows colored dots per day, with nothing
-              nearby explaining which satellite each color is. */}
-
-
-          {centerContent ? centerContent : (
-            <div className="bg-white p-4 flex items-start overflow-hidden border-l border-r border-gray-100">
-              {/* Everything about the current selection — which pass is
-                  active, how many passes exist this month, and (if a day
-                  with more than one sensor was just clicked) the satellite
-                  choice — lives in one bordered panel instead of three
-                  separate floating pieces. Sized to its content, not
-                  stretched to fill the row. One neutral border, one accent
-                  color (green) used only for the thing that's actually
-                  selected. */}
-              <div className="flex flex-col gap-1.5 w-full max-w-[280px] h-fit self-start">
-                {isCompareMode ? (
-                  <div className="flex flex-col gap-1">
-                    {currentTimelineA && (
-                      <div className="flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-green-600 shrink-0" />
-                        <span className="text-[11px] font-bold text-gray-700">A: {currentTimelineA.label?.split(',')[0]}</span>
-                        <span className="text-[11px] font-semibold text-gray-600 bg-gray-100 px-1 py-0.5 rounded shrink-0">
-                          {effectiveSensor === 'sentinel-1' ? 'S1 SAR' : effectiveSensor === 'landsat' ? 'L9' : 'S2'}
-                        </span>
-                        <span className="text-[11px] text-gray-500 font-mono">{(selectedIndex || 'NDVI').toUpperCase()}</span>
-                      </div>
-                    )}
-                    {currentTimelineB && (
-                      <div className="flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-gray-400 shrink-0" />
-                        <span className="text-[11px] font-bold text-gray-700">B: {currentTimelineB.label?.split(',')[0]}</span>
-                        <span className="text-[11px] font-semibold text-gray-600 bg-gray-100 px-1 py-0.5 rounded shrink-0">
-                          {effectiveSensor === 'sentinel-1' ? 'S1 SAR' : effectiveSensor === 'landsat' ? 'L9' : 'S2'}
-                        </span>
-                        <span className="text-[11px] text-gray-500 font-mono">{(selectedIndex || 'NDVI').toUpperCase()}</span>
-                      </div>
-                    )}
+        {centerContent ? centerContent : (
+          <div className="flex-1 min-w-0 overflow-y-auto px-6 py-4">
+            {!hasPictures ? (
+              <div className="h-full flex items-center">
+                <div className="flex items-start gap-4 max-w-lg">
+                  <span className="w-10 h-10 rounded-xl bg-green-50 border border-green-100 flex items-center justify-center text-green-700 shrink-0"><Satellite size={18} /></span>
+                  <div>
+                    <p className="font-display text-base font-semibold text-gray-900">No satellite pictures yet</p>
+                    <p className="text-sm text-gray-500 mt-1">They appear after the first monitoring run. Each green day in the calendar is then a picture you can open on the map.</p>
+                    <button onClick={() => setRefreshSlider((n) => n + 1)} className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50">
+                      <RefreshCw size={13} /> Look again
+                    </button>
                   </div>
-                ) : (
-                  currentTimeline && (
-                    <div className="flex flex-col gap-0.5">
-                      <div className="text-[11px] font-semibold text-gray-600">Selected acquisition pass</div>
-                      <div className="flex items-center gap-1 flex-wrap">
-                        <span className="text-[11px] font-bold text-gray-800 tracking-tight">{currentTimeline.label?.split(',')[0]}</span>
-                        <span className="text-[11px] font-bold text-green-700 bg-green-50 px-1.5 py-0.5 rounded-full border border-green-200">
-                          {effectiveSensor === 'sentinel-1' ? 'S1 SAR' : effectiveSensor === 'landsat' ? 'L9' : 'S2'}
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col lg:flex-row gap-6">
+                {/* The picture on the map */}
+                <div className="lg:w-[280px] shrink-0">
+                  <p className="text-xs font-medium text-gray-500 mb-2">{isCompareMode ? 'Pictures compared' : 'Picture on the map'}</p>
+                  {isCompareMode ? (
+                    <div className="space-y-2">
+                      {[['A', currentTimelineA, 'bg-[var(--brand-primary)]'], ['B', currentTimelineB, 'bg-[var(--status-info)]']].map(([slot, t, dot]) => t && (
+                        <div key={slot} className={`rounded-xl border px-3 py-2.5 ${activeDateSlot === slot ? 'border-gray-300' : 'border-gray-200'}`}>
+                          <div className="flex items-center gap-2"><span className={`w-2 h-2 rounded-full ${dot}`} /><span className="text-xs font-semibold text-gray-500">{slot === 'A' ? 'Left' : 'Right'}</span></div>
+                          <p className="text-sm font-semibold text-gray-900 mt-0.5">{t.date ? longDate(t.date) : t.label}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : currentTimeline ? (
+                    <div className="rounded-xl border border-gray-200 px-4 py-3">
+                      <p className="font-display text-base font-semibold text-gray-900">{currentTimeline.date ? longDate(currentTimeline.date) : currentTimeline.label}</p>
+                      <div className="flex flex-wrap gap-1.5 mt-2">
+                        <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full border border-gray-200 text-gray-700">
+                          <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: SENSOR_DOT_COLOR[effectiveSensor] }} />{sensorName(effectiveSensor)}
                         </span>
-                        <span className="text-[11px] font-bold text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded-full border border-gray-100">
-                          {(selectedIndex || 'NDVI').toUpperCase()}
-                        </span>
+                        <span className="text-xs font-medium px-2 py-0.5 rounded-full border border-gray-200 text-gray-700">{measure}</span>
                       </div>
                     </div>
-                  )
-                )}
+                  ) : (
+                    <p className="text-sm text-gray-500">Pick a green day in the calendar.</p>
+                  )}
+                </div>
 
-                <div className="h-px bg-gray-100" />
-
-                {/* Real coverage for the month currently open in the
-                    calendar — replaces a static "Best Imagery Active"
-                    caption that never changed. */}
-
-
-                {/* Recent passes — the calendar already has every real
-                    acquisition date; surfacing the last few here lets you
-                    jump between them without opening it. */}
-                {calendarDates.length > 0 && (
-                  <>
-                    <div className="h-px bg-gray-100" />
-                    <div className="flex flex-col gap-1.5">
-                      <span className="text-[11px] font-semibold text-gray-600">Recent passes</span>
-                      <div className="flex flex-col gap-1">
-                        {calendarDates.slice(-5).reverse().map(d => {
-                          const isActive = currentTimeline?.date === d.date;
-                          return (
-                            <button
-                              key={d.date}
-                              onClick={() => {
-                                if (d.sensors.length > 1) setSatellitePicker({ date: d.date, sensors: d.sensors });
-                                else selectDateWithSensor(d.date, d.sensors[0]);
-                              }}
-                              className={`flex items-center gap-1.5 px-1.5 py-1 rounded-md text-left transition-colors ${
-                                isActive ? 'bg-green-50' : 'hover:bg-gray-50'
-                              }`}
-                            >
-                              <span className="flex items-center gap-0.5 shrink-0">
-                                {d.sensors.map(s => (
-                                  <span key={s} className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: SENSOR_DOT_COLOR[s] }} />
-                                ))}
-                              </span>
-                              <span className={`text-[11px] font-semibold ${isActive ? 'text-green-700' : 'text-gray-700'}`}>
-                                {new Date(d.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
-                              </span>
-                            </button>
-                          );
-                        })}
-                      </div>
+                {/* Recent pictures */}
+                {(calendarDates || []).length > 0 && (
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-gray-500 mb-2 flex items-center gap-1.5"><CalendarDays size={13} /> Recent pictures</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
+                      {calendarDates.slice(-6).reverse().map((d) => {
+                        const isActive = currentTimeline?.date === d.date;
+                        return (
+                          <button key={d.date}
+                            onClick={() => {
+                              const [y, m] = d.date.split('-').map(Number);
+                              if (y !== calendarYear || m - 1 !== calendarMonth) { ctx.setCalendarYear?.(y); ctx.setCalendarMonth?.(m - 1); }
+                              if (d.sensors.length > 1) setSatellitePicker({ date: d.date, sensors: d.sensors });
+                              else selectDateWithSensor(d.date, d.sensors[0]);
+                            }}
+                            className={`flex items-center justify-between gap-2 px-3 py-2 rounded-xl border text-left transition-colors ${isActive ? 'border-green-300 bg-green-50' : 'border-gray-200 hover:bg-gray-50'}`}>
+                            <span className={`text-sm font-medium ${isActive ? 'text-green-800' : 'text-gray-800'}`}>{shortDate(d.date)}</span>
+                            <span className="flex items-center gap-1 shrink-0">
+                              {d.sensors.map((s) => <span key={s} title={sensorName(s)} className="w-2 h-2 rounded-full" style={{ backgroundColor: SENSOR_DOT_COLOR[s] }} />)}
+                            </span>
+                          </button>
+                        );
+                      })}
                     </div>
-                  </>
+                  </div>
                 )}
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </div>
-    );
-  
+    </div>
+  );
 }

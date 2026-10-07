@@ -116,6 +116,11 @@ button:active {
   background-color: transparent !important;
 }
 
+/* Block outlines stay black but thin out when zoomed out (set by ResizeMap),
+   so many blocks never merge into one solid black shape. */
+.fi-map-far path.leaflet-interactive { stroke-width: 0.6px; }
+.fi-map-mid path.leaflet-interactive { stroke-width: 1px; }
+
 /* Hide gray grid line artifacts in Leaflet tiles */
 .leaflet-tile {
   border: none !important;

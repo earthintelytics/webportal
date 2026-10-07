@@ -38,6 +38,21 @@ export default function BlockSummaryPage({ plotsData = [], measures = [], basema
     return Object.entries(g).map(([e, vs]) => ({ estate: e, n: vs.length, mean: vs.reduce((a, b) => a + b, 0) / vs.length })).sort((a, b) => a.mean - b.mean);
   }, [withValue]);
 
+  // Known before any monitoring run: blocks, estates and area from the uploaded boundaries.
+  const overview = useMemo(() => {
+    const g = {};
+    let area = 0;
+    let withArea = 0;
+    plotsData.forEach((p) => {
+      const e = p.subfarm || 'No estate';
+      g[e] = (g[e] || 0) + 1;
+      const a = parseFloat(p.area_ha ?? p.area);
+      if (Number.isFinite(a)) { area += a; withArea += 1; }
+    });
+    return { estates: Object.entries(g).sort((a, b) => b[1] - a[1]), area: withArea ? area : null };
+  }, [plotsData]);
+  const one = unitLabel === 'blocks' ? 'block' : unitLabel.replace(/s$/, '');
+
   if (!measures.length) {
     return <div className="p-10 text-sm text-gray-500">No measures with classes for this service yet. The admin sets them under Map classes.</div>;
   }
@@ -47,7 +62,7 @@ export default function BlockSummaryPage({ plotsData = [], measures = [], basema
       <div className="flex-1 relative min-w-0">
         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] flex flex-wrap justify-center gap-2 bg-white border border-gray-200 rounded-xl p-1.5">
           {measures.map((x) => (
-            <button key={x.key} type="button" onClick={() => setKey(x.key)}
+            <button key={x.key} type="button" onClick={() => setKey(x.key)} title={x.title || x.label}
               className={`px-3 py-1.5 rounded-lg text-sm font-semibold ${x.key === m.key ? 'bg-green-700 text-white' : 'text-gray-700 hover:bg-gray-100'}`}>{x.label}</button>
           ))}
         </div>
@@ -65,16 +80,73 @@ export default function BlockSummaryPage({ plotsData = [], measures = [], basema
           <ZoomControl position="bottomright" />
           <ResizeMap trigger={key} />
         </MapContainer>
+
+        {/* Colour key, only once there are values to colour */}
+        {stats && (
+          <div className="absolute bottom-6 left-4 z-[1000] bg-white border border-gray-200 rounded-xl px-3 py-2.5 space-y-1.5 max-w-[240px]">
+            <p className="text-xs font-semibold text-gray-900">{m.label}{m.unit ? ` (${m.unit})` : ''}</p>
+            {(m.classes || []).map((c) => (
+              <div key={c.label} className="flex items-center gap-2 text-xs text-gray-700">
+                <span className="w-3 h-3 rounded-sm border border-black/20 shrink-0" style={{ background: c.hex }} />{c.label}
+              </div>
+            ))}
+            <div className="flex items-center gap-2 text-xs text-gray-500">
+              <span className="w-3 h-3 rounded-sm border border-black shrink-0 bg-transparent" />No result yet
+            </div>
+          </div>
+        )}
       </div>
 
-      <aside className="w-[340px] shrink-0 bg-white border-l border-gray-200 overflow-y-auto p-5 space-y-6">
+      <aside className="w-[360px] shrink-0 bg-white border-l border-gray-200 overflow-y-auto p-6 space-y-6">
         <div>
-          <h2 className="font-display text-lg font-semibold text-gray-900">Block summary</h2>
-          <p className="text-sm text-gray-500 mt-1">{m.label}{m.unit ? ` (${m.unit})` : ''}: one value per {unitLabel === 'blocks' ? 'block' : unitLabel.replace(/s$/, '')}, latest result.</p>
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="font-display text-xl font-semibold text-gray-900">Block summary</h2>
+            <span className="text-xs font-medium px-2 py-0.5 rounded-full border border-gray-200 text-gray-600">{plotsData.length} {unitLabel}</span>
+          </div>
+          <p className="text-sm text-gray-500 mt-1">{m.label}{m.unit ? ` (${m.unit})` : ''}: one value per {one}, from the latest result.</p>
         </div>
 
         {!stats ? (
-          <p className="text-sm text-gray-500 border border-dashed border-gray-300 rounded-xl p-4">No results for these {unitLabel} yet. They appear after the first monitoring run.</p>
+          <>
+            <div className="rounded-xl border border-gray-200 p-4">
+              <p className="text-sm font-semibold text-gray-900">Waiting for the first results</p>
+              <p className="text-sm text-gray-500 mt-1">Each {one} gets a value and a colour after the first monitoring run. Until then, this is what is set up.</p>
+            </div>
+
+            <dl className="grid grid-cols-3 gap-2">
+              {[[unitLabel.charAt(0).toUpperCase() + unitLabel.slice(1), plotsData.length], ['Estates', overview.estates.length], ['Hectares', overview.area != null ? Math.round(overview.area).toLocaleString() : '—']].map(([k, v]) => (
+                <div key={k} className="rounded-xl border border-gray-200 px-3 py-2.5">
+                  <dt className="text-xs text-gray-500">{k}</dt>
+                  <dd className="font-display text-lg font-semibold text-gray-900 tabular-nums">{v}</dd>
+                </div>
+              ))}
+            </dl>
+
+            {overview.estates.length > 0 && (
+              <section className="space-y-2">
+                <h3 className="text-sm font-semibold text-gray-900">{unitLabel.charAt(0).toUpperCase() + unitLabel.slice(1)} per estate</h3>
+                <ul className="divide-y divide-gray-100 border border-gray-200 rounded-xl">
+                  {overview.estates.map(([e, n]) => (
+                    <li key={e} className="flex justify-between px-3 py-2 text-sm"><span className="text-gray-800">{e}</span><span className="font-semibold text-gray-900 tabular-nums">{n}</span></li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            {(m.classes || []).length > 0 && (
+              <section className="space-y-2">
+                <h3 className="text-sm font-semibold text-gray-900">How {unitLabel} will be coloured</h3>
+                <ul className="space-y-1.5">
+                  {m.classes.map((c) => (
+                    <li key={c.label} className="flex items-center justify-between gap-2 text-sm">
+                      <span className="flex items-center gap-2 text-gray-800"><span className="w-3 h-3 rounded-sm border border-black/20 shrink-0" style={{ background: c.hex }} />{c.label}</span>
+                      <span className="text-xs text-gray-400 tabular-nums">{c.range[0]} to {c.range[1]}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+          </>
         ) : (
           <>
             <dl className="grid grid-cols-2 gap-3">
@@ -129,7 +201,7 @@ export function useBlockMeasures({ cropProfileEntries = [], blockValue, cropType
   const fromIndices = cropProfileEntries
     .filter((e) => Array.isArray(e.legend) && e.legend.length)
     .map((e) => ({
-      key: e.key, label: e.short_label || e.label || e.key.toUpperCase(), unit: '',
+      key: e.key, label: e.short_label || e.label || e.key.toUpperCase(), title: e.description || e.label || e.short_label, unit: '',
       classes: [...e.legend].filter((l) => Array.isArray(l.range)).sort((a, b) => a.range[0] - b.range[0]).map((l) => ({ label: l.label, range: l.range, hex: l.color || hexOf(l) })),
       valueOf: (p) => blockValue(p, e.key),
     }));
