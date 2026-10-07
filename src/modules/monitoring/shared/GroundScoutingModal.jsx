@@ -24,8 +24,13 @@ import {
   getPendingSyncCount
 } from '../../../services/scoutingService';
 
-export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) {
-  const [activeTab, setActiveTab] = useState('dispatch'); // 'dispatch' | 'observation' | 'resolve' | 'history'
+/**
+ * Field visit for one block. With a real open alert: send someone, record
+ * what they found, close the alert. Without one (visitOnly): record a visit.
+ * Full screen on a phone; saved on the device when there is no signal.
+ */
+export default function GroundScoutingModal({ alert, onClose, onAlertUpdated, visitOnly = false }) {
+  const [activeTab, setActiveTab] = useState(visitOnly ? 'observation' : 'dispatch'); // 'dispatch' | 'observation' | 'resolve' | 'history'
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [pendingSync, setPendingSync] = useState(getPendingSyncCount());
   const [submitting, setSubmitting] = useState(false);
@@ -121,7 +126,7 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
     try {
       await submitScoutingObservation({
         plotId: alert.plot_id,
-        alertId: alert.alert_id,
+        alertId: visitOnly ? null : alert.alert_id,
         scoutName,
         scoutContact,
         cropStage,
@@ -186,96 +191,62 @@ export default function GroundScoutingModal({ alert, onClose, onAlertUpdated }) 
   if (!alert) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/30">
-      <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+    <div className="fixed inset-0 z-[1200] flex items-stretch sm:items-center justify-center sm:p-4 bg-gray-900/30">
+      <div className="relative w-full sm:max-w-2xl h-full sm:h-auto sm:max-h-[90vh] overflow-y-auto bg-white sm:rounded-2xl border border-gray-200">
         {/* Header */}
-        <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-gray-200 bg-white">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className={`p-2 rounded-lg ${alert.severity === 'Critical' ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700'}`}>
-              <AlertTriangle size={20} />
-            </div>
-            <div className="min-w-0">
-              <p className="font-display text-base font-semibold text-gray-900">Field visit</p>
-              <p className="text-xs text-gray-500 truncate">Plot {alert.plot_id} · {alert.type}</p>
-            </div>
+        <div className="sticky top-0 z-10 flex items-center justify-between gap-3 px-5 py-4 border-b border-gray-200 bg-white">
+          <div className="min-w-0">
+            <p className="font-display text-base font-semibold text-gray-900">{visitOnly ? 'Record a field visit' : 'Act on this alert'}</p>
+            <p className="text-xs text-gray-500 truncate">Block {alert.plot_name || alert.plot_id}{!visitOnly && alert.type ? ` · ${alert.type}` : ''}</p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${isOnline ? 'bg-green-50 text-green-800 border-green-200' : 'bg-amber-50 text-amber-800 border-amber-200'}`}>
+            <span className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${isOnline ? 'bg-green-50 text-green-800 border-green-200' : 'bg-amber-50 text-amber-800 border-amber-200'}`}>
               {isOnline ? <Wifi size={13} /> : <WifiOff size={13} />}
-              {isOnline ? 'Online' : 'Offline: saved on this device'}
+              {isOnline ? 'Online' : 'No signal: saved on this device'}
             </span>
             {pendingSync > 0 && (
-              <button
-                onClick={handleSyncNow}
-                disabled={submitting}
-                className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-white bg-green-700 hover:bg-green-800"
-                title="Send the visits saved offline"
-              >
-                <RefreshCw size={12} className={submitting ? 'animate-spin' : ''} />
-                {pendingSync} to send
+              <button onClick={handleSyncNow} disabled={submitting} title="Send the visits saved without signal"
+                className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-white bg-green-700 hover:bg-green-800">
+                <RefreshCw size={12} className={submitting ? 'animate-spin' : ''} />{pendingSync} to send
               </button>
             )}
-            <button onClick={onClose} aria-label="Close" className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100">
-              <X size={20} />
-            </button>
+            <button onClick={onClose} aria-label="Close" className="p-2 rounded-lg text-gray-500 hover:bg-gray-100"><X size={20} /></button>
           </div>
         </div>
 
-        {/* Anomaly Brief Banner */}
-        <div className="px-6 py-3 bg-gray-50 border-b border-gray-100 flex items-center justify-between text-xs text-gray-600">
-          <div className="flex items-center space-x-2 truncate max-w-md">
-            <span className="font-semibold text-gray-900">Satellite Signal:</span>
-            <span className="truncate">{alert.message}</span>
-          </div>
-          <div className="flex items-center space-x-3 flex-shrink-0">
-            <span className={`px-2 py-0.5 rounded font-semibold text-[11px] ${
-              alert.status === 'resolved' ? 'bg-emerald-100 text-emerald-800' :
-              alert.status === 'scout_assigned' ? 'bg-blue-100 text-blue-800' :
-              alert.status === 'in_progress' ? 'bg-purple-100 text-purple-800' :
-              'bg-amber-100 text-amber-800'
-            }`}>
-              {alert.status ? alert.status.replace('_', ' ').toUpperCase() : 'OPEN'}
+        {!isOnline && <p className="sm:hidden px-5 py-2 text-xs bg-amber-50 text-amber-900 border-b border-amber-200">No signal: what you record is saved on this phone and sent later.</p>}
+
+        {/* The alert, in its own words */}
+        {!visitOnly && (
+          <div className="px-5 py-3 bg-gray-50 border-b border-gray-200 flex items-start justify-between gap-3 text-sm text-gray-700">
+            <span>{alert.message}</span>
+            <span className="shrink-0 px-2 py-0.5 rounded-md text-xs font-semibold bg-white border border-gray-200 text-gray-700">
+              {({ open: 'Open', scout_assigned: 'Someone sent', resolved: 'Closed', dismissed: 'Dismissed' })[alert.status] || 'Open'}
             </span>
           </div>
-        </div>
+        )}
 
-        {/* Tabs */}
-        <div className="flex border-b border-gray-100 bg-white">
-          <button
-            onClick={() => setActiveTab('dispatch')}
-            className={`flex-1 flex items-center justify-center space-x-2 py-3 text-xs font-semibold border-b-2 transition-colors ${
-              activeTab === 'dispatch' ? 'border-emerald-600 text-emerald-600 bg-emerald-50/30' : 'border-transparent text-gray-500 hover:text-gray-900'
-            }`}
-          >
-            <UserCheck size={16} />
-            <span>1. Dispatch Scout</span>
+        {/* Steps */}
+        <div role="tablist" className="flex overflow-x-auto border-b border-gray-200 bg-white">
+          {!visitOnly && (
+          <button type="button" onClick={() => setActiveTab('dispatch')} aria-selected={activeTab === 'dispatch'} role="tab"
+            className={`flex-1 min-w-[120px] flex items-center justify-center gap-2 py-3 text-sm font-semibold border-b-2 ${activeTab === 'dispatch' ? 'border-green-700 text-green-800' : 'border-transparent text-gray-500 hover:text-gray-900'}`}>
+            <UserCheck size={16} /><span>Send someone</span>
           </button>
-          <button
-            onClick={() => setActiveTab('observation')}
-            className={`flex-1 flex items-center justify-center space-x-2 py-3 text-xs font-semibold border-b-2 transition-colors ${
-              activeTab === 'observation' ? 'border-emerald-600 text-emerald-600 bg-emerald-50/30' : 'border-transparent text-gray-500 hover:text-gray-900'
-            }`}
-          >
-            <Camera size={16} />
-            <span>2. Ground Truth Log</span>
+          )}
+          <button type="button" onClick={() => setActiveTab('observation')} aria-selected={activeTab === 'observation'} role="tab"
+            className={`flex-1 min-w-[120px] flex items-center justify-center gap-2 py-3 text-sm font-semibold border-b-2 ${activeTab === 'observation' ? 'border-green-700 text-green-800' : 'border-transparent text-gray-500 hover:text-gray-900'}`}>
+            <Camera size={16} /><span>What was found</span>
           </button>
-          <button
-            onClick={() => setActiveTab('resolve')}
-            className={`flex-1 flex items-center justify-center space-x-2 py-3 text-xs font-semibold border-b-2 transition-colors ${
-              activeTab === 'resolve' ? 'border-emerald-600 text-emerald-600 bg-emerald-50/30' : 'border-transparent text-gray-500 hover:text-gray-900'
-            }`}
-          >
-            <CheckCircle2 size={16} />
-            <span>3. Resolve & Close</span>
+          {!visitOnly && (
+          <button type="button" onClick={() => setActiveTab('resolve')} aria-selected={activeTab === 'resolve'} role="tab"
+            className={`flex-1 min-w-[120px] flex items-center justify-center gap-2 py-3 text-sm font-semibold border-b-2 ${activeTab === 'resolve' ? 'border-green-700 text-green-800' : 'border-transparent text-gray-500 hover:text-gray-900'}`}>
+            <CheckCircle2 size={16} /><span>Close the alert</span>
           </button>
-          <button
-            onClick={() => setActiveTab('history')}
-            className={`flex-1 flex items-center justify-center space-x-2 py-3 text-xs font-semibold border-b-2 transition-colors ${
-              activeTab === 'history' ? 'border-emerald-600 text-emerald-600 bg-emerald-50/30' : 'border-transparent text-gray-500 hover:text-gray-900'
-            }`}
-          >
-            <History size={16} />
-            <span>4. Observation History</span>
+          )}
+          <button type="button" onClick={() => setActiveTab('history')} aria-selected={activeTab === 'history'} role="tab"
+            className={`flex-1 min-w-[120px] flex items-center justify-center gap-2 py-3 text-sm font-semibold border-b-2 ${activeTab === 'history' ? 'border-green-700 text-green-800' : 'border-transparent text-gray-500 hover:text-gray-900'}`}>
+            <History size={16} /><span>Past visits</span>
           </button>
         </div>
 

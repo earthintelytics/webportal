@@ -104,9 +104,12 @@ export async function fetchDashboardStats(tenant) {
  *   indices.uas_anomaly_score → uas_anomaly_score
  *   boundary.coordinates → coords (after lat/lng swap – see note below)
  */
+// The service being viewed: estates whose boundary is set for other services only are left out.
+const serviceParam = () => { try { const m = sessionStorage.getItem('fi_module'); return m ? `module=${encodeURIComponent(m)}` : ''; } catch { return ''; } };
+
 export async function fetchPlotsIntelligence(tenant) {
-  const params = tenant ? `?tenant=${tenant}` : '';
-  return apiFetch(`/plots/intelligence${params}`);
+  const q = [tenant ? `tenant=${tenant}` : '', serviceParam()].filter(Boolean).join('&');
+  return apiFetch(`/plots/intelligence${q ? `?${q}` : ''}`);
 }
 
 // ─── Crop Health Analytics ──────────────────────────────────────────────────
@@ -367,7 +370,8 @@ export async function fetchPixelTimeseries({ farm, index, lat, lon, loadDelay = 
  * derived from zarr x/y extents. Used when no individual plot GeoJSONs exist.
  */
 export async function fetchFarmBoundary() {
-  return apiFetch('/farm/boundary');
+  const q = serviceParam();
+  return apiFetch(`/farm/boundary${q ? `?${q}` : ''}`);
 }
 
 /**

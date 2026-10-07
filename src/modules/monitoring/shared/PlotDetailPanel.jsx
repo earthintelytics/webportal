@@ -12,7 +12,7 @@ const fieldStyle = { display: 'flex', flexDirection: 'column', gap: '2px' };
 const labelStyle = { fontSize: '11px', fontWeight: 800, color: '#94a3b8', letterSpacing: '0.05em', textTransform: 'uppercase' };
 const valueStyle = { fontSize: '15px', fontWeight: 800, color: '#0f172a' };
 
-export default function PlotDetailPanel({ plot, series, indexLabel = 'Index', dashboardFilterKeys = [], onClose }) {
+export default function PlotDetailPanel({ plot, series, indexLabel = 'Index', dashboardFilterKeys = [], alerts = [], onClose }) {
   const [scoutingModalOpen, setScoutingModalOpen] = useState(false);
   if (!plot) return null;
 
@@ -40,14 +40,12 @@ export default function PlotDetailPanel({ plot, series, indexLabel = 'Index', da
     },
   };
 
-  const syntheticAlert = {
-    alert_id: `ALT-${plot.id}`,
-    plot_id: String(plot.id),
-    type: plot.indices?.uas_anomaly_score > 0.4 ? 'Spectral Canopy Stress' : 'Vegetation Anomaly',
-    severity: plot.health?.toLowerCase().includes('critical') ? 'Critical' : 'Warning',
-    message: `Spectral variance detected on plot ${plot.name || plot.id}. Health: ${plot.health || 'Moderate'}.`,
-    status: 'open',
-  };
+  // A real open alert on this block, if any; otherwise the visit is recorded on its own.
+  const openAlert = (alerts || []).find((a) => String(a.plot) === String(plot.id) && a.status === 'Active');
+  const visitAlert = openAlert
+    ? { alert_id: openAlert.id, plot_id: String(plot.id), plot_name: plot.name, type: openAlert.category, severity: openAlert.severity, message: openAlert.desc, status: openAlert.workflow || 'open' }
+    : { alert_id: null, plot_id: String(plot.id), plot_name: plot.name, status: 'open' };
+
 
   return (
     <>
@@ -88,7 +86,7 @@ export default function PlotDetailPanel({ plot, series, indexLabel = 'Index', da
               justifyContent: 'center',
               gap: '8px',
               padding: '10px 14px',
-              background: '#0f172a',
+              background: '#2F6B2A',
               color: '#ffffff',
               border: 'none',
               borderRadius: '12px',
@@ -99,8 +97,8 @@ export default function PlotDetailPanel({ plot, series, indexLabel = 'Index', da
               boxShadow: '0 4px 12px rgba(15,23,42,0.15)',
             }}
           >
-            <UserCheck size={15} color="#4ade80" />
-            <span>Dispatch / Verify Ground Scout</span>
+            <UserCheck size={15} color="#ffffff" />
+            <span>{openAlert ? 'Act on this alert' : 'Record a field visit'}</span>
           </button>
 
           {dashboardFilterKeys.length > 0 && plot.filters && Object.keys(plot.filters).length > 0 && (
@@ -126,7 +124,8 @@ export default function PlotDetailPanel({ plot, series, indexLabel = 'Index', da
 
       {scoutingModalOpen && (
         <GroundScoutingModal
-          alert={syntheticAlert}
+          alert={visitAlert}
+          visitOnly={!openAlert}
           onClose={() => setScoutingModalOpen(false)}
           onAlertUpdated={() => setScoutingModalOpen(false)}
         />

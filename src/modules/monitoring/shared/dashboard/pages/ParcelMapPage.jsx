@@ -7,7 +7,7 @@ import PlotSearchSelector from '../../PlotSearchSelector';
 import { useState } from 'react';
 
 /** The parcel / intelligence layers map page of the crop and service dashboard (moved out of CropDashboardLayout). */
-export default function ParcelMapPage({ cropType, basemapAttribution, basemapMaxNativeZoom, basemapUrl, currentTileUrl, currentTileUrlB, currentTimelineA, currentTimelineB, dashboardFilterKeys, defaultMapCenter, dynamicFilterValues, farmBoundary, filterEstate, filteredPlotsData, handlePlotClick, handleSplitDragStart, intelBoundariesOpacity, intelShowBoundaries, intelShowLayers, isCompareMode, mapOpacity, pixelTimeseries, plotsData, plotsDataA, plotsDataB, rasterOverlayBounds, renderFloatingBasemapSelector, renderIntelPolygons, renderMapBottomPanel, selectedIndex, selectedPlot, setDynamicFilterValues, setIntelBoundariesOpacity, setIntelShowBoundaries, setIntelShowLayers, setMapOpacity, setSelectedPlot, setShowRasterLayer, showRasterLayer, splitPosition, tileRefreshing, zarrBounds }) {
+export default function ParcelMapPage({ alerts, cropType, basemapAttribution, basemapMaxNativeZoom, basemapUrl, currentTileUrl, currentTileUrlB, currentTimelineA, currentTimelineB, dashboardFilterKeys, defaultMapCenter, dynamicFilterValues, farmBoundary, filterEstate, filteredPlotsData, handlePlotClick, handleSplitDragStart, intelBoundariesOpacity, intelShowBoundaries, intelShowLayers, isCompareMode, mapOpacity, pixelTimeseries, plotsData, plotsDataA, plotsDataB, rasterOverlayBounds, renderFloatingBasemapSelector, renderIntelPolygons, renderMapBottomPanel, selectedIndex, selectedPlot, setDynamicFilterValues, setIntelBoundariesOpacity, setIntelShowBoundaries, setIntelShowLayers, setMapOpacity, setSelectedPlot, setShowRasterLayer, showRasterLayer, splitPosition, tileRefreshing, zarrBounds }) {
   const [found, setFound] = useState(null); // block picked in the map search
   return (
       <div className="flex flex-col h-full">
@@ -98,6 +98,7 @@ export default function ParcelMapPage({ cropType, basemapAttribution, basemapMax
                 series={pixelTimeseries}
                 indexLabel={selectedIndex}
                 dashboardFilterKeys={dashboardFilterKeys}
+                alerts={alerts}
                 onClose={() => setSelectedPlot(null)}
               />
             )}

@@ -41,6 +41,20 @@ import { UNIT_LABEL, CROP_UNIT } from './dashboard/kpiCatalog';
 
 
 import { useLayerLegends } from './dashboard/legends/layerLegends';
+import { fetchParcels } from '../../../services/smallholderApi';
+import { SMALLHOLDER_SERVICES } from '../../registry';
+
+// A member parcel in the shape the maps and KPIs use for a block.
+const parcelsAsBlocks = (fc) => (fc?.features || []).map((f) => {
+  const pr = f.properties || {};
+  return {
+    plot_id: `P${pr.id}`, name: pr.member_name ? `${pr.member_name}'s farm` : `Parcel ${pr.id}`,
+    boundary: ['Polygon', 'MultiPolygon'].includes(f.geometry?.type) ? (f.geometry.type === 'Polygon' ? f.geometry : { type: 'Polygon', coordinates: f.geometry.coordinates[0] }) : null,
+    area_ha: pr.area_ha ?? null, subfarm: pr.group_name || null, indices: {},
+    filters: { crop: pr.crop || '', group: pr.group_name || '' },
+  };
+});
+import { useBlockMeasures } from './dashboard/pages/BlockSummaryPage';
 
 
 
@@ -212,6 +226,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
   const [stats, setStats] = useState(null);
   const [plots, setPlots] = useState([]);
   const [restorationZones, setRestorationZones] = useState([]);
+  const isSmallholderService = SMALLHOLDER_SERVICES.includes(service?.id) || service?.id === 'smallholder-hub';
   // Data that could not be loaded, shown in one note instead of an empty page.
   const [loadIssues, setLoadIssues] = useState([]);
   const noteLoadIssue = useCallback((what, err) => {
@@ -233,7 +248,9 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
       // zones for an organisation without that service) never blanks the others.
       const [statsRes, plotsRes, zonesRes, alertsRes] = await Promise.allSettled([
         api.fetchDashboardStats(tenant),
-        api.fetchPlotsIntelligence(tenant),
+        // Smallholder services show the members' parcels (forms, drawn or uploaded),
+        // never the organisation's estate blocks.
+        isSmallholderService ? fetchParcels().then(parcelsAsBlocks) : api.fetchPlotsIntelligence(tenant),
         api.fetchRestorationZones(tenant),
         api.fetchAlerts(tenant),
       ]);
@@ -250,7 +267,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
       if (plotsVal) setPlots(plotsVal);
       setRestorationZones(ok(zonesRes, 'restoration zones', true) || []);
       const alertsVal = ok(alertsRes, 'alerts');
-      try {
+      if (!isSmallholderService) try {
         const boundary = await api.fetchFarmBoundary();
         if (active && boundary && boundary.geometry) setFarmBoundary(boundary);
       } catch (e) {
@@ -1600,6 +1617,10 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
 
   // Dynamic Dashboard Calculations — real data only, no mock fallback
 
+  // Measures for Block summary: the crop's index classes, plus rain and heat per block.
+  const telemetryById = useMemo(() => Object.fromEntries((plotsTelemetry || []).map(t => [t.plot_id, t])), [plotsTelemetry]);
+  const blockMeasures = useBlockMeasures({ cropProfileEntries, blockValue, cropType, telemetryById });
+
   // Inputs for the Overview KPI cards. Condition classes come from the
   // admin's map classes for the index: best = highest class, worst = lowest.
   const kpiContext = useMemo(() => {
@@ -1856,7 +1877,7 @@ Context: ${context}.`;
         )}
 
         {/* ── WORKSPACE CONTENT ── */}
-        {renderDashboardPages({ TIMELINE_DATA, activeAnalyticsSubpage, activeSidebarItem, activeTab, alerts, answersForm, basemapAttribution, basemapMaxNativeZoom, basemapUrl, blockValue, chatEndRef, chatInput, chatLoading, chatMessages, climateBoundariesOpacity, climatePlotsData, climatePlotsDataA, climatePlotsDataB, climateShowBoundaries, climateShowLayers, cropLabel, cropProfileEntries, cropType, currentTileUrl, currentTileUrlB, currentTimelineA, currentTimelineB, dashboardFilterKeys, dataFocus, defaultMapCenter, dynamicFilterValues, estateOptions, farmBoundary, filterDate, filterEstate, filterPlot, filteredPlotsData, glossaryFocus, handleAcknowledgeAlert, handleChatSubmit, handleEstateChange, handlePlotClick, handlePlotFilterChange, handleSidebarClick, handleSplitDragStart, healthBoundariesOpacity, healthPlotsData, healthPlotsDataA, healthPlotsDataB, healthShowBoundaries, healthShowLayers, intelBoundariesOpacity, intelShowBoundaries, intelShowLayers, isAiOnly, isCompareMode, isOrg, kpiContext, landUseChange, landUseChangeLoading, loadIssues, mapOpacity, moistureBoundariesOpacity, moisturePlotsData, moisturePlotsDataA, moisturePlotsDataB, moistureShowBoundaries, moistureShowLayers, nutrientData, overviewTrends, pageSet, pick, pixelTimeseries, plots, plotsData, plotsDataA, plotsDataB, rasterOverlayBounds, renderClimatePolygons, renderFloatingBasemapSelector, renderHealthPolygons, renderInfoTooltip, renderIntelPolygons, renderLegendCards, renderMapBottomPanel, renderMoisturePolygons, renderRestorePolygons, renderYieldPolygons, restorationPlotsData, restorationPlotsDataA, restorationPlotsDataB, restoreBoundariesOpacity, restoreShowBoundaries, restoreShowLayers, scenarioFormOpen, selectedIndex, selectedPlot, service, setActiveAnalyticsSubpage, setActiveSidebarItem, setActiveTab, setAnswersForm, setChatInput, setChatMessages, setClimateBoundariesOpacity, setClimateShowBoundaries, setClimateShowLayers, setDataFocus, setDynamicFilterValues, setFilterDate, setFilterEstate, setFilterPlot, setHealthBoundariesOpacity, setHealthShowBoundaries, setHealthShowLayers, setIntelBoundariesOpacity, setIntelShowBoundaries, setIntelShowLayers, setLoadIssues, setMapOpacity, setMoistureBoundariesOpacity, setMoistureShowBoundaries, setMoistureShowLayers, setRestoreBoundariesOpacity, setRestoreShowBoundaries, setRestoreShowLayers, setScenarioFormOpen, setSelectedPlot, setShowRasterLayer, setYieldBoundariesOpacity, setYieldShowBoundaries, setYieldShowLayers, showRasterLayer, splitPosition, tenant, tenantDisplayName, tileRefreshing, waterDemandData, waterDemandLoading, yieldBoundariesOpacity, yieldPlotsData, yieldPlotsDataA, yieldPlotsDataB, yieldShowBoundaries, yieldShowLayers, zarrBounds })}
+        {renderDashboardPages({ blockMeasures, TIMELINE_DATA, activeAnalyticsSubpage, activeSidebarItem, activeTab, alerts, answersForm, basemapAttribution, basemapMaxNativeZoom, basemapUrl, blockValue, chatEndRef, chatInput, chatLoading, chatMessages, climateBoundariesOpacity, climatePlotsData, climatePlotsDataA, climatePlotsDataB, climateShowBoundaries, climateShowLayers, cropLabel, cropProfileEntries, cropType, currentTileUrl, currentTileUrlB, currentTimelineA, currentTimelineB, dashboardFilterKeys, dataFocus, defaultMapCenter, dynamicFilterValues, estateOptions, farmBoundary, filterDate, filterEstate, filterPlot, filteredPlotsData, glossaryFocus, handleAcknowledgeAlert, handleChatSubmit, handleEstateChange, handlePlotClick, handlePlotFilterChange, handleSidebarClick, handleSplitDragStart, healthBoundariesOpacity, healthPlotsData, healthPlotsDataA, healthPlotsDataB, healthShowBoundaries, healthShowLayers, intelBoundariesOpacity, intelShowBoundaries, intelShowLayers, isAiOnly, isCompareMode, isOrg, kpiContext, landUseChange, landUseChangeLoading, loadIssues, mapOpacity, moistureBoundariesOpacity, moisturePlotsData, moisturePlotsDataA, moisturePlotsDataB, moistureShowBoundaries, moistureShowLayers, nutrientData, overviewTrends, pageSet, pick, pixelTimeseries, plots, plotsData, plotsDataA, plotsDataB, rasterOverlayBounds, renderClimatePolygons, renderFloatingBasemapSelector, renderHealthPolygons, renderInfoTooltip, renderIntelPolygons, renderLegendCards, renderMapBottomPanel, renderMoisturePolygons, renderRestorePolygons, renderYieldPolygons, restorationPlotsData, restorationPlotsDataA, restorationPlotsDataB, restoreBoundariesOpacity, restoreShowBoundaries, restoreShowLayers, scenarioFormOpen, selectedIndex, selectedPlot, service, setActiveAnalyticsSubpage, setActiveSidebarItem, setActiveTab, setAnswersForm, setChatInput, setChatMessages, setClimateBoundariesOpacity, setClimateShowBoundaries, setClimateShowLayers, setDataFocus, setDynamicFilterValues, setFilterDate, setFilterEstate, setFilterPlot, setHealthBoundariesOpacity, setHealthShowBoundaries, setHealthShowLayers, setIntelBoundariesOpacity, setIntelShowBoundaries, setIntelShowLayers, setLoadIssues, setMapOpacity, setMoistureBoundariesOpacity, setMoistureShowBoundaries, setMoistureShowLayers, setRestoreBoundariesOpacity, setRestoreShowBoundaries, setRestoreShowLayers, setScenarioFormOpen, setSelectedPlot, setShowRasterLayer, setYieldBoundariesOpacity, setYieldShowBoundaries, setYieldShowLayers, showRasterLayer, splitPosition, tenant, tenantDisplayName, tileRefreshing, waterDemandData, waterDemandLoading, yieldBoundariesOpacity, yieldPlotsData, yieldPlotsDataA, yieldPlotsDataB, yieldShowBoundaries, yieldShowLayers, zarrBounds })}
       </div>
 
       {/* Resizing and dragging overlay helper */}

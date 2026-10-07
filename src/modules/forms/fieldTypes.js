@@ -110,7 +110,8 @@ export function starterRegistrationForm() {
       f('text', 'Group or community', { maps_to: 'member.group' }),
       f('photo', 'Photo of the farmer', { maps_to: 'member.photo' }),
       f('section', 'The farm'),
-      f('text', 'Main crop', { maps_to: 'parcel.crop' }),
+      // A choice, so every parcel's crop can be used by monitoring, EUDR and carbon.
+      f('choice', 'Main crop on this farm', { required: true, maps_to: 'parcel.crop', choices: ['Oil palm', 'Cocoa', 'Rubber', 'Cashew', 'Cassava', 'Maize', 'Rice', 'Sugarcane', 'Mixed (several crops)', 'Other'] }),
       f('number', 'Year planted', { min: 1950, max: new Date().getFullYear(), maps_to: 'parcel.planting_year' }),
       f('draw_polygon', 'The farm boundary', { help: 'Tap the corners on the map, or upload a GeoJSON, KML, KMZ or zipped shapefile.', maps_to: 'parcel.geometry' }),
       f('signature', 'Signature of the farmer'),

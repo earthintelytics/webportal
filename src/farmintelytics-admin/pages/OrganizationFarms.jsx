@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Plus, Trash2, X, Building2, UploadCloud, RefreshCw, Settings, Eye } from 'lucide-react';
+import { Plus, Trash2, X, Building2, UploadCloud, RefreshCw, Settings, Eye, Layers } from 'lucide-react';
 import { fetchFarms, deleteFarm, uploadBoundary } from '../../services/adminApi';
 import { useConfirm } from '../components/ConfirmProvider';
 import ErrorBanner from '../components/ErrorBanner';
@@ -9,6 +9,8 @@ import { Button, IconButton, Pill, Loading, Empty, Tabs } from '../components/ui
 import AddEstateForm from './organisation/AddEstateForm';
 import EstateConfigModal from './organisation/EstateConfigModal';
 import BoundaryModal from './organisation/BoundaryModal';
+import BoundaryServicesModal from './organisation/BoundaryServices';
+import { licensedServiceOptions } from './organisation/serviceOptions';
 import OrgPeople from './organisation/OrgPeople';
 import OrgLicence from './organisation/OrgLicence';
 import OrgPipeline from './organisation/OrgPipeline';
@@ -67,7 +69,7 @@ const OrgDetailPanel = ({ org: initialOrg, onClose }) => {
             <Button variant="secondary" className="!py-2" onClick={() => setAdding(true)}><Plus size={15} />Add an estate</Button>
           </div>
           {loading ? <Loading /> : farms.length === 0 ? <Empty>No estates yet. Add one with its boundary.</Empty> : (
-            <ul className="space-y-2.5">{farms.map((f) => <EstateRow key={f.farm_id} farm={f} onDelete={remove} onReplace={replaceBoundary} />)}</ul>
+            <ul className="space-y-2.5">{farms.map((f) => <EstateRow key={f.farm_id} org={org} farm={f} onDelete={remove} onReplace={replaceBoundary} onSaved={load} />)}</ul>
           )}
           </>}
         </div>
@@ -77,7 +79,7 @@ const OrgDetailPanel = ({ org: initialOrg, onClose }) => {
   );
 };
 
-function EstateRow({ farm, onDelete, onReplace }) {
+function EstateRow({ org, farm, onDelete, onReplace, onSaved }) {
   const fileRef = useRef(null);
   const info = farm;
   const [open, setOpen] = useState(null); // config | boundary | details
@@ -95,6 +97,7 @@ function EstateRow({ farm, onDelete, onReplace }) {
     try { await onReplace(farm.farm_id, file); } finally { setUploading(false); }
   };
   const details = [info.crop && (CROP_LABELS[info.crop] || info.crop), info.group_name, info.planting_date && `planted ${info.planting_date}`, info.is_irrigated && 'irrigated'].filter(Boolean).join(' · ');
+  const serviceNames = (farm.services || []).map((id) => licensedServiceOptions(org).find((o) => o.id === id)?.label || id);
 
   return (
     <li className="rounded-xl border border-gray-200 bg-white px-4 py-3">
@@ -103,12 +106,14 @@ function EstateRow({ farm, onDelete, onReplace }) {
           <p className="font-semibold text-gray-900">{farm.farm_name}</p>
           <p className="text-xs font-mono text-gray-500">{farm.farm_id}</p>
           {details && <p className="text-xs text-gray-600 mt-1">{details}</p>}
+          <p className="text-xs text-gray-600 mt-1">{serviceNames.length ? `For: ${serviceNames.join(', ')}` : 'For: all services'}</p>
           {fileError && <p className="text-xs text-red-700 mt-1">{fileError}</p>}
         </div>
         <Pill tone={farm.boundary_uploaded ? 'good' : 'critical'}>{farm.boundary_uploaded ? 'Boundary' : 'No boundary'}</Pill>
       </div>
       <div className="flex flex-wrap gap-1 mt-2 -ml-2">
         {farm.boundary_uploaded && <IconButton label="View boundary" onClick={() => setOpen('boundary')}><Eye size={15} /></IconButton>}
+        <IconButton label="Services this boundary is for" onClick={() => setOpen('services')}><Layers size={15} /></IconButton>
         <IconButton label="Pipeline settings" onClick={() => setOpen('config')}><Settings size={15} /></IconButton>
         <IconButton label={farm.boundary_uploaded ? 'Replace boundary' : 'Upload boundary'} disabled={uploading} onClick={() => fileRef.current?.click()}>{uploading ? <RefreshCw size={15} className="animate-spin" /> : <UploadCloud size={15} />}</IconButton>
         <input ref={fileRef} type="file" accept=".geojson,.json,application/geo+json" className="hidden" onChange={pick} />
@@ -116,6 +121,7 @@ function EstateRow({ farm, onDelete, onReplace }) {
       </div>
       {open === 'config' && <EstateConfigModal farm={farm} onClose={() => setOpen(null)} />}
       {open === 'boundary' && <BoundaryModal farm={farm} onClose={() => setOpen(null)} />}
+      {open === 'services' && <BoundaryServicesModal org={org} farm={farm} onClose={() => setOpen(null)} onSaved={() => { setOpen(null); onSaved?.(); }} />}
     </li>
   );
 }

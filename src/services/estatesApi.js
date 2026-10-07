@@ -16,7 +16,8 @@ export async function fetchEstates() {
   const token = localStorage.getItem('fi_token');
   let res;
   try {
-    res = await fetch(`${API_BASE}/estates`, { cache: 'no-store', headers: token ? { Authorization: `Bearer ${token}` } : {} });
+    const m = (() => { try { return sessionStorage.getItem('fi_module'); } catch { return null; } })();
+    res = await fetch(`${API_BASE}/estates${m ? `?module=${encodeURIComponent(m)}` : ''}`, { cache: 'no-store', headers: token ? { Authorization: `Bearer ${token}` } : {} });
   } catch {
     throw new NotConnectedError();
   }

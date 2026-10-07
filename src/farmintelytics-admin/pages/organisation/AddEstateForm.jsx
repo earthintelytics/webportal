@@ -4,6 +4,7 @@ import { createFarm, uploadBoundary } from '../../../services/adminApi';
 import { boundaryCheck } from '../../components/validation';
 import { SENSOR_OPTIONS, toggleInList, inputCls } from '../../components/formHelpers';
 import { Button, Field, Chip, Modal } from '../../components/ui';
+import { ServicesPicker } from './BoundaryServices';
 
 const INDICES = ['NDVI', 'EVI', 'NDMI', 'RECI', 'NDWI', 'LSWI'];
 
@@ -16,6 +17,7 @@ const AddEstateForm = ({ org, farms, onClose, onSaved }) => {
   const [sensors, setSensors] = useState(['sentinel-2', 'sentinel-1']);
   const [indices, setIndices] = useState(['NDVI', 'NDMI']);
   const [parent, setParent] = useState('');
+  const [services, setServices] = useState([]);
   const [file, setFile] = useState(null);
   const [fileNote, setFileNote] = useState('');
   const [fileError, setFileError] = useState('');
@@ -40,7 +42,7 @@ const AddEstateForm = ({ org, farms, onClose, onSaved }) => {
       const created = await createFarm({
         company_name: org.display_name, company_id: org.schema_name, farm_name: name.trim(), farm_id: '',
         parent_farm_id: parent || '', parent_farm_name: parent ? (p?.parent_farm_name || p?.farm_name || parent) : '',
-        sensors, indices, processing_level: 'plot_level', cloud_cover_threshold: 10, start_date: null, end_date: null,
+        services, sensors, indices, processing_level: 'plot_level', cloud_cover_threshold: 10, start_date: null, end_date: null,
       });
       await uploadBoundary(created.farm_id, file, (prog) => setProgress({ pct: Math.max(20, Math.min(95, 20 + Math.round(prog.percent * 0.75))), text: `Uploading the boundary (${prog.percent}%)…` }));
       setProgress({ pct: 100, text: 'Estate added.' });
@@ -54,6 +56,7 @@ const AddEstateForm = ({ org, farms, onClose, onSaved }) => {
       footer={<><Button variant="secondary" onClick={onClose} disabled={busy}>Cancel</Button><Button onClick={save} disabled={busy || !name.trim() || !file}>{busy ? `Adding (${progress.pct}%)…` : 'Add estate'}</Button></>}>
       {error && <p className="text-sm text-red-800 bg-red-50 border border-red-200 rounded-xl px-4 py-3">{error}</p>}
       <Field label="Estate name"><input className={inputCls} value={name} onChange={(e) => setName(e.target.value)} disabled={busy} placeholder="e.g. North estate" /></Field>
+      <ServicesPicker org={org} value={services} onChange={setServices} disabled={busy} />
       <Field label="Imagery"><div className="flex flex-wrap gap-2">{SENSOR_OPTIONS.map((s) => <Chip key={s} on={sensors.includes(s)} onClick={() => setSensors((l) => toggleInList(l, s))}>{s}</Chip>)}</div></Field>
       <Field label="Indices processed"><div className="flex flex-wrap gap-2">{INDICES.map((i) => <Chip key={i} on={indices.includes(i)} onClick={() => setIndices((l) => toggleInList(l, i))}>{i}</Chip>)}</div></Field>
       {parents.length > 0 && (

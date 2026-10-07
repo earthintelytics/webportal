@@ -3,7 +3,7 @@
  * Moved out of CropDashboardLayout.jsx unchanged: each function receives the
  * layout's state and helpers it uses as `ctx`.
  */
-import { Satellite, Map as MapIcon, Activity, Droplets, ArrowLeft, LogOut, TrendingUp, LayoutDashboard, Calendar as CalendarIcon, Shield, Bell, Info, FileText, Settings2, SlidersHorizontal, CloudRain, Leaf, Sparkles, AlertTriangle, Columns } from 'lucide-react';
+import { Satellite, Map as MapIcon, Activity, Droplets, ArrowLeft, LogOut, TrendingUp, LayoutDashboard, Calendar as CalendarIcon, Shield, Bell, Info, FileText, Settings2, SlidersHorizontal, CloudRain, Leaf, Sparkles, AlertTriangle, Columns , BarChart3 } from 'lucide-react';
 import { Upload as UploadIcon, MapPin as EstateIcon } from 'lucide-react';
 import { ShieldCheck as CheckIcon, Lightbulb as AdviceIcon } from 'lucide-react';
 import { Table2 as RegisterIcon, Users as MembersIcon, FileText as FormsIcon, Inbox as AnswersIcon, Leaf as CarbonIcon, BadgeCheck as PassportIcon } from 'lucide-react';
@@ -195,7 +195,12 @@ export function renderDashboardSidebar(ctx) {
                   ...(service ? [{ id: 'register', label: 'Register', icon: <RegisterIcon size={17} /> }, { id: 'check', label: 'Check', icon: <CheckIcon size={17} /> }, { id: 'advice', label: 'Advice', icon: <AdviceIcon size={17} /> },
                     { id: 'members', label: 'Members', icon: <MembersIcon size={17} /> }, { id: 'forms', label: 'Forms', icon: <FormsIcon size={17} /> }, { id: 'submissions', label: 'Answers', icon: <AnswersIcon size={17} /> },
                     { id: 'group-carbon', label: 'Group carbon', icon: <CarbonIcon size={17} /> }, { id: 'eudr-passport', label: 'EUDR passport', icon: <PassportIcon size={17} /> }] : []),
-                ], pageSet?.sidebar).map(item => (
+                ], pageSet?.sidebar).flatMap((item, i, all) => {
+                  // Block summary sits after the last map page of the service.
+                  const MAPS = ['intelligence-layers', 'crop-health', 'crop-yield', 'moisture-content', 'climate', 'land-restoration'];
+                  const lastMap = all.map(x => x.id).filter(id => MAPS.includes(id)).pop();
+                  return item.id === lastMap ? [item, { id: 'block-summary', label: 'Block summary', icon: <BarChart3 size={17} /> }] : [item];
+                }).map(item => (
                   <button
                     key={item.id}
                     onClick={() => handleSidebarClick(item.id)}
