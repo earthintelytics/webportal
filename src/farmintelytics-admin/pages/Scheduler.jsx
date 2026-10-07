@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   fetchSchedulerJobs, createSchedulerJob, updateSchedulerJob, deleteSchedulerJob, fetchPipelineConfigs, fetchOrganizations, fetchPipelineLogs, runSchedulerJob, runOrganizationServices,
 } from '../../services/adminApi';
-import { licensedServiceOptions } from './organisation/serviceOptions';
+import { runnableServiceOptions } from './organisation/serviceOptions';
 import { useConfirm } from '../components/ConfirmProvider';
 import ErrorBanner from '../components/ErrorBanner';
 import { WEEKDAYS, DEFAULT_SCHEDULE, cronFor, parseCron, scheduleText, nextRun, nextRuns, cronError } from '../components/schedule';
@@ -144,8 +144,9 @@ function JobModal({ job, orgs, configs, onSave, onClose }) {
 
 // Run now for one organisation: pick the services to run; one job per service.
 function RunServicesModal({ org, onClose, onStarted }) {
-  const options = licensedServiceOptions(org);
-  const [chosen, setChosen] = useState(options.map((o) => o.id));
+  const options = runnableServiceOptions(org);
+  // Nothing ticked at first: every service is one job, so each run is a deliberate choice.
+  const [chosen, setChosen] = useState([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const toggle = (id) => setChosen((c) => (c.includes(id) ? c.filter((x) => x !== id) : [...c, id]));
@@ -163,7 +164,7 @@ function RunServicesModal({ org, onClose, onStarted }) {
         </div>
         <ErrorBanner message={error} onDismiss={() => setError('')} />
         {options.length === 0 ? (
-          <p className="text-sm text-gray-600">This organisation has no licensed services. Turn some on under its licence first.</p>
+          <p className="text-sm text-gray-600">This organisation has no licensed service that a monitoring run covers. Turn one on under its licence first.</p>
         ) : (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
@@ -178,7 +179,7 @@ function RunServicesModal({ org, onClose, onStarted }) {
         )}
         <div className="flex justify-end gap-3">
           <button onClick={onClose} className="px-5 py-2.5 rounded-xl text-sm font-semibold text-gray-700 border border-gray-300 hover:bg-gray-50">Cancel</button>
-          <button onClick={start} disabled={busy || !options.length} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-green-700 hover:bg-green-800 disabled:bg-gray-200 disabled:text-gray-500"><Play size={15} />{busy ? 'Starting…' : `Run ${chosen.length || ''} ${chosen.length === 1 ? 'service' : 'services'}`}</button>
+          <button onClick={start} disabled={busy || !chosen.length} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-green-700 hover:bg-green-800 disabled:bg-gray-200 disabled:text-gray-500"><Play size={15} />{busy ? 'Starting…' : chosen.length ? `Run ${chosen.length} ${chosen.length === 1 ? 'service' : 'services'}` : 'Choose services'}</button>
         </div>
       </div>
     </div>
@@ -262,7 +263,7 @@ const Scheduler = () => {
         {loading ? <div className="text-center py-16 text-sm text-gray-500">Loading schedules…</div> : groups.list.length === 0 && rows.length === 0 ? (
           <div className="text-center py-16 bg-white border border-dashed border-gray-300 rounded-2xl text-sm text-gray-600">No organisations or schedules yet. Onboarding creates one schedule per site, or add one with “New schedule”.</div>
         ) : [...groups.list, ...(groups.unassigned.length ? [{ org: null, rows: groups.unassigned }] : [])].map(({ org: gOrg, rows: gRows }) => {
-          const services = gOrg ? licensedServiceOptions(gOrg) : [];
+          const services = gOrg ? runnableServiceOptions(gOrg) : [];
           const key = gOrg?.schema_name || 'unassigned';
           return (
           <section key={key} className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
@@ -271,7 +272,7 @@ const Scheduler = () => {
                 <h2 className="font-display text-lg font-semibold text-gray-900">{gOrg ? (gOrg.display_name || gOrg.schema_name) : 'Not linked to an organisation'}</h2>
                 {gOrg && (
                   <div className="flex flex-wrap gap-1.5 mt-1.5">
-                    {services.length ? services.map((s) => <span key={s.id} className="text-xs font-medium px-2 py-0.5 rounded-full border border-gray-200 text-gray-700">{s.label}</span>) : <span className="text-xs text-gray-500">No licensed services</span>}
+                    {services.length ? services.map((s) => <span key={s.id} className="text-xs font-medium px-2 py-0.5 rounded-full border border-gray-200 text-gray-700">{s.label}</span>) : <span className="text-xs text-gray-500">No monitored services licensed</span>}
                   </div>
                 )}
               </div>
