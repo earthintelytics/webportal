@@ -1,5 +1,7 @@
 import { NavLink } from 'react-router-dom';
-import { Building2, LayoutGrid, Settings, LogOut } from 'lucide-react';
+import { Building2, LayoutGrid, Settings, LogOut, MapPin } from 'lucide-react';
+import InstallAppButton from '../../components/InstallAppButton';
+import { licensedServices } from './orgProfile';
 import { paths } from '../../routes/paths';
 
 /**
@@ -7,6 +9,8 @@ import { paths } from '../../routes/paths';
  * the organisation's logo and name, the two pages as links, and sign out.
  */
 const OrgShell = ({ profile, onSignOut, children }) => {
+  // Field (parcels on the phone) for organisations with smallholder services.
+  const hasField = licensedServices(profile).some((s) => s.id === 'smallholder-hub');
   const link = ({ isActive }) => `inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold ${isActive ? 'text-green-800 bg-green-50' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'}`;
   return (
     <div className="min-h-screen bg-gray-50">
@@ -22,7 +26,9 @@ const OrgShell = ({ profile, onSignOut, children }) => {
             </div>
           </div>
           <nav className="flex items-center gap-1">
+            <InstallAppButton className="mr-1" />
             <NavLink end to={paths.orgHub(profile.tenant)} className={link}><LayoutGrid size={16} /><span className="hidden sm:inline">Services</span></NavLink>
+            {hasField && <NavLink to={paths.orgField(profile.tenant)} className={link}><MapPin size={16} /><span className="hidden sm:inline">Field</span></NavLink>}
             <NavLink to={paths.orgSettings(profile.tenant)} className={link}><Settings size={16} /><span className="hidden sm:inline">Settings</span></NavLink>
             <button type="button" onClick={onSignOut} className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-gray-600 hover:text-gray-900 hover:bg-gray-100">
               <LogOut size={16} /><span className="hidden sm:inline">Sign out</span>

@@ -13,7 +13,7 @@ import { trackChange } from '../farmintelytics-admin/components/activityBus';
 /** Portal API call; changes (not GET, not sign-in) show progress and a saved / not saved message. */
 export function serviceCall(path, opts = {}) {
   const method = (opts.method || 'GET').toUpperCase();
-  const quiet = method === 'GET' || path.startsWith('/auth/') || path.startsWith('/ai/') || path.startsWith('/chat');
+  const quiet = opts.quiet || method === 'GET' || path.startsWith('/auth/') || path.startsWith('/ai/') || path.startsWith('/chat');
   return quiet ? rawServiceCall(path, opts) : trackChange(rawServiceCall(path, opts), { success: method === 'DELETE' ? 'Removed' : 'Saved', what: `${method} ${path.split('?')[0]}` });
 }
 

@@ -82,6 +82,7 @@ const RESTRICTED_MODULE = import.meta.env.VITE_RESTRICT_TO_MODULE || null;
 import OrgShell from './pages/org/OrgShell';
 import OrgServicesPage from './pages/org/OrgServicesPage';
 import OrgSettingsPage from './pages/org/OrgSettingsPage';
+import FieldPage from './pages/org/FieldPage';
 import { readOrgProfile } from './pages/org/orgProfile';
 import { paths, sessionTenant } from './routes/paths';
 import { clearTenantSession, clearTeamSession, hasValidTeamToken } from './services/session';
@@ -133,7 +134,7 @@ const OrgPage = ({ view }) => {
   const signOut = () => { clearTenantSession(); navigate(paths.orgLogin(tenant)); };
   return (
     <OrgShell profile={profile} onSignOut={signOut}>
-      {view === 'settings' ? <OrgSettingsPage profile={profile} onProfile={setProfile} /> : <OrgServicesPage profile={profile} />}
+      {view === 'settings' ? <OrgSettingsPage profile={profile} onProfile={setProfile} /> : view === 'field' ? <FieldPage /> : <OrgServicesPage profile={profile} />}
     </OrgShell>
   );
 };
@@ -312,6 +313,7 @@ const AppRoutes = () => {
         <Route path="/tools/:moduleId"          element={<PortalPage />} />
         <Route path="/org/:tenant"              element={<OrgPage view="services" />} />
         <Route path="/org/:tenant/settings"     element={<OrgPage view="settings" />} />
+        <Route path="/org/:tenant/field"        element={<OrgPage view="field" />} />
         <Route path="/org/:tenant/login"        element={<LoginPage />} />
         <Route path="/org/:tenant/:moduleId"    element={<PortalPage />} />
         {/* Old addresses */}
