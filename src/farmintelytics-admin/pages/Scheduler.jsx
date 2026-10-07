@@ -2,8 +2,9 @@ import { useState, useEffect, useMemo } from 'react';
 import { Clock, Plus, Trash2, Pencil, X, Check, ChevronDown, Play } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
-  fetchSchedulerJobs, createSchedulerJob, updateSchedulerJob, deleteSchedulerJob, fetchPipelineConfigs, fetchOrganizations, fetchPipelineLogs, runSchedulerJob,
+  fetchSchedulerJobs, createSchedulerJob, updateSchedulerJob, deleteSchedulerJob, fetchPipelineConfigs, fetchOrganizations, fetchPipelineLogs, runSchedulerJob, runOrganizationServices,
 } from '../../services/adminApi';
+import { licensedServiceOptions } from './organisation/serviceOptions';
 import { useConfirm } from '../components/ConfirmProvider';
 import ErrorBanner from '../components/ErrorBanner';
 import { WEEKDAYS, DEFAULT_SCHEDULE, cronFor, parseCron, scheduleText, nextRun, nextRuns, cronError } from '../components/schedule';
@@ -141,6 +142,49 @@ function JobModal({ job, orgs, configs, onSave, onClose }) {
   );
 }
 
+// Run now for one organisation: pick the services to run; one job per service.
+function RunServicesModal({ org, onClose, onStarted }) {
+  const options = licensedServiceOptions(org);
+  const [chosen, setChosen] = useState(options.map((o) => o.id));
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const toggle = (id) => setChosen((c) => (c.includes(id) ? c.filter((x) => x !== id) : [...c, id]));
+  const start = async () => {
+    if (!chosen.length) return setError('Choose at least one service.');
+    setBusy(true); setError('');
+    try { const res = await runOrganizationServices(org.schema_name, chosen); onStarted(res); } catch (e) { setError(e.message); setBusy(false); }
+  };
+  return (
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-gray-900/30 p-4" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="w-full max-w-lg bg-white rounded-2xl border border-gray-200 shadow-xl p-7 space-y-5">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-gray-900">Run now: {org.display_name || org.schema_name}</h3>
+          <button onClick={onClose} className="p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100" aria-label="Close"><X size={18} /></button>
+        </div>
+        <ErrorBanner message={error} onDismiss={() => setError('')} />
+        {options.length === 0 ? (
+          <p className="text-sm text-gray-600">This organisation has no licensed services. Turn some on under its licence first.</p>
+        ) : (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold text-gray-800">Which services?</span>
+              <button type="button" onClick={() => setChosen(chosen.length === options.length ? [] : options.map((o) => o.id))} className="text-xs font-semibold text-green-700 hover:underline">{chosen.length === options.length ? 'Clear all' : 'Choose all'}</button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {options.map((o) => <Chip key={o.id} on={chosen.includes(o.id)} onClick={() => toggle(o.id)}>{o.label}</Chip>)}
+            </div>
+            <p className="text-xs text-gray-500">Each service runs as its own job, only on the estates whose boundary is for that service. Progress shows under Pipeline runs.</p>
+          </div>
+        )}
+        <div className="flex justify-end gap-3">
+          <button onClick={onClose} className="px-5 py-2.5 rounded-xl text-sm font-semibold text-gray-700 border border-gray-300 hover:bg-gray-50">Cancel</button>
+          <button onClick={start} disabled={busy || !options.length} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-green-700 hover:bg-green-800 disabled:bg-gray-200 disabled:text-gray-500"><Play size={15} />{busy ? 'Starting…' : `Run ${chosen.length || ''} ${chosen.length === 1 ? 'service' : 'services'}`}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const Scheduler = () => {
   const confirm = useConfirm();
   const navigate = useNavigate();
@@ -173,6 +217,17 @@ const Scheduler = () => {
     return { job, org, site, parsed: parseCron(job.cron), next: job.enabled ? nextRun(job.cron) : null, last };
   }), [jobs, orgs, configs, logs]);
 
+  // One card per organisation: its services, Run now with a service picker, and its site schedules.
+  const groups = useMemo(() => {
+    const byOrg = new Map(orgs.map((o) => [o.schema_name, { org: o, rows: [] }]));
+    const unassigned = [];
+    rows.forEach((r) => { if (r.org && byOrg.has(r.org.schema_name)) byOrg.get(r.org.schema_name).rows.push(r); else unassigned.push(r); });
+    const list = [...byOrg.values()].sort((a, b) => (b.rows.length - a.rows.length) || (a.org.display_name || a.org.schema_name).localeCompare(b.org.display_name || b.org.schema_name));
+    return { list, unassigned };
+  }, [rows, orgs]);
+  const [runFor, setRunFor] = useState(null);
+  const [orgStarted, setOrgStarted] = useState({});
+
   const toggle = async (job) => {
     setJobs(prev => prev.map(j => j.name === job.name ? { ...j, enabled: !job.enabled } : j));
     try { await updateSchedulerJob(job.name, { enabled: !job.enabled }); } catch (e) { setError(`Could not change it: ${e.message}`); await load(); }
@@ -204,24 +259,40 @@ const Scheduler = () => {
           "On" means the schedule is saved and will be used. Runs only happen while the scheduler service is running on the server; each run then appears under Pipeline runs. If a schedule is on but Pipeline runs stays empty, the scheduler service is stopped.
         </p>
 
-        {loading ? <div className="text-center py-16 text-sm text-gray-500">Loading schedules…</div> : rows.length === 0 ? (
-          <div className="text-center py-16 bg-white border border-dashed border-gray-300 rounded-2xl text-sm text-gray-600">No schedules yet. Onboarding creates one per site, or add one with “New schedule”.</div>
-        ) : (
-          <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+        {loading ? <div className="text-center py-16 text-sm text-gray-500">Loading schedules…</div> : groups.list.length === 0 && rows.length === 0 ? (
+          <div className="text-center py-16 bg-white border border-dashed border-gray-300 rounded-2xl text-sm text-gray-600">No organisations or schedules yet. Onboarding creates one schedule per site, or add one with “New schedule”.</div>
+        ) : [...groups.list, ...(groups.unassigned.length ? [{ org: null, rows: groups.unassigned }] : [])].map(({ org: gOrg, rows: gRows }) => {
+          const services = gOrg ? licensedServiceOptions(gOrg) : [];
+          const key = gOrg?.schema_name || 'unassigned';
+          return (
+          <section key={key} className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+            <div className="px-5 py-4 flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-gray-100">
+              <div className="min-w-0">
+                <h2 className="font-display text-lg font-semibold text-gray-900">{gOrg ? (gOrg.display_name || gOrg.schema_name) : 'Not linked to an organisation'}</h2>
+                {gOrg && (
+                  <div className="flex flex-wrap gap-1.5 mt-1.5">
+                    {services.length ? services.map((s) => <span key={s.id} className="text-xs font-medium px-2 py-0.5 rounded-full border border-gray-200 text-gray-700">{s.label}</span>) : <span className="text-xs text-gray-500">No licensed services</span>}
+                  </div>
+                )}
+              </div>
+              {gOrg && (orgStarted[key]
+                ? <button onClick={() => navigate('/admin/runs')} className="shrink-0 px-3 py-2 rounded-xl text-sm font-semibold text-sky-800 bg-sky-50 border border-sky-200">{orgStarted[key]} started · view runs</button>
+                : <button onClick={() => setRunFor(gOrg)} disabled={!services.length} className="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-gray-800 border border-gray-300 hover:bg-gray-50 disabled:opacity-40"><Play size={15} />Run now…</button>)}
+            </div>
+            {gRows.length === 0 ? (
+              <p className="px-5 py-4 text-sm text-gray-500">No schedule for this organisation yet. Add one with “New schedule”, or use Run now.</p>
+            ) : (
             <table className="w-full text-sm">
               <thead className="bg-gray-50 text-left text-xs font-semibold text-gray-600">
-                <tr><th className="px-5 py-3">Organisation and site</th><th className="px-5 py-3">Schedule</th><th className="px-5 py-3">Next run</th><th className="px-5 py-3">Last run</th><th className="px-5 py-3">On</th><th className="px-5 py-3 w-36" /></tr>
+                <tr><th className="px-5 py-3">Site</th><th className="px-5 py-3">Schedule</th><th className="px-5 py-3">Next run</th><th className="px-5 py-3">Last run</th><th className="px-5 py-3">On</th><th className="px-5 py-3 w-36" /></tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {rows.map(({ job, org, site, parsed, next, last }) => (
+                {gRows.map(({ job, site, parsed, next, last }) => (
                   <tr key={job.name} className={job.enabled ? '' : 'bg-gray-50/60'}>
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
                         <span className={`w-9 h-9 rounded-xl border flex items-center justify-center ${job.enabled ? 'bg-green-50 border-green-200 text-green-700' : 'bg-gray-50 border-gray-200 text-gray-400'}`}><Clock size={16} /></span>
-                        <div>
-                          <div className="font-semibold text-gray-900">{org?.display_name || 'Unassigned'}</div>
-                          <div className="text-xs text-gray-500">{site?.batch_name || job.config_path.replace('configs/', '')}</div>
-                        </div>
+                        <div className="font-semibold text-gray-900">{site?.batch_name || job.config_path.replace('configs/', '')}</div>
                       </div>
                     </td>
                     <td className="px-5 py-4"><div className="text-gray-800">{scheduleText(parsed)}</div>{!parsed && <div className="text-xs font-mono text-gray-500">{job.cron}</div>}</td>
@@ -250,10 +321,13 @@ const Scheduler = () => {
                 ))}
               </tbody>
             </table>
-          </div>
-        )}
+            )}
+          </section>
+          );
+        })}
         <p className="text-xs text-gray-500">Times are server time. Next runs happen only while the pipeline scheduler service is running; its runs and their progress are on Pipeline runs. A paused schedule keeps its settings; turn it back on to resume.</p>
       </div>
+      {runFor && <RunServicesModal org={runFor} onClose={() => setRunFor(null)} onStarted={(res) => { setOrgStarted((s) => ({ ...s, [runFor.schema_name]: `${res?.jobs?.length || 0} ${res?.jobs?.length === 1 ? 'job' : 'jobs'}` })); setRunFor(null); }} />}
       {modal && <JobModal job={modal.job} orgs={orgs} configs={configs} onSave={save} onClose={() => setModal(null)} />}
     </div>
   );

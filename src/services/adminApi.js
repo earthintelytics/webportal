@@ -408,6 +408,25 @@ export async function runSchedulerJob(name) {
   return adminFetch(`/scheduler/${encodeURIComponent(name)}/run`, { method: 'POST' });
 }
 
+/** POST /admin/organizations/{id}/run {services} → one monitoring job per service (G63) */
+export async function runOrganizationServices(orgId, services) {
+  return adminFetch(`/organizations/${encodeURIComponent(orgId)}/run`, { method: 'POST', body: JSON.stringify({ services }) });
+}
+
+// ── Problem reports (G61) ───────────────────────────────────────────────────
+/** GET /admin/support/reports?company_id=&is_handled= */
+export async function fetchSupportReports({ companyId = '', handled = null } = {}) {
+  const q = new URLSearchParams();
+  if (companyId) q.set('company_id', companyId);
+  if (handled !== null) q.set('is_handled', String(handled));
+  const qs = q.toString();
+  return adminFetch(`/support/reports${qs ? `?${qs}` : ''}`);
+}
+/** POST /admin/support/reports/{id}/handle {handled} */
+export async function markSupportReport(id, handled = true) {
+  return adminFetch(`/support/reports/${id}/handle`, { method: 'POST', body: JSON.stringify({ handled }) });
+}
+
 /** GET /admin/jobs?company_id=&status=&kind=&limit= — every organisation's jobs */
 export async function fetchAdminJobs({ companyId = '', status = '', kind = '', limit = 100 } = {}) {
   const p = new URLSearchParams(Object.entries({ company_id: companyId, status, kind, limit }).filter(([, v]) => v !== '' && v != null));

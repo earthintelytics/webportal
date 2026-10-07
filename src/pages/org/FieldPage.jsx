@@ -17,7 +17,20 @@ const PENDING = 'fi_parcel_updates';
 const readPending = () => { try { return JSON.parse(localStorage.getItem(tenantKey(PENDING)) || '[]'); } catch { return []; } };
 const writePending = (list) => { try { localStorage.setItem(tenantKey(PENDING), JSON.stringify(list)); } catch { /* storage unavailable */ } };
 // Quiet: this page says itself whether the change was sent or kept on the phone.
-const sendUpdate = (u) => serviceCall(`/smallholder/parcels/${u.id}`, { method: 'PATCH', body: u.changes, quiet: true });
+const sendUpdate = (u) => serviceCall(`/smallholder/parcels/${u.id}`, { method: 'PATCH', body: { ...u.changes, source: 'field' }, quiet: true });
+// The server refused the change itself (bad boundary, view-only account): keeping it would never succeed.
+const refused = (e) => e?.status >= 400 && e?.status < 500;
+
+// History entries in plain words: "Main crop: Cocoa → Oil palm".
+const FIELD_LABEL = { crop: 'Main crop', crops: 'Crops', planting_year: 'Year planted', area_ha: 'Area (ha)', geometry: 'Boundary', tenure: 'Tenure', certification_tags: 'Certifications', notes: 'Notes' };
+const SOURCE_LABEL = { field: 'from the field', form: 'from a form', admin: 'from the office' };
+const show = (v) => (v == null || v === '' ? 'not recorded' : Array.isArray(v) ? (v.length ? v.join(', ') : 'none') : String(v));
+const describeChanges = (changes = {}) => Object.entries(changes).map(([k, v]) => {
+  const label = FIELD_LABEL[k] || k.replace(/_/g, ' ');
+  if (k === 'geometry') return 'Boundary redrawn';
+  if (v && typeof v === 'object' && !Array.isArray(v) && ('old' in v || 'new' in v)) return `${label}: ${show(v.old)} → ${show(v.new)}`;
+  return `${label}: ${show(v)}`;
+});
 
 const centre = (g) => {
   const ring = g?.type === 'Polygon' ? g.coordinates[0] : g?.type === 'MultiPolygon' ? g.coordinates[0][0] : g?.type === 'Point' ? [g.coordinates] : [];
@@ -51,7 +64,7 @@ const FieldPage = () => {
   const flush = useCallback(async () => {
     const list = readPending(); if (!list.length) return;
     const keep = [];
-    for (const u of list) { try { await sendUpdate(u); } catch { keep.push(u); } }
+    for (const u of list) { try { await sendUpdate(u); } catch (e) { if (!refused(e)) keep.push(u); } }
     writePending(keep); setPending(keep);
   }, []);
   useEffect(() => { const t = setTimeout(flush, 0); window.addEventListener('online', flush); return () => { clearTimeout(t); window.removeEventListener('online', flush); }; }, [flush]);
@@ -104,7 +117,7 @@ const FieldPage = () => {
 };
 
 function ParcelView({ feature, onBack, onPending }) {
-  const pr = feature.properties;
+  const [pr, setPr] = useState(feature.properties);
   const plotId = `P${pr.id}`;
   const [tab, setTab] = useState('history');
   const [visits, setVisits] = useState(null);
@@ -119,7 +132,7 @@ function ParcelView({ feature, onBack, onPending }) {
 
   const timeline = useMemo(() => [
     ...(visits || []).map((v) => ({ at: v.observed_at || v.created_at, kind: 'Visit', text: [v.finding_type?.replace(/_/g, ' '), v.notes].filter(Boolean).join(': '), by: v.scout_name })),
-    ...(changes || []).map((c) => ({ at: c.changed_at, kind: 'Update', text: Object.entries(c.changes || {}).map(([k, v]) => `${k.replace(/_/g, ' ')}: ${typeof v === 'object' ? 'boundary redrawn' : v}`).join(', '), by: c.changed_by })),
+    ...(changes || []).map((c) => ({ at: c.changed_at, kind: 'Update', lines: describeChanges(c.changes), notes: c.notes, by: [c.changed_by, SOURCE_LABEL[c.source]].filter(Boolean).join(' ') })),
   ].filter((e) => e.at).sort((a, b) => String(b.at).localeCompare(String(a.at))), [visits, changes]);
 
   return (
@@ -140,7 +153,7 @@ function ParcelView({ feature, onBack, onPending }) {
 
       {tab === 'history' && (
         <section className="space-y-2">
-          {changes === null && <p className="text-xs text-gray-500">The record of parcel updates is being switched on; visits are shown below.</p>}
+          {changes === null && <p className="text-xs text-gray-500">The record of parcel updates could not be loaded; visits are shown below.</p>}
           {visits === null ? <p className="text-sm text-gray-500">Loading…</p> : timeline.length === 0 ? (
             <p className="text-sm text-gray-500 border border-dashed border-gray-300 rounded-xl p-5 text-center">No visits or updates recorded yet.</p>
           ) : (
@@ -149,7 +162,10 @@ function ParcelView({ feature, onBack, onPending }) {
                 <li key={i} className="pl-4 relative">
                   <span className={`absolute -left-[7px] top-1.5 w-3 h-3 rounded-full ${e.kind === 'Visit' ? 'bg-green-700' : 'bg-sky-600'}`} />
                   <p className="text-xs text-gray-500">{new Date(e.at).toLocaleString(undefined, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })} · {e.kind}{e.by ? ` · ${e.by}` : ''}</p>
-                  <p className="text-sm text-gray-800">{e.text || '—'}</p>
+                  {e.lines ? (
+                    <ul className="text-sm text-gray-800 space-y-0.5">{e.lines.length ? e.lines.map((l) => <li key={l}>{l}</li>) : <li>—</li>}</ul>
+                  ) : <p className="text-sm text-gray-800">{e.text || '—'}</p>}
+                  {e.notes && <p className="text-sm text-gray-500 mt-0.5">“{e.notes}”</p>}
                 </li>
               ))}
             </ol>
@@ -158,7 +174,7 @@ function ParcelView({ feature, onBack, onPending }) {
       )}
 
       {tab === 'visit' && <VisitForm plotId={plotId} onDone={(t) => { setMsg(t); setTab('history'); loadHistory(); }} />}
-      {tab === 'update' && <UpdateForm feature={feature} onDone={(t) => { setMsg(t); setTab('history'); onPending(); loadHistory(); }} />}
+      {tab === 'update' && <UpdateForm feature={{ ...feature, properties: pr }} onDone={(t, saved) => { if (saved) setPr((p) => ({ ...p, ...saved })); setMsg(t); setTab('history'); onPending(); loadHistory(); }} />}
     </div>
   );
 }
@@ -210,9 +226,14 @@ function UpdateForm({ feature, onDone }) {
     if (!Object.keys(changes).length) { setErr('Nothing changed.'); setBusy(false); return; }
     const update = { id: pr.id, changes, at: new Date().toISOString() };
     try {
-      await sendUpdate(update);
-      onDone('Parcel updated. The change is kept in its history.');
+      const res = await sendUpdate(update);
+      const saved = res && typeof res === 'object' ? { crop: res.crop, crops: res.crops, planting_year: res.planting_year, area_ha: res.area_ha } : null;
+      onDone(res?.changes && !Object.keys(res.changes).length ? 'Nothing was different from what is recorded.' : 'Parcel updated. The change is kept in its history.', saved);
     } catch (e2) {
+      if (refused(e2)) {
+        setErr(e2.status === 403 ? 'Your account can view parcels but not change them.' : `Not saved: ${e2.message}`);
+        return;
+      }
       // No signal, or updating from the field not switched on yet: keep it on the phone.
       writePending([...readPending(), update]);
       onDone(e2 instanceof NotConnectedError ? 'Saved on this phone. It is sent when the connection (or parcel updating) is available.' : `Saved on this phone; the server said: ${e2.message}`);

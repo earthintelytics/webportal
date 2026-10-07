@@ -14,7 +14,8 @@ import {
   Rocket,
   SlidersHorizontal,
   Sparkles,
-  ShieldCheck
+  ShieldCheck,
+  LifeBuoy
 } from 'lucide-react';
 
 import Onboarding from './pages/Onboarding';
@@ -27,6 +28,7 @@ import Inventory from './pages/Inventory';
 import AiSettings from './pages/AiSettings';
 import PipelineRuns from './pages/PipelineRuns';
 import TeamAccounts from './pages/TeamAccounts';
+import ProblemReports from './pages/ProblemReports';
 import { hasValidTeamToken, redirectToTeamSignIn, teamRole, TEAM_ROLES } from '../services/session';
 import { ConfirmProvider } from './components/ConfirmProvider';
 
@@ -45,6 +47,7 @@ const NAV_GROUPS = [
     { id: 'runs',          label: 'Pipeline runs',        icon: PlayCircle,  path: '/admin/runs' },
     { id: 'inventory',     label: 'Storage',              icon: Database,  path: '/admin/inventory' },
     { id: 'logs',          label: 'Logs',                 icon: Activity,  path: '/admin/logs' },
+    { id: 'reports',       label: 'Problem reports',      icon: LifeBuoy,  path: '/admin/reports' },
   ]},
   { label: 'Configuration', items: [
     { id: 'thresholds',    label: 'Map classes',          icon: SlidersHorizontal, path: '/admin/thresholds' },
@@ -177,6 +180,7 @@ const AdminPortal = () => {
             <Route path="thresholds"    element={<CropThresholds />} />
             <Route path="ai"            element={ownerOnly(<AiSettings />)} />
             <Route path="logs"          element={<Logs />} />
+            <Route path="reports"       element={<ProblemReports />} />
           </Routes>
         </main>
       </div>
