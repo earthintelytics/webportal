@@ -103,7 +103,19 @@ export function FitBoundsToPlots({ plotsData, farmBoundary, refitKey = null }) {
     if (fitted.current) return;
     // Priority 1: fit to real plot polygons
     if (plotsData && plotsData.length > 0) {
-      const allCoords = plotsData.flatMap(p => p.coords || []);
+      // Open on the bulk of the blocks: a few stray shapes far away (a typo in the
+      // boundary file) must not zoom the map out to the whole region.
+      const withCoords = plotsData.filter(p => p.coords?.length);
+      let kept = withCoords;
+      if (withCoords.length >= 20) {
+        const cen = withCoords.map(p => [p.coords.reduce((s, c) => s + c[0], 0) / p.coords.length, p.coords.reduce((s, c) => s + c[1], 0) / p.coords.length]);
+        const q = (arr, f) => { const v = [...arr].sort((x, y) => x - y); return v[Math.floor(f * (v.length - 1))]; };
+        const lats = cen.map(c => c[0]), lngs = cen.map(c => c[1]);
+        const [la1, la2, lo1, lo2] = [q(lats, 0.02), q(lats, 0.98), q(lngs, 0.02), q(lngs, 0.98)];
+        const mLa = Math.max((la2 - la1) * 0.5, 0.01), mLo = Math.max((lo2 - lo1) * 0.5, 0.01);
+        kept = withCoords.filter((_, i) => cen[i][0] >= la1 - mLa && cen[i][0] <= la2 + mLa && cen[i][1] >= lo1 - mLo && cen[i][1] <= lo2 + mLo);
+      }
+      const allCoords = kept.flatMap(p => p.coords || []);
       if (allCoords.length > 0) {
         let minLat = Infinity, maxLat = -Infinity, minLng = Infinity, maxLng = -Infinity;
         for (const [lat, lng] of allCoords) {
@@ -112,7 +124,7 @@ export function FitBoundsToPlots({ plotsData, farmBoundary, refitKey = null }) {
           if (lng < minLng) minLng = lng;
           if (lng > maxLng) maxLng = lng;
         }
-        map.fitBounds([[minLat, minLng], [maxLat, maxLng]], { padding: [30, 30], maxZoom: 15 });
+        map.fitBounds([[minLat, minLng], [maxLat, maxLng]], { padding: [30, 30], maxZoom: 18 });
         fitted.current = true;
         return;
       }

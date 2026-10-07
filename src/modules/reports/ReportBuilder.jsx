@@ -128,6 +128,10 @@ export default function ReportBuilder({ plots, estates, tenant, orgName, subject
         setHistory(res.map(h => ({
           ...h,
           where: h.numbers?.where || h.where || 'All areas',
+          // Past reports come from the server without the chart readings.
+          health: h.health || [], water: h.water || [], healthCmp: h.healthCmp || [], waterCmp: h.waterCmp || [],
+          cmp: h.cmp || h.compare || null,
+          recommendations: h.recommendations || [], risks: h.risks || [], findings: h.findings || [], limits: h.limits || [],
           actions: h.actions || (h.blocks_action || []).map(b => ({
             block: b.field_id,
             estate: '',
@@ -424,7 +428,8 @@ export default function ReportBuilder({ plots, estates, tenant, orgName, subject
           </div>
 
           {/* Action Trigger */}
-          <div className="space-y-3 pt-4 border-t border-gray-100">
+          {/* Always in reach: sticks to the bottom of the screen while the choices scroll. */}
+          <div className="space-y-3 pt-4 pb-2 border-t border-gray-100 sticky bottom-0 bg-white">
             <div className="space-y-2">
               <button
                 onClick={create}
@@ -640,9 +645,9 @@ export default function ReportBuilder({ plots, estates, tenant, orgName, subject
                 <AlertTriangle size={16} className="text-amber-600" />
                 Blocks needing action
               </div>
-              <span className="text-xs text-gray-500 font-medium">{report.actions.length} {report.actions.length === 1 ? 'block' : 'blocks'}</span>
+              <span className="text-xs text-gray-500 font-medium">{(report.actions || []).length} {(report.actions || []).length === 1 ? 'block' : 'blocks'}</span>
             </div>
-            {report.actions.length === 0 ? (
+            {(report.actions || []).length === 0 ? (
               <div className="flex items-center gap-2 text-sm text-green-700 py-3">
                 <CheckCircle2 size={16} /> No open alerts for these blocks in this period.
               </div>
@@ -660,7 +665,7 @@ export default function ReportBuilder({ plots, estates, tenant, orgName, subject
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {report.actions.map((a, i) => (
+                    {(report.actions || []).map((a, i) => (
                       <tr key={i} className="hover:bg-gray-50/60">
                         <td className="py-2.5 px-3 font-bold text-gray-900">{a.block}</td>
                         <td className="py-2.5 px-3 text-gray-600">{a.estate || estateOf(a.block)}</td>
@@ -684,16 +689,16 @@ export default function ReportBuilder({ plots, estates, tenant, orgName, subject
 
           {/* SECTION 6: Time-Series Comparison Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {[['Crop health', report.health, report.healthCmp], ['Leaf water', report.water, report.waterCmp]].map(([label, a, b]) => (
+            {[['Crop health', report.health || [], report.healthCmp || []], ['Leaf water', report.water || [], report.waterCmp || []]].map(([label, a, b]) => (
               <Card key={label} className="p-6">
-                <div className="text-sm font-bold text-gray-900">{label} Trend</div>
-                <div className="text-xs text-gray-500 mt-1">Multi-spectral index mean per clear Sentinel-2 acquisition window.</div>
+                <div className="text-sm font-bold text-gray-900">{label} over the period</div>
+                <div className="text-xs text-gray-500 mt-1">Farm average on each clear satellite image.</div>
                 <div className="h-56 mt-4">
                   {a.length ? (
                     <Line data={chartData(a, b, label)} options={chartOpts} />
                   ) : (
                     <div className="h-full flex items-center justify-center text-xs text-gray-400">
-                      No cloud-free acquisitions recorded in this specific window.
+                      No clear satellite image in this period.
                     </div>
                   )}
                 </div>
@@ -748,7 +753,7 @@ export default function ReportBuilder({ plots, estates, tenant, orgName, subject
           <Card className="p-6 space-y-3">
             <div className="flex items-center gap-2 text-sm font-bold text-gray-900"><Layers size={16} className="text-gray-600" />Data used and limits</div>
             <ul className="text-sm text-gray-700 space-y-1.5 list-disc pl-5">
-              <li>{report.health.length ? `${report.health.length} clear view${report.health.length === 1 ? '' : 's'} of the farm from space in this period${report.cmp ? `, ${report.healthCmp.length} in the comparison period` : ''}. Cloudy days are left out.` : 'No clear view of the farm in this period because of cloud.'}</li>
+              <li>{(report.health || []).length ? `${report.health.length} clear view${report.health.length === 1 ? '' : 's'} of the farm from space in this period${report.cmp ? `, ${(report.healthCmp || []).length} in the comparison period` : ''}. Cloudy days are left out.` : 'No clear view of the farm in this period because of cloud.'}</li>
               <li>Crop health and leaf water are estimates from satellite images, not measurements on the ground.</li>
               {(report.limits || []).map((lim, i) => <li key={i}>{lim}</li>)}
             </ul>
@@ -761,7 +766,7 @@ export default function ReportBuilder({ plots, estates, tenant, orgName, subject
               <div><dt className="font-semibold text-gray-900">Imagery</dt><dd>{(report.data_used?.sources || []).join('; ') || 'Not recorded for this report'}</dd></div>
               <div><dt className="font-semibold text-gray-900">Measures behind the words</dt><dd>Crop health = NDVI (vegetation index); Leaf water = NDMI (moisture index). Farm averages per clear view.</dd></div>
               <div><dt className="font-semibold text-gray-900">Period</dt><dd>{report.period.from} to {report.period.to}{report.cmp ? `; comparison ${report.cmp.from} to ${report.cmp.to}` : ''}</dd></div>
-              <div><dt className="font-semibold text-gray-900">Clear-view dates</dt><dd>{report.health.map(d => d.date).join(', ') || 'none'}</dd></div>
+              <div><dt className="font-semibold text-gray-900">Clear-view dates</dt><dd>{(report.health || []).map(d => d.date).join(', ') || 'none'}</dd></div>
               <div><dt className="font-semibold text-gray-900">Method</dt><dd>Cloud-masked images; values averaged over the chosen area; block status from the latest clear view, classified with the legend classes set for this crop.</dd></div>
               <div><dt className="font-semibold text-gray-900">Weather</dt><dd>Open-Meteo reanalysis and forecast for the farm location.</dd></div>
             </dl>

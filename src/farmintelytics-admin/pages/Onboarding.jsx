@@ -124,40 +124,59 @@ const PhotoCard = ({ photo, title, sub, on, onClick, pages }) => (
   </button>
 );
 
+// The wizard keeps a draft on this computer, so a refresh or a closed tab
+// never loses the answers or what was already created. Files cannot be
+// stored by the browser: boundary files are picked again.
+const DRAFT = 'fi_onboarding_draft';
+const readDraft = () => { try { return JSON.parse(localStorage.getItem(DRAFT) || '{}'); } catch { return {}; } };
+const draftValue = (name, initial) => { const d = readDraft(); return d[name] !== undefined ? d[name] : initial; };
+const noFiles = (k, v) => (typeof File !== 'undefined' && v instanceof File ? undefined : v);
+
 const Onboarding = () => {
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(() => draftValue('step', 0));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const [done, setDone] = useState({ org: null, credential: null, farms: [], boundaries: [], configs: [], schedulers: [] });
+  const [done, setDone] = useState(() => draftValue('done', { org: null, credential: null, farms: [], boundaries: [], configs: [], schedulers: [] }));
 
   // 1. Organisation
-  const [company, setCompany] = useState({ company_name: '', schema_name: '' });
+  const [company, setCompany] = useState(() => draftValue('company', { company_name: '', schema_name: '' }));
   const slug = company.schema_name.trim() || slugify(company.company_name);
   // 2. Crops and services
-  const [crops, setCrops] = useState([]);
-  const [services, setServices] = useState([]);
-  const [allowedIndices, setAllowedIndices] = useState([]);
+  const [crops, setCrops] = useState(() => draftValue('crops', []));
+  const [services, setServices] = useState(() => draftValue('services', []));
+  const [allowedIndices, setAllowedIndices] = useState(() => draftValue('allowedIndices', []));
   // 3. Estates
-  const [estates, setEstates] = useState([blankEstate()]);
-  const [grouped, setGrouped] = useState(false); // neighbouring sub-farms processed as one site
+  const [estates, setEstates] = useState(() => (draftValue('estates', null) || [blankEstate()]).map((e) => ({ ...blankEstate(), ...e, key: e.key || blankEstate().key })));
+  const [grouped, setGrouped] = useState(() => draftValue('grouped', false)); // neighbouring sub-farms processed as one site
   // 4. Blocks and filters
   const [propOptions, setPropOptions] = useState([]);
   const [loadingProps, setLoadingProps] = useState(false);
-  const [blockKey, setBlockKey] = useState('');
-  const [estateKey, setEstateKey] = useState('');
-  const [filterKeys, setFilterKeys] = useState([]);
-  const [thresholds, setThresholds] = useState(DEFAULT_ALERT_THRESHOLDS);
-  const [ffill, setFfill] = useState(false);
+  const [blockKey, setBlockKey] = useState(() => draftValue('blockKey', ''));
+  const [estateKey, setEstateKey] = useState(() => draftValue('estateKey', ''));
+  const [filterKeys, setFilterKeys] = useState(() => draftValue('filterKeys', []));
+  const [thresholds, setThresholds] = useState(() => draftValue('thresholds', DEFAULT_ALERT_THRESHOLDS));
+  const [ffill, setFfill] = useState(() => draftValue('ffill', false));
   // 5. Login
-  const [cred, setCred] = useState({ full_name: '', email: '', access_code: '', role: 'admin', label: 'Primary' });
+  const [cred, setCred] = useState(() => ({ ...draftValue('cred', { full_name: '', email: '', role: 'admin', label: 'Primary' }), access_code: '' }));
   // 6. Schedule
-  const [autoSchedule, setAutoSchedule] = useState(true);
-  const [sched, setSched] = useState({ mode: 'days', every: 5, weekday: 1, monthday: 1, hour: 3 });
+  const [autoSchedule, setAutoSchedule] = useState(() => draftValue('autoSchedule', true));
+  const [sched, setSched] = useState(() => draftValue('sched', { mode: 'days', every: 5, weekday: 1, monthday: 1, hour: 3 }));
   // Finish
   const [logoUrl, setLogoUrl] = useState('');
   const [logoBusy, setLogoBusy] = useState(false);
   const logoRef = useRef(null);
   const [copied, setCopied] = useState('');
+
+  // Save the draft as answers change (never the access code or files); clear it once finished.
+  useEffect(() => {
+    try {
+      if (step >= 6) { localStorage.removeItem(DRAFT); return; }
+      const { access_code: _omit, ...credNoCode } = cred; // eslint-disable-line no-unused-vars
+      localStorage.setItem(DRAFT, JSON.stringify({ step, done, company, crops, services, allowedIndices, estates, grouped, blockKey, estateKey, filterKeys, thresholds, ffill, cred: credNoCode, autoSchedule, sched }, noFiles));
+    } catch { /* storage unavailable */ }
+  }, [step, done, company, crops, services, allowedIndices, estates, grouped, blockKey, estateKey, filterKeys, thresholds, ffill, cred, autoSchedule, sched]);
+  const startOver = () => { try { localStorage.removeItem(DRAFT); } catch { /* storage unavailable */ } window.location.reload(); };
+  const hasDraft = Boolean(company.company_name || done.org);
 
   const run = async (fn) => { setBusy(true); setError(''); try { await fn(); } catch (e) { setError(e.message); } finally { setBusy(false); } };
   const setEstate = (key, patch) => setEstates(list => list.map(e => e.key === key ? { ...e, ...patch } : e));
@@ -338,6 +357,12 @@ const Onboarding = () => {
           <h1 className="font-display text-3xl font-semibold text-gray-900 tracking-tight mt-1">Onboard an organisation</h1>
           <p className="text-sm text-gray-500 mt-2 max-w-2xl">Everything the client will see comes from what you choose here: crops and services, estates and their blocks, logins and the monitoring schedule.</p>
         </div>
+        {hasDraft && step < 6 && (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700">
+            <span>Your answers are kept as a draft on this computer{done.org ? `, and ${company.company_name || 'the organisation'} is already created` : ''}. Boundary files need to be picked again after a refresh.</span>
+            <button type="button" onClick={startOver} className="font-semibold text-red-700 hover:underline">Start over</button>
+          </div>
+        )}
 
         {/* Steps */}
         <ol className="flex flex-wrap items-center gap-2 text-sm">
