@@ -40,7 +40,7 @@ import { UNIT_LABEL, CROP_UNIT } from './dashboard/kpiCatalog';
 
 
 
-import { classColour, useLayerLegends } from './dashboard/legends/layerLegends';
+import { useLayerLegends } from './dashboard/legends/layerLegends';
 
 
 
@@ -276,7 +276,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
     loadBackendData();
     return () => { active = false; };
   }, [tenant, noteLoadIssue]);
-  const [selectedBasemap, setSelectedBasemap] = useState('terrain');
+  const [selectedBasemap, setSelectedBasemap] = useState('esri-imagery'); // satellite by default
   // Google's hybrid tile layer (lyrs=y) bakes place-name/road labels into the
   // imagery; lyrs=s is the same satellite imagery with no labels. Only
   // relevant when Google is the active basemap.
@@ -689,10 +689,10 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
         } else {
           coords = [];
         }
-        const ndviVal = p.indices?.ndvi ?? 0;
-        const ndmiVal = p.indices?.ndmi ?? 0;
-        const healthVal = ndviVal > 0.7 ? 'Optimal' : ndviVal > 0.55 ? 'Good' : 'Stressed';
-        const colorVal = healthVal === 'Optimal' ? '#15803d' : healthVal === 'Good' ? '#84cc16' : '#dc2626';
+        const ndviVal = p.indices?.ndvi ?? null; // null until the first satellite result: never counted as stressed
+        const ndmiVal = p.indices?.ndmi ?? null;
+        const healthVal = ndviVal == null ? 'No data' : ndviVal > 0.7 ? 'Optimal' : ndviVal > 0.55 ? 'Good' : 'Stressed';
+        const colorVal = healthVal === 'Optimal' ? '#15803d' : healthVal === 'Good' ? '#84cc16' : healthVal === 'Stressed' ? '#dc2626' : '#9CA3AF';
         return { id: p.plot_id, name: p.name || p.plot_id, area: p.area_ha != null ? `${p.area_ha} HA` : null, health: healthVal, ndvi: ndviVal, ndmi: ndmiVal, color: colorVal, coords, indices: p.indices, subfarm: p.subfarm || p.division || null, division: p.division || null, blocId: p.bloc_id || null, filters: p.filters || {}, farmId: p.farm_id || null };
       });
     }
@@ -708,10 +708,10 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
         } else {
           coords = [];
         }
-        const ndviVal = p.indices?.ndvi ?? 0;
-        const ndmiVal = p.indices?.ndmi ?? 0;
-        const healthVal = ndviVal > 0.7 ? 'Optimal' : ndviVal > 0.55 ? 'Good' : 'Stressed';
-        const colorVal = healthVal === 'Optimal' ? '#15803d' : healthVal === 'Good' ? '#84cc16' : '#dc2626';
+        const ndviVal = p.indices?.ndvi ?? null; // null until the first satellite result: never counted as stressed
+        const ndmiVal = p.indices?.ndmi ?? null;
+        const healthVal = ndviVal == null ? 'No data' : ndviVal > 0.7 ? 'Optimal' : ndviVal > 0.55 ? 'Good' : 'Stressed';
+        const colorVal = healthVal === 'Optimal' ? '#15803d' : healthVal === 'Good' ? '#84cc16' : healthVal === 'Stressed' ? '#dc2626' : '#9CA3AF';
         return { id: p.plot_id, name: p.name || p.plot_id, area: p.area_ha != null ? `${p.area_ha} HA` : null, health: healthVal, ndvi: ndviVal, ndmi: ndmiVal, color: colorVal, coords, indices: p.indices, subfarm: p.subfarm || p.division || null, division: p.division || null, blocId: p.bloc_id || null, filters: p.filters || {}, farmId: p.farm_id || null };
       });
     }
@@ -822,7 +822,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
   // Was 175 — too cramped for the calendar's satellite-coverage dots and the
   // multi-satellite picker that can appear underneath it. Still user-resizable.
   const [bottomPanelHeight, setBottomPanelHeight] = useState(260);
-  const [isBottomPanelMinimized, setIsBottomPanelMinimized] = useState(false);
+  const [isBottomPanelMinimized, setIsBottomPanelMinimized] = useState(true); // collapsed until opened
   const [activeResizeType, setActiveResizeType] = useState(null); // 'sidebar', 'bottom', or null
 
   const startSidebarResize = (e) => {
@@ -997,8 +997,6 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
   const [healthShowLayers, setHealthShowLayers] = useState(true);
   const [healthShowBoundaries, setHealthShowBoundaries] = useState(true);
   const [healthBoundariesOpacity, setHealthBoundariesOpacity] = useState(100);
-  const healthShowRainfall = false;
-  const healthRainfallOpacity = 80;
 
   // Moisture Content map layers states
   const [moistureShowLayers, setMoistureShowLayers] = useState(true);
@@ -1123,23 +1121,16 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
 
 
 
-  const getHealthPlotStyleOutline = (plot) => {
-    let color = '#000000';
-    let fillColor = 'transparent';
-    let fillOpacity = 0;
-    
-    if (healthShowRainfall && plot?.cumulative_rainfall_14d != null) {
-      const rain = plot.cumulative_rainfall_14d;
-      fillColor = classColour(rain, 'rain', cropType) || 'transparent';
-      fillOpacity = healthRainfallOpacity / 100;
-    }
+  const getHealthPlotStyleOutline = () => {
+    const color = '#FFFFFF';
     
     return {
       color: healthShowBoundaries ? color : 'transparent',
       weight: healthShowBoundaries ? 2.5 : 0,
       opacity: healthBoundariesOpacity / 100,
-      fillColor: fillColor,
-      fillOpacity: fillOpacity
+      // Outlines only: blocks are never filled (results show in charts and block details).
+      fillColor: 'transparent',
+      fillOpacity: 0
     };
   };
 
@@ -1150,7 +1141,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
   const [yieldBoundariesOpacity, setYieldBoundariesOpacity] = useState(100);
 
   const getYieldPlotStyleOutline = () => ({
-    color: yieldShowBoundaries ? '#000000' : 'transparent',
+    color: yieldShowBoundaries ? '#FFFFFF' : 'transparent',
     weight: yieldShowBoundaries ? 2.5 : 0,
     opacity: yieldBoundariesOpacity / 100,
     fillColor: 'transparent',
@@ -1164,7 +1155,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
   const [climateBoundariesOpacity, setClimateBoundariesOpacity] = useState(100);
 
   const getClimatePlotStyleOutline = () => ({
-    color: climateShowBoundaries ? '#000000' : 'transparent',
+    color: climateShowBoundaries ? '#FFFFFF' : 'transparent',
     weight: climateShowBoundaries ? 2.5 : 0,
     opacity: climateBoundariesOpacity / 100,
     fillColor: 'transparent',
@@ -1184,7 +1175,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
 
 
   const getRestorePlotStyleOutline = () => ({
-    color: restoreShowBoundaries ? '#000000' : 'transparent',
+    color: restoreShowBoundaries ? '#FFFFFF' : 'transparent',
     weight: restoreShowBoundaries ? 2.5 : 0,
     opacity: restoreBoundariesOpacity / 100,
     fillColor: 'transparent',
@@ -1193,7 +1184,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
 
 
   const getIntelPlotStyleOutline = () => ({
-    color: intelShowBoundaries ? '#000000' : 'transparent',
+    color: intelShowBoundaries ? '#FFFFFF' : 'transparent',
     weight: intelShowBoundaries ? 2.5 : 0,
     opacity: intelBoundariesOpacity / 100,
     fillColor: 'transparent',
@@ -1293,8 +1284,8 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
         } else {
           coords = [];
         }
-        const ndviVal = p.indices?.ndvi ?? 0;
-        const healthVal = ndviVal > 0.7 ? 'Optimal' : ndviVal > 0.55 ? 'Good' : 'Stressed';
+        const ndviVal = p.indices?.ndvi ?? null; // null until the first satellite result: never counted as stressed
+        const healthVal = ndviVal == null ? 'No data' : ndviVal > 0.7 ? 'Optimal' : ndviVal > 0.55 ? 'Good' : 'Stressed';
         return {
           id: p.plot_id,
           name: p.name || p.plot_id,
@@ -1323,8 +1314,8 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
         } else {
           coords = [];
         }
-        const ndviVal = p.indices?.ndvi ?? 0;
-        const healthVal = ndviVal > 0.7 ? 'Optimal' : ndviVal > 0.55 ? 'Good' : 'Stressed';
+        const ndviVal = p.indices?.ndvi ?? null; // null until the first satellite result: never counted as stressed
+        const healthVal = ndviVal == null ? 'No data' : ndviVal > 0.7 ? 'Optimal' : ndviVal > 0.55 ? 'Good' : 'Stressed';
         return {
           id: p.plot_id,
           name: p.name || p.plot_id,
@@ -1605,7 +1596,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
 
 
 
-  const renderMapBottomPanel = (...args) => renderMapBottomPanelImpl({ SENSOR_DOT_COLOR, TIMELINE_DATA, activeDateSlot, bottomPanelHeight, calDaysInMonth, calFirstDay, calTrailing, calendarDates, calendarMonth, calendarYear, compareTimelineIndex, currentTimeline, currentTimelineA, currentTimelineB, effectiveSensor, isBottomPanelMinimized, isCompareMode, isPlaying, nextCalMonth, prevCalMonth, satellitePicker, selectDateWithSensor, selectedIndex, selectedTimelineIndex, setCompareTimelineIndex, setIsBottomPanelMinimized, setRefreshSlider, setSatellitePicker, setSelectedTimelineIndex, showCalendarTool, showTimeSliderTool, sliderPending, startBottomPanelResize, timelineLoading, togglePlay }, ...args);
+  const renderMapBottomPanel = (...args) => renderMapBottomPanelImpl({ canPrevCal, canNextCal, SENSOR_DOT_COLOR, TIMELINE_DATA, activeDateSlot, bottomPanelHeight, calDaysInMonth, calFirstDay, calTrailing, calendarDates, calendarMonth, calendarYear, compareTimelineIndex, currentTimeline, currentTimelineA, currentTimelineB, effectiveSensor, isBottomPanelMinimized, isCompareMode, isPlaying, nextCalMonth, prevCalMonth, satellitePicker, selectDateWithSensor, selectedIndex, selectedTimelineIndex, setCompareTimelineIndex, setIsBottomPanelMinimized, setRefreshSlider, setSatellitePicker, setSelectedTimelineIndex, showCalendarTool, showTimeSliderTool, sliderPending, startBottomPanelResize, timelineLoading, togglePlay }, ...args);
 
   // Dynamic Dashboard Calculations — real data only, no mock fallback
 
@@ -1813,11 +1804,25 @@ Context: ${context}.`;
 
 
 
+  // The calendar stays between the oldest image we hold and this month: no
+  // future months, and no empty months before the data starts.
+  const calMonthKey = calendarYear * 12 + calendarMonth;
+  const nowMonthKey = new Date().getFullYear() * 12 + new Date().getMonth();
+  const oldestMonthKey = useMemo(() => {
+    const dates = [...(calendarDates || []).map(d => d.date), ...(TIMELINE_DATA || []).map(t => t.date)].filter(Boolean).sort();
+    if (!dates.length) return nowMonthKey;
+    const [y, m] = dates[0].split('-').map(Number);
+    return y * 12 + (m - 1);
+  }, [calendarDates, TIMELINE_DATA, nowMonthKey]);
+  const canPrevCal = calMonthKey > oldestMonthKey;
+  const canNextCal = calMonthKey < nowMonthKey;
   const prevCalMonth = () => {
+    if (!canPrevCal) return;
     if (calendarMonth === 0) { setCalendarMonth(11); setCalendarYear(y => y - 1); }
     else setCalendarMonth(m => m - 1);
   };
   const nextCalMonth = () => {
+    if (!canNextCal) return;
     if (calendarMonth === 11) { setCalendarMonth(0); setCalendarYear(y => y + 1); }
     else setCalendarMonth(m => m + 1);
   };

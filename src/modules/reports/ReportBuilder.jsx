@@ -106,6 +106,8 @@ export default function ReportBuilder({ plots, estates, tenant, orgName, subject
   const [report, setReport] = useState(null);
   const [history, setHistory] = useState([]);
   const [historyTab, setHistoryTab] = useState(false);
+  // Settings fold away once a report is made, so the report and Download sit at the top.
+  const [showSettings, setShowSettings] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
   // A block's estate from the blocks list (the report rows carry only the block id).
   const estateOf = (blockId) => {
@@ -209,6 +211,7 @@ export default function ReportBuilder({ plots, estates, tenant, orgName, subject
       };
 
       setReport(reportObj);
+      setShowSettings(false);
       setHistory(prev => [reportObj, ...prev.filter(r => r.report_id !== reportObj.report_id).slice(0, 19)]);
       setHistoryTab(false);
     } catch (err) {
@@ -289,7 +292,14 @@ export default function ReportBuilder({ plots, estates, tenant, orgName, subject
       <aside className="xl:sticky xl:top-6 space-y-4 no-print">
       {/* History View */}
       {/* Report Generator Config Card */}
-      {(
+      {!showSettings && report && (
+        <Card className="p-5 space-y-3">
+          <p className="text-sm font-semibold text-gray-900">Report settings</p>
+          <p className="text-sm text-gray-600">{typesList.find(t => t.id === type)?.label} · {where} · {fmtDate(period.from)} – {fmtDate(period.to)}</p>
+          <button type="button" onClick={() => setShowSettings(true)} className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm font-semibold text-gray-700 hover:bg-gray-50">Change settings</button>
+        </Card>
+      )}
+      {(showSettings || !report) && (
         <Card className="p-6 space-y-6">
           {/* 1. Type */}
           <div className="space-y-3">

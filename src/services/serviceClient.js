@@ -8,7 +8,16 @@ import { NotConnectedError } from './datasetsApi';
 import { API_BASE } from './apiBase';
 
 
-export async function serviceCall(path, { method = 'GET', body, form, auth = true } = {}) {
+import { trackChange } from '../farmintelytics-admin/components/activityBus';
+
+/** Portal API call; changes (not GET, not sign-in) show progress and a saved / not saved message. */
+export function serviceCall(path, opts = {}) {
+  const method = (opts.method || 'GET').toUpperCase();
+  const quiet = method === 'GET' || path.startsWith('/auth/') || path.startsWith('/ai/') || path.startsWith('/chat');
+  return quiet ? rawServiceCall(path, opts) : trackChange(rawServiceCall(path, opts), { success: method === 'DELETE' ? 'Removed' : 'Saved', what: `${method} ${path.split('?')[0]}` });
+}
+
+async function rawServiceCall(path, { method = 'GET', body, form, auth = true } = {}) {
   const headers = {};
   const token = auth ? localStorage.getItem('fi_token') : null;
   if (token) headers.Authorization = `Bearer ${token}`;

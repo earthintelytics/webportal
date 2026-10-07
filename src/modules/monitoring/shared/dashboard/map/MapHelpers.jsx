@@ -154,5 +154,6 @@ export const ZoomToPlot = ({ plot }) => {
     const c = plot?.coords || [];
     if (c.length) map.fitBounds(c, { padding: [40, 40], maxZoom: 18 });
   }, [plot, map]);
-  return plot?.coords?.length ? <Polygon positions={plot.coords} pathOptions={{ color: '#ffffff', weight: 3, fill: false }} interactive={false} /> : null;
+  // An estate is many blocks: zoom only; a block also gets an outline.
+  return plot?.coords?.length && !plot.isEstate ? <Polygon positions={plot.coords} pathOptions={{ color: '#FACC15', weight: 3, fill: false }} interactive={false} /> : null;
 };

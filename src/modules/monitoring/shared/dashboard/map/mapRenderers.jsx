@@ -58,8 +58,6 @@ export function renderFloatingBasemapSelector(ctx) {
       // Live composites rendered from this tenant's own archive — move with
       // the time slider, unlike the static sources above.
       { id: 'true-color',    label: 'Latest image',    sub: 'Your farms on the chosen date', emoji: '' },
-      { id: 'false-color',   label: 'Plant colours',   sub: 'Healthy plants show red',    emoji: '' },
-      { id: 'sar-rgb',       label: 'Cloudy-season view', sub: 'Sees through cloud',      emoji: '' },
     ];
     const activeBasemapObj = BASEMAPS.find(b => b.id === selectedBasemap) || BASEMAPS[0];
 
@@ -227,7 +225,7 @@ export function colouredPolygon(ctx, key, coords, value, layer, opacity, onClick
 
     const colour = classColour(value, layer, cropType);
     if (!colour || !coords?.length) return null;
-    return <Polygon key={key} positions={coords} pathOptions={{ color: colour, weight: 1, fillColor: colour, fillOpacity: opacity / 100 }} eventHandlers={onClick ? { click: onClick } : undefined} />;
+    return <Polygon key={key} positions={coords} pathOptions={{ color: colour, weight: 3, fill: false, opacity: opacity / 100 }} eventHandlers={onClick ? { click: onClick } : undefined} />;
   
 }
 
@@ -272,7 +270,7 @@ export function renderHealthPolygons(ctx, plots, suffix = '') {
 }
 
 export function renderMoisturePolygons(ctx, plots, suffix = '') {
-  const { handlePlotClick, moistureBoundariesOpacity, moistureShowBoundaries, showRasterLayer } = ctx;
+  const { handlePlotClick, moistureBoundariesOpacity, moistureShowBoundaries } = ctx;
 
     return plots.map(plot => {
       const keyPrefix = `${plot.id}${suffix ? '-' + suffix : ''}`;
@@ -282,11 +280,10 @@ export function renderMoisturePolygons(ctx, plots, suffix = '') {
             <Polygon
               positions={plot.coords}
               pathOptions={{
-                color: '#000000',
-                weight: 1.5,
-                opacity: (moistureBoundariesOpacity / 100) * 0.9,
-                fillColor: plot.color || '#3b82f6',
-                fillOpacity: showRasterLayer ? 0.05 : 0.35
+                color: '#FFFFFF',
+                weight: 2,
+                opacity: moistureBoundariesOpacity / 100,
+                fill: false
               }}
               eventHandlers={{ click: (e) => handlePlotClick(plot, e.latlng.lat, e.latlng.lng) }}
             />

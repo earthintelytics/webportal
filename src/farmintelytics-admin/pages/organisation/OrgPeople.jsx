@@ -11,7 +11,7 @@ const ROLES = [
   { id: 'analyst', label: 'Analyst', text: 'Monitoring, reports and farm data' },
   { id: 'viewer', label: 'Viewer', text: 'Read only' },
 ];
-const EMPTY = { full_name: '', email: '', access_code: '', role: 'viewer', label: '' };
+const EMPTY = { first_name: '', last_name: '', email: '', access_code: '', role: 'viewer', label: '' };
 
 /**
  * The organisation's people: sign-ins with a role, within the number of
@@ -40,7 +40,8 @@ const OrgPeople = ({ org }) => {
   const add = async () => {
     setBusy(true); setError('');
     try {
-      const c = await createCredential({ company_id: org.schema_name, ...form, access_code: form.access_code.trim(), label: form.label || ROLES.find((r) => r.id === form.role)?.label });
+      const { first_name, last_name, ...rest } = form;
+      const c = await createCredential({ company_id: org.schema_name, ...rest, full_name: `${first_name.trim()} ${last_name.trim()}`, access_code: form.access_code.trim(), label: form.label || ROLES.find((r) => r.id === form.role)?.label });
       if (c?.access_code) setRevealed((r) => ({ ...r, [c.id]: c.access_code }));
       setForm(EMPTY); setAdding(false); await load();
     } catch (e) { setError(e.message); }
@@ -71,7 +72,8 @@ const OrgPeople = ({ org }) => {
       {adding && !full && (
         <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 space-y-3">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Field label="Name"><input className={inputCls} value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} /></Field>
+            <Field label="First name *"><input className={inputCls} value={form.first_name} onChange={(e) => setForm({ ...form, first_name: e.target.value })} required /></Field>
+            <Field label="Last name *"><input className={inputCls} value={form.last_name} onChange={(e) => setForm({ ...form, last_name: e.target.value })} required /></Field>
             <Field label="Email" error={errors.email}><input type="email" className={inputCls} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></Field>
           </div>
           <Field label="Role">
@@ -86,7 +88,7 @@ const OrgPeople = ({ org }) => {
           <Field label="Access code" hint="Leave blank to generate one." error={errors.code}><input className={`${inputCls} font-mono`} value={form.access_code} onChange={(e) => setForm({ ...form, access_code: e.target.value })} /></Field>
           <div className="flex justify-end gap-2">
             <Button variant="secondary" onClick={() => { setAdding(false); setForm(EMPTY); }}>Cancel</Button>
-            <Button onClick={add} disabled={busy || !form.email || errors.email || errors.code}>{busy ? 'Adding…' : 'Add person'}</Button>
+            <Button onClick={add} disabled={busy || !form.first_name.trim() || !form.last_name.trim() || !form.email || errors.email || errors.code}>{busy ? 'Adding…' : 'Add person'}</Button>
           </div>
         </div>
       )}

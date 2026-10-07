@@ -1,4 +1,5 @@
 import React, { useState, useEffect, Component } from 'react';
+import AdminActivity from './farmintelytics-admin/components/AdminActivity';
 
 // After a new deploy the page chunks get new file names; a tab opened before
 // the deploy still asks for the old ones and the import fails ("Failed to
@@ -279,7 +280,14 @@ const PortalPage = () => {
 
 
 // ─── Root App ────────────────────────────────────────────────────────────────
-const App = () => {
+const App = () => (
+  <>
+    <AdminActivity />
+    <AppRoutes />
+  </>
+);
+
+const AppRoutes = () => {
   // In restricted mode, always start at /login regardless of entered URL
   if (RESTRICTED_MODULE) {
     return (

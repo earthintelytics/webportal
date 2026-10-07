@@ -243,9 +243,17 @@ function UploadTab({ dataset, fieldIndex, connected }) {
   );
 }
 
+// Rows typed by hand are kept on this device until they are saved.
+const draftKey = (id) => `fi_draft_${localStorage.getItem('fi_tenant') || 'org'}_${id}`;
+const readDraft = (id) => { try { const v = JSON.parse(localStorage.getItem(draftKey(id)) || 'null'); return Array.isArray(v) && v.length ? v : null; } catch { return null; } };
+
 function ManualTab({ dataset, fieldIndex, blockOptions, connected }) {
   const blank = () => Object.fromEntries(dataset.columns.map(c => [c.name, '']));
-  const [rows, setRows] = useState([blank()]);
+  const [rows, setRows] = useState(() => readDraft(dataset.id) || [blank()]);
+  const hasDraft = rows.some(r => Object.values(r).some(v => v !== ''));
+  useEffect(() => {
+    try { if (hasDraft) localStorage.setItem(draftKey(dataset.id), JSON.stringify(rows)); else localStorage.removeItem(draftKey(dataset.id)); } catch { /* storage unavailable */ }
+  }, [rows, hasDraft, dataset.id]);
   const [result, setResult] = useState(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(null);
@@ -261,6 +269,7 @@ function ManualTab({ dataset, fieldIndex, blockOptions, connected }) {
       const server = await validateRows(dataset.id, rs);
       if (!server.ok) { setError(`The server found ${server.errors?.length || 0} problems.`); return; }
       setSaved(await commitRows(dataset.id, rs));
+      try { localStorage.removeItem(draftKey(dataset.id)); } catch { /* storage unavailable */ }
     } catch (e) {
       setError(e instanceof NotConnectedError ? 'The data service is not connected yet.' : e.message);
     } finally { setSaving(false); }
@@ -269,7 +278,8 @@ function ManualTab({ dataset, fieldIndex, blockOptions, connected }) {
   const input = (col, value, onChange) => {
     const base = 'w-full px-3 py-2 rounded-lg border border-gray-200 text-sm bg-white';
     if (col.type === 'field_id' && blockOptions.length) {
-      return <select className={base} value={value} onChange={e => onChange(e.target.value)}><option value="">Choose block</option>{blockOptions.map(b => <option key={b} value={b}>{b}</option>)}</select>;
+      // Type to search: works with thousands of blocks.
+      return <input className={base} list={`blocks-${dataset.id}`} value={value} placeholder="Type a block ID" onChange={e => onChange(e.target.value)} />;
     }
     if (col.type === 'choice') return <select className={base} value={value} onChange={e => onChange(e.target.value)}><option value="">Choose</option>{col.choices.map(c => <option key={c}>{c}</option>)}</select>;
     if (col.type === 'yesno') return <select className={base} value={value} onChange={e => onChange(e.target.value)}><option value="">Choose</option><option value="yes">Yes</option><option value="no">No</option></select>;
@@ -279,7 +289,8 @@ function ManualTab({ dataset, fieldIndex, blockOptions, connected }) {
 
   return (
     <div className="space-y-5">
-      <p className="text-sm text-gray-600">Enter a few values directly{perField ? ', one row per block' : ''}. For many blocks, upload a file instead.</p>
+      <p className="text-sm text-gray-600">Enter a few values directly{perField ? ', one row per block' : ''}. For many blocks, upload a file instead.{hasDraft ? ' Your rows are kept as a draft on this device until you save them.' : ''}</p>
+      {blockOptions.length > 0 && <datalist id={`blocks-${dataset.id}`}>{blockOptions.map(b => <option key={b} value={b} />)}</datalist>}
       <div className="rounded-xl border border-gray-200 overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-left text-[11px]  text-gray-600">
@@ -388,17 +399,15 @@ const FarmDataPage = ({ cropType, serviceId, plots, initialDataset }) => {
       )}
 
       {datasets && datasets.length > 0 && (
-        <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-8 items-start">
-          <div className="space-y-3">
+        <div className="space-y-5">
+          {/* Every dataset at a glance, without scrolling: pick one to open it below. */}
+          <div role="tablist" aria-label="Datasets" className="flex flex-wrap gap-2">
             {datasets.map(d => (
-              <button key={d.id} onClick={() => { setSelectedId(d.id); setTab('upload'); }}
-                className={`w-full text-left p-4 rounded-2xl border transition-colors ${d.id === selectedId ? 'bg-white border-green-600 shadow-sm' : 'bg-white border-gray-200 hover:border-gray-300'}`}>
-                <div className="flex items-start justify-between gap-3">
-                  <span className="text-sm font-semibold text-gray-900">{d.name}</span>
-                  <Pill status={d.status} />
-                </div>
-                <p className="text-xs text-gray-600 mt-1.5 line-clamp-2">{d.why}</p>
-                <div className="text-[11px] text-gray-500 mt-2">{DUE_TEXT[d.due] || d.due} · {d.grain}</div>
+              <button key={d.id} role="tab" aria-selected={d.id === selectedId} onClick={() => { setSelectedId(d.id); setTab('upload'); }}
+                title={`${d.why} (${DUE_TEXT[d.due] || d.due} · ${d.grain})`}
+                className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border text-sm font-semibold ${d.id === selectedId ? 'bg-green-50 border-green-600 text-green-900' : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300'}`}>
+                <span className={`w-2 h-2 rounded-full ${d.status === 'ok' ? 'bg-green-600' : d.status === 'due' ? 'bg-sky-500' : 'bg-gray-300'}`} aria-hidden="true" />
+                {d.name}
               </button>
             ))}
           </div>
@@ -411,6 +420,7 @@ const FarmDataPage = ({ cropType, serviceId, plots, initialDataset }) => {
                   <Pill status={selected.status} />
                 </div>
                 <p className="text-sm text-gray-600 mt-2 max-w-2xl">{selected.why}</p>
+                <p className="text-xs text-gray-500 mt-1">{DUE_TEXT[selected.due] || selected.due} · {selected.grain}</p>
                 <div className="flex flex-wrap gap-2 mt-3">
                   {(selected.unlocks || []).map(u => <span key={u} className="text-xs font-medium px-2.5 py-1 rounded-full bg-green-50 text-green-800 border border-green-100">Unlocks: {u}</span>)}
                 </div>

@@ -106,7 +106,7 @@ export default function WeatherPage({ setShowRasterLayer, setMapOpacity, cropTyp
               onClose={() => setClimateShowLayers(false)}
               cropType={cropType}
               unit="blocks"
-              satellite={{ on: showRasterLayer, onChange: setShowRasterLayer, opacity: mapOpacity, setOpacity: setMapOpacity, text: 'Colours from the satellite image of the selected date' }}
+              satellite={{ on: showRasterLayer, onChange: setShowRasterLayer, opacity: mapOpacity, setOpacity: setMapOpacity, available: !!currentTileUrl, scale: 'health', text: 'Plant health on the chosen date: green is healthy, red is stressed or bare.' }}
               outlines={{ on: climateShowBoundaries, onChange: setClimateShowBoundaries, opacity: climateBoundariesOpacity, setOpacity: setClimateBoundariesOpacity }}
               colourBy={{ value: colourBy, onChange: setColourBy, options: colourOptions, empty: 'No weather readings per block yet. They appear after the next monitoring run.' }}
              />

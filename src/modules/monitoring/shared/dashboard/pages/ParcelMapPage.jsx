@@ -70,7 +70,7 @@ export default function ParcelMapPage({ cropType, basemapAttribution, basemapMax
 
             {!isCompareMode && (
               <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] flex flex-col gap-2 items-center w-[min(420px,calc(100%-2rem))]">
-                <PlotSearchSelector plotsData={plotsData} onSelect={(p, lat, lng) => { setFound(p); handlePlotClick(p, lat, lng); }} />
+                <PlotSearchSelector plotsData={plotsData} onSelect={(p, lat, lng) => { setFound(p); if (!p.isEstate) handlePlotClick(p, lat, lng); }} />
                 {dashboardFilterKeys.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {dashboardFilterKeys.map(key => {
@@ -130,7 +130,7 @@ export default function ParcelMapPage({ cropType, basemapAttribution, basemapMax
               onClose={() => setIntelShowLayers(false)}
               cropType={cropType}
               unit="blocks"
-              satellite={{ on: showRasterLayer, onChange: setShowRasterLayer, opacity: mapOpacity, setOpacity: setMapOpacity, text: 'Colours from the satellite image of the selected date' }}
+              satellite={{ on: showRasterLayer, onChange: setShowRasterLayer, opacity: mapOpacity, setOpacity: setMapOpacity, available: !!currentTileUrl, scale: 'health', text: 'Plant health on the chosen date: green is healthy, red is stressed or bare.' }}
               outlines={{ on: intelShowBoundaries, onChange: setIntelShowBoundaries, opacity: intelBoundariesOpacity, setOpacity: setIntelBoundariesOpacity }}
              />
           )}

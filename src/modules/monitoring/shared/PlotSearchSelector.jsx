@@ -11,7 +11,7 @@ const MAX_RESULTS = 50;
 // Everything a block can be found by: id, name, estate and the filter columns.
 const haystack = (p) => [p.id, p.name, p.subfarm, p.division, ...Object.values(p.filters || {})].filter((v) => v != null).join(' ').toLowerCase();
 
-export default function PlotSearchSelector({ plotsData = [], onSelect, placeholder = 'Find a block: ID, name, estate…' }) {
+export default function PlotSearchSelector({ plotsData = [], onSelect, placeholder = 'Find an estate or block…' }) {
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
   const containerRef = useRef(null);
@@ -25,9 +25,16 @@ export default function PlotSearchSelector({ plotsData = [], onSelect, placehold
   }, []);
 
   const q = query.trim().toLowerCase();
-  const matches = q.length === 0 ? [] : plotsData
-    .filter(p => haystack(p).includes(q))
-    .slice(0, MAX_RESULTS);
+  // Estates are found too: picking one zooms to all its blocks.
+  const estates = Object.values(plotsData.reduce((acc, p) => {
+    const e = p.subfarm; if (!e) return acc;
+    (acc[e] ||= { id: `estate:${e}`, name: e, isEstate: true, count: 0, coords: [] });
+    acc[e].count += 1; acc[e].coords.push(...(p.coords || []));
+    return acc;
+  }, {}));
+  const estateMatches = q.length === 0 ? [] : estates.filter((e) => e.name.toLowerCase().includes(q));
+  const matches = q.length === 0 ? [] : [...estateMatches, ...plotsData
+    .filter(p => haystack(p).includes(q))].slice(0, MAX_RESULTS);
 
   const handlePick = (plot) => {
     setQuery('');
@@ -74,8 +81,8 @@ export default function PlotSearchSelector({ plotsData = [], onSelect, placehold
                 borderBottom: '1px solid #f1f5f9', cursor: 'pointer', fontSize: '12px',
               }}
             >
-              <span style={{ fontWeight: 800, color: '#0f172a' }}>{p.id}</span>
-              {p.name && p.name !== p.id && <span style={{ color: '#64748b' }}> · {p.name}</span>}{p.subfarm && <span style={{ color: '#64748b' }}> · {p.subfarm}</span>}
+              {p.isEstate ? <><span style={{ fontWeight: 800, color: '#0f172a' }}>{p.name}</span><span style={{ color: '#64748b' }}> · estate, {p.count} blocks</span></> : <span style={{ fontWeight: 800, color: '#0f172a' }}>{p.id}</span>}
+              {!p.isEstate && p.name && p.name !== p.id && <span style={{ color: '#64748b' }}> · {p.name}</span>}{!p.isEstate && p.subfarm && <span style={{ color: '#64748b' }}> · {p.subfarm}</span>}
             </button>
           ))}
           {plotsData.filter(p => haystack(p).includes(q)).length > MAX_RESULTS && (

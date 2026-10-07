@@ -107,7 +107,7 @@ export default function RestorationMapPage({ cropType, basemapAttribution, basem
               onClose={() => setRestoreShowLayers(false)}
               cropType={cropType}
               unit="zones"
-              satellite={{ on: showRasterLayer, onChange: setShowRasterLayer, opacity: mapOpacity, setOpacity: setMapOpacity, text: 'Colours from the satellite image of the selected date' }}
+              satellite={{ on: showRasterLayer, onChange: setShowRasterLayer, opacity: mapOpacity, setOpacity: setMapOpacity, available: !!currentTileUrl, scale: 'health', text: 'Plant cover on the chosen date: green is dense vegetation, red is bare.' }}
               outlines={{ on: restoreShowBoundaries, onChange: setRestoreShowBoundaries, opacity: restoreBoundariesOpacity, setOpacity: setRestoreBoundariesOpacity }}
               colourBy={{ value: colourBy, onChange: setColourBy, options: colourOptions, empty: 'No restoration results for these zones yet. Add zone records in Farm data to colour the zones.' }}
             >

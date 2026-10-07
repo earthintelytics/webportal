@@ -29,7 +29,6 @@ import PipelineRuns from './pages/PipelineRuns';
 import TeamAccounts from './pages/TeamAccounts';
 import { hasValidTeamToken, redirectToTeamSignIn, teamRole, TEAM_ROLES } from '../services/session';
 import { ConfirmProvider } from './components/ConfirmProvider';
-import AdminActivity from './components/AdminActivity';
 
 // Grouped by what the team is doing: setting clients up, running the
 // platform, or tuning how data is interpreted. `owner` pages are only for
@@ -85,7 +84,6 @@ const AdminPortal = () => {
 
   return (
     <ConfirmProvider>
-    <AdminActivity />
     <div className="flex h-screen overflow-hidden bg-[var(--bg-main)] text-[var(--text-main)] font-sans">
 
       {/* ── Sidebar ── */}

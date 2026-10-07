@@ -10,13 +10,15 @@
  */
 
 const n = (v) => (v == null || Number.isNaN(Number(v)) ? null : Number(v));
-const fmtHa = (v) => `${Math.round(v).toLocaleString()} ha`;
+// Small farms keep their decimals (a 0.4 ha plot must not read "0 ha").
+const fmtHa = (v) => `${v < 10 ? v.toFixed(2) : Math.round(v).toLocaleString()} ha`;
 
+// Sum of the blocks' areas (from the boundaries, so it follows the estate
+// filter); the pipeline's figure only when blocks carry no area.
 function totalArea(ctx) {
-  const fromStats = n(ctx.stats?.total_area_ha);
-  if (fromStats != null) return fromStats;
   const areas = ctx.plots.map((p) => parseFloat(p.area)).filter((v) => !Number.isNaN(v));
-  return areas.length && areas.length === ctx.plots.length ? areas.reduce((a, b) => a + b, 0) : null;
+  if (areas.length && areas.length === ctx.plots.length) return areas.reduce((a, b) => a + b, 0);
+  return n(ctx.stats?.total_area_ha);
 }
 
 // Share of blocks in the best / worst admin class for an index.

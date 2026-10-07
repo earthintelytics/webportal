@@ -1,4 +1,5 @@
 import { API_BASE } from './apiBase';
+import { trackChange } from '../farmintelytics-admin/components/activityBus';
 /**
  * Client data (open questions and calibration) — contract in docs/WORK_SPLIT.md,
  * "Client data". Endpoints are built by the backend team; until they exist
@@ -9,7 +10,12 @@ export class NotConnectedError extends Error {
   constructor() { super('The data service is not connected yet.'); this.name = 'NotConnectedError'; }
 }
 
-async function call(path, options = {}) {
+function call(path, options = {}) {
+  const method = (options.method || 'GET').toUpperCase();
+  return method === 'GET' ? rawCall(path, options) : trackChange(rawCall(path, options), { what: `${method} ${path}` });
+}
+
+async function rawCall(path, options = {}) {
   const token = localStorage.getItem('fi_token');
   const headers = { ...(options.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }), ...options.headers };
   if (token) headers.Authorization = `Bearer ${token}`;

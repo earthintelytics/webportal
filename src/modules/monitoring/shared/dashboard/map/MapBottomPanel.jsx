@@ -7,7 +7,7 @@ import { RefreshCw, ChevronDown, ChevronUp, Play, Pause, ChevronLeft, ChevronRig
 import { MONTH_NAMES } from '../constants/chartConfig';
 
 export function renderMapBottomPanel(ctx, indexValue, centerContent = null, hideCalendarAndSlider = false) {
-  const { SENSOR_DOT_COLOR, TIMELINE_DATA, activeDateSlot, bottomPanelHeight, calDaysInMonth, calFirstDay, calTrailing, calendarDates, calendarMonth, calendarYear, compareTimelineIndex, currentTimeline, currentTimelineA, currentTimelineB, effectiveSensor, isBottomPanelMinimized, isCompareMode, isPlaying, nextCalMonth, prevCalMonth, satellitePicker, selectDateWithSensor, selectedIndex, selectedTimelineIndex, setCompareTimelineIndex, setIsBottomPanelMinimized, setRefreshSlider, setSatellitePicker, setSelectedTimelineIndex, showCalendarTool, showTimeSliderTool, sliderPending, startBottomPanelResize, timelineLoading, togglePlay } = ctx;
+  const { canPrevCal, canNextCal, SENSOR_DOT_COLOR, TIMELINE_DATA, activeDateSlot, bottomPanelHeight, calDaysInMonth, calFirstDay, calTrailing, calendarDates, calendarMonth, calendarYear, compareTimelineIndex, currentTimeline, currentTimelineA, currentTimelineB, effectiveSensor, isBottomPanelMinimized, isCompareMode, isPlaying, nextCalMonth, prevCalMonth, satellitePicker, selectDateWithSensor, selectedIndex, selectedTimelineIndex, setCompareTimelineIndex, setIsBottomPanelMinimized, setRefreshSlider, setSatellitePicker, setSelectedTimelineIndex, showCalendarTool, showTimeSliderTool, sliderPending, startBottomPanelResize, timelineLoading, togglePlay } = ctx;
 
     if (!showTimeSliderTool && !showCalendarTool) {
       return null;
@@ -113,9 +113,11 @@ export function renderMapBottomPanel(ctx, indexValue, centerContent = null, hide
               <button
                 onClick={() => setIsBottomPanelMinimized(!isBottomPanelMinimized)}
                 title={isBottomPanelMinimized ? "Expand bottom panel" : "Minimize bottom panel"}
-                className="p-1.5 rounded-full hover:bg-green-50 text-green-600 hover:text-green-800 transition-colors"
+                aria-label={isBottomPanelMinimized ? 'Open calendar and time slider' : 'Close calendar and time slider'}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-700 hover:bg-green-800 text-white text-xs font-semibold"
               >
-                {isBottomPanelMinimized ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                {isBottomPanelMinimized ? <ChevronUp size={16} strokeWidth={2.5} /> : <ChevronDown size={16} strokeWidth={2.5} />}
+                {isBottomPanelMinimized ? 'Open' : 'Close'}
               </button>
             </div>
           </div>
@@ -129,13 +131,15 @@ export function renderMapBottomPanel(ctx, indexValue, centerContent = null, hide
 
 
                 <div className="flex items-center justify-between mb-3">
-                  <button onClick={prevCalMonth} className="p-1 hover:bg-gray-100 rounded-lg transition-all text-gray-500 hover:text-gray-900 border border-gray-100 shadow-sm">
+                  <button onClick={prevCalMonth} disabled={!canPrevCal} aria-label="Previous month" title={canPrevCal ? 'Previous month' : 'No images before this month'}
+                    className="w-8 h-8 inline-flex items-center justify-center rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed">
                     <ChevronLeft size={16} />
                   </button>
-                  <span className="text-sm font-bold text-gray-800 tracking-wide">
+                  <span className="font-display text-sm font-semibold text-gray-900">
                     {MONTH_NAMES[calendarMonth]} {calendarYear}
                   </span>
-                  <button onClick={nextCalMonth} className="p-1 hover:bg-gray-100 rounded-lg transition-all text-gray-500 hover:text-gray-900 border border-gray-100 shadow-sm">
+                  <button onClick={nextCalMonth} disabled={!canNextCal} aria-label="Next month" title={canNextCal ? 'Next month' : 'No future months'}
+                    className="w-8 h-8 inline-flex items-center justify-center rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed">
                     <ChevronRight size={16} />
                   </button>
                 </div>

@@ -253,7 +253,11 @@ function PricesCard({ settings, setSettings, connected }) {
               <td className="py-2 pr-2"><ModelSelector provider={p.provider || 'gemini'} value={p.model || ''} onChange={val => set(i, { model: val })} /></td>
               <td className="py-2 pr-2"><input type="number" min="0" step="0.01" className={inputCls} value={p.input_per_1m} onChange={e => set(i, { input_per_1m: Number(e.target.value) })} /></td>
               <td className="py-2 pr-2"><input type="number" min="0" step="0.01" className={inputCls} value={p.output_per_1m} onChange={e => set(i, { output_per_1m: Number(e.target.value) })} /></td>
-              <td className="py-2"><input className={inputCls} value={p.currency || 'USD'} onChange={e => set(i, { currency: e.target.value.toUpperCase().slice(0, 3) })} /></td>
+              <td className="py-2">
+                <select className={inputCls} value={p.currency || 'USD'} onChange={e => set(i, { currency: e.target.value })} aria-label="Currency">
+                  {['USD', 'NGN', 'EUR', 'GBP'].map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </td>
             </tr>
           ))}
         </tbody>

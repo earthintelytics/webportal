@@ -46,18 +46,26 @@ const MapLayersPanel = ({ onClose, satellite, outlines, colourBy, cropType, unit
       <button type="button" onClick={onClose} aria-label="Close map layers" className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100"><X size={18} /></button>
     </div>
     <div className="p-4 space-y-3">
-      {satellite && (
+      {satellite && satellite.available && (
         <Row label="Satellite picture" text={satellite.text} on={satellite.on} onChange={satellite.onChange}>
           <Opacity value={satellite.opacity} onChange={satellite.setOpacity} />
-          {satellite.legend}
+          {satellite.legend || (
+            <div className="pt-1 space-y-1">
+              <div className="h-2.5 rounded-full" style={{ background: satellite.scale === 'water' ? 'linear-gradient(90deg,#B45309,#FDE68A,#93C5FD,#1D4ED8)' : 'linear-gradient(90deg,#B91C1C,#FDE68A,#86EFAC,#15803D)' }} />
+              <div className="flex justify-between text-xs text-gray-500"><span>{satellite.scale === 'water' ? 'Dry' : 'Bare or stressed'}</span><span>{satellite.scale === 'water' ? 'Wet' : 'Healthy'}</span></div>
+            </div>
+          )}
         </Row>
+      )}
+      {satellite && !satellite.available && (
+        <p className="text-xs text-gray-500 border border-dashed border-gray-300 rounded-xl p-3">No satellite picture for this date yet. It appears after the first monitoring run.</p>
       )}
       {outlines && (
         <Row label={`Outlines of the ${unit}`} text="Click one to see its details" on={outlines.on} onChange={outlines.onChange}>
           <Opacity value={outlines.opacity} onChange={outlines.setOpacity} />
         </Row>
       )}
-      {colourBy && (
+      {false && colourBy && (
         <div className="border border-gray-200 rounded-xl p-3.5 space-y-2.5">
           <p className="text-sm font-semibold text-gray-900">Colour the {unit} by</p>
           {colourBy.options.length ? (
@@ -80,7 +88,7 @@ const MapLayersPanel = ({ onClose, satellite, outlines, colourBy, cropType, unit
       )}
       {children}
       <p className="text-xs text-gray-500 leading-relaxed">
-        Calendar, time slider and split comparison change the satellite picture. Coloured {unit} show the latest results.
+        The calendar and time slider change the date of the satellite picture.
       </p>
     </div>
   </aside>

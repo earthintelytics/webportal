@@ -11,14 +11,14 @@ const emit = (event) => listeners.forEach((fn) => fn(event, busy));
 export const onAdminActivity = (fn) => { listeners.add(fn); return () => listeners.delete(fn); };
 
 /** Wraps one change request: progress while it runs, a message when it ends. */
-export async function trackChange(promise, { success = 'Saved', quiet = false } = {}) {
+export async function trackChange(promise, { success = 'Saved', quiet = false, what = '' } = {}) {
   busy += 1; emit({ type: 'busy' });
   try {
     const result = await promise;
     if (!quiet) emit({ type: 'done', tone: 'good', text: success });
     return result;
   } catch (e) {
-    if (!quiet) emit({ type: 'done', tone: 'warning', text: `Not saved: ${e.message}` });
+    if (!quiet) emit({ type: 'done', tone: 'warning', text: `Not saved: ${e.message}`, report: { what, error: e.message, page: typeof window !== 'undefined' ? window.location.pathname : '', at: new Date().toISOString() } });
     throw e;
   } finally {
     busy -= 1; emit({ type: 'busy' });

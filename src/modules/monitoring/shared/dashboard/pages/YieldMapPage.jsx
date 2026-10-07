@@ -105,7 +105,7 @@ export default function YieldMapPage({ cropType, basemapAttribution, basemapMaxN
               onClose={() => setYieldShowLayers(false)}
               cropType={cropType}
               unit="blocks"
-              satellite={{ on: showRasterLayer, onChange: setShowRasterLayer, opacity: mapOpacity, setOpacity: setMapOpacity, text: 'Colours from the satellite image of the selected date' }}
+              satellite={{ on: showRasterLayer, onChange: setShowRasterLayer, opacity: mapOpacity, setOpacity: setMapOpacity, available: !!currentTileUrl, scale: 'health', text: 'Plant health on the chosen date: green is healthy, red is stressed or bare.' }}
               outlines={{ on: yieldShowBoundaries, onChange: setYieldShowBoundaries, opacity: yieldBoundariesOpacity, setOpacity: setYieldBoundariesOpacity }}
               colourBy={{ value: colourBy, onChange: setColourBy, options: colourOptions, empty: 'No harvest results for these blocks yet. Upload harvest records in Farm data to colour the blocks by harvest.' }}
              />

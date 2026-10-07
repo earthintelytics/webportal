@@ -99,7 +99,7 @@ export default function WaterMapPage({ cropType, basemapAttribution, basemapMaxN
               onClose={() => setMoistureShowLayers(false)}
               cropType={cropType}
               unit="blocks"
-              satellite={{ on: showRasterLayer, onChange: setShowRasterLayer, opacity: mapOpacity, setOpacity: setMapOpacity, text: 'Moisture colours from the satellite image of the selected date' }}
+              satellite={{ on: showRasterLayer, onChange: setShowRasterLayer, opacity: mapOpacity, setOpacity: setMapOpacity, available: !!currentTileUrl, scale: 'water', text: 'Water in plants and soil on the chosen date: blue is wet, brown is dry.' }}
               outlines={{ on: moistureShowBoundaries, onChange: setMoistureShowBoundaries, opacity: moistureBoundariesOpacity, setOpacity: setMoistureBoundariesOpacity }}
             >
               {renderLegendCards(['Vegetation Moisture', 'Ground Moisture'])}

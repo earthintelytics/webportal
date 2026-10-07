@@ -12,7 +12,7 @@ const ROLES = [
   { id: 'analyst', label: 'Analyst', text: 'Monitoring and reports' },
   { id: 'viewer', label: 'Viewer', text: 'Read only' },
 ];
-const EMPTY = { company_id: '', email: '', access_code: '', label: 'Primary', full_name: '', role: 'admin' };
+const EMPTY = { company_id: '', email: '', access_code: '', label: 'Primary', first_name: '', last_name: '', role: 'admin' };
 
 /**
  * Sign-in details for client organisations (email + access code). Codes are
@@ -126,11 +126,13 @@ function NewCredential({ orgs, onClose, onSaved }) {
   const [error, setError] = useState('');
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
   const errors = { email: form.email ? emailError(form.email) : null, access_code: accessCodeError(form.access_code.trim()) };
-  const valid = form.company_id && form.email && !errors.email && !errors.access_code;
+  // First and last name are both required; stored together as the full name.
+  const valid = form.company_id && form.first_name.trim() && form.last_name.trim() && form.email && !errors.email && !errors.access_code;
 
   const save = async () => {
     setSaving(true); setError('');
-    try { onSaved(await createCredential({ ...form, access_code: form.access_code.trim() })); } catch (e) { setError(e.message); setSaving(false); }
+    const { first_name, last_name, ...rest } = form;
+    try { onSaved(await createCredential({ ...rest, full_name: `${first_name.trim()} ${last_name.trim()}`, access_code: form.access_code.trim() })); } catch (e) { setError(e.message); setSaving(false); }
   };
 
   return (
@@ -144,7 +146,8 @@ function NewCredential({ orgs, onClose, onSaved }) {
         </select>
       </Field>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Field label="Name"><input className={inputCls} value={form.full_name} onChange={set('full_name')} /></Field>
+        <Field label="First name *"><input className={inputCls} value={form.first_name} onChange={set('first_name')} required autoComplete="given-name" /></Field>
+        <Field label="Last name *"><input className={inputCls} value={form.last_name} onChange={set('last_name')} required autoComplete="family-name" /></Field>
         <Field label="Label" hint="e.g. Primary, Estate manager"><input className={inputCls} value={form.label} onChange={set('label')} /></Field>
       </div>
       <Field label="Email" error={errors.email}><input type="email" className={inputCls} value={form.email} onChange={set('email')} /></Field>
