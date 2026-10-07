@@ -21,6 +21,7 @@ const MemberModal = ({ member, services, onSave, onClose }) => {
 
   const submit = async (e) => {
     e.preventDefault();
+    if (!form.name.trim() || form.name.trim().split(/\s+/).length < 2) { setError('Enter the first and last name.'); return; }
     const bad = !editing && emailError(form.email);
     if (bad) { setError(bad); return; }
     if (!editing && form.password.length < 8) { setError('The first password needs at least 8 characters.'); return; }
@@ -49,7 +50,7 @@ const MemberModal = ({ member, services, onSave, onClose }) => {
             <Field label="First password" hint="They can change it in Settings."><input type="text" className={inputCls} value={form.password} onChange={(e) => set('password', e.target.value)} /></Field>
           </div>
         )}
-        <Field label="Name"><input className={inputCls} value={form.name} onChange={(e) => set('name', e.target.value)} placeholder="Full name" /></Field>
+        <Field label="First and last name *"><input className={inputCls} value={form.name} onChange={(e) => set('name', e.target.value)} placeholder="e.g. Amina Bello" required autoComplete="name" /></Field>
         <fieldset className="space-y-2">
           <legend className="text-sm font-semibold text-gray-800 mb-1.5">Role</legend>
           {ROLES.map((r) => (

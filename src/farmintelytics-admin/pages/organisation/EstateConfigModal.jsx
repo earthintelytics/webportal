@@ -30,7 +30,12 @@ const EstateConfigModal = ({ farm, onClose }) => {
     try { await fn(); } catch (e) { setError(e.message); } finally { setBusy(''); }
   };
   const generate = () => run('generate', async () => { const d = await generateFarmConfig(farm.farm_id); setContent(d.content); setState('ready'); setNotice("Made from the estate's current settings."); });
-  const save = () => run('save', async () => { await savePipelineConfig({ filename, content }); setNotice('Saved.'); });
+  // Basic checks before saving: not empty, and the estate's own id is in it.
+  const save = () => {
+    if (!content.trim()) { setError('The settings are empty. Use "Make from the estate" first.'); return; }
+    if (!content.includes(farm.farm_id)) { setError(`These settings do not mention this estate (${farm.farm_id}). Make them again from the estate.`); return; }
+    return run('save', async () => { await savePipelineConfig({ filename, content }); setNotice('Saved.'); });
+  };
   const remove = async () => {
     if (!(await confirm(`Delete the pipeline settings for ${farm.farm_name}? The scheduler cannot run this estate until they are made again.`))) return;
     run('delete', async () => { await deletePipelineConfig(filename); setContent(''); setState('none'); setNotice('Deleted.'); });

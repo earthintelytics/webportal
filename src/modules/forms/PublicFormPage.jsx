@@ -38,8 +38,9 @@ const PublicFormPage = () => {
     const errs = validateAnswers(form.fields, answers);
     setErrors(errs);
     if (Object.keys(errs).length) { setSendError('Some answers need attention.'); return; }
-    setSending(true); setSendError('');
+    // Consent first: checking it after "Sending…" left the button stuck.
     if (!agreed) { setSendError('Please read and tick the consent box before sending.'); return; }
+    setSending(true); setSendError('');
     const body = submissionBody(answers, consentRecord(form.organisation_name, 'farmer'));
     try {
       await submitPublicForm(token, body);

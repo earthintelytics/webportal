@@ -25,6 +25,9 @@ const FormLinks = ({ form }) => {
 
   const create = async () => {
     setError('');
+    const today = new Date().toISOString().slice(0, 10);
+    if (draft.expires_at && draft.expires_at < today) { setError('The closing date is in the past. Choose today or a later date.'); return; }
+    if (draft.max_submissions !== '' && (!Number.isInteger(Number(draft.max_submissions)) || Number(draft.max_submissions) < 1)) { setError('Most answers must be a whole number of 1 or more, or left empty.'); return; }
     try {
       await createLink(form.id, { open: true, expires_at: draft.expires_at || null, max_submissions: draft.max_submissions ? Number(draft.max_submissions) : null });
       setDraft({ expires_at: '', max_submissions: '' });
@@ -48,7 +51,7 @@ const FormLinks = ({ form }) => {
       <Card className="p-5 space-y-4">
         <p className="text-sm font-semibold text-gray-800">New link</p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
-          <Field label="Closes on (optional)"><input type="date" className={inputCls} value={draft.expires_at} onChange={(e) => setDraft({ ...draft, expires_at: e.target.value })} /></Field>
+          <Field label="Closes on (optional)"><input type="date" min={new Date().toISOString().slice(0, 10)} className={inputCls} value={draft.expires_at} onChange={(e) => setDraft({ ...draft, expires_at: e.target.value })} /></Field>
           <Field label="Most answers (optional)"><input type="number" min={1} className={inputCls} value={draft.max_submissions} onChange={(e) => setDraft({ ...draft, max_submissions: e.target.value })} /></Field>
           <PrimaryButton onClick={create}><Link2 size={15} />Create link</PrimaryButton>
         </div>
