@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { MapContainer, TileLayer, Polygon, ZoomControl } from 'react-leaflet';
+import { PanelRightClose, PanelRightOpen } from 'lucide-react';
 import { FitBoundsToPlots, ResizeMap, ZoomToPlot } from '../map/MapHelpers';
 import { hexOf, legendFor, useLayerLegends } from '../legends/layerLegends';
 
@@ -16,6 +17,7 @@ const fmt = (v, d = 2) => (v == null ? '—' : Number(v).toFixed(d));
 export default function BlockSummaryPage({ plotsData = [], measures = [], basemapUrl, basemapAttribution, basemapMaxNativeZoom, defaultMapCenter, farmBoundary, filterEstate, unitLabel = 'blocks' }) {
   const [key, setKey] = useState(measures[0]?.key || null);
   const [found, setFound] = useState(null);
+  const [panelOpen, setPanelOpen] = useState(true);
   const m = measures.find((x) => x.key === key) || measures[0];
 
   const rows = useMemo(() => (m ? plotsData.map((p) => ({ p, v: m.valueOf(p) })) : []), [plotsData, m]);
@@ -60,11 +62,19 @@ export default function BlockSummaryPage({ plotsData = [], measures = [], basema
   return (
     <div className="flex h-full min-h-0">
       <div className="flex-1 relative min-w-0">
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] flex flex-wrap justify-center gap-2 bg-white border border-gray-200 rounded-xl p-1.5">
-          {measures.map((x) => (
-            <button key={x.key} type="button" onClick={() => setKey(x.key)} title={x.title || x.label}
-              className={`px-3 py-1.5 rounded-lg text-sm font-semibold ${x.key === m.key ? 'bg-green-700 text-white' : 'text-gray-700 hover:bg-gray-100'}`}>{x.label}</button>
-          ))}
+        {/* Measure choice and the summary toggle, down the right edge of the map */}
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 z-[1000] flex flex-col items-stretch gap-2">
+          <button type="button" onClick={() => setPanelOpen((o) => !o)}
+            title={panelOpen ? 'Hide the summary' : 'Show the summary'} aria-label={panelOpen ? 'Hide the summary' : 'Show the summary'}
+            className="inline-flex items-center justify-center h-9 rounded-xl bg-white border border-gray-200 text-gray-700 hover:bg-gray-50">
+            {panelOpen ? <PanelRightClose size={17} /> : <PanelRightOpen size={17} />}
+          </button>
+          <div className="flex flex-col gap-1 bg-white border border-gray-200 rounded-xl p-1.5">
+            {measures.map((x) => (
+              <button key={x.key} type="button" onClick={() => setKey(x.key)} title={x.title || x.label}
+                className={`px-3 py-1.5 rounded-lg text-sm font-semibold text-center ${x.key === m.key ? 'bg-[var(--brand-primary)] text-white' : 'text-gray-700 hover:bg-gray-100'}`}>{x.label}</button>
+            ))}
+          </div>
         </div>
         <MapContainer center={defaultMapCenter} zoom={13} maxZoom={22} zoomControl={false} style={{ height: '100%', width: '100%' }}>
           <TileLayer key={basemapUrl} url={basemapUrl} attribution={basemapAttribution} maxZoom={22} maxNativeZoom={basemapMaxNativeZoom} />
@@ -78,7 +88,7 @@ export default function BlockSummaryPage({ plotsData = [], measures = [], basema
           <FitBoundsToPlots plotsData={plotsData} farmBoundary={farmBoundary} refitKey={filterEstate} />
           <ZoomToPlot plot={found} />
           <ZoomControl position="bottomright" />
-          <ResizeMap trigger={key} />
+          <ResizeMap trigger={`${key}-${panelOpen}`} />
         </MapContainer>
 
         {/* Colour key, only once there are values to colour */}
@@ -97,7 +107,7 @@ export default function BlockSummaryPage({ plotsData = [], measures = [], basema
         )}
       </div>
 
-      <aside className="w-[360px] shrink-0 bg-white border-l border-gray-200 overflow-y-auto p-6 space-y-6">
+      {panelOpen && <aside className="w-[360px] shrink-0 bg-white border-l border-gray-200 overflow-y-auto p-6 space-y-6">
         <div>
           <div className="flex items-center justify-between gap-2">
             <h2 className="font-display text-xl font-semibold text-gray-900">Block summary</h2>
@@ -189,7 +199,7 @@ export default function BlockSummaryPage({ plotsData = [], measures = [], basema
             )}
           </>
         )}
-      </aside>
+      </aside>}
     </div>
   );
 }
