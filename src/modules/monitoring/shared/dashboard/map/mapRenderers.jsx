@@ -280,7 +280,7 @@ export function renderMoisturePolygons(ctx, plots, suffix = '') {
             <Polygon
               positions={plot.coords}
               pathOptions={{
-                color: '#FFFFFF',
+                color: '#000000',
                 weight: 2,
                 opacity: moistureBoundariesOpacity / 100,
                 fill: false

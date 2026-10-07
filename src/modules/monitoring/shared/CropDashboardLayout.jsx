@@ -1122,7 +1122,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
 
 
   const getHealthPlotStyleOutline = () => {
-    const color = '#FFFFFF';
+    const color = '#000000'; // block outlines are always black
     
     return {
       color: healthShowBoundaries ? color : 'transparent',
@@ -1141,7 +1141,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
   const [yieldBoundariesOpacity, setYieldBoundariesOpacity] = useState(100);
 
   const getYieldPlotStyleOutline = () => ({
-    color: yieldShowBoundaries ? '#FFFFFF' : 'transparent',
+    color: yieldShowBoundaries ? '#000000' : 'transparent',
     weight: yieldShowBoundaries ? 2.5 : 0,
     opacity: yieldBoundariesOpacity / 100,
     fillColor: 'transparent',
@@ -1155,7 +1155,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
   const [climateBoundariesOpacity, setClimateBoundariesOpacity] = useState(100);
 
   const getClimatePlotStyleOutline = () => ({
-    color: climateShowBoundaries ? '#FFFFFF' : 'transparent',
+    color: climateShowBoundaries ? '#000000' : 'transparent',
     weight: climateShowBoundaries ? 2.5 : 0,
     opacity: climateBoundariesOpacity / 100,
     fillColor: 'transparent',
@@ -1175,7 +1175,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
 
 
   const getRestorePlotStyleOutline = () => ({
-    color: restoreShowBoundaries ? '#FFFFFF' : 'transparent',
+    color: restoreShowBoundaries ? '#000000' : 'transparent',
     weight: restoreShowBoundaries ? 2.5 : 0,
     opacity: restoreBoundariesOpacity / 100,
     fillColor: 'transparent',
@@ -1184,7 +1184,7 @@ const CropDashboardLayout = ({ mode = 'crop', service = null, cropType, cropIndi
 
 
   const getIntelPlotStyleOutline = () => ({
-    color: intelShowBoundaries ? '#FFFFFF' : 'transparent',
+    color: intelShowBoundaries ? '#000000' : 'transparent',
     weight: intelShowBoundaries ? 2.5 : 0,
     opacity: intelBoundariesOpacity / 100,
     fillColor: 'transparent',
