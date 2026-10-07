@@ -21,7 +21,8 @@ const MemberModal = ({ member, services, onSave, onClose }) => {
 
   const submit = async (e) => {
     e.preventDefault();
-    if (!form.name.trim() || form.name.trim().split(/\s+/).length < 2) { setError('Enter the first and last name.'); return; }
+    // New people, or a changed name: first and last name. Existing names are left as they are.
+    if ((!editing || form.name !== (member?.name || '')) && form.name.trim().split(/\s+/).filter(Boolean).length < 2) { setError('Enter the first and last name.'); return; }
     const bad = !editing && emailError(form.email);
     if (bad) { setError(bad); return; }
     if (!editing && form.password.length < 8) { setError('The first password needs at least 8 characters.'); return; }
