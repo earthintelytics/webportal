@@ -1,5 +1,6 @@
 import { hasValidTeamToken, redirectToTeamSignIn } from './session';
 import { ADMIN_API_BASE } from './apiBase';
+import { trackChange } from '../farmintelytics-admin/components/activityBus';
 /**
  * AI settings, usage and limits (super admin). Contract: docs/WORK_SPLIT.md,
  * "AI settings (G13)". Built by the backend team; until the endpoints exist
@@ -9,7 +10,12 @@ const BASE = ADMIN_API_BASE;
 
 export class AiNotConnected extends Error { constructor() { super('AI settings service not connected yet'); this.name = 'AiNotConnected'; } }
 
-async function call(path, options = {}) {
+function call(path, options = {}) {
+  const method = (options.method || 'GET').toUpperCase();
+  return method === 'GET' ? rawCall(path, options) : trackChange(rawCall(path, options));
+}
+
+async function rawCall(path, options = {}) {
   const token = localStorage.getItem('fi_admin_token');
   let res;
   try {

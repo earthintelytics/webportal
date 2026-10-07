@@ -200,6 +200,9 @@ const Scheduler = () => {
         </div>
 
         <ErrorBanner message={error} onDismiss={() => setError('')} onRetry={load} />
+        <p className="text-sm text-gray-700 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
+          "On" means the schedule is saved and will be used. Runs only happen while the scheduler service is running on the server; each run then appears under Pipeline runs. If a schedule is on but Pipeline runs stays empty, the scheduler service is stopped.
+        </p>
 
         {loading ? <div className="text-center py-16 text-sm text-gray-500">Loading schedules…</div> : rows.length === 0 ? (
           <div className="text-center py-16 bg-white border border-dashed border-gray-300 rounded-2xl text-sm text-gray-600">No schedules yet. Onboarding creates one per site, or add one with “New schedule”.</div>

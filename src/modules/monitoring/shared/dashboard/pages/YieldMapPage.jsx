@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import MapLayersPanel from '../map/MapLayersPanel';
+import PlotSearchSelector from '../../PlotSearchSelector';
 import { Layers } from 'lucide-react';
-import { FitBoundsToPlots, FitToZarrBounds, MapPaneClipSetter, ResizeMap, SwipeSliderOverlay } from '../../dashboard/map/MapHelpers';
+import { FitBoundsToPlots, FitToZarrBounds, MapPaneClipSetter, ResizeMap, SwipeSliderOverlay, ZoomToPlot } from '../../dashboard/map/MapHelpers';
 import { MapContainer, Pane, TileLayer, ZoomControl } from 'react-leaflet';
 
 /** The yield map page of the crop and service dashboard (moved out of CropDashboardLayout). */
 export default function YieldMapPage({ cropType, basemapAttribution, basemapMaxNativeZoom, basemapUrl, currentTileUrl, currentTileUrlB, currentTimelineA, currentTimelineB, defaultMapCenter, farmBoundary, filterEstate, handleSplitDragStart, isCompareMode, mapOpacity, plotsData, rasterOverlayBounds, renderFloatingBasemapSelector, renderMapBottomPanel, renderYieldPolygons, selectedIndex, setMapOpacity, setShowRasterLayer, setYieldBoundariesOpacity, setYieldShowBoundaries, setYieldShowLayers, showRasterLayer, splitPosition, tileRefreshing, yieldBoundariesOpacity, yieldPlotsData, yieldPlotsDataA, yieldPlotsDataB, yieldShowBoundaries, yieldShowLayers, zarrBounds }) {
+  const [found, setFound] = useState(null); // block picked in the map search
   const [colourBy, setColourBy] = useState(null);
   // Only results that exist for at least one of the blocks are offered.
   const colourOptions = [
@@ -67,6 +69,7 @@ export default function YieldMapPage({ cropType, basemapAttribution, basemapMaxN
               <FitToZarrBounds zarrBounds={zarrBounds} />
               <ZoomControl position="bottomright" />
               <ResizeMap trigger={yieldShowLayers} />
+              <ZoomToPlot plot={found} />
             </MapContainer>
 
             <SwipeSliderOverlay
@@ -79,6 +82,11 @@ export default function YieldMapPage({ cropType, basemapAttribution, basemapMaxN
 
             {/* Floating Basemap Selector (Top-Left) */}
             {renderFloatingBasemapSelector()}
+            {!isCompareMode && (
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] w-[min(360px,calc(100%-2rem))]">
+                <PlotSearchSelector plotsData={plotsData} onSelect={(p) => setFound(p)} />
+              </div>
+            )}
 
                         <button type="button"
               onClick={() => setYieldShowLayers(!yieldShowLayers)}

@@ -1,12 +1,14 @@
 import MapLayersPanel from '../map/MapLayersPanel';
 import { Layers } from 'lucide-react';
-import { FitBoundsToPlots, FitToZarrBounds, MapPaneClipSetter, ResizeMap, SwipeSliderOverlay } from '../../dashboard/map/MapHelpers';
+import { FitBoundsToPlots, FitToZarrBounds, MapPaneClipSetter, ResizeMap, SwipeSliderOverlay, ZoomToPlot } from '../../dashboard/map/MapHelpers';
 import { MapContainer, Pane, TileLayer, ZoomControl } from 'react-leaflet';
 import PlotDetailPanel from '../../PlotDetailPanel';
 import PlotSearchSelector from '../../PlotSearchSelector';
+import { useState } from 'react';
 
 /** The parcel / intelligence layers map page of the crop and service dashboard (moved out of CropDashboardLayout). */
 export default function ParcelMapPage({ cropType, basemapAttribution, basemapMaxNativeZoom, basemapUrl, currentTileUrl, currentTileUrlB, currentTimelineA, currentTimelineB, dashboardFilterKeys, defaultMapCenter, dynamicFilterValues, farmBoundary, filterEstate, filteredPlotsData, handlePlotClick, handleSplitDragStart, intelBoundariesOpacity, intelShowBoundaries, intelShowLayers, isCompareMode, mapOpacity, pixelTimeseries, plotsData, plotsDataA, plotsDataB, rasterOverlayBounds, renderFloatingBasemapSelector, renderIntelPolygons, renderMapBottomPanel, selectedIndex, selectedPlot, setDynamicFilterValues, setIntelBoundariesOpacity, setIntelShowBoundaries, setIntelShowLayers, setMapOpacity, setSelectedPlot, setShowRasterLayer, showRasterLayer, splitPosition, tileRefreshing, zarrBounds }) {
+  const [found, setFound] = useState(null); // block picked in the map search
   return (
       <div className="flex flex-col h-full">
 
@@ -63,11 +65,12 @@ export default function ParcelMapPage({ cropType, basemapAttribution, basemapMax
               <FitToZarrBounds zarrBounds={zarrBounds} />
               <ZoomControl position="bottomright" />
               <ResizeMap trigger={intelShowLayers} />
+              <ZoomToPlot plot={found} />
             </MapContainer>
 
             {!isCompareMode && (
               <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] flex flex-col gap-2 items-center w-[min(420px,calc(100%-2rem))]">
-                <PlotSearchSelector plotsData={plotsData} onSelect={handlePlotClick} />
+                <PlotSearchSelector plotsData={plotsData} onSelect={(p, lat, lng) => { setFound(p); handlePlotClick(p, lat, lng); }} />
                 {dashboardFilterKeys.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {dashboardFilterKeys.map(key => {

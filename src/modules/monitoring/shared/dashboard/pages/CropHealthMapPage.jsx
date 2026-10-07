@@ -1,10 +1,13 @@
+import { useState } from 'react';
 import MapLayersPanel from '../map/MapLayersPanel';
+import PlotSearchSelector from '../../PlotSearchSelector';
 import { Layers } from 'lucide-react';
-import { FitBoundsToPlots, FitToZarrBounds, MapPaneClipSetter, ResizeMap, SwipeSliderOverlay } from '../../dashboard/map/MapHelpers';
+import { FitBoundsToPlots, FitToZarrBounds, MapPaneClipSetter, ResizeMap, SwipeSliderOverlay, ZoomToPlot } from '../../dashboard/map/MapHelpers';
 import { MapContainer, Pane, TileLayer, ZoomControl } from 'react-leaflet';
 
 /** The crop health map page of the crop and service dashboard (moved out of CropDashboardLayout). */
 export default function CropHealthMapPage({ cropType, basemapAttribution, basemapMaxNativeZoom, basemapUrl, currentTileUrl, currentTileUrlB, currentTimelineA, currentTimelineB, defaultMapCenter, farmBoundary, filterEstate, handleSplitDragStart, healthBoundariesOpacity, healthPlotsData, healthPlotsDataA, healthPlotsDataB, healthShowBoundaries, healthShowLayers, isCompareMode, isOrg, mapOpacity, plotsData, rasterOverlayBounds, renderFloatingBasemapSelector, renderHealthPolygons, renderLegendCards, renderMapBottomPanel, selectedIndex, setHealthBoundariesOpacity, setHealthShowBoundaries, setHealthShowLayers, setMapOpacity, setShowRasterLayer, showRasterLayer, splitPosition, tileRefreshing, zarrBounds }) {
+  const [found, setFound] = useState(null); // block picked in the map search
   return (
       <div className="flex flex-col h-full">
 
@@ -61,6 +64,7 @@ export default function CropHealthMapPage({ cropType, basemapAttribution, basema
               <FitToZarrBounds zarrBounds={zarrBounds} />
               <ZoomControl position="bottomright" />
               <ResizeMap trigger={healthShowLayers} />
+              <ZoomToPlot plot={found} />
             </MapContainer>
 
             <SwipeSliderOverlay
@@ -73,6 +77,11 @@ export default function CropHealthMapPage({ cropType, basemapAttribution, basema
 
             {/* Floating Basemap Selector (Top-Left) */}
             {renderFloatingBasemapSelector()}
+            {!isCompareMode && (
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] w-[min(360px,calc(100%-2rem))]">
+                <PlotSearchSelector plotsData={plotsData} onSelect={(p) => setFound(p)} />
+              </div>
+            )}
 
                         <button type="button"
               onClick={() => setHealthShowLayers(!healthShowLayers)}

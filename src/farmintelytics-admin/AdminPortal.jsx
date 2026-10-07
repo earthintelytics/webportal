@@ -11,7 +11,6 @@ import {
   X,
   Clock,
   Database,
-  Users,
   Rocket,
   SlidersHorizontal,
   Sparkles,
@@ -25,12 +24,12 @@ import Credentials from './pages/Credentials';
 import Logs from './pages/Logs';
 import Scheduler from './pages/Scheduler';
 import Inventory from './pages/Inventory';
-import UsersPage from './pages/Users';
 import AiSettings from './pages/AiSettings';
 import PipelineRuns from './pages/PipelineRuns';
 import TeamAccounts from './pages/TeamAccounts';
 import { hasValidTeamToken, redirectToTeamSignIn, teamRole, TEAM_ROLES } from '../services/session';
 import { ConfirmProvider } from './components/ConfirmProvider';
+import AdminActivity from './components/AdminActivity';
 
 // Grouped by what the team is doing: setting clients up, running the
 // platform, or tuning how data is interpreted. `owner` pages are only for
@@ -40,7 +39,6 @@ const NAV_GROUPS = [
     { id: 'onboarding',    label: 'Onboard organisation', icon: Rocket,    path: '/admin/onboarding' },
     { id: 'organizations', label: 'Organisations',        icon: Building2, path: '/admin/organizations' },
     { id: 'credentials',   label: 'Sign-in details',      icon: Key,       path: '/admin/credentials' },
-    { id: 'users',         label: 'User accounts',        icon: Users,     path: '/admin/users', owner: true },
     { id: 'team',          label: 'Team accounts',        icon: ShieldCheck, path: '/admin/team', owner: true },
   ]},
   { label: 'Operations', items: [
@@ -87,6 +85,7 @@ const AdminPortal = () => {
 
   return (
     <ConfirmProvider>
+    <AdminActivity />
     <div className="flex h-screen overflow-hidden bg-[var(--bg-main)] text-[var(--text-main)] font-sans">
 
       {/* ── Sidebar ── */}
@@ -171,7 +170,6 @@ const AdminPortal = () => {
           <Routes>
             <Route index element={<Navigate to="organizations" replace />} />
             <Route path="onboarding"    element={<Onboarding />} />
-            <Route path="users"         element={ownerOnly(<UsersPage />)} />
             <Route path="team"          element={ownerOnly(<TeamAccounts />)} />
             <Route path="organizations" element={<Organizations />} />
             <Route path="inventory"     element={<Inventory />} />

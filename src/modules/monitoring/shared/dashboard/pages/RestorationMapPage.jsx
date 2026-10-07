@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import MapLayersPanel from '../map/MapLayersPanel';
+import PlotSearchSelector from '../../PlotSearchSelector';
 import { Layers } from 'lucide-react';
-import { FitBoundsToPlots, FitToZarrBounds, MapPaneClipSetter, ResizeMap, SwipeSliderOverlay } from '../../dashboard/map/MapHelpers';
+import { FitBoundsToPlots, FitToZarrBounds, MapPaneClipSetter, ResizeMap, SwipeSliderOverlay, ZoomToPlot } from '../../dashboard/map/MapHelpers';
 import { MapContainer, Pane, TileLayer, ZoomControl } from 'react-leaflet';
 
 /** The restoration zones map page of the crop and service dashboard (moved out of CropDashboardLayout). */
 export default function RestorationMapPage({ cropType, basemapAttribution, basemapMaxNativeZoom, basemapUrl, currentTileUrl, currentTileUrlB, currentTimelineA, currentTimelineB, defaultMapCenter, farmBoundary, filterEstate, handleSplitDragStart, isCompareMode, landUseChange, landUseChangeLoading, mapOpacity, plotsData, rasterOverlayBounds, renderFloatingBasemapSelector, renderMapBottomPanel, renderRestorePolygons, restorationPlotsData, restorationPlotsDataA, restorationPlotsDataB, restoreBoundariesOpacity, restoreShowBoundaries, restoreShowLayers, selectedIndex, setMapOpacity, setRestoreBoundariesOpacity, setRestoreShowBoundaries, setRestoreShowLayers, setShowRasterLayer, showRasterLayer, splitPosition, tileRefreshing, zarrBounds }) {
+  const [found, setFound] = useState(null); // block picked in the map search
   const [colourBy, setColourBy] = useState(null);
   // Only results that exist for at least one of the zones are offered.
   const colourOptions = [
@@ -69,6 +71,7 @@ export default function RestorationMapPage({ cropType, basemapAttribution, basem
               <FitToZarrBounds zarrBounds={zarrBounds} />
               <ZoomControl position="bottomright" />
               <ResizeMap trigger={restoreShowLayers} />
+              <ZoomToPlot plot={found} />
             </MapContainer>
 
             <SwipeSliderOverlay
@@ -81,6 +84,11 @@ export default function RestorationMapPage({ cropType, basemapAttribution, basem
 
             {/* Floating Basemap Selector (Top-Left) */}
             {renderFloatingBasemapSelector()}
+            {!isCompareMode && (
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] w-[min(360px,calc(100%-2rem))]">
+                <PlotSearchSelector plotsData={restorationPlotsData} onSelect={(p) => setFound(p)} />
+              </div>
+            )}
 
                         <button type="button"
               onClick={() => setRestoreShowLayers(!restoreShowLayers)}

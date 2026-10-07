@@ -1,4 +1,5 @@
 import { hasValidTeamToken, redirectToTeamSignIn } from './session';
+import { trackChange } from '../farmintelytics-admin/components/activityBus';
 import { ADMIN_API_BASE } from './apiBase';
 /**
  * adminApi.js
@@ -17,8 +18,17 @@ import { ADMIN_API_BASE } from './apiBase';
 // of being sent back to log in.
 const handleAdminAuthFailure = redirectToTeamSignIn;
 
-/** Generic fetch helper for the admin API */
-async function adminFetch(path, options = {}) {
+/**
+ * Admin API call. Changes (POST/PUT/PATCH/DELETE, except signing in) show the
+ * console's progress bar and a "Saved" or "Not saved" message.
+ */
+function adminFetch(path, options = {}) {
+  const method = (options.method || 'GET').toUpperCase();
+  const isChange = method !== 'GET' && !path.startsWith('/auth/');
+  return isChange ? trackChange(rawAdminFetch(path, options), { success: method === 'DELETE' ? 'Removed' : 'Saved' }) : rawAdminFetch(path, options);
+}
+
+async function rawAdminFetch(path, options = {}) {
   const url = `${ADMIN_API_BASE}${path}`;
   const token = localStorage.getItem('fi_admin_token');
   const headers = { 'Content-Type': 'application/json', ...options.headers };

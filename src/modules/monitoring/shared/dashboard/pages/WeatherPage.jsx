@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import MapLayersPanel from '../map/MapLayersPanel';
+import PlotSearchSelector from '../../PlotSearchSelector';
 import { Layers } from 'lucide-react';
-import { FitBoundsToPlots, FitToZarrBounds, MapPaneClipSetter, ResizeMap, SwipeSliderOverlay } from '../../dashboard/map/MapHelpers';
+import { FitBoundsToPlots, FitToZarrBounds, MapPaneClipSetter, ResizeMap, SwipeSliderOverlay, ZoomToPlot } from '../../dashboard/map/MapHelpers';
 import { MapContainer, Pane, TileLayer, ZoomControl } from 'react-leaflet';
 
 /** The weather and climate page of the crop and service dashboard (moved out of CropDashboardLayout). */
 export default function WeatherPage({ setShowRasterLayer, setMapOpacity, cropType, basemapAttribution, basemapMaxNativeZoom, basemapUrl, climateBoundariesOpacity, climatePlotsData, climatePlotsDataA, climatePlotsDataB, climateShowBoundaries, climateShowLayers, currentTileUrl, currentTileUrlB, currentTimelineA, currentTimelineB, defaultMapCenter, farmBoundary, filterEstate, handleSplitDragStart, isCompareMode, mapOpacity, plotsData, rasterOverlayBounds, renderClimatePolygons, renderFloatingBasemapSelector, renderMapBottomPanel, selectedIndex, setClimateBoundariesOpacity, setClimateShowBoundaries, setClimateShowLayers, showRasterLayer, splitPosition, tileRefreshing, zarrBounds }) {
+  const [found, setFound] = useState(null); // block picked in the map search
   const [colourBy, setColourBy] = useState(null);
   // Only results that exist for at least one of the blocks are offered.
   const colourOptions = [
@@ -68,6 +70,7 @@ export default function WeatherPage({ setShowRasterLayer, setMapOpacity, cropTyp
               <FitToZarrBounds zarrBounds={zarrBounds} />
               <ZoomControl position="bottomright" />
               <ResizeMap trigger={climateShowLayers} />
+              <ZoomToPlot plot={found} />
             </MapContainer>
 
             <SwipeSliderOverlay
@@ -80,6 +83,11 @@ export default function WeatherPage({ setShowRasterLayer, setMapOpacity, cropTyp
 
             {/* Floating Basemap Selector (Top-Left) */}
             {renderFloatingBasemapSelector()}
+            {!isCompareMode && (
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] w-[min(360px,calc(100%-2rem))]">
+                <PlotSearchSelector plotsData={plotsData} onSelect={(p) => setFound(p)} />
+              </div>
+            )}
 
                         <button type="button"
               onClick={() => setClimateShowLayers(!climateShowLayers)}

@@ -1,6 +1,6 @@
 /* Small react-leaflet helpers used by the crop dashboard map panes. */
 import { useEffect, useRef } from 'react';
-import { useMap } from 'react-leaflet';
+import { Polygon, useMap } from 'react-leaflet';
 
 export const ResizeMap = ({ trigger }) => {
   const map = useMap();
@@ -146,3 +146,13 @@ export function FitToZarrBounds({ zarrBounds }) {
 
 // Restoration zone fallback coords removed — coords must come from backend boundary geometry.
 
+
+/** Zooms to the block picked in the map search and outlines it. */
+export const ZoomToPlot = ({ plot }) => {
+  const map = useMap();
+  useEffect(() => {
+    const c = plot?.coords || [];
+    if (c.length) map.fitBounds(c, { padding: [40, 40], maxZoom: 18 });
+  }, [plot, map]);
+  return plot?.coords?.length ? <Polygon positions={plot.coords} pathOptions={{ color: '#ffffff', weight: 3, fill: false }} interactive={false} /> : null;
+};

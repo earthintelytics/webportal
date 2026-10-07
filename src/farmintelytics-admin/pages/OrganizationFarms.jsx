@@ -108,13 +108,13 @@ function EstateRow({ farm, onDelete, onReplace }) {
         </div>
         <Pill tone={farm.boundary_uploaded ? 'good' : 'critical'}>{farm.boundary_uploaded ? 'Boundary' : 'No boundary'}</Pill>
       </div>
-      <div className="flex flex-wrap gap-1 mt-2 -ml-2">
-        {farm.boundary_uploaded && <IconButton label="View boundary" onClick={() => setOpen('boundary')}><Eye size={15} /></IconButton>}
-        <IconButton label="Estate details" onClick={() => setOpen('details')}><Sprout size={15} /></IconButton>
-        <IconButton label="Pipeline settings" onClick={() => setOpen('config')}><Settings size={15} /></IconButton>
-        <IconButton label={farm.boundary_uploaded ? 'Replace boundary' : 'Upload boundary'} disabled={uploading} onClick={() => fileRef.current?.click()}>{uploading ? <RefreshCw size={15} className="animate-spin" /> : <UploadCloud size={15} />}</IconButton>
+      <div className="flex flex-wrap gap-2 mt-3">
+        {farm.boundary_uploaded && <button type="button" className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-gray-300 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50" onClick={() => setOpen('boundary')}><Eye size={14} />View boundary</button>}
+        <button type="button" className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-gray-300 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50" onClick={() => setOpen('details')}><Sprout size={14} />Crop and dates</button>
+        <button type="button" className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-gray-300 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50" onClick={() => setOpen('config')}><Settings size={14} />Pipeline settings</button>
+        <button type="button" className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-gray-300 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50" disabled={uploading} onClick={() => fileRef.current?.click()}>{uploading ? <RefreshCw size={14} className="animate-spin" /> : <UploadCloud size={14} />}{farm.boundary_uploaded ? 'Replace boundary' : 'Upload boundary'}</button>
         <input ref={fileRef} type="file" accept=".geojson,.json,application/geo+json" className="hidden" onChange={pick} />
-        <IconButton label="Delete estate" danger onClick={() => onDelete(farm)}><Trash2 size={15} /></IconButton>
+        <button type="button" className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-gray-300 bg-white text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50 !text-red-700 hover:!bg-red-50" onClick={() => onDelete(farm)}><Trash2 size={14} />Delete</button>
       </div>
       {open === 'config' && <EstateConfigModal farm={farm} onClose={() => setOpen(null)} />}
       {open === 'boundary' && <BoundaryModal farm={farm} onClose={() => setOpen(null)} />}

@@ -7,9 +7,15 @@ import { Modal } from '../../components/ui';
 
 const FitToBounds = ({ data }) => {
   const map = useMap();
-  useEffect(() => { const t = setTimeout(() => map.invalidateSize(), 150); return () => clearTimeout(t); }, [map]);
+  // The modal opens at size 0: measure first, then fit, or the map stays zoomed out.
   useEffect(() => {
-    try { const b = L.geoJSON(data).getBounds(); if (b.isValid()) map.fitBounds(b, { padding: [24, 24] }); } catch { /* leave the world view */ }
+    const fit = () => {
+      map.invalidateSize();
+      try { const b = L.geoJSON(data).getBounds(); if (b.isValid()) map.fitBounds(b, { padding: [24, 24], maxZoom: 17 }); } catch { /* leave the world view */ }
+    };
+    fit();
+    const t = setTimeout(fit, 200);
+    return () => clearTimeout(t);
   }, [data, map]);
   return null;
 };
